@@ -3,5 +3,8 @@
     "SessionStart": [
       {"matcher": "", "hooks": [{"type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/jst-path.js\""}]}
     ]
-  }
+  },
+  "modules": [
+    "../payload/mods/stack-viewer/hooks/stack-viewer.tsx"
+  ]
 }

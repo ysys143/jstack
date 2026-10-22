@@ -40,6 +40,10 @@ categories:
     - "packaging/**"
   output-style:
     - "output-styles/**"
+  # Claude Code function-hook mods that hooks/claude-hooks.json loads. An imported mod keeps its
+  # upstream layout, tests included, so `claude plugin test` runs it in place.
+  mod:
+    - "mods/**"
   skill-assets:
     - "skills/*/assets/**"
     - "skills/*/templates/**"

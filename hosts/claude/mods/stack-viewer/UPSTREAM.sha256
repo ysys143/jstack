@@ -1,0 +1,13 @@
+# SHA-256 of imported files: davila7/claude-code-templates @ 30756c435b5214c32c27b91ef559ac8dbdc28721 (stack-viewer 0.3.1, MIT)
+#
+# Paths are relative to this folder. Upstream they sit under cli-tool/components/mods/ui/stack-viewer/,
+# except LICENSE, which is the repository's root LICENSE. Every imported file is unchanged; NOTICE and
+# this file are the only local additions.
+#
+c7e3b95385c71eabc7794b793ef7f2b57b9bf45a3cbf4454e3a42c3c4e944555  .claude-plugin/plugin.json
+15cc073ffa3a01bb7da145aeae2a842b473860d142c92485536ee9c91195a705  LICENSE
+bac9173d0b654a78c4d35721cbd9f9bf5265740189f756937099fa851729901d  README.md
+c52d264b11404d022e42c66c37e26cfd621ab0e3af544242d457e4b2ad1e38c5  hooks/hooks.json
+69e32646c832639fcb502d4519f2bb9b9335cb2483f318ec448b65c9ba65ebfc  hooks/stack-viewer.tsx
+f0f859045f536751d712bb4bc5222ac77e1477db9a3e9489deb596393402e374  hooks/stack.ts
+2d6d5b1584f13bfcad2e454fbd77ad6ed57104453b35d3fd3c11d595f9350930  tests/stack-viewer.test.tsx

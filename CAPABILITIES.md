@@ -56,7 +56,15 @@ actually using the corresponding capability.
 | `wrapup` | `operations/wrapup` | “개인 일·주간 보고서를 요청한 기간에 맞춰 작성” | Skill | Skill | Optional convenience surface over the shared local work-report core; any workflow may call the core directly | Evidence-separated local bundle; publication receipts are adapter-specific |
 | `workspace` | `operations/google-workspace` | “Set up Google Workspace” | Skill·`/init`·`/setup-workspace`·`/gws` | Skill | gws, user approval, and authentication | Covered by the owning suite's contracts and deletion regressions |
 
-Claude Code exposes 36 public commands: `/brainstorming`, `/branch`, `/check-usage`, `/commit`,
+Claude Code also loads the `stack-viewer` mod, a function-hook module imported unchanged
+from [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates)
+(`hosts/claude/mods/stack-viewer/NOTICE`). `/stack` opens a side pane that maps each loaded
+skill, subagent, command, hook, MCP server, plugin, setting, memory file and output style
+to the scope it comes from, and marks what is shadowed or off. The mod only observes,
+needs Claude Code 2.1.287 or later, registers `/stack` under that bare name rather than
+`/jstack:stack`, and has no Codex counterpart.
+
+Claude Code exposes 35 public commands: `/brainstorming`, `/branch`, `/check-usage`, `/commit`,
 `/consensus-plan`, `/convert`, `/daily-wrapup`, `/dashboard-alias`, `/dashboard-repair`, `/dashboard-setup`, `/doctor`, `/grill-me`, `/gws`,
 `/claude-profile`, `/migrate-project-sessions`, `/codex-migrate-project-sessions`,
 `/claude-project-rename`, `/claude-plugin-ghost-entry-cleanup`, `/init`, `/inspect`, `/install-skill`, `/interview`, `/log`, `/pr`, `/project-checks`, `/report`, `/setup-recall`, `/setup-workspace`, `/ship`,

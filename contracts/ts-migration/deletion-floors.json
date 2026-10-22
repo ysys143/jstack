@@ -54,6 +54,7 @@
     "tests/test_work_agents.py": 0,
     "tests/test_work_commands.py": 0,
     "tests/test_work_hooks.py": 0,
+    "tests/test_mods.py": 5,
     "skills/disk-manager": 6,
     "skills/issue-report": 1,
     "skills/journey-qa": 2,
@@ -199,6 +200,12 @@
       "baselineRecords": 24,
       "nativeRecords": 17,
       "reason": "jstack removed the scheduled scrum draft mail (its reference, five scheduler files, two scripts and the scrum-rows evaluation); NOTICE and LICENSE.corca were added with provenance contracts."
+    },
+    {
+      "suite": "tests/test_mods.py",
+      "baselineRecords": 0,
+      "nativeRecords": 5,
+      "reason": "New owning suite for the imported stack-viewer Claude Code mod: README.md, NOTICE, LICENSE, UPSTREAM.sha256 and hooks/stack-viewer.tsx each have a measured deletion axis."
     }
   ]
 }

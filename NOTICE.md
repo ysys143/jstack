@@ -24,6 +24,7 @@ local path.
 | [ysys143/cc-session-sync](https://github.com/ysys143/cc-session-sync) | The jstack author's own project | — | `skills/public/operations/session-memory/bin` |
 | [corazzon/pptx-design-styles](https://github.com/corazzon/pptx-design-styles) | MIT, declared in its README; no license file | — | `skills/public/artifacts/slides/references/styles.md` |
 | [uppinote20/claude-dashboard](https://github.com/uppinote20/claude-dashboard) | MIT | `f0937fe` | `skills/public/operations/dashboard` and its command and hook |
+| [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates) | MIT | `30756c4` | `hosts/claude/mods/stack-viewer` (the `stack-viewer` Claude Code mod, unchanged) |
 | [TryGhost/node-sqlite3](https://github.com/TryGhost/node-sqlite3) | BSD-3-Clause | `ba4ba07` | `packaging/vendor/sqlite3` and the SQLite runtime |
 | [snflkd/fluent-korean](https://github.com/snflkd/fluent-korean) | MIT | — | `hosts/claude/output-styles/fluent-korean*.md`, `humanize` taxonomy |
 | [chrisryugj/kordoc](https://github.com/chrisryugj/kordoc) | MIT | — | `hwpx-document` and `humanize` references |

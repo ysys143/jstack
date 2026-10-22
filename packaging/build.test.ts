@@ -220,3 +220,50 @@ test('a plugin hook command that runs no shipped module fails the build', async 
     finally { rmSync(f.box, { recursive: true, force: true }); }
   }
 });
+/** launcherFixture plus a mod under hosts/claude/mods and module lists for the three hook files. */
+function modFixture(claude: unknown, shared?: unknown, codex?: unknown) {
+  const f = launcherFixture();
+  mkdirSync(join(f.source, 'hosts/claude/mods/viewer/hooks'), { recursive: true });
+  writeFileSync(join(f.source, 'hosts/claude/mods/viewer/hooks/viewer.tsx'), "import { helper } from './helper.ts'\nexport const register = () => helper\n");
+  writeFileSync(join(f.source, 'hosts/claude/mods/viewer/hooks/helper.ts'), 'export const helper: number = 1\n');
+  writeJson(join(f.source, 'hosts/claude/mods/viewer/hooks/hooks.json'), { modules: ['./viewer.tsx'] });
+  const add = (rel: string, modules: unknown) => { const path = join(f.source, rel); writeJson(path, { ...JSON.parse(readFileSync(path, 'utf8')), modules }); };
+  add('hosts/claude/hooks/claude-hooks.json', claude);
+  if (shared !== undefined) add('hosts/claude/hooks/hooks.json', shared);
+  if (codex !== undefined) add('hosts/codex/hooks/codex-hooks.json', codex);
+  writeJson(join(f.source, 'packaging/package-files.json'), discoverMembership(f.source));
+  return f;
+}
+test('a mod ships uncompiled in the payload and the Claude hook file loads it', async () => {
+  const f = modFixture(['../payload/mods/viewer/hooks/viewer.tsx']);
+  try {
+    await buildPackage(f.source, f.output);
+    assert.equal(checkPackage(f.output).passed, true);
+    // The engine loads a mod's TypeScript itself; a compiled sibling would be a second, unreviewed copy.
+    assert.equal(readFileSync(join(f.output, 'payload/mods/viewer/hooks/helper.ts'), 'utf8'), 'export const helper: number = 1\n');
+    assert.equal(existsSync(join(f.output, 'payload/mods/viewer/hooks/helper.js')), false);
+    assert.equal(existsSync(join(f.output, 'mods')), false, 'mods stay in the payload');
+    // Module paths resolve from the package-root hooks/ directory that Claude reads.
+    assert.deepEqual(JSON.parse(readFileSync(join(f.output, 'hooks/claude-hooks.json'), 'utf8')).modules, ['../payload/mods/viewer/hooks/viewer.tsx']);
+  } finally { rmSync(f.box, { recursive: true, force: true }); }
+});
+test('a hook module that is not a shipped mod file, or one that a Codex-read file declares, fails the build', async () => {
+  const viewer = ['../payload/mods/viewer/hooks/viewer.tsx'];
+  const cases: [unknown, unknown, unknown, RegExp][] = [
+    [['../payload/mods/viewer/hooks/missing.tsx'], undefined, undefined, /Claude hook module is not a shipped mod file/],
+    [['../payload/hooks/jst-path.ts'], undefined, undefined, /Claude hook module is not a shipped mod file/],
+    [['../payload/mods/viewer/../../runtime/profiles.ts'], undefined, undefined, /Claude hook module is not a shipped mod file/],
+    // A shipped file the mod does not declare as its entry point, such as a library it imports.
+    [['../payload/mods/viewer/hooks/helper.ts'], undefined, undefined, /not the entry point its mod declares/],
+    // Claude Code refuses a second hooks module in one plugin.
+    [[...viewer, '../payload/mods/viewer/hooks/helper.ts'], undefined, undefined, /one hooks module per plugin/],
+    [[], undefined, undefined, /one hooks module per plugin/],
+    [undefined, viewer, undefined, /shared with Codex/],
+    [undefined, undefined, viewer, /Only the Claude hook file may declare function-hook modules/],
+  ];
+  for (const [claude, shared, codex, error] of cases) {
+    const f = modFixture(claude, shared, codex);
+    try { await assert.rejects(buildPackage(f.source, f.output), error); }
+    finally { rmSync(f.box, { recursive: true, force: true }); }
+  }
+});

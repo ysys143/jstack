@@ -7,7 +7,8 @@ const PRIVATE_FILES = new Set(['.env', 'credentials.json', 'credentials.enc', 't
 export const KEYS = /(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{24,}|ghp_[A-Za-z0-9]{25,}|xox[baprs]-[A-Za-z0-9-]{15,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)/;
 /**
  * Deliberately fake credential-shaped values in test fixtures and one sample transcript of the vendored
- * journey-qa leak-scanner suite, pinned by package path and content hash. A changed byte, or the same value anywhere else, is flagged.
+ * journey-qa leak-scanner suite, and in the redaction tests of the imported stack-viewer mod, pinned by
+ * package path and content hash. A changed byte, or the same value anywhere else, is flagged.
  */
 export const REVIEWED_FIXTURES: ReadonlyMap<string, string> = new Map([
   ['skills/journey-qa/repos/journey-qa/gates/selftest/fixtures/redact/transcript-secrets.txt', '48fd57fd42d3a084362aa9457d6503a30a5af0d8915c25774ee345730ca71a4a'],
@@ -18,6 +19,7 @@ export const REVIEWED_FIXTURES: ReadonlyMap<string, string> = new Map([
   ['skills/journey-qa/repos/journey-qa/gates/selftest/fixtures/text/apikey-slack.txt', '0b81621e8e8572c9a0a19012849b459b03800f1d8f9daa98abf81d8767f40457'],
   ['skills/journey-qa/repos/journey-qa/gates/selftest/fixtures/text/apikey-sk.txt', 'a6587cddc20a6f1f10bb08ab514ff5508c5f8d412ef1baf478b681600e4bfe3d'],
   ['skills/journey-qa/repos/journey-qa/capture/sample/01-sample-terminal.raw.txt', '45fd7669d13f3df1a2ca70d6bcf4cdcff4fb141ec5c183c33052a10885ec31f0'],
+  ['mods/stack-viewer/tests/stack-viewer.test.tsx', '2d6d5b1584f13bfcad2e454fbd77ad6ed57104453b35d3fd3c11d595f9350930'],
 ]);
 export function reviewedFixture(rel: string, raw: Buffer): boolean {
   const pinned = REVIEWED_FIXTURES.get(rel.replace(/^(?:plugins\/jstack\/)?payload\//, ''));

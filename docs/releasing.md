@@ -46,6 +46,21 @@ The probe uses isolated homes and does not prove model execution or hook trust.
 `lifecycle_probe.js --previous OLD_PACKAGE --package NEW_PACKAGE --output NEW_DIR`
 needs a checked predecessor; record when none exists, as for the first release.
 
+   Run each imported Claude Code mod's own tests in the engine harness, from the built
+   package, with an empty configuration directory (no sign-in is needed):
+
+```sh
+for mod in "$JSTACK_RELEASE_DIR"/marketplace/plugins/jstack/payload/mods/*/; do
+  CLAUDE_CONFIG_DIR="$(mktemp -d)" claude plugin test "$mod"
+done
+```
+
+   This needs Claude Code 2.1.287 or later. CI runs only the tests that need no engine
+   harness, so record each mod's pass and fail counts; any failure blocks the release.
+   Then validate the built plugin as Claude Code reads it, which also checks the hook
+   module it loads:
+   `claude plugin validate "$JSTACK_RELEASE_DIR/marketplace/plugins/jstack"`.
+
 4. Run the full contracts as `.github/workflows/validate.yml` does, including its
    isolated specialist dependencies:
    `node dist/packaging/run_contracts.js --deletion --output NEW_DIR`. A run without

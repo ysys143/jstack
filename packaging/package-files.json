@@ -858,6 +858,50 @@
       "target": "hooks/validate_uv_usage.ts"
     },
     {
+      "source": "hosts/claude/mods/claude-code-testing.mjs",
+      "target": "mods/claude-code-testing.mjs"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer.test.ts",
+      "target": "mods/stack-viewer.test.ts"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/.claude-plugin/plugin.json",
+      "target": "mods/stack-viewer/.claude-plugin/plugin.json"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/LICENSE",
+      "target": "mods/stack-viewer/LICENSE"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/NOTICE",
+      "target": "mods/stack-viewer/NOTICE"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/README.md",
+      "target": "mods/stack-viewer/README.md"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/UPSTREAM.sha256",
+      "target": "mods/stack-viewer/UPSTREAM.sha256"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/hooks/hooks.json",
+      "target": "mods/stack-viewer/hooks/hooks.json"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/hooks/stack-viewer.tsx",
+      "target": "mods/stack-viewer/hooks/stack-viewer.tsx"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/hooks/stack.ts",
+      "target": "mods/stack-viewer/hooks/stack.ts"
+    },
+    {
+      "source": "hosts/claude/mods/stack-viewer/tests/stack-viewer.test.tsx",
+      "target": "mods/stack-viewer/tests/stack-viewer.test.tsx"
+    },
+    {
       "source": "hosts/claude/output-styles/ATTRIBUTION.md",
       "target": "output-styles/ATTRIBUTION.md"
     },
@@ -19108,6 +19152,10 @@
     {
       "source": "tests/test_floor_parity.ts",
       "target": "tests/test_floor_parity.ts"
+    },
+    {
+      "source": "tests/test_mods.ts",
+      "target": "tests/test_mods.ts"
     },
     {
       "source": "tests/test_onboarding.py",

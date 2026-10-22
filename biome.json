@@ -13,7 +13,7 @@
       "**/*.cjs",
       "**/*.ts",
       "**/*.tsx",
-      "!skills/public/workflow/journey-qa/repos"
+      "!skills/public/workflow/journey-qa/repos", "!hosts/claude/mods/*/**"
     ]
   },
   "formatter": {

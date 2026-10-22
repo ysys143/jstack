@@ -1,0 +1,48 @@
+# NOTICE — stack-viewer
+
+This Claude Code mod is an unchanged copy of `cli-tool/components/mods/ui/stack-viewer`
+from [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates)
+at commit `30756c4` (stack-viewer 0.3.1). It keeps that repository's MIT license, copied
+here as `LICENSE`. `UPSTREAM.sha256` records the upstream bytes of every imported file,
+and `tests/test_mods.ts` pins the digest of that record, so neither changes without a
+reviewed edit to the suite. This NOTICE and `UPSTREAM.sha256` are the only local additions.
+
+## How jstack loads it
+
+jstack's Claude hook file, `hooks/claude-hooks.json` at the package root, names
+`../payload/mods/stack-viewer/hooks/stack-viewer.tsx` as its function-hook module, so the
+mod loads with the jstack plugin. Claude Code loads one hooks module per plugin, so this
+is the only module jstack can load; a second mod would have to share its entry point.
+Codex has no mods and never reads that file. The folder keeps its own
+`.claude-plugin/plugin.json` and `hooks/hooks.json` so that `claude plugin test` can run
+the upstream tests in place.
+
+The mod needs Claude Code 2.1.287 or later. Claude Code 2.1.286 and 2.1.260 still install
+jstack and list its session-start hook from the same file; the 2.1.260 validator rejects
+the module because it uses events added later. Whether 2.1.260 then runs that hook in a
+live session was not established.
+
+Differences from a standalone install:
+
+- `/stack` registers under that bare name; `/jstack:stack` does not exist. The pane's
+  status line names the jstack plugin instead of `stack-viewer`.
+- jstack declares no `columns` option, so the pane asks for the default 84 columns; a
+  width the user drags it to still wins.
+
+## Tests
+
+- `claude plugin test payload/mods/stack-viewer`, run against the built package, runs
+  every upstream test in the engine harness. The release runbook records its result.
+- `hosts/claude/mods/stack-viewer.test.ts` runs the upstream tests that need no engine
+  harness under Node in every CI run, with `claude-code-testing.mjs` standing in for the
+  `claude-code/testing` kit; it also pins the kit's matchers to outcomes measured with
+  the engine's own kit.
+
+## Updating
+
+Replace every imported file from one upstream commit, regenerate `UPSTREAM.sha256`,
+change the commit above, and update the record digest and deletion floors in
+`tests/test_mods.ts` and the expected test counts in `hosts/claude/mods/stack-viewer.test.ts`.
+The suite fails on any file that is not recorded with its upstream bytes, so jstack
+carries no local edit to an imported file; adopting one means recording it here and
+changing the suite in the same reviewed change.

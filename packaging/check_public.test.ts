@@ -57,8 +57,11 @@ test('the marketplace root of a release resolves the same pinned path', t => {
 });
 
 test('every reviewed fixture still exists in the vendored copy with its pinned hash', () => {
+  // Keys are package paths; the reviewed membership maps each one back to its source file.
+  const sources = new Map((JSON.parse(readFileSync(join(ROOT, 'packaging/package-files.json'), 'utf8')).files as { source: string; target: string }[]).map(row => [row.target, row.source]));
   for (const [key, hash] of REVIEWED_FIXTURES) {
-    const file = join(SOURCE, key.slice(PREFIX.length));
-    assert.equal(createHash('sha256').update(readFileSync(file)).digest('hex'), hash, key);
+    const source = sources.get(key);
+    assert.ok(source, `${key} is not a package member`);
+    assert.equal(createHash('sha256').update(readFileSync(join(ROOT, source))).digest('hex'), hash, key);
   }
 });

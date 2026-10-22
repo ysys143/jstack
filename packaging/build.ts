@@ -17,7 +17,7 @@ interface FileDigest { path: string; sha256: string; mode?: number }
 export interface PackageReceipt { schemaVersion: 1 | 2; name: string; version: string; publicSkills: string[]; files: FileDigest[]; sourceSha256: string; generatedFiles?: string[]; vendors?: string[]; runtimeSourcePolicy?: 'source-and-compiled'|'compiled-only' }
 const COMPONENTS = ['cli', 'skills', 'runtime', 'scripts', 'tests', 'evals', 'contracts', 'packaging'];
 const TOP_ASSETS = ['README.md', 'CAPABILITIES.md', 'CHANGELOG.md', 'NOTICE.md', 'LICENSE'];
-const HOST_KINDS = ['bin', 'commands', 'agents', 'hooks', 'output-styles'];
+const HOST_KINDS = ['bin', 'commands', 'agents', 'hooks', 'mods', 'output-styles'];
 // Codex reads these hook files through its manifest; Claude discovers hooks/hooks.json itself.
 const CODEX_HOOK_FILES = ['hooks/hooks.json', 'hooks/codex-hooks.json'];
 // Claude merges a hook file its manifest names with hooks/hooks.json; Codex never reads this one.
@@ -190,10 +190,12 @@ export function runtimeSkillReferences(text: string, membership: Membership): st
   const targets = new Map(membership.files.map(row => [row.source, row.target]));
   return text.replace(/https?:\/\/[^\s"'<>`]+|(?<![\w./-])skills\/(?:public\/[a-z-]+|support)\/[\w./-]+/g, ref => targets.get(ref) ?? ref);
 }
-function runtimeText(text: string, target: string, membership: Membership): string {
+function runtimeText(text: string, target: string, membership: Membership, member: (target: string) => string | undefined = () => undefined): string {
   const compiled = new Set(compiledMembers(membership).map(row => row.target.replace(/\.ts$/, '.js')));
   if (target === 'hooks/hooks.json') {
     const value = JSON.parse(text);
+    // Codex reads this file too and has no function-hook modules.
+    if ('modules' in value) throw new BuildError('hooks/hooks.json is shared with Codex; declare modules in hooks/claude-hooks.json');
     for (const groups of Object.values(value.hooks ?? {}) as any[]) for (const group of groups) for (const hook of group.hooks ?? []) {
       if (typeof hook.command !== 'string') continue;
       const match = hook.command.match(/^(?:python3|bash)\s+"\$\{CLAUDE_PLUGIN_ROOT\}\/([^"\n]+)"(.*)$/);
@@ -212,6 +214,20 @@ function runtimeText(text: string, target: string, membership: Membership): stri
       const match = typeof hook.command === 'string' ? /^node "\$\{CLAUDE_PLUGIN_ROOT\}\/([^"\n]+)"$/.exec(hook.command) : null;
       if (!match || !shipped.has(match[1])) throw new BuildError(`Registered ${HOST_HOOK_FILES[target]} hook does not run a shipped module: ${hook.command}`);
     }
+    // Function-hook modules resolve from the package-root hooks/ directory into an uncompiled mod.
+    const modules = JSON.parse(text).modules;
+    if (modules !== undefined) {
+      if (target !== CLAUDE_HOOK_FILE) throw new BuildError(`Only the Claude hook file may declare function-hook modules: ${target}`);
+      // Claude Code refuses a second hooks module in one plugin.
+      if (!Array.isArray(modules) || modules.length !== 1) throw new BuildError('Claude Code loads one hooks module per plugin; hooks/claude-hooks.json must name exactly one');
+      const module = modules[0];
+      const path = typeof module === 'string' ? /^\.\.\/payload\/(mods\/[a-z0-9-]+)\/hooks\/([^/]+\.tsx?)$/.exec(module) : null;
+      if (!path || !shipped.has(`${path[1]}/hooks/${path[2]}`)) throw new BuildError(`Claude hook module is not a shipped mod file: ${module}`);
+      // Only the entry point the mod itself declares, so claude plugin test exercises what jstack loads.
+      let own: unknown;
+      try { own = JSON.parse(member(`${path[1]}/hooks/hooks.json`) ?? 'null')?.modules; } catch { own = undefined; }
+      if (!Array.isArray(own) || !own.includes(`./${path[2]}`)) throw new BuildError(`Claude hook module is not the entry point its mod declares in hooks/hooks.json: ${module}`);
+    }
     return text;
   }
   if (target === 'hooks/CONTRACT.md') {
@@ -219,7 +235,7 @@ function runtimeText(text: string, target: string, membership: Membership): stri
   }
   return text;
 }
-function compiledMembers(membership: Membership): Member[] { return membership.files.filter(row => /\.ts$/.test(row.source) && !row.source.endsWith('.d.ts') && (!row.target.startsWith('skills/dashboard/') || row.target.startsWith('skills/dashboard/tests/')) && !row.source.includes('/repos/')); }
+function compiledMembers(membership: Membership): Member[] { return membership.files.filter(row => /\.ts$/.test(row.source) && !row.source.endsWith('.d.ts') && (!row.target.startsWith('skills/dashboard/') || row.target.startsWith('skills/dashboard/tests/')) && !row.source.includes('/repos/') && !/^mods\/[^/]+\//.test(row.target)); }
 function runtimeMembers(membership: Membership): Member[] {
   const compiled=new Set(compiledMembers(membership).map(row=>row.target));
   const nativeJavaScript=new Set(membership.files.filter(row=>row.source.endsWith('.js')&&!row.source.includes('/repos/')).map(row=>row.target));
@@ -309,7 +325,10 @@ export async function buildPackage(directory: string, destination: string, priva
       if (row.source.endsWith('.md') && !row.source.includes('/repos/')) writeFileSync(target, runtimeSkillReferences(readFileSync(target, 'utf8'), membership));
       const owner = catalog?.entries.find(entry => row.target === `skills/${entry.owner}/SKILL.md` || row.target === `skills/${entry.owner}/SKILL.codex.md`);
       if (owner) writeFileSync(target, readFileSync(target, 'utf8').replace(new RegExp(`^name: ${owner.name}$`, 'm'), `name: ${owner.owner}`));
-      if (['hooks/hooks.json', 'hooks/CONTRACT.md', ...Object.keys(HOST_HOOK_FILES)].includes(row.target)) writeFileSync(target, runtimeText(readFileSync(target, 'utf8'), row.target, membership));
+      if (['hooks/hooks.json', 'hooks/CONTRACT.md', ...Object.keys(HOST_HOOK_FILES)].includes(row.target)) {
+        const member = (wanted: string) => { const found = membership.files.find(file => file.target === wanted); return found ? readFileSync(join(source, found.source), 'utf8') : undefined; };
+        writeFileSync(target, runtimeText(readFileSync(target, 'utf8'), row.target, membership, member));
+      }
       if (exposed(row.target)) {
         const exposedPath = join(root, row.target.startsWith('commands/') ? 'hosts/claude' : '', row.target);
         mkdirSync(dirname(exposedPath), { recursive: true });

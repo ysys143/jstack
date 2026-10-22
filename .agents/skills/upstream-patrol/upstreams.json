@@ -935,6 +935,50 @@
           ]
         }
       ]
+    },
+    {
+      "id": "claude-code-templates-stack-viewer",
+      "repo": "davila7/claude-code-templates",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": "2026-10-22T17:20:09.517Z",
+      "state": "absorb",
+      "reviews": [
+        {
+          "date": "2026-10-22T17:20:09.517Z",
+          "scope": [
+            "cli-tool/components/mods/ui/stack-viewer",
+            "LICENSE"
+          ],
+          "verdict": "absorb",
+          "note": "stack-viewer 0.3.1 imported unchanged as a Claude Code mod. Hook code reviewed: no network, process or file-write calls; it reads settings, session usage and the component folders through the engine API and masks secret-looking values. claude plugin test passes 16/16 with no sign-in; the 15 tests that need no engine harness also run under Node in CI."
+        }
+      ],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "30756c435b5214c32c27b91ef559ac8dbdc28721",
+          "upstreamPaths": [
+            "cli-tool/components/mods/ui/stack-viewer",
+            "LICENSE"
+          ],
+          "localPaths": [
+            "hosts/claude/mods/stack-viewer"
+          ],
+          "pinRecordedIn": {
+            "file": "hosts/claude/mods/stack-viewer/NOTICE",
+            "form": "short7"
+          },
+          "ownerSkill": "stack-viewer",
+          "notes": [
+            "Every imported file is bound in UPSTREAM.sha256; NOTICE and UPSTREAM.sha256 are the only local files.",
+            "hosts/claude/hooks/claude-hooks.json loads the mod; it registers the bare /stack command."
+          ]
+        }
+      ]
     }
   ],
   "exclusions": [
