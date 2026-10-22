@@ -141,7 +141,7 @@
           ],
           "pinRecordedIn": {
             "file": "NOTICE.md",
-            "form": "full"
+            "form": "short7"
           },
           "ownerSkill": "svg-diagram",
           "notes": [
@@ -193,7 +193,7 @@
           ],
           "pinRecordedIn": {
             "file": "NOTICE.md",
-            "form": "full"
+            "form": "short7"
           },
           "ownerSkill": "svg-diagram",
           "notes": [
@@ -394,13 +394,22 @@
         "spdx_id": "MIT",
         "class": "MIT"
       },
-      "lastReviewed": null,
+      "lastReviewed": "2026-10-22T19:17:51.823Z",
       "state": "unreviewed",
-      "reviews": [],
+      "reviews": [
+        {
+          "date": "2026-10-22T19:17:51.823Z",
+          "scope": [
+            "."
+          ],
+          "verdict": "absorb",
+          "note": "Index corrected to the vendored commit: all 406 files under repos/journey-qa equal 8004bae (5 differ from the previously recorded ec4c16d, which is one commit older), matching the pin and tree digest in skills/public/workflow/journey-qa/NOTICE."
+        }
+      ],
       "imports": [
         {
           "mode": "snapshot",
-          "pin": "ec4c16d7f20a2a476731b34ba818745f9b6fd734",
+          "pin": "8004bae076bbd9be3f2d7d88be14d7cc6f95d92d",
           "upstreamPaths": [
             "."
           ],
@@ -495,8 +504,7 @@
             "."
           ],
           "verdict": "absorb",
-          "note": "v1.32.0 -> v1.34.0: burnRate/tokenSpeed/session fixes, incremental transcript parsing, model version, promptCache widgets. Local changes 1-8 reapplied; prompt-cache emoji replaced with text. Executable diff reviewed by the user before build. Also fixed the Node test budget gate for vendored Vitest files.",
-          "pr": "https://github.com/ysys143/jstack/pull/151"
+          "note": "v1.32.0 -> v1.34.0: burnRate/tokenSpeed/session fixes, incremental transcript parsing, model version, promptCache widgets. Local changes 1-8 reapplied; prompt-cache emoji replaced with text. Executable diff reviewed by the user before build. Also fixed the Node test budget gate for vendored Vitest files."
         }
       ],
       "imports": [

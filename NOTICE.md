@@ -20,7 +20,7 @@ local path.
 | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | MIT, declared in its README and skill frontmatter; no license file | `063bee9` | `skills/public/engineering/react-performance/rules` |
 | [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines) | MIT | `e3d624b` | `skills/public/engineering/web-interface` |
 | [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | Apache-2.0 | `a86e346`, `aecd4c8` | `skills/public/engineering/repository-setup` |
-| [ysys143/journey-qa](https://github.com/ysys143/journey-qa) | MIT | `ec4c16d` | `skills/public/workflow/journey-qa/repos/journey-qa` |
+| [ysys143/journey-qa](https://github.com/ysys143/journey-qa) | MIT | `8004bae` | `skills/public/workflow/journey-qa/repos/journey-qa` |
 | [ysys143/cc-session-sync](https://github.com/ysys143/cc-session-sync) | The jstack author's own project | — | `skills/public/operations/session-memory/bin` |
 | [corazzon/pptx-design-styles](https://github.com/corazzon/pptx-design-styles) | MIT, declared in its README; no license file | — | `skills/public/artifacts/slides/references/styles.md` |
 | [uppinote20/claude-dashboard](https://github.com/uppinote20/claude-dashboard) | MIT | `f0937fe` | `skills/public/operations/dashboard` and its command and hook |

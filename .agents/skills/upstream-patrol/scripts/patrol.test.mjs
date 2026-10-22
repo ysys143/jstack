@@ -52,13 +52,21 @@ function entry(id, repo, ownerSkill, state = 'unreviewed') {
   };
 }
 
-test('inventory records 22 source entries plus the two Part A upstreams and explicit exclusions', () => {
+test('inventory records 23 source entries plus the two Part A upstreams and explicit exclusions', () => {
   const index = JSON.parse(readFileSync(new URL('../upstreams.json', import.meta.url), 'utf8'));
-  assert.equal(index.upstreams.length, 24);
+  assert.equal(index.upstreams.length, 25);
+  assert.ok(index.upstreams.some(item => item.id === 'claude-code-templates-stack-viewer'), 'the stack-viewer mod import is recorded');
   assert.equal(index.upstreams.filter(item => ['cc-thinking-skills', 'owasp-cheat-sheet-series'].includes(item.id)).length, 2);
   assert.equal(index.upstreams.filter(item => item.repo === null).map(item => item.id).sort().join(','), 'benelog-gist,hyperresearch,noslop-ko');
   assert.ok(index.exclusions.some(item => item.id === 'spotify-portal-ai-plugins'));
   assert.ok(index.upstreams.every(item => Array.isArray(item.imports) && item.imports.length > 0));
+});
+
+test('the repository index has no errors against the repository it describes', () => {
+  // Pins, local paths and pin records must agree with the checked-out tree; warnings are review prompts.
+  const index = JSON.parse(readFileSync(new URL('../upstreams.json', import.meta.url), 'utf8'));
+  const root = new URL('../../../../', import.meta.url).pathname;
+  assert.deepEqual(checkIndex(index, { root }).errors, []);
 });
 
 test('checkIndex accepts a short SHA only when its seven-character prefix is recorded', () => {
