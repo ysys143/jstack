@@ -1,0 +1,230 @@
+[
+  {
+    "domain": "Biological Databases (DeepMind)",
+    "file": "biological-databases-deepmind.md",
+    "count": 38,
+    "bytes": 7197
+  },
+  {
+    "domain": "Bioinformatics & Genomics",
+    "file": "bioinformatics-genomics.md",
+    "count": 24,
+    "bytes": 3918
+  },
+  {
+    "domain": "Machine Learning & Deep Learning",
+    "file": "machine-learning-deep-learning.md",
+    "count": 18,
+    "bytes": 3068
+  },
+  {
+    "domain": "Analysis & Methodology",
+    "file": "analysis-methodology.md",
+    "count": 12,
+    "bytes": 2582
+  },
+  {
+    "domain": "Scientific Communication & Publishing",
+    "file": "scientific-communication-publishing.md",
+    "count": 11,
+    "bytes": 2262
+  },
+  {
+    "domain": "Cheminformatics & Drug Discovery",
+    "file": "cheminformatics-drug-discovery.md",
+    "count": 9,
+    "bytes": 1558
+  },
+  {
+    "domain": "Data Analysis & Visualization",
+    "file": "data-analysis-visualization.md",
+    "count": 9,
+    "bytes": 1699
+  },
+  {
+    "domain": "Scientific Databases & Data Access",
+    "file": "scientific-databases-data-access.md",
+    "count": 9,
+    "bytes": 1901
+  },
+  {
+    "domain": "Engineering & Simulation",
+    "file": "engineering-simulation.md",
+    "count": 6,
+    "bytes": 1296
+  },
+  {
+    "domain": "Research Methodology & Proposal Writing",
+    "file": "research-methodology-proposal-writing.md",
+    "count": 6,
+    "bytes": 1348
+  },
+  {
+    "domain": "Protein Engineering & Design",
+    "file": "protein-engineering-design.md",
+    "count": 5,
+    "bytes": 1094
+  },
+  {
+    "domain": "Academic Paper Pipeline",
+    "file": "academic-paper-pipeline.md",
+    "count": 4,
+    "bytes": 871
+  },
+  {
+    "domain": "Medical Imaging & Digital Pathology",
+    "file": "medical-imaging-digital-pathology.md",
+    "count": 4,
+    "bytes": 915
+  },
+  {
+    "domain": "Clinical Documentation & Decision Support",
+    "file": "clinical-documentation-decision-support.md",
+    "count": 3,
+    "bytes": 884
+  },
+  {
+    "domain": "Data Management & Infrastructure",
+    "file": "data-management-infrastructure.md",
+    "count": 3,
+    "bytes": 792
+  },
+  {
+    "domain": "Decision & Scenario Analysis",
+    "file": "decision-scenario-analysis.md",
+    "count": 3,
+    "bytes": 805
+  },
+  {
+    "domain": "Document Processing & Conversion",
+    "file": "document-processing-conversion.md",
+    "count": 3,
+    "bytes": 763
+  },
+  {
+    "domain": "Materials Science & Chemistry",
+    "file": "materials-science-chemistry.md",
+    "count": 3,
+    "bytes": 738
+  },
+  {
+    "domain": "Neuroscience & Electrophysiology",
+    "file": "neuroscience-electrophysiology.md",
+    "count": 3,
+    "bytes": 795
+  },
+  {
+    "domain": "Workflow Platforms & Cloud Execution",
+    "file": "workflow-platforms-cloud-execution.md",
+    "count": 3,
+    "bytes": 789
+  },
+  {
+    "domain": "Electronic Lab Notebooks (ELN)",
+    "file": "electronic-lab-notebooks-eln.md",
+    "count": 2,
+    "bytes": 636
+  },
+  {
+    "domain": "Laboratory Automation",
+    "file": "laboratory-automation.md",
+    "count": 2,
+    "bytes": 659
+  },
+  {
+    "domain": "Phylogenetics & Evolutionary Biology",
+    "file": "phylogenetics-evolutionary-biology.md",
+    "count": 2,
+    "bytes": 642
+  },
+  {
+    "domain": "Proteomics & Mass Spectrometry",
+    "file": "proteomics-mass-spectrometry.md",
+    "count": 2,
+    "bytes": 518
+  },
+  {
+    "domain": "Regulatory & Standards Evidence Preparation",
+    "file": "regulatory-standards-evidence-preparation.md",
+    "count": 2,
+    "bytes": 709
+  },
+  {
+    "domain": "Tool Discovery & Computational Resources",
+    "file": "tool-discovery-computational-resources.md",
+    "count": 2,
+    "bytes": 668
+  },
+  {
+    "domain": "Web Search & Information Retrieval",
+    "file": "web-search-information-retrieval.md",
+    "count": 2,
+    "bytes": 602
+  },
+  {
+    "domain": "Agent Frameworks",
+    "file": "agent-frameworks.md",
+    "count": 1,
+    "bytes": 378
+  },
+  {
+    "domain": "Autonomous Research & Optimization Frameworks",
+    "file": "autonomous-research-optimization-frameworks.md",
+    "count": 1,
+    "bytes": 451
+  },
+  {
+    "domain": "Cloud Platforms for Genomics & Biomedical Data",
+    "file": "cloud-platforms-for-genomics-biomedical-data.md",
+    "count": 1,
+    "bytes": 483
+  },
+  {
+    "domain": "Healthcare AI & Clinical Machine Learning",
+    "file": "healthcare-ai-clinical-machine-learning.md",
+    "count": 1,
+    "bytes": 456
+  },
+  {
+    "domain": "Laboratory Automation & Equipment Control",
+    "file": "laboratory-automation-equipment-control.md",
+    "count": 1,
+    "bytes": 458
+  },
+  {
+    "domain": "Laboratory Information Management Systems (LIMS) & R&D Platforms",
+    "file": "laboratory-information-management-systems-lims-r-d-platforms.md",
+    "count": 1,
+    "bytes": 503
+  },
+  {
+    "domain": "Microscopy & Bio-image Data",
+    "file": "microscopy-bio-image-data.md",
+    "count": 1,
+    "bytes": 458
+  },
+  {
+    "domain": "Pharmacology & Pharmacometrics",
+    "file": "pharmacology-pharmacometrics.md",
+    "count": 1,
+    "bytes": 453
+  },
+  {
+    "domain": "Preclinical Research & Animal Welfare",
+    "file": "preclinical-research-animal-welfare.md",
+    "count": 1,
+    "bytes": 483
+  },
+  {
+    "domain": "Protocol Management & Sharing",
+    "file": "protocol-management-sharing.md",
+    "count": 1,
+    "bytes": 472
+  },
+  {
+    "domain": "Uncategorized",
+    "file": "uncategorized.md",
+    "count": 1,
+    "bytes": 434
+  }
+]

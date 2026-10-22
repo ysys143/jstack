@@ -1,0 +1,154 @@
+---
+name: image-generation
+description: "Generate or edit images; not SVG diagrams. Triggers: 이미지 생성, 이미지 편집."
+---
+
+# Image — generation and editing
+
+## Two paths
+
+| Path | Role | Requirements | When |
+|---|---|---|---|
+| **codex** | `기본` | None; already authenticated | `상시` |
+| **nanobanana** | `선택` | Google API key (`GEMINI_API_KEY`) | `조건:` Direct argument control over aspect ratio, resolution, or input-image editing is required |
+
+The role and timing columns are declarations with fixed pairings, not free-form prose.
+
+| Role | When | Meaning |
+|---|---|---|
+| `기본` | `상시` | Always available without preparation; exactly one row |
+| `선택` | Starts with `조건:` | Only when prerequisites and the stated condition hold |
+
+Mismatched pairs violate the contract. Combining `기본` with `조건:`, or `선택`
+with `상시`, makes the document self-contradictory and routing unreliable.
+
+Codex is the default because it needs no additional preparation. Users can use it
+as soon as the plugin is installed. Nanobanana requires each user to obtain and
+manage a Google API key, so it remains optional.
+
+## Path 1: codex (default)
+
+```
+codex exec --sandbox workspace-write --skip-git-repo-check \
+  '<prompt>. Save the result to <path>.png and print only the saved path on the final line.'
+```
+
+Measurement (2026-08-29): requesting bold Korean text "조달" on a white background
+produced a 1254×1254 PNG with correct glyph shapes. This is recorded because image
+models often mishandle Korean. Longer text can still break; visually inspect results.
+
+- Without `--sandbox workspace-write`, files cannot be written.
+- Outside a Git repository, `--skip-git-repo-check` is required.
+- Codex generates under `~/.codex/generated_images/` and copies to the requested path.
+
+Limitations: aspect ratio, seed, and upscaling cannot be passed as direct arguments.
+They depend on prompt interpretation, reducing control over fixed specifications.
+
+## Path 2: nanobanana (Google API key required)
+
+This calls the Gemini image model directly through REST. Without a key, this path
+is unavailable.
+
+```
+python3 ${JSTACK_PLUGIN_ROOT}/skills/image/scripts/nanobanana.py <prompt> [options]
+```
+
+`references/cli.md` lists arguments. The prompt is positional, not `--prompt`;
+input images use `-i/--image`.
+
+### Setup guidance for users without a key
+
+Each user must obtain and configure their own key. The plugin does not include
+one. Do not share another person's key: their account receives the charges, and
+exposure broadens the scope of revocation.
+
+1. Create a key at Google AI Studio (https://aistudio.google.com/apikey). A Google
+   account is required, and usage is billed to that account.
+2. Configure it using one of the following; the script reads them in this order.
+
+```
+# Recommended: a home-directory file applies across projects.
+mkdir -p ~/.claude
+printf 'GEMINI_API_KEY=YOUR_ISSUED_KEY\n' > ~/.claude/.env.nanobanana
+chmod 600 ~/.claude/.env.nanobanana
+```
+
+```
+# Alternatively, a shell environment variable.
+export GEMINI_API_KEY=YOUR_ISSUED_KEY
+```
+
+The working directory's `.env` overrides the home configuration. The script loads
+`~/.claude/.env.nanobanana` first, then the local `.env` with override enabled
+(`scripts/nanobanana.py:16-17`). A project `.env` containing a different
+`GEMINI_API_KEY` wins. Check this first if the wrong key is selected.
+
+3. Never place keys in the repository. Ignore `.env` files. If a key was committed,
+   removing it from history is insufficient: revoke and replace it immediately.
+4. The user installs dependencies; the image skill does not install them on their behalf.
+
+```
+uv pip install -r ${JSTACK_PLUGIN_ROOT}/skills/image/requirements.txt
+```
+
+5. Verify availability.
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/image/scripts/probe_backends.js
+```
+
+`nanobanana: 사용 가능` indicates availability. The same line identifies the key
+source; verify which file is used.
+
+Choose this path for fixed aspect ratio (`-a 16:9`), resolution (`-s 2K`), editing
+an existing image (`-i`), or resizing inputs (`-r`). It provides direct control for
+fixed-size uses such as slide backgrounds.
+
+## Ownership boundaries
+
+| Target | Owner | What image must not do |
+|---|---|---|
+| Structured diagrams: architecture, flows, and relationships | `diagram` | Rasterize editable lines and labels |
+| Slide typesetting and layout | `deck` | Bake body text into an image |
+| Raster image generation and editing | `image` | — |
+
+Owner names must resolve to real skills. `(미구현)` does not waive existence checks.
+If its named target exists, remove the stale annotation. Otherwise use
+`(미구현 — reason)` to explain its absence. An unexplained `(미구현)` cannot be
+distinguished from an invented destination.
+
+## Phase 0: select a path
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/image/scripts/probe_backends.js
+```
+
+- Both available: choose by requirements; use nanobanana for dimensional control.
+- Only codex: proceed with codex; disclose that exact dimensions may be unavailable.
+- Only nanobanana: use nanobanana.
+- Neither available: stop and explain why. Do not invent a fallback.
+
+## Phase 1: prompt
+
+Use 11 prompt slots (12 for Hero assets). `references/prompts.md` is authoritative
+for names, order, and argument mapping. An omitted slot is filled by model defaults;
+unexpected results often trace to unspecified slots. For procurement assets, fill
+in that reference's assembly example.
+
+- Always inspect Korean text in generated images for broken or invented strokes.
+- Assume grayscale printing for procurement material; low-saturation contrast can vanish.
+- Text-heavy content is better represented as editable slide elements. The `deck` skill owns
+  slide layout. Text embedded in a raster image cannot be edited later.
+
+## Phase 2: inspect
+
+- Do not call the output complete before a person opens it.
+- For distribution, verify resolution and aspect ratio against its intended placement.
+- Copyright and licensing follow provider terms; the image skill provides no guarantee.
+
+## Explicit limitations
+
+- Neither backend is bundled. Codex CLI or a Google API key is required.
+- Structured diagrams and charts belong to `diagram`; route them according to the
+  ownership table because text embedded in images cannot be edited later.
+- If text must remain editable, do not rasterize it.

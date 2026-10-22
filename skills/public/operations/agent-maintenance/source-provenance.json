@@ -1,0 +1,17 @@
+{
+  "source": "~/.agents/skills/agent-maintenance",
+  "snapshot": "2026-09-14",
+  "mode": "adapted instructions; existing jstack execution engine reused",
+  "source_sha256": {
+    "compatibility.json": "758ab61cb53610ed1e969204c4bfa66cbc3723e969c8cf6d945bffc08a55c3fb",
+    "SKILL.md": "f6ad7ed8e1398490d463067266709457cb8e91411eebc2168e1685d63b230b09",
+    "references/migrate-project-sessions.md": "55249f10404e80428cd104dec50fa3543aeb2a959a6c98ce6b930528042059b7",
+    "references/codex-migrate-project-sessions.md": "d35a72330ea7bf2a7582756f60d86942af0ad800a198efab3d457ff419e73069",
+    "references/claude-profile.md": "1809a0fd41ffc5863c6db194f1966ff4a87aec3dda1bfb5aa0622d11e0e53f53",
+    "references/claude-project-rename.md": "92b18790a2fc148ca6043b964cad3647f88de087fb9a225a31b24a0188b4636d",
+    "references/claude-plugin-ghost-entry-cleanup.md": "515aa2260ad1171f9a5116cda428b4db99cbe55820b44eef8114d7860acb7c95",
+    "tests/test_migrate.py": "553768a8308be13830eda8f327ff9e705725d96a48b7c35f84f729630bb461b5",
+    "scripts/codex-migrate.py": "81cd075d31b61f0104382e9ef9399e9c5737827a31fc54d7218644dc9d33e315",
+    "scripts/claude-migrate.py": "c9c2ef5d72e7168ad90933acc4f7fb19210ebf5a38641f4bd83ebd28d700a7b8"
+  }
+}

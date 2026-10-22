@@ -1,0 +1,83 @@
+# Verification for migrations
+
+Read at the start of Phase 2, before writing the spec's Decisions and Acceptance
+criteria, when the plan is an uplift, transform, or reimagine of code (table
+below). A schema or data migration alone is not one. The evidence that proves
+such a change correct depends on what the change is allowed to alter, so settle
+that first.
+
+## Name the type before the requirements
+
+| Type | What changes | What stays fixed | Choose when |
+| --- | --- | --- | --- |
+| **Uplift** | Versions on the same stack (e.g. C++11 to C++20) | Language, architecture, behavior | The stack is fine but has fallen behind: end-of-life runtime, unpatched dependencies |
+| **Transform** | Language, frameworks, architecture | Behavior | The stack is the problem and the current behavior is trusted |
+| **Reimagine** | Architecture and behavior | Only what the spec keeps | The behavior itself has to change |
+
+Record the type as a `settled` line in **Decisions**. Left open, it returns later
+as an argument over whether each change is correct: one reader holds behavior
+fixed, another expects the new requirements. If the user cannot settle it now,
+record it in **Assumptions** as `status: assumed | revisit when: <condition>`.
+
+For a reimagine, the spec's User stories and Acceptance criteria are the
+behavioral spec; do not start a second document. Record the users' agreement to
+it as a `settled` line in **Decisions** before any check is written against it.
+
+## Inventory current behavior
+
+For a transform or reimagine, extract what the current code actually does, with
+source citations, before deciding what to keep, change, or drop. A behavior
+nobody listed is neither kept nor dropped by decision, and it is the usual
+source of regressions. Each kept behavior becomes an Acceptance criterion with
+its citation; each change or drop becomes a `settled` line in **Decisions**
+whose answer is keep, change, or drop. Code reading misses behavior that lives
+in operations and data, so ask the people who run and use the system about what
+the code does not show.
+
+## Pick evidence by type
+
+| Type | Compare against | Core evidence |
+| --- | --- | --- |
+| **Uplift** | The current codebase | The original test suite passes on the new version; the build and type checks are clean |
+| **Transform** | The current codebase | The same inputs give the same outputs on old and new (recorded or replayed production traffic, generated inputs); persisted state and wire formats round-trip between versions. The original suite rarely runs on the new stack |
+| **Reimagine** | The spec | Tests written from the Acceptance criteria; an independent review of each change against them; old-versus-new comparison only where the spec keeps a behavior |
+
+For every type, the checks the project's CI already runs, such as static
+analysis and security scans, show no new findings, and performance stays within
+a bound recorded in **Constraints**. A reimagine depends most on judgment,
+because a spec is less exact than a running system. Expect its checks to change
+as the spec is clarified; gaps in the spec surface here first.
+
+## Bind the evidence
+
+- With a contract, make a condition a `검증` item only when the project has a
+  real command for it, as the pre-mortem's binding rule requires. For an
+  old-versus-new comparison, the `반증` command alters one recorded output in
+  the `{RED_ROOT}` copy, and the comparison must then fail.
+- Bind the independent review of a reimagine as an additional `cold-read`
+  review on that requirement: the reviewer reads the change and the spec's
+  Acceptance criteria without the conversation. Until a reviewer result is
+  recorded, that requirement stays open.
+- When the evidence does not exist yet (thin tests, flaky tests, no replay
+  harness, no recorded traffic), building it is a separate task with its own
+  contract. Write the migration's `검증` items after the harness exists, because
+  the contract is immutable once initialized.
+- Without a contract, put the same evidence in the spec's Acceptance criteria,
+  and bind each human check to a gate that must pass before the stage it
+  protects, with a named owner.
+- Ask the people who will approve the changes whether they would merge on this
+  evidence alone. For each item where they would not, record what they need.
+  With a contract, set `인간검토: 필요` on it; without one, bind it to a gate as
+  above.
+
+## Before scaling the run
+
+Follow "Pilot before scaling" in the parallel-execution support skill
+(`skills/support/parallel-execution/references/team-examples.md`, Example 5). Record what the pilot could not
+observe in **Assumptions** as `status: assumed | revisit when: <condition>`.
+Run the [pre-mortem](pre-mortem.md) under the trigger in SKILL.md; a migration
+about to execute meets it. Without a contract, run it before execution anyway.
+This reference chooses the evidence, and the pre-mortem finds the ways
+carrying out the plan can still fail.
+
+Source: [Anthropic, How to prepare for AI-driven code modernization projects, 2026-09-23](https://claude.com/blog/how-to-prepare-for-ai-driven-code-modernization-projects).

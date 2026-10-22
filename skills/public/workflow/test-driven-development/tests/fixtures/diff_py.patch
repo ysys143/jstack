@@ -1,0 +1,9 @@
+diff --git a/src/calc.py b/src/calc.py
+index 1111111..2222222 100644
+--- a/src/calc.py
++++ b/src/calc.py
+@@ -9,0 +10,4 @@ def add(a, b):
++def sub(a, b):
++    if a < b:
++        return 0
++    return a - b

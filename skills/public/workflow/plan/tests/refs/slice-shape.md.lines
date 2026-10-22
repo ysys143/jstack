@@ -1,0 +1,86 @@
+# blob:7cd60dd99fa3fb5bde291e1eb4036a7b453ebaef
+# Slice shape — telling a vertical slice from a horizontal layer
+## What this file is for
+`tdd` says how to **cut** a slice. This file says how to **recognise** that the
+work already underway was cut the wrong way. The two are different jobs and they
+happen at different moments: cutting happens before anything is written, and
+recognising happens when three files are open, the branch is half done, and the
+question is whether to keep going.
+Phase 3 of `plan` reads this file. So does the mid-course re-entry — the moment
+you have been deep in an implementation and no longer know whether it still fits
+the whole.
+## The two shapes
+| | Horizontal layer | Vertical slice |
+|---|---|---|
+| What one step finishes | **a level** — every model, every handler | **a behaviour** — one path end to end |
+| What runs at the end of step one | nothing a user can reach | one thing a user can reach |
+| When the design error shows up | at integration, after all the steps | inside the step, immediately |
+| What a failed step costs | the layers below it are already built on it | one slice |
+| What it looks like on a plan | orderly, symmetric, easy to estimate | uneven, lumpy, hard to estimate |
+**A horizontal layer finishes a level; a vertical slice finishes a behaviour.**
+That is the whole distinction, and every test below is a way of asking it about
+a plan that does not announce which one it is.
+## The antipattern in the form it actually appears
+The horizontal plan is not caught by looking at it, because it looks like order.
+```
+[X] Phase 1: define every model
+Phase 2: implement all service logic
+Phase 3: implement every API endpoint
+```
+```
+[O] Slice 1: retrieve an empty list — happy path
+Slice 2: create one item (e2e)
+Slice 3: update an item
+Slice 4: error handling and edge cases
+```
+The left one is easier to defend in a review: the steps are the same size, the
+dependencies point one way, nobody has to argue about which behaviour comes
+first. That is exactly why it survives. **Ask what runs at the end of step one.**
+If the answer is "nothing yet, but the next step needs it", the plan is
+horizontal no matter how it is labelled.
+## Four judgments
+Run all four. Each one catches a different drift, and three of them pass
+comfortably on work that the fourth condemns.
+| Axis | Ask | The drift it catches |
+|---|---|---|
+| **Pattern consistency** | Does something similar already exist here, and does this follow it? | A second way of doing what the repository already does one way |
+| **Complexity** | Is this more machinery than the problem has? | Abstraction built for a case that has not arrived |
+| **Boundaries** | Is this code in the right layer, and is the responsibility split where the layer says? | Logic that migrated into whichever file was open |
+| **Missing patterns** | Which existing patterns — error handling, logging, types — is this not using? | Reinvention that reads as new work |
+Complexity and boundaries pull against each other on purpose. Cutting machinery
+tends to collapse layers, and respecting layers tends to add machinery; if both
+axes are comfortable at once, at least one of them was not actually asked.
+## Reporting
+Three categories, in this order. The order matters: a report that opens with
+problems gets read as a verdict on the author, and a re-entry check that reads
+as a verdict does not get run again.
+```
+[OK] What works well:
+- ...
+[WARN] What needs improvement:
+- [problem] -> [proposal]
+[REVIEW] What needs reconsideration:
+- [current approach] vs [alternative]
+Reason: ...
+```
+`[WARN]` items carry a proposal or they are not findings. `[REVIEW]` items carry
+a named alternative and a reason, because "this feels wrong" is not something
+the next person can act on.
+## Four actions
+One of these, chosen explicitly, ends the check.
+| Action | When |
+|---|---|
+| **Continue** | The direction holds. Say so — a check that only ever finds problems stops being run |
+| **Refactor, then continue** | The shape is right and one part drifted |
+| **Recut the slices** | Step one finishes a level rather than a behaviour |
+| **Back to Phase 1** | The whole approach conflicts with a pattern the repository already committed to |
+Recutting is cheaper than it looks, and it gets more expensive every slice. The
+horizontal plan's cost is paid at integration, which is after the point where
+recutting is still an option.
+## What this file does not settle
+- **Whether the requirement is right.** This is a shape check, not a review of
+what was asked for. A perfectly vertical slice of the wrong feature passes.
+- **How small a slice should be.** Sizing is judgment; the only rule here is
+that each finished slice adds one thing that runs.
+- **Whether an abstraction is premature.** It forces the question and records
+the answer. The answer is the author's, and it belongs in the spec.

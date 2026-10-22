@@ -1,0 +1,177 @@
+# Test selection
+
+Running only the tests a change can reach is often the first idea for a slow
+suite and, in practice, often the least effective. In this skill, selection
+chooses the **affected checks** for local feedback (Phase 1 of SKILL.md); the
+repository's required gate still runs everything. Numbers and sources:
+[test evidence](test-evidence.md).
+
+## What to expect
+
+- **Tests selected is not time saved.** Fixed overhead (build, install, startup)
+  stays, so a selector that picks a third of the tests can leave most of the
+  build time. Selection pays mainly for suites longer than about one to two
+  minutes and once setup is cached; below that, analysis and collection can make
+  it slower.
+- **Hub modules select everything.** A shared store, database layer, barrel
+  `index.ts`, `__init__.py`, lock file, or root configuration reaches almost every
+  test. Expect this in application code; one reported case selected 56 of 59 and
+  54 of 61 files for a three-commit diff. Break up the hub or prune on top.
+- **Coarse dependencies beat fine ones end to end.** File or class level
+  dependencies cost less than method or statement level analysis and save more;
+  hybrids add little. Use method-level precision only for very expensive tests.
+- **Static analysis misses dynamic dependencies** (reflection, dynamic
+  `import()`, dynamic typing, process and language boundaries) and non-code inputs
+  (configuration, fixtures, templates, environment variables). Production
+  selectors for dynamic languages trace file access at run time. Non-code inputs
+  are the main source of misses in practice.
+- **The unit of recall is the faulty change**, not each failing test. Most runs
+  pass, and many "misses" are flaky tests; selection also keeps people from
+  chasing failures unrelated to their change.
+- **Every serious deployment keeps a complete run** after merge, nightly, or every
+  Nth build. Selection tools have bugs of their own and can break coverage
+  reports.
+- **The alternative is guessing.** Developers' manual picks differ from tools and
+  are often too narrow. An agent picking tests by intuition is the same; use a
+  tool or the dependency evidence the repository already records.
+- **Simple history beats elaborate learning.** Recently failed, not run lately,
+  and new tests are a strong, cheap signal; learned rankers help mainly when well
+  trained and are hard to reproduce.
+
+## Decide
+
+| Situation | Do |
+|---|---|
+| Complete suite about two minutes or less after removing waits and parallelizing | Selection saves little; running all tests locally is an acceptable affected set |
+| Monorepo with many packages | Package or target level affected runs (Nx, Turborepo, Bazel, Pants) before merge; complete run after merge |
+| Large JVM or .NET module | File or class level dynamic selection (Ekstazi, Azure Test Impact Analysis) |
+| JavaScript or TypeScript package | Module graph selection (`jest --findRelatedTests`, `vitest related`) with rerun-everything triggers for configuration |
+| Python | Coverage-based selection (`pytest --testmon`) |
+| Dynamic language at scale | Run-time file access tracing |
+| Safe set still too large at scale | Machine-learned or heuristic pruning on top (Develocity Predictive Test Selection, Launchable) with the rest after merge |
+
+Safety by stage:
+
+| Stage | Selection allowed |
+|---|---|
+| Local edits and agent iterations | Unsafe selection is acceptable when a later stage runs the rest; aim to catch the faulty change |
+| Pull request | The affected package or target set, optionally pruned by history or a time budget |
+| Merge gate, main branch, release | Safe selection at minimum; the complete suite runs before release |
+
+Always include tests that failed recently, new or changed test files, quarantine
+awareness, and a small must-run smoke set. Treat lock files, root or CI
+configuration, test infrastructure, and unknown file types as run-everything
+triggers.
+
+Combine selective and complete runs:
+
+1. Local or agent loop: watch mode or a related-tests mode.
+2. Pull request: the affected set, optionally pruned.
+3. After merge or on a schedule: the remaining tests or the complete suite, with
+   commits batched and failures bisected automatically.
+4. Periodically (every N builds or nightly): a complete run that rebuilds
+   dependency maps and catches selector bugs.
+5. Before trusting a selector, run it in **shadow mode** for a while: compute the
+   selected set, run the complete suite anyway, and measure how many faulty
+   changes the selected set would have missed and the end-to-end time, not the
+   selection ratio. Inject faults to check safety.
+
+Order the selected set so failures appear early: tests that failed recently
+first, then new or changed tests, then the fastest (`pytest --ff --nf`; Jest
+orders by previous failures and duration; `rspec --only-failures`,
+`--next-failure`; Bazel reruns previously failed tests first). Most runs pass, so
+the useful measure is the time to the first failure. With many workers, pack
+units longest first to finish sooner and still put recently failed units at the
+front. Fail fast locally (`-x`, `--bail`, `-failfast`) but never in the merge
+gate. Under a fixed time budget, run the historically failing and high-risk tests
+first.
+
+## Reduce, batch, and queue
+
+- **Suite minimization** permanently drops tests judged redundant. Coverage
+  equivalence is not fault-detection equivalence: coverage-based reduction lost up
+  to a fifth of killed mutants. Minimize by mutants if at all, keep the complete
+  suite running somewhere, and never apply minimization or unsafe selection at a
+  merge gate that must not miss failures. Prefer parallelism, caching, and
+  batching.
+- **Batching with bisection** runs several commits together and bisects a
+  failure; it missed none of the failures that selection missed and kept feedback
+  time with far fewer machines. Use it when most builds pass.
+- **A merge queue** keeps the main branch green once many pull requests land per
+  day; serial queues do not scale.
+
+## Tools
+
+**JavaScript and TypeScript**
+
+- Jest: `--findRelatedTests <files>` (suited to pre-commit hooks),
+  `--changedSince=origin/main`, `-o` or `--onlyChanged` (uncommitted; needs git or
+  hg and a static dependency graph), `--lastCommit`, `--passWithNoTests` when
+  nothing is selected.
+- Vitest: `vitest related --run src/a.ts`, `vitest --changed origin/main` (static
+  imports only, not `import(path)`); `forceRerunTriggers` defaults to
+  `package.json` and the Vitest and Vite configuration, and a match runs the whole
+  suite.
+- Nx: `npx nx affected -t test --base=origin/main --head=HEAD` (or `NX_BASE` and
+  `NX_HEAD`); a lock file change marks every project affected unless
+  `projectsAffectedByDependencyUpdates: "auto"`; `nx graph --affected` shows the
+  set; use the last successful main commit as the base.
+- Turborepo: `npx turbo run test --affected` (base through `TURBO_SCM_BASE` and
+  `TURBO_SCM_HEAD`), `--filter=...[HEAD^1]`; shallow clones can mark everything
+  changed, so fetch history (`git fetch --filter=blob:none --depth=0`);
+  `futureFlags.affectedUsingTaskInputs` filters by task inputs.
+- Custom: walk the import graph from each test file and check whether it reaches a
+  changed file; add tests that read changed files by path; treat tests that scan
+  whole directories as affected by any change there.
+
+**Python**
+
+- `pytest --testmon` (coverage-based, stores `.testmondata`); `--testmon-noselect`
+  only reorders, `--testmon-nocollect` selects without updating data,
+  `--testmon-forceselect` combines with `-k` or markers, `--testmon-env` keeps
+  data per environment. It tracks Python code, environment variables, and the
+  Python and package versions, but not non-Python files or external services.
+- `pants --changed-since=$(git merge-base HEAD origin/main) --changed-dependents=transitive test`;
+  a lock file or requirements change marks every user of any dependency.
+- Eager imports in `__init__.py` widen file-level dependencies.
+
+**JVM**
+
+- STARTS: `mvn starts:starts` (select and run), `starts:select`, `starts:impacted`,
+  `starts:diff`, `starts:clean`.
+- Ekstazi: Maven or JUnit dynamic class-level selection; newer JDKs need extra
+  flags such as `-Djdk.attach.allowAttachSelf=true`.
+- OpenClover: `mvn clover:setup clover:optimize test clover:snapshot`;
+  `fullRunEvery` defaults to 10.
+- Develocity Predictive Test Selection: `./gradlew test -Dpts.enabled=true` or
+  `mvn -Dpts.enabled=true test`; `-Dpts.profile=FAST|STANDARD|CONSERVATIVE`,
+  `-Dpts.mode=REMAINING_TESTS` after merge, and a `mustRun` list for sanity
+  tests.
+- Launchable: `launchable subset --build $B --confidence 90%` (or `--time 10m`,
+  `--target 20%`).
+
+**.NET**: Azure Pipelines VSTest "Run only impacted tests" (Test Impact
+Analysis); `DisableTestImpactAnalysis=true` forces a complete run,
+`TIA_IncludePathFilters` scopes paths, `TIA.UserMapFile` supplies a custom map.
+
+**Go**: the test cache already skips unchanged packages (`go test ./...` prints
+`(cached)`) when the binary, cacheable flags, and the files and environment
+variables the tests read are unchanged; `-count=1` bypasses it for a complete
+gate. Keep the build cache warm in CI. Reverse dependencies:
+`go list -f '{{.ImportPath}} {{join .Deps " "}}' ./...`, then invert.
+
+**Bazel**: `bazel query 'kind(test, rdeps(//..., //pkg:changed_target))'` (an
+optional depth gives distance cutoffs); bazel-diff hashes the target graph at two
+revisions (`generate-hashes`, then `get-impacted-targets`) and feeds
+`bazel test`; `bazel test` caches unchanged results.
+
+**Rust**: no stock selection; cargo-difftests (nightly, coverage-based,
+experimental): `cargo difftests collect-profiling-data --compile-index` then
+`rerun-dirty-from-indexes`.
+
+## Limits of an affected run
+
+An affected run is local feedback, not completion evidence for the whole
+repository. Patches that pass the modified test files can still fail the complete
+suite. State which scope ran, and leave the complete run to the required gate or
+run it when the change crosses a shared contract.

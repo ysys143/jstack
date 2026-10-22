@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: hwpx-format-units-recall
+description: Can it reproduce the HWPX internal unit constants and A4 dimensions exactly?
+runs: 5
+tags: [discriminating, hwpx, ablation-discriminating]

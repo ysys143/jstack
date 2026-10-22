@@ -1,0 +1,501 @@
+# Orchestrator Command Template
+
+Template for commands that coordinate multiple agents, tools, or workflows.
+
+## Purpose
+
+Orchestrator commands manage complex multi-stage pipelines, delegating work to specialized agents and coordinating results.
+
+## Template
+
+```markdown
+# {Command Name}
+
+Orchestrate {workflow} across multiple stages/agents.
+
+## Usage
+
+/plugin-name:command-name [args]
+
+## Workflow
+
+This command coordinates:
+1. **{Stage 1}**: {Description} (via {agent/tool})
+2. **{Stage 2}**: {Description} (via {agent/tool})
+3. **{Stage 3}**: {Description} (via {agent/tool})
+4. **{Final Stage}**: {Description}
+
+## Instructions
+
+You are an orchestrator command for {workflow}.
+
+### Phase 1: Initialization
+
+Set up the workflow:
+
+```
+[INFO] Starting {workflow}
+
+Workflow stages: {N}
+Target: {target}
+Mode: {mode}
+```
+
+Initialize state:
+- Working directory: {path}
+- Temp storage: {path}
+- State file: {path}
+
+### Phase 2: Stage Execution
+
+For each stage:
+
+#### Stage {N}: {Stage Name}
+
+**Purpose**: {What this stage does}
+**Agent/Tool**: {Who handles it}
+**Input**: {What it receives}
+**Output**: {What it produces}
+
+```
+[Stage {N}/{Total}] {Stage name}
+
+[INFO] {Action being performed}
+```
+
+**Delegate to Agent** (if needed):
+```
+Task(
+    subagent_type="oh-my-claudecode:{agent}",
+    model="{haiku|sonnet|opus}",
+    prompt="{Specific task for agent}"
+)
+```
+
+**Or Execute Directly**:
+```
+[INFO] {Action}
+{Tool calls or bash commands}
+```
+
+**Capture Result**:
+```
+Result:
+- Status: [SUCCESS|FAILURE]
+- Output: {summary}
+- Artifacts: [{file1}, {file2}]
+```
+
+**Handle Errors**:
+```
+IF stage failed:
+  - Log error
+  - Decide: [Retry|Skip|Abort]
+  - If Abort: Clean up and exit
+```
+
+#### Stage {N+1}: {Stage Name}
+
+[Repeat for each stage]
+
+### Phase 3: Result Aggregation
+
+Combine results from all stages:
+
+```
+[INFO] Aggregating results...
+
+## Workflow Summary
+
+Stage 1: {Status} - {Summary}
+Stage 2: {Status} - {Summary}
+Stage 3: {Status} - {Summary}
+
+Overall: [SUCCESS|PARTIAL|FAILURE]
+```
+
+### Phase 4: Post-Processing
+
+Final workflow tasks:
+
+```
+[INFO] Post-processing...
+
+- Cleaning temp files
+- Updating indexes
+- Generating reports
+- Notifying hooks
+```
+
+### Phase 5: Report
+
+Final report:
+
+```
+[OK] {Workflow} complete!
+
+## Results
+
+{Stage 1}:
+- {Artifact 1}
+- {Artifact 2}
+
+{Stage 2}:
+- {Artifact 3}
+
+## Metrics
+
+- Total time: {duration}
+- Stages: {succeeded}/{total}
+- Files created: {count}
+
+## Next Steps
+
+1. {Action 1}
+2. {Action 2}
+```
+
+## State Management
+
+### Workflow State
+
+```json
+{
+  "workflow": "{name}",
+  "status": "in_progress|completed|failed",
+  "current_stage": {N},
+  "stages": [
+    {
+      "name": "{stage1}",
+      "status": "pending|running|completed|failed",
+      "start_time": "{timestamp}",
+      "end_time": "{timestamp}",
+      "result": {}
+    }
+  ],
+  "artifacts": []
+}
+```
+
+### Save State
+
+```
+[INFO] Saving state to {state_file}
+```
+
+### Resume Capability
+
+```
+[INFO] Previous run detected
+
+Completed stages: {list}
+Resume from: Stage {N}
+
+Resume? [Yes/No]
+```
+
+## Agent Coordination
+
+### Parallel Execution
+
+When stages are independent:
+
+```
+[INFO] Executing stages in parallel
+
+Stage {X} -> Agent {A}
+Stage {Y} -> Agent {B}
+Stage {Z} -> Agent {C}
+
+[Waiting for all to complete...]
+```
+
+### Sequential Execution
+
+When stages depend on previous:
+
+```
+Stage 1 -> Result A
+  |
+  v
+Stage 2 (uses Result A) -> Result B
+  |
+  v
+Stage 3 (uses Result B) -> Final
+```
+
+### Conditional Execution
+
+Based on results:
+
+```
+Stage 1:
+  IF result = "X" -> Stage 2A
+  ELSE -> Stage 2B
+
+Stage 2A -> Stage 3
+Stage 2B -> Stage 3
+```
+
+## Error Handling
+
+### Stage Failure
+
+```
+[FAIL] Stage {N} failed
+
+Stage: {stage name}
+Error: {error message}
+
+Options:
+1. Retry stage
+2. Skip stage (if optional)
+3. Abort workflow
+
+Choose: {default based on severity}
+```
+
+### Retry Logic
+
+```
+[WARN] Stage {N} failed, retrying...
+
+Attempt {M} of {max_retries}
+
+[Retry with exponential backoff]
+```
+
+### Rollback
+
+```
+[FAIL] Workflow failed at Stage {N}
+
+Rolling back:
+- Stage {N}: {rollback action}
+- Stage {N-1}: {rollback action}
+
+[OK] Rolled back to clean state
+```
+
+## Progress Tracking
+
+### Progress Indicators
+
+```
+[Stage 1/5] Analyzing codebase... [OK] (2.3s)
+[Stage 2/5] Extracting patterns... [OK] (1.8s)
+[Stage 3/5] Generating code... [IN PROGRESS]
+```
+
+### Estimated Time
+
+```
+[INFO] Estimated time remaining: {duration}
+
+Based on:
+- Stage 1: 2.3s
+- Stage 2: 1.8s
+- Remaining: {estimate}
+```
+
+## Examples
+
+### Example 1: Plugin Generation Pipeline
+
+```
+/plugin-name:from-docs "{doc_url}"
+
+[INFO] Starting plugin generation pipeline
+
+[Stage 1/4] Analyzing documentation
+  -> Delegating to researcher agent
+  [OK] Extracted requirements (3.2s)
+
+[Stage 2/4] Designing plugin structure
+  -> Delegating to planner agent
+  [OK] Generated design (5.1s)
+
+[Stage 3/4] Generating files
+  -> Using generator command
+  [OK] Created 7 files (1.4s)
+
+[Stage 4/4] Validating output
+  -> Delegating to validator agent
+  [OK] All checks passed (2.0s)
+
+[OK] Pipeline complete! (11.7s)
+
+Created: /plugins/my-plugin/
+```
+
+### Example 2: Publish Pipeline
+
+```
+/plugin-name:publish
+
+[Stage 1/5] Validating plugin [OK]
+[Stage 2/5] Running tests [OK]
+[Stage 3/5] Building artifacts [OK]
+[Stage 4/5] Creating PR [OK]
+[Stage 5/5] Notifying team [OK]
+
+[OK] Published successfully!
+```
+
+## Configuration
+
+### Pipeline Definition
+
+```json
+{
+  "pipeline": "{name}",
+  "stages": [
+    {
+      "name": "{stage1}",
+      "agent": "{agent-name}",
+      "required": true,
+      "timeout": 30,
+      "retry": 3
+    }
+  ],
+  "parallel": false,
+  "rollback_on_failure": true
+}
+```
+
+### Agent Selection
+
+```json
+{
+  "agents": {
+    "analyze": "oh-my-claudecode:architect",
+    "design": "oh-my-claudecode:planner",
+    "implement": "oh-my-claudecode:executor"
+  },
+  "models": {
+    "analyze": "opus",
+    "design": "opus",
+    "implement": "sonnet"
+  }
+}
+```
+
+## Quality Checklist
+
+- [ ] All stages defined
+- [ ] Dependencies mapped
+- [ ] Error handling for each stage
+- [ ] State management implemented
+- [ ] Progress tracking
+- [ ] Rollback capability
+- [ ] Result aggregation
+- [ ] Final report generated
+
+## Anti-Patterns
+
+### Don't: Monolithic Execution
+
+```
+[INFO] Doing everything...
+[OK] Done!
+```
+
+### Do: Transparent Stages
+
+```
+[Stage 1/3] Analyzing
+[Stage 2/3] Generating
+[Stage 3/3] Validating
+```
+
+### Don't: Silent Failures
+
+```
+Stage 1: [OK]
+Stage 2: [Failed silently]
+Stage 3: [Runs with bad input]
+```
+
+### Do: Explicit Error Handling
+
+```
+Stage 1: [OK]
+Stage 2: [FAIL] - Aborting workflow
+         Reason: {error}
+         Rollback: [OK]
+```
+
+### Don't: No State Tracking
+
+```
+[Workflow runs for 10 minutes]
+[Fails at end]
+[Must restart from beginning]
+```
+
+### Do: Resumable Workflows
+
+```
+[FAIL] at Stage 4/5
+
+State saved: .workflow_state.json
+To resume: {command} --resume
+```
+
+## Related Templates
+
+- [wizard-command-template.md](./wizard-command-template.md) - Interactive workflows
+- [generator-command-template.md](./generator-command-template.md) - File generation
+
+## References
+
+- [Command Architecture](../organizational-guides/command-architecture.md)
+- [Agent Architecture](../organizational-guides/agent-architecture.md)
+```
+
+## Customization
+
+### 1. Define Pipeline
+
+Map out the workflow:
+- What stages are needed?
+- What's their order?
+- What are dependencies?
+- What can run in parallel?
+
+### 2. Choose Agents
+
+For each stage:
+- Can I do it directly?
+- Should I delegate to agent?
+- Which agent is best?
+- What model tier?
+
+### 3. Handle Failures
+
+For each stage:
+- What can go wrong?
+- Is it recoverable?
+- Should I retry?
+- Can I continue without it?
+
+### 4. Track State
+
+What needs to persist:
+- Intermediate results
+- Progress status
+- Artifacts created
+- Errors encountered
+
+## Implementation Tips
+
+1. **Start simple**: Get basic pipeline working first
+2. **Add parallelization**: Optimize after it works sequentially
+3. **Log everything**: Debug complex workflows is hard
+4. **Test failure cases**: Rollback logic is critical
+5. **Show progress**: Long workflows need feedback
+
+## References
+
+- [Command Architecture](../organizational-guides/command-architecture.md)
+- [Agent Architecture](../organizational-guides/agent-architecture.md)

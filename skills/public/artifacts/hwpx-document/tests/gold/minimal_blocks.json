@@ -1,0 +1,42 @@
+[
+  {
+    "type": "heading",
+    "level": 1,
+    "rows": null
+  },
+  {
+    "type": "heading",
+    "level": 2,
+    "rows": null
+  },
+  {
+    "type": "heading",
+    "level": 3,
+    "rows": null
+  },
+  {
+    "type": "paragraph",
+    "level": null,
+    "rows": null
+  },
+  {
+    "type": "list_item",
+    "level": null,
+    "rows": null
+  },
+  {
+    "type": "numbered_item",
+    "level": null,
+    "rows": null
+  },
+  {
+    "type": "table",
+    "level": null,
+    "rows": 2
+  },
+  {
+    "type": "code",
+    "level": null,
+    "rows": null
+  }
+]

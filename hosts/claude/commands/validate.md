@@ -1,0 +1,66 @@
+---
+description: Validate deliverables against their contracts
+---
+
+# /validate — Check the deliverable
+
+## What it validates
+
+Choose the validator from the **deliverable type**. The creating skill does not
+matter; compliance with the file's contract determines the result.
+
+| Target | Validator | Checks |
+|---|---|---|
+| `.hwpx` | `skills/hwpx/scripts/validate_hwpx.py --semantic` | ZIP structure, mimetype position, styleIDRef integrity, and table width |
+| `.svg` `.html` (diagram) | `skills/diagram/scripts/verify-geometry.js` | Whether label masks are clipped by nodes |
+| `.md` (report) | `skills/research/scripts/cite_check.js` | Integrity of **every** citation and source pair |
+| `.md` + requirements | `skills/research/scripts/coverage_matrix.js` | Missing requirements and inadequate responses |
+| Text | `skills/proof/scripts/korean_character_count.js` | Character count and NEIS bytes |
+| `.docx` `.pptx` `.xlsx` | `skills/office/scripts/check_cjk_font.js` | East Asian font (`<a:ea>`) declarations |
+| `.md` (proposal body) | `humanize` checks | AI tells and procurement register |
+
+## Run
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate.js" <file> [<file>...]
+```
+
+Pass a requirements list to inspect requirement mapping.
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate.js" --req rfp.txt deliverables/proposal.md
+```
+
+## What machines can and cannot measure
+
+Validators check **format and referential integrity**. They cannot determine:
+
+- whether a source supports a statement, which requires reading comprehension;
+- whether a response satisfies a requirement, which requires judgment;
+- whether a diagram makes sense, because the validator checks only geometry.
+
+Therefore, `cite_check` and `coverage_matrix` emit **every** pair that requires
+judgment (`--pairs`), rather than a sample. Validation includes having a person
+or LLM read those pairs.
+
+## Exit codes
+
+- `0` — all checks passed
+- `1` — at least one check failed
+- `2` — a validator could not run because a tool is missing; use `/doctor`
+
+## Distinguish the two validation layers
+
+The `scripts/validate.js` invoked here validates **deliverables**, checking
+contracts such as citations, fonts, and character counts.
+
+The plugin's own **contract suites** use a different script.
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js"
+```
+
+It runs every discovered skill suite plus the root `tests/` suites, then
+checks measured floors, harness behavior, and copy parity. Similar names can
+make `validate.sh` look like plugin validation, but neither layer substitutes
+for the other.

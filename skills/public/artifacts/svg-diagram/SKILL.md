@@ -1,0 +1,429 @@
+---
+name: svg-diagram
+description: "Draw and validate SVG architecture or flow diagrams. Triggers: SVG 다이어그램, 흐름도."
+---
+
+# Diagram: structured diagrams
+
+## Current upstream tools and routing
+
+Read `references/upstream-integration.md` when choosing a type, importing an existing
+diagram, applying a brand, or exporting for Office. It connects the pinned v2.6.22
+reference/template library and three import parsers to this workflow. Select the
+matching layout in `references/type-catalog.md`; load only that reference and template.
+The archived upstream SKILL is provenance, not a second active entry point.
+
+**Choose the context before the density budget.** Use `procurement` when the request
+involves an RFP, a proposal with required components, or constrained printed submission;
+use `explanatory` otherwise. The omission test, 20–40-node architecture budget, and
+page-allocation rules below apply to procurement. Explanatory diagrams use the selected
+type's budget and may simplify with a fidelity ledger. Neither context permits silent
+loss of required components or relationships. SVG remains the default; produce an
+HTML deliverable only when the user requests HTML. A template's inline SVG can be
+used without its editorial page wrapper.
+
+## Boundary with the image skill
+
+| | `diagram` | `image` |
+|---|---|---|
+| Output | **SVG** (preserves structure) | PNG (pixels) |
+| Text | **Editable later** | Not editable |
+| Validation | Automated geometry checks | Visual inspection |
+| Use cases | Architecture, flows, relationships | Covers, illustrations, backgrounds |
+
+**Use one criterion: are there relationships between elements?** Use this skill
+when boxes and arrows convey meaning. Use the `image` skill for atmosphere or illustrations.
+
+The distinction matters especially for Korean output. Image models often corrupt
+Korean text, which cannot then be edited. Text remains in an SVG diagram and can be
+**translated, edited, and searched**.
+
+## Phase 0: decide whether to draw
+
+**Do not draw if a table or paragraph does the same job.** If drawing is justified,
+run the **omission test** in `references/taste-gate.md` first: does this diagram omit
+any RFP requirement?
+
+**This reverses upstream's deletion test (what can be removed?).** Removing dispensable
+elements can improve web diagrams, but removing procurement items can omit an
+**RFP response** and cost evaluation points. Count **missing requirements**, not
+removable elements.
+
+**Choose the type before the dials.** The five local placement families (`architecture`,
+`workflow`, `sequence`, `dataflow`, `lifecycle`) each have their own placement grammar.
+Read `references/type-placement.md`. Architecture has one left-to-right spine;
+a workflow's happy path is monotonic; a lifecycle needs **actual transitions**
+for recoverable failures.
+
+For other structural types, use the detailed references in `references/type-catalog.md`.
+Its quantitative chart references belong to the existing dataviz boundary, not a
+claim that the connector validators validate numerical chart semantics.
+
+Once drawing is justified, set three dials **before drafting**
+(`references/output-spec.md`).
+
+| Dial | Choice |
+|---|---|
+| **Size** | Nine presets; consider `print-a4-landscape` (`0 0 1120 792`) first for procurement documents |
+| **Density** | `faithful` ≤24 nodes / `balanced` ≤12 (default) / `simplified` ≤7 |
+| **Audience** | `engineer` / `mixed` / `executive`: controls **wording**, not counts |
+
+A preset couples the `viewBox`, type ramp, and safe area. Export scaling is downstream
+of that choice.
+
+**Complexity budgets depend on the procurement diagram category.** Upstream's standard
+budget (nine nodes, 12 arrows) targets web diagrams. Our three main categories exceed
+it by 2–5 times. In proposals with fixed page allocations, splitting an oversized
+diagram can exceed the page limit or omit requirements and lose points. Exceeding that
+standard budget is therefore not itself a defect.
+
+| Category | Nodes | What determines the count |
+|---|---:|---|
+| Procurement system architecture | **20–40** | RFP requirements |
+| Project organization chart | **15–25** | Proposed organization roster |
+| WBS or schedule | **30–60** | Task decomposition level |
+
+The procurement complexity budget in `references/output-spec.md` is canonical.
+The upper ends also exceed `faithful` density (≤24), so use **zone partitioning**.
+
+**Do not enforce a two-accent-color limit.** Distinguishing nodes with 2–5% opacity
+collapses seven categories into two in grayscale printing. Establish focus through
+**grayscale legibility**: do distinctions remain when color is removed? Combine
+shape, line weight, and labels.
+
+## Phase 1: drafting under six contractual rules
+
+Load `references/connector-rules.md`.
+
+To exclude only legend sample lines, pair the exact markers
+`<!-- verify-connectors:legend:BEGIN -->` and
+`<!-- verify-connectors:legend:END -->`. A generic `Legend` comment has no machine
+meaning. Follow the reference's legend-exclusion rules for pairs, nesting, and orphan markers.
+
+**Start with rule 0: draw arrows before boxes.** Later SVG declarations paint on top,
+so this order puts lines behind nodes. Reversing it defeats rule 6 and **neutralizes
+the validator**: when boxes come first, masks always follow and the validator always
+reports zero findings. Omitting this instruction invalidates the entire check.
+
+The next six rules are mandatory.
+
+In brief: **diagonal connectors automatically fail**; keep 6–10px between labels and
+connectors; prohibit connector overlaps; fan attachments on the same side by ≥12px;
+do not pass behind a third box (exceptions require a dashed line, label placement,
+and arrowhead conditions); do not let label masks overlap nodes drawn later.
+
+**Do not apply these rules from memory.** Open the reference and read its exceptions.
+Rule 5's exception requires all three conditions simultaneously.
+
+## Phase 2: Korean text requires an explicit font stack
+
+**Geist has no CJK coverage, and the Japanese stack lacks Korean glyphs.**
+
+For web-font-backed templates, put `Noto Sans KR` before platform fonts and use
+`Noto Serif KR` for Korean page titles. For offline procurement output, the explicit
+system fallback below still needs the delivery evidence in `references/font-delivery.md`.
+Korean arrow labels, eyebrows, and legends use 12px-or-larger sans at weight 500,
+with no tracking or uppercase transform; resize their masks and rerun width checks.
+
+```svg
+<text font-family="'Geist', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif">인증 서비스</text>
+```
+
+Reusing a Japanese stack (Hiragino/Yu Gothic) for Korean can break all the text.
+
+**Use mixed-script width weights**: full-width 1em, whitespace 0.25em, and Latin 0.55em
+in `scripts/measure_label.js`; Latin 0.6em in `scripts/verify-text-width.js`.
+Multiplying the entire string by one em per full-width character is valid for a
+single Korean syllable but overestimates mixed strings by 20–25%. Oversized masks can
+then violate rule 6.
+
+**The minimum effective size is 10pt**, measured against **final placement width**,
+not pixels (`scripts/check_effective_size.js`). The 12px minimum in `output-spec.md`
+is a separate floor in `viewBox` units and is insufficient by itself: 12px in
+`print-a4-landscape` yields 9.0pt, below 10pt. **Measure both floors and report each
+failure separately.**
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-text-width.js <file>
+```
+
+This validator measures the width budget. It counts full-width characters as two
+units (ported from upstream `textUnits`), estimates advances at **ASCII 0.6em and
+full-width 1em**, respects `text-anchor`, and compares the label's left/right extents
+with the **smallest rectangle containing the anchor point** (label mask or node box).
+Both coefficients are **provisional values based on upstream Geist**, unmeasured
+with Korean fallback fonts (see Limitations). If font size cannot be read, it emits
+`text/unmeasurable` instead of substituting a default. A diagnostic does not
+necessarily mean overflow: that label needs visual inspection.
+
+**Read the final `measured N of M label(s)` line.** Those counts distinguish zero
+findings because labels fit from zero findings because nothing was measured.
+Uncontained text (legends, titles, lane headers) and `text/out-of-scope` labels
+are **unmeasured** and require visual inspection.
+
+**Measure arrow labels in em, not character counts.** Upstream's `<=14 characters,
+all-caps` rule fails for Korean: 14 Korean characters occupy 14em versus 7.7em for
+14 Latin characters, making the same count 1.8 times as wide. `all-caps` is undefined
+for Korean and has been dropped.
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/measure_label.js "인증 서비스 게이트웨이"
+```
+
+**A pixel floor is not a physical size until page placement width is known.** In
+`print-a4-landscape`, 12px yields 9.0pt; at 60–70% of HWP body width it becomes 6pt.
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/check_effective_size.js --media print-a4 --hwp-fraction 0.65 <file>
+```
+
+The 21 medium-specific requirements are in `references/cjk-contract.md`; font
+shipping rules are in `references/font-delivery.md`. Before creating a font subset,
+**check tool pins first**, failing closed if tools are missing. Do not subset an OFL
+font without `--alias` (RFN).
+
+```
+python3 ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/subset_fonts.py --probe --json
+python3 ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/subset_fonts.py \
+    --font NotoSansKR.ttf --text-file labels.txt \
+    --alias "jstack Sans KR" -o build/jstack-sans-kr.subset.ttf
+```
+
+See the Korean font contract section of `references/output-spec.md` for the full contract.
+
+## Phase 3: automated and visual inspection
+
+For artifacts authored from the current templates, also run the bundled accessibility
+and single-file checker as described in `references/upstream-integration.md`.
+That check accepts SVG as well as HTML; its pass does not replace geometry or visual review.
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-geometry.js <file>
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-connectors.js <file>
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-connectors.js --strict-rules <file>
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-text-width.js <file>
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/check_effective_size.js <file>
+```
+
+**Use `--strict-rules` for new diagrams.** It enables rule 2 (label clearance),
+rule 4 (attachment fanning), and rule 5 (third-box avoidance). These are disabled by
+default because the four shipped examples retain seven measured rule 2 violations.
+The rationale is recorded in `references/connector-rules.md` under the explanation
+of why rules 2, 4, and 5 are disabled by default.
+
+**Automated checks** cover four conditions by default: **label width overflow**
+(labels exceeding containers, with CJK counted as two units), **label mask collisions**
+(later nodes clipping a mask, rule 6), **diagonal connectors** (rule 1), and
+**connector overlap or crossings without hops** (rule 3). `--strict-rules` adds
+**label-to-connector clearance** (rule 2), **attachment fanning** (rule 4), and
+**third-box avoidance** (rule 5). **Near-parallel lines and paint order (rule 0)
+still require visual inspection** (see Limitations).
+**Visual inspection** (`references/taste-gate.md`) checks type fit, omissions, and
+signal. Without validators, the six rules become checklist recitation; without the
+checklist, conditions outside validator coverage go unchecked.
+
+**Rerun validators after translating labels.** Actual widths depend on fallback fonts.
+
+### Diagnostic envelope (`--json`) and deletion guard (`--baseline`)
+
+With `--json`, `verify-connectors.js` and `verify-text-width.js` emit **one diagnostic
+envelope** instead of human-readable lines. The unchanged vendored
+`verify-geometry.js` does not support `--json`. Envelope fields are `schemaVersion`,
+`ok`, `source`, and
+`diagnostics[]{code,severity,message,subject,evidence,supportedFixes}`.
+Reports and automated repairs consume this envelope. The 12 codes and five-stage
+repair table are in the diagnostic contract in `references/connector-rules.md`.
+
+**Every repair requires before-and-after runs.** This is the only guard against
+zeroing findings by deleting connectors (deletion Goodhart), and it is **disabled**
+without `--baseline`.
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-connectors.js <file> --strict-rules --json > before.json
+# ... apply the repair ...
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-connectors.js <file> --strict-rules --json --baseline before.json --strict-deletion
+```
+
+If findings decrease while `summary.connectors` also decreases, the validator emits
+`repair/deletion-without-evidence`. By default this is a warning and does not affect
+the exit code: **use `--strict-deletion` to enforce it through the return code**.
+If a legitimate redesign reduces relationships, record the justification in the report.
+
+## Phase 4: export
+
+Read `references/export.md`. Use `scale = target_width / viewBox_width`, **clamped
+to 1–4**. Below 1, text becomes illegible: redraw with a smaller preset. Above 4,
+a layout intended for a small canvas is being enlarged. Both indicate an incorrect
+size-dial choice.
+
+**Only A3 or larger and lack of vector support justify exceptions; outline fonts
+after lifting the clamp.** A3 landscape at 300dpi requires 4.43×; enforcing the clamp
+reduces it to 271dpi.
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/export_scale.js --viewbox-width 1120 --paper a3 --dpi 300
+```
+
+After raster export, **repair the PNG**. Some `-e` PNG versions drop eight bytes
+of `IEND`, leaving an unreadable file despite exit code 0. Without `pHYs`, Hangul
+and Word assume 96dpi and place the image at the wrong physical size.
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/repair_png.js out.png --dpi 300 -o final.png
+```
+
+For draw.io viewer handoff, `scripts/encode_drawio_url.js` creates a fragment URL.
+The part after `#` is not sent to the server, protecting confidential diagram
+content (**the URL itself is secret**). Korean labels require percent-encoding to
+prevent the viewer from failing with "URI malformed" (`cjk-contract.md`, item 1).
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/encode_drawio_url.js diagram.drawio
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/encode_drawio_url.js --decode "<URL>"
+```
+
+## Phase 5: delivery and `visual_review` status
+
+At handoff, report one of the **four statuses** defined by visual review in
+`references/taste-gate.md`. This section alone applies **at delivery**, after drawing;
+the other checklists run before drawing.
+
+| Status | When |
+|---|---|
+| `visual_review: pending` | Only automated capture or measurement was performed |
+| `visual_review: passed` | A person or image reader actually inspected the rendered artifact |
+| `visual_review: failed` | Inspection found concrete defects; list them |
+| `visual_review: skipped (이미지 리더 없음)` | No means of viewing the image was available |
+
+**Passing validators does not promote `pending` to `passed`.** Do not hide overflow
+with `overflow: hidden`, `clipPath`, or smaller typography just to pass. The repair
+order is **relocate -> reroute -> shorten -> restructure -> delete**. Shortening must
+preserve meaning and the typography floors. Deletion is last and requires evidence
+that the relationship is unnecessary; procurement requirements cannot be deleted.
+No code enforces
+this status: because no renderer was imported, the report is **self-reported**.
+
+## Reference map
+
+| File | Contents |
+|---|---|
+| `references/type-placement.md` | **Placement grammar for five types**: spine, lanes, participant order, stages, state transitions |
+| `references/connector-rules.md` | Six connector rules plus rule 0, with exceptions |
+| `references/output-spec.md` | Three dials, nine presets, type ramp, Korean font contract |
+| `references/taste-gate.md` | Pre-output checklist (omissions and type fit) and **delivery `visual_review` status contract** |
+| `references/export.md` | Scale formula, 1–4 clamp, **A3-or-larger exception** |
+| `references/cjk-contract.md` | **21 medium-specific CJK requirements**, each naming its evaluator |
+| `references/font-delivery.md` | Identity SSoT versus delivery grades, OFL RFN, tool pins |
+| `references/upstream-integration.md` | Pinned upstream tools, import workflow, context overrides, accessibility and export |
+| `references/type-catalog.md` | Detailed type reference and template selection |
+
+## Script map
+
+| File | Function |
+|---|---|
+| `scripts/verify-geometry.js` | Rule 6: label-mask clipping (TypeScript port of the pinned upstream source) |
+| `scripts/verify-connectors.js` | Rules 1 and 3 by default; 2, 4, and 5 with `--strict-rules` |
+| `scripts/verify-text-width.js` | Width budget: labels exceeding containers |
+| `scripts/measure_label.js` | Arrow-label **em cap** (14 Korean characters = 14em) |
+| `scripts/check_effective_size.js` | **Effective pt**: 10pt minimum at final placement width |
+| `scripts/export_scale.js` | Scale, clamp, A3 exception, effective dpi |
+| `scripts/repair_png.js` | Truncated `IEND` repair and `pHYs` DPI |
+| `scripts/subset_fonts.py` | Font subsetting: tool pins, OFL alias, fail-closed behavior |
+| `scripts/encode_drawio_url.js` | draw.io viewer fragment URL |
+
+The contract suite is `tests/run_tests.js`; `tests/test_cjk_contract.js` separately
+checks the 21 CJK requirements. The direct-execution-only
+`tests/_test_artifact_e2e.py` checks actual SVG-to-PNG artifacts in a separate
+temporary directory with an independent parser. The vendored validator's self-tests
+are in `scripts/test-verify-geometry.js`, which the suite executes directly. Importing
+the validator without its tests would leave subsequent deterioration undetected.
+
+## Four shipped examples
+
+These are **fixed assets** used to check actual validator execution. Consult them
+for layout patterns when drawing new diagrams.
+
+| File | Type |
+|---|---|
+| `assets/example-architecture.html` | architecture: left-to-right spine |
+| `assets/example-dp-integration.html` | dataflow: zones and integration |
+| `assets/example-sequence-oauth.html` | sequence: participant lanes |
+| `assets/example-swimlane.html` | workflow: swimlanes |
+
+All four are upstream derivatives bound to sentinel-stripped hashes in
+`UPSTREAM.sha256`. **Do not edit them here**: changes require updating those hashes too.
+
+## Boundaries: work outside this skill
+
+| Task | Owner |
+|---|---|
+| Raster image generation or editing | `image` skill |
+| Slide typesetting or multi-slide composition | `deck` skill |
+| Editable `.drawio` output | **Not implemented**. Existing draw.io inputs can be extracted and redrawn as SVG; see `references/upstream-integration.md` |
+| Charts and graphs (quantitative visualization) | Built-in dataviz |
+
+## Provenance
+
+This skill absorbs rules and numerical thresholds from upstream `up:diagram-design`
+(MIT) and vendors two validators. Upstream restricts them to use "From a repository
+checkout", making them unavailable in marketplace installations; that motivated
+the import. See `NOTICE` for the rationale and version.
+
+## Limitations
+
+- **SVG is authored directly.** Templates and parsers assist authoring; they do not
+  automatically lay out arbitrary inputs. The upstream HTML-only output policy is
+  overridden here. Accessibility is checked by the bundled `self_check.py`, while
+  template grid and typography choices still require inspection.
+- **The Taste Gate covers a subset of upstream's checklist.** Current accessibility
+  and template guidance is connected through `references/upstream-integration.md`.
+- **`verify-text-width.js` measures the full-width 1em width budget.** Its ASCII 0.6em
+  and full-width 1em coefficients are **provisional**, based on upstream Geist and
+  unmeasured with Korean fallback fonts. Applying upstream's formula literally
+  (6.5px × units + 13px) produced false positives for our 7–8px labels: eight of
+  11 masks in `example-architecture.html`. We therefore changed to a font-size-scaled
+  model: **this diverges from archify's formula rather than porting it unchanged**.
+  Small overruns within 4px slack pass. Upstream's rule requiring label masks to fit
+  the gap between nodes is still unenforced. All example assets use ASCII, so zero
+  false positives does not validate the CJK path.
+- **Width-check coverage is narrow: `measured 96 of 128` across four assets.** Only
+  labels whose anchor falls within a rectangle are measured. **32** uncontained
+  labels (legends, titles, lane headers) are not measured. `<tspan>` children,
+  `textLength`, and `rotate`/`scale`/`matrix` transforms yield `text/out-of-scope`
+  warnings. CSS parsing reads only class and element names in the final compound
+  selector, without specificity or media queries. Coverage counts are always printed
+  to disclose these limits.
+- **Five of the six connector rules are machine-checked**: rule 1 (diagonals) and
+  rule 3 (collinear overlap and crossings without hops) are **enabled by default**;
+  rules 2 (6px label clearance), 4 (attachment fanning), and 5 (third-box avoidance)
+  require **`--strict-rules`**. All five are enforced by `verify-connectors.js`.
+  **Rule 0 (paint order) remains declarative and unenforced.** The vendored
+  `verify-geometry.js` parses only `<rect>` through a single `RECT_RE`, so it checks
+  only the mask-clipping condition of rule 6.
+
+  **The strict rules are disabled by default because of retained debt.** Running
+  `--strict-rules` on the four shipped examples yields seven findings. They remain
+  unresolved because the examples are upstream derivatives bound to hashes and
+  changing them is separate work. The suite locks those seven findings to prevent
+  silent growth. Enabling them by default would create perpetual failures that
+  users would learn to ignore.
+
+  Even the two default rules have gaps: **near-parallel noncollinear lines are missed**
+  (a 1px difference in fixed coordinates escapes collinearity), **overlaps shorter
+  than 8px are missed**, and entirely curved connectors silence all three checks.
+  The upstream **sibling exemption for shared from/to nodes was not ported**, making
+  this implementation stricter. All are listed in `references/connector-rules.md`.
+- **These five scripts do not repair diagram files.** `measure_label.js`,
+  `check_effective_size.js`, and `export_scale.js` only measure. `repair_png.js`
+  repairs PNG **structure**, leaving pixels untouched. `subset_fonts.py` does not
+  verify embedding itself. See each file's limitations.
+- **The suite does not execute the subsetting path in `subset_fonts.py`.** It needs
+  an actual font file. Tests cover only tool discovery, pin comparison, OFL alias
+  enforcement, and the fail-closed glyph **policy**.
+- **Type-specific placement grammar is declarative and unenforced.** No validator
+  measures spine, monotonicity, or transition rules in `references/type-placement.md`.
+  Upstream enforces them through `validate`/`deliver`, which was not imported.
+  Inspect them visually through the taste gate.
+- Geometry validators check **structure**. A person judges whether the diagram makes sense.
+- Connector rules and thresholds derive from upstream v2.6.7; tools and templates are
+  pinned at v2.6.22. Upstream changes can make `references/` thresholds diverge; `tests/run_tests.js` pins those values to expose divergence.

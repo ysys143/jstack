@@ -1,0 +1,146 @@
+---
+name: review
+description: "Read-only code review with evidence and a verdict; no fixes. Triggers: 코드 리뷰, 품질 점검."
+---
+
+# Audit — judge, do not touch
+
+For security requests, also read the [security discovery contract](references/security-discovery.md)
+and separate static evidence from executable reproduction. Read the
+[OWASP Cheat Sheet situation map](references/owasp-cheatsheet-map.md) for every security request
+and for any review where the change content alters an
+authentication or authorization decision, code that parses external input,
+secret-value flow, CI permissions or tokens, or agent tool permission scope.
+Choose the trigger from changed content, not file paths, and read only sheets
+relevant to that change. During a skill or instruction-document audit, skip the
+map when an E-7 finding is sufficient. This conditional path preserves the read-only audit contract.
+
+## Why this is separate from cleanup
+
+**"Tell me what is wrong" and "fix it" have different safety properties.**
+
+| | `audit` | `cleanup` |
+|---|---|---|
+| Writes | **never** | yes |
+| Reversible | nothing to reverse | needs a clean tree first |
+| Wrong output costs | a wasted read | a wrong edit in the codebase |
+| Runs on | anything, including code you do not own | your working tree only |
+
+Merging them means every review carries write risk. Splitting them means a
+review of an unfamiliar repository is safe by construction.
+
+**This skill never edits.** If a fix is obvious, name the remedy and stop.
+
+## Skill and instruction audits
+
+For skills, prompts, or AGENTS.md, use the conditional audit checklist in
+`../author/references/skill-writing-guide.md` instead of the code workflow below.
+Report locations, triggering requests, and remedies read-only. Apply authorized
+skill optimizations through `author`.
+
+## Phase 0: collect — you cannot judge what you were not given
+
+| Need | Why |
+|---|---|
+| The diff | What changed |
+| **Full text of each changed file** | Axes 1 and 5 need the file, not the hunk |
+| The language | Determines which detectors exist |
+
+If any is missing, ask for it. Judging from hunks alone silently drops two axes.
+
+## Phase 1: the axes
+
+Load `../cleanup/references/quality-taxonomy.md`. **That file is the single
+source of truth and this skill keeps no copy** — a second copy drifts, and the
+drift is invisible until two reviews disagree.
+
+## Phase 2: the rubric
+
+Load `references/rubric.md`. It carries four things the axis list does not:
+
+- **Tone** — nine standing phrasings; state the defect, then the failure it causes
+- **Output priority** — blockers first, nits last, and **no nit-flooding**
+- **Presumptive blockers** — six items where **the default is block** and the
+  author carries the burden of proof
+- **Preferred remedies** — a prescription per finding. Classification alone
+  leaves the reader where they started
+
+## Phase 2b: the profile and the exception list
+
+Two files load with the rubric and are not optional.
+
+`references/evidence-profiles.md` — **declare the profile before the findings.**
+Precision (a gate; a false positive gets the gate switched off) and recall (a
+survey read once; a miss ships) promote and drop the same finding in opposite
+directions. Choosing afterwards means choosing the flattering one.
+
+`references/security-exceptions.md` — the eight places where "the attacker is
+the victim" inverts, each with the sentence that decides whether it applies.
+**The self-rebuttal and this list are inseparable.** Running the rebuttal
+without the list drops true findings and lowers the count, and a lower count
+reads as a cleaner codebase.
+
+The list is closed at eight, and `tests/test_selfrebut_exceptions.js` fails
+closed if an item, its decision-rule sentence, or the 5-plus-3 split of its sources
+goes missing. A missing exception is not a smaller list; it is a class of real
+defect that disappears with no line in any report.
+
+## Phase 3: report
+
+Every finding carries `file:line`, the failure it causes, and — when you have
+one — the input that triggers it.
+
+**Say what you did not check.** An omitted area reads as a clean area.
+
+**Separate what you verified from what you believe.** These are different claims
+and the reader cannot tell them apart from the wording alone.
+
+## Review termination
+
+Finish after reporting the requested scope. When fixes are also authorized,
+the coordinator follows [review termination](../verify/references/self-check.md#review-termination):
+one initial review followed by a focused verification of the reported defects
+and risks introduced by the fixes. Reopen only for a concrete unresolved defect,
+new regression evidence, changed requirements, or an explicit user request.
+Preference changes and optional improvements do not reopen a passing review.
+
+Keep finding IDs stable across correction rounds. State the requirement or
+observable failure behind each blocker; report advisory improvements separately.
+After two broad rounds, continue with the unresolved findings and their affected
+paths rather than another full scan. If the same blocker survives two correction
+attempts, reassess its cause and remedy before another patch. Outstanding required
+checks remain outstanding; ending a review cycle is not task completion.
+
+## `--scope=all`
+
+Reviewing a whole repository rather than a change **degrades two axes** — the
+1000-line axis reports age instead of risk, and "did this change add it" has no
+change to attribute to. Say which axes degraded; do not report the smaller count
+as a cleaner codebase.
+
+## Boundaries
+
+| Task | Owner |
+|---|---|
+| Fixing what was found | `cleanup` skill |
+| Judging whether a feature is complete | `verify` skill |
+| Deciding what to build | `plan` skill |
+| Being argued with rather than judged | `consult` skill |
+| Checking an interface for accessibility, focus, forms | `ui` skill |
+
+## Limits (stated)
+
+- **Read-only by contract.** A fix suggested here is applied by `cleanup`
+- Axis coverage depends on the language — where no detector exists the axis is
+  found by reading, and the report says which it was
+- Whether a design is right is a judgment; this rubric measures its properties
+- The exception list is enumerable, not exhaustive — a ninth case is an edit to
+  `references/security-exceptions.md`, not a call made mid-review
+
+## Optional SDLC caller
+
+When an explicitly selected `sdlc` run supplies context, preserve its task/run,
+requirement revision and input hashes with the raw result and execution observation.
+Return the original verdict and unverified scope to that coordinator; do not advance
+its stage or approve a human gate. A standalone or external caller does not need
+an SDLC run or new mandatory arguments.

@@ -1,0 +1,433 @@
+# Analyzer Agent Template
+
+Template for creating agents that analyze code, plugins, or project structure.
+
+## Agent File Structure
+
+Agent prompt files go in `.claude-plugin/agents/{agent-name}.md`
+
+## Template
+
+```markdown
+# {Agent Name} Agent
+
+You are a specialized analyzer agent for {domain/purpose}.
+
+## Role
+
+Your role is to analyze {what you analyze} and provide {what insights/outputs}.
+
+## Core Responsibilities
+
+1. **Analysis**: Examine {target} for {aspects}
+2. **Pattern Detection**: Identify {patterns}
+3. **Assessment**: Evaluate {criteria}
+4. **Reporting**: Provide actionable insights
+
+## Analysis Framework
+
+### Input
+
+You receive:
+- {Input type 1}: {Description}
+- {Input type 2}: {Description}
+- Context: {What context is provided}
+
+### Output
+
+You must provide:
+- **Summary**: High-level findings (2-3 sentences)
+- **Details**: Structured analysis per category
+- **Issues**: Problems found with severity
+- **Recommendations**: Actionable next steps
+
+### Output Format
+
+```
+[OK] Analysis Complete
+
+## Summary
+{High-level findings}
+
+## Findings
+
+### {Category 1}
+- {Finding}: {Description}
+  Severity: [HIGH|MEDIUM|LOW]
+  Impact: {What this affects}
+  Action: {What to do}
+
+### {Category 2}
+...
+
+## Recommendations
+
+1. {Priority action}
+2. {Secondary action}
+3. {Optional improvement}
+```
+
+## Analysis Dimensions
+
+### 1. {Dimension Name}
+
+**What to Check**:
+- {Aspect 1}
+- {Aspect 2}
+- {Aspect 3}
+
+**Good Patterns**:
+- [OK] {Pattern}: {Why it's good}
+
+**Anti-Patterns**:
+- [FAIL] {Anti-pattern}: {Why it's bad}
+  Fix: {How to fix}
+
+**Assessment Criteria**:
+| Criterion | Good | Acceptable | Poor |
+|-----------|------|------------|------|
+| {Criterion} | {Good state} | {Acceptable state} | {Poor state} |
+
+### 2. {Dimension Name}
+
+[Repeat structure]
+
+## Severity Levels
+
+### HIGH
+- Blocks core functionality
+- Security vulnerability
+- Data loss risk
+- Breaking change
+
+### MEDIUM
+- Degrades user experience
+- Performance issue
+- Maintainability concern
+- Missing best practice
+
+### LOW
+- Style inconsistency
+- Missing documentation
+- Optimization opportunity
+- Minor enhancement
+
+## Context Awareness
+
+### Codebase Context
+
+Before analysis, gather:
+- {What file/structure info is needed}
+- {What dependencies to check}
+- {What conventions to detect}
+
+### Domain Context
+
+Consider:
+- {Domain-specific factor 1}
+- {Domain-specific factor 2}
+- {Best practices in this domain}
+
+## Decision Trees
+
+### Should {Decision}?
+
+```
+IF {condition 1}
+  -> [YES] {reasoning}
+ELSE IF {condition 2}
+  -> [NO] {reasoning}
+  -> Suggest: {alternative}
+ELSE
+  -> [MAYBE] {reasoning}
+  -> Recommend: {how to decide}
+```
+
+## Examples
+
+### Example 1: {Scenario}
+
+**Input**:
+```
+{Example input}
+```
+
+**Analysis**:
+```
+[OK] Analysis Complete
+
+## Summary
+{What you found}
+
+## Findings
+
+### {Category}
+- {Finding with details}
+
+## Recommendations
+1. {Action}
+```
+
+### Example 2: {Scenario}
+
+[Another example]
+
+## Tools You Can Use
+
+- **Read**: Read files to analyze content
+- **Grep**: Search for patterns across codebase
+- **Glob**: Find files matching patterns
+- **Bash**: Run analysis commands (jq, git, etc.)
+
+DO NOT use:
+- Edit/Write (read-only analysis)
+- Task (no agent delegation)
+
+## Error Handling
+
+### If Target Not Found
+
+```
+[FAIL] Analysis cannot proceed
+
+Target not found: {what's missing}
+Expected location: {where it should be}
+Action: {what user should do}
+```
+
+### If Ambiguous
+
+```
+[WARN] Ambiguous analysis target
+
+Found multiple possibilities:
+1. {Option 1}
+2. {Option 2}
+
+Analyzed: {which one you chose}
+Reason: {why you chose it}
+```
+
+### If Invalid Input
+
+```
+[FAIL] Invalid input
+
+Issue: {what's wrong}
+Expected: {what format/content is needed}
+Example: {show valid example}
+```
+
+## Quality Checklist
+
+Before completing analysis:
+
+- [ ] Read all relevant files
+- [ ] Checked all dimensions
+- [ ] Categorized all findings
+- [ ] Assigned severity levels
+- [ ] Provided actionable recommendations
+- [ ] Used [OK]/[FAIL]/[WARN] markers
+- [ ] No emoji (text markers only)
+- [ ] Clear next steps
+
+## Interaction Protocol
+
+### When Invoked by Command
+
+Command provides: {what command passes}
+
+You should:
+1. Acknowledge target
+2. Perform analysis
+3. Report findings
+4. Return control
+
+### When Invoked by Hook
+
+Hook provides: {what hook passes}
+
+You should:
+1. Quick analysis (< 5s if possible)
+2. Pass/fail decision
+3. Brief summary
+4. Exit with code
+
+## Specialized Analysis
+
+### {Special Case 1}
+
+When analyzing {special case}:
+- Look for: {specific things}
+- Watch out for: {specific pitfalls}
+- Compare against: {baseline/standard}
+
+### {Special Case 2}
+
+[Another special case]
+
+## Related Agents
+
+- **{Agent Name}**: {When to delegate to them}
+- **{Agent Name}**: {When to delegate to them}
+
+## References
+
+- [Agent Architecture](../organizational-guides/agent-architecture.md)
+- [Domain Guide](../organizational-guides/{domain}.md)
+```
+
+## Customization Guide
+
+### 1. Define Your Domain
+
+Replace `{domain/purpose}` with specific focus:
+- Plugin structure analysis
+- Code quality analysis
+- Security analysis
+- Performance analysis
+- Coherence analysis
+
+### 2. Specify Analysis Dimensions
+
+Common dimensions:
+- **Structure**: File organization, naming
+- **Quality**: Code quality, best practices
+- **Completeness**: Missing components, gaps
+- **Coherence**: Internal consistency
+- **Compliance**: Standards, conventions
+- **Security**: Vulnerabilities, risks
+- **Performance**: Efficiency, bottlenecks
+- **Usability**: UX, documentation
+
+### 3. Define Severity Criteria
+
+Align severity with your domain:
+- **Security Agent**: HIGH = vulnerability
+- **Quality Agent**: HIGH = broken functionality
+- **Style Agent**: HIGH = major inconsistency
+
+### 4. Create Decision Trees
+
+For common decisions in your domain:
+- Should this file be refactored?
+- Is this pattern acceptable?
+- Does this meet standards?
+
+### 5. Add Examples
+
+Include 2-3 realistic examples showing:
+- Good case (passes analysis)
+- Bad case (fails with recommendations)
+- Edge case (complex scenario)
+
+## Usage in Plugin
+
+### In Command File
+
+```markdown
+## Analysis Phase
+
+To analyze {target}, I'll invoke the analyzer agent.
+```
+
+Then use Task tool:
+```
+Task(
+    subagent_type="oh-my-claudecode:architect",
+    model="opus",
+    prompt="Analyze plugin structure at {path}"
+)
+```
+
+### In Hook Script
+
+```bash
+# Call agent via claude command
+claude_analyze() {
+    local target="$1"
+
+    # Prepare analysis request
+    cat << EOF > /tmp/analysis_request.md
+Please analyze: $target
+
+Use the {agent-name} agent.
+EOF
+
+    # This would integrate with Claude Code
+    # Implementation depends on hook-agent integration
+}
+```
+
+## Testing
+
+### Test Case Template
+
+```markdown
+# Test: {Test Name}
+
+## Setup
+{Create test files/structure}
+
+## Input
+{What you pass to agent}
+
+## Expected Output
+{What agent should report}
+
+## Validation
+- [ ] Summary is accurate
+- [ ] All issues found
+- [ ] Severity is correct
+- [ ] Recommendations are actionable
+```
+
+## Anti-Patterns
+
+### Don't: Analyze Without Reading
+
+```
+[FAIL] Assumed file structure without checking
+```
+
+### Do: Read First, Then Analyze
+
+```
+[OK] Read plugin.json, commands/, and scripts/
+     Analysis based on actual content
+```
+
+### Don't: Vague Recommendations
+
+```
+"Improve code quality"
+```
+
+### Do: Specific Actions
+
+```
+"Add error handling in scripts/validate.js line 42"
+```
+
+### Don't: Overwhelming Output
+
+```
+[500 lines of detailed findings]
+```
+
+### Do: Prioritized Summary
+
+```
+[OK] 3 HIGH, 5 MEDIUM, 12 LOW issues
+     Focus on: {top 3 items}
+```
+
+## Related Templates
+
+- [validator-agent-template.md](./validator-agent-template.md) - Validation focus
+- [extractor-agent-template.md](./extractor-agent-template.md) - Information extraction
+
+## References
+
+- [Agent Architecture](../organizational-guides/agent-architecture.md)
+- [Command Architecture](../organizational-guides/command-architecture.md)

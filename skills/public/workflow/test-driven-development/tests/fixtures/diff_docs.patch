@@ -1,0 +1,7 @@
+diff --git a/README.md b/README.md
+index 1111111..2222222 100644
+--- a/README.md
++++ b/README.md
+@@ -3,0 +4,2 @@
++This is a new paragraph.
++Only the notation changed.

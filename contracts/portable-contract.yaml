@@ -1,0 +1,134 @@
+# Canonical merged jstack contract. Legacy *-dev/work files are migration evidence.
+version: 1
+profile: portable
+layout:
+  canonical_portable_namespace: ".agents"
+  user_skills: "~/.agents/skills/<skill>/SKILL.md"
+  project_instructions: "AGENTS.md"
+  project_skills: ".agents/skills/<skill>/SKILL.md"
+  claude_instruction_adapter: "CLAUDE.md imports @AGENTS.md"
+  requirements:
+    - "Create portable user and project assets in .agents first; host adapters may import or register them without creating a competing canonical copy."
+    - "Install jstack as one native plugin package. Never place the complete package beneath .claude/skills, .codex/skills, or .agents/skills."
+    - "Claude consumes jstack through its native marketplace and plugin cache; Codex consumes jstack through its native .agents plugin registry and cache."
+    - "CLAUDE_CONFIG_DIR and CODEX_HOME override host state locations without changing the portable source contract."
+    - "Generated host entries are package adapters. They do not become a second source tree."
+    - "Public discovery and conditional support ownership are declared in contracts/skill-catalog.json and governed by contracts/skill-catalog.md; category directories do not create router skills."
+membership:
+  요구: "Read only target-repository files and do not invoke paths outside this plugin tree."
+  배제_사유:
+    - "scripts/run_suites.js uses Git frozen references and checkers outside the repository; it belongs to the development-checkout authoring profile."
+    - "scripts/validate.js checks user-created artifacts; it is not a plugin-source contract runner."
+    - "skills/author/scripts/check_package_surface.js assumes this package's surface declaration."
+checks:
+  - id: emoji-block
+    mode: fail
+    contexts:
+      - hook
+    command: node hooks/block_emoji.js
+    why: "The emoji prohibition is organization policy and yields the same verdict regardless of the target repository."
+  - id: model-version-drift
+    mode: warn
+    contexts:
+      - hook
+    command: node hooks/check_model_versions.js
+    why: "One false positive from an outdated model database can break the PreToolUse chain and silently disable subsequent hooks; this check therefore warns rather than fails."
+  - id: uv-usage
+    mode: warn
+    contexts:
+      - hook
+    command: node hooks/validate_uv_usage.js
+    why: "Python execution conventions vary by repository, so this check does not block."
+  - id: package-preflight
+    mode: fail
+    contexts:
+      - manual
+    command: node skills/verify/scripts/preflight.js .
+    why: "Check whether the tree has a distributable shape. Tree-derived mode detection also works on other repositories."
+  - id: changelog-version-parity
+    mode: fail
+    contexts:
+      - manual
+    command: node skills/verify/scripts/package_check.js .
+    why: "Compare the top CHANGELOG version with the manifest version using only those two target-repository files."
+  - id: commit-message-format
+    mode: fail
+    contexts:
+      - manual
+      - hook
+    command: node skills/gitrules/scripts/check_commit.js
+    why: "Commit message format is an organization convention independent of repository."
+  - id: red-probe
+    mode: fail
+    contexts:
+      - post-run
+    command: node skills/verify/scripts/red_probe.js
+    why: "Check whether a passing test can actually fail. Always-passing checkers arise the same way across repositories, making this portable."
+  - id: environment-doctor
+    mode: warn
+    contexts:
+      - manual
+    command: node scripts/doctor.js
+    why: "Report missing components without fixing them. Their absence alone is not failure."
+  - id: diagram-connector-rules
+    mode: fail
+    contexts:
+      - post-run
+      - manual
+    command: node skills/diagram/scripts/verify-connectors.js
+    why: "Once only one of six connector rules was checked. Machines detect diagonal segments and overlap that visual review can miss."
+  - id: diagram-geometry
+    mode: fail
+    contexts:
+      - post-run
+    command: node skills/diagram/scripts/verify-geometry.js
+    why: "Coordinates establish whether shapes overlap or extend outside the canvas."
+  - id: diagram-text-width
+    mode: fail
+    contexts:
+      - post-run
+    command: node skills/diagram/scripts/verify-text-width.js
+    why: "A mismatched font stack makes Korean labels overflow boxes. Detect this before submitting a diagram with broken text."
+  - id: diagram-export-scale
+    mode: warn
+    contexts:
+      - post-run
+    command: node skills/diagram/scripts/export_scale.js
+    why: "Submission requirements determine scale, so report it without blocking."
+  - id: hwpx-structure
+    mode: fail
+    contexts:
+      - post-run
+    command: python3 skills/hwpx/scripts/validate_hwpx.py
+    why: "Measure tables, body text, numbering, and styles at XML level, separately from visual inspection."
+  - id: office-cjk-font
+    mode: fail
+    contexts:
+      - post-run
+    command: node skills/office/scripts/check_cjk_font.js
+    why: "A .docx without East Asian font declarations can change text appearance on another machine while looking correct on its creator's machine."
+  - id: humanize-gates
+    mode: fail
+    contexts:
+      - post-run
+    command: node skills/humanize/scripts/verify_gates.js
+    why: "Only comparison with the original determines whether rewriting changed content."
+  - id: taxonomy-lint
+    mode: fail
+    contexts:
+      - manual
+    command: node skills/humanize/scripts/lint_taxonomy.js
+    why: "A taxonomy that violates its own format silently weakens every detector."
+  - id: proof-length
+    mode: warn
+    contexts:
+      - manual
+      - post-run
+    command: node skills/proof/scripts/korean_character_count.js
+    why: "Character limits vary by submission form; count and report rather than block."
+  - id: research-citations
+    mode: fail
+    contexts:
+      - post-run
+    command: node skills/research/scripts/cite_check.js
+    why: "Verify every citation. A fabricated citation undermines the entire report."

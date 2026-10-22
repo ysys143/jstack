@@ -1,0 +1,94 @@
+# blob:bb9ec4f50933758c14bed4864e59738527a23c0b
+# Dashboard — current usage
+This skill vendors upstream `uppinote20/claude-dashboard` v1.34.0 (MIT).
+`NOTICE` and `UPSTREAM.sha256` record provenance, version, byte-level binding,
+and our changes. This entry point defines when to enable it, what to inspect,
+and the boundaries of its responsibility.
+## Off by default
+Nothing is installed until the user asks, and nothing repairs itself unless the user
+opts in. A repository's decision to use jstack project checks never enables this.
+When the user asks to turn the statusline on or change its layout, including
+invoking this skill directly as `/jstack:dashboard`, run the `dashboard-setup` command
+in Claude Code. It is not named `dashboard` because a command with a skill's name is
+hidden behind the skill.
+```
+/jstack:dashboard-setup # Choose display mode, widgets, and language; install
+/jstack:dashboard-repair # Check health; repair only what this plugin owns
+export JSTACK_DASHBOARD_STATUSLINE=1 # Optional: enable session-start recovery for one environment
+```
+Setup writes `~/.claude/claude-dashboard.local.json`, then runs
+`scripts/install-statusline.mjs install`. That script finds the installed package
+from host installation metadata rather than a fixed marketplace or plugin name,
+and confirms, through the installed shim, which build a render will load before it
+writes `settings.json`; without a resolvable build it exits 1 and writes nothing.
+Automatic recovery at session start is a separate opt-in per config directory,
+recorded by setup or `install-statusline.mjs optin --auto-repair on`. The environment
+variable enables it for one environment, and `JSTACK_DASHBOARD_STATUSLINE=0` disables it.
+A healthy check writes nothing and prints nothing.
+**Changes can be reverted.** The installer saves a `settings.json` backup before
+writing. Repair fills an empty slot or fixes this plugin's own value, never replaces
+a value the user set, and replaces another tool's value only after the user allows
+that identity. Setup replaces a user value only after the user agrees to
+`--replace`. An unparsable file is left untouched.
+`references/recovery.md` is the single description of why a status line
+disappears: the cause types reported by `status`, how to read that report, the
+repair exit codes, every opt-in setting, keeping a watcher running, and the steps
+for moving an existing machine to a new version. Read it before diagnosing a lost
+or wrong status line.
+When disabled, this skill does nothing. That is the normal default until setup
+is requested. This entry configures Claude Code. The package selects a separate
+Codex entry for its native `/statusline` and `tui.status_line` configuration;
+the Claude installer and widget renderer do not configure the Codex footer, and
+an existing Codex layout is preserved.
+## What to inspect
+| Dimension | Question |
+|---|---|
+| Context | How much capacity remains in this session? |
+| Cost | How much has been spent, and how does it compare with today's budget? |
+| Usage limits | How much of the 5-hour and 7-day allowance is used? When does it reset? |
+| Other CLIs | Codex, Gemini, Antigravity, and z.ai limits |
+`references/reading.md` explains the values and the 38 widgets.
+`/jstack:check-usage` performs a one-time query without a statusline.
+`/jstack:dashboard-alias` adds the `check-ai` shell function for that query.
+## Emoji handling
+`jstack` ships `block_emoji.py`, while the dashboard emits emoji in its statusline.
+They do not mechanically conflict: the hook examines `PreToolUse` inputs, and
+statusline output is not a tool call (measured).
+Organization policy also covers output, so an emoji-free configuration has been
+measured. Follow **Using it without emoji** in `references/reading.md`; model,
+context, cost, and limits remain visible. Setup offers that layout as `noemoji`. That reference also lists measured emoji counts
+for the default modes.
+## Boundary with workspace
+Both can answer availability questions, so ownership must remain explicit.
+| Subject | Owner | Reason |
+|---|---|---|
+| gws OAuth token expiry | **workspace** | Account and authentication layer |
+| Claude/Codex/Gemini usage, limits, and cost | **dashboard** | CLI runtime layer |
+| Statusline display | **dashboard** | |
+Answering the other skill's questions creates competing sources of truth.
+See `references/boundary.md` for evidence and the decision procedure.
+## Editing source and bundle together
+`scripts/` contains the source; `dist/` is the committed bundle. Keep them aligned.
+```
+npm ci && npm run build # Rebuild dist
+```
+The build is byte-reproducible: the upstream commit, an isolated copy, and our
+copy produced identical hashes. The contract suite checks reproducibility by
+exit status. Changing only source or only the bundle makes this check fail.
+When `node` is unavailable, this axis records its name and fails instead of
+silently disappearing.
+## Updating upstream
+Follow the `upstream` skill: reacquire upstream, compare with `UPSTREAM.sha256`,
+reapply local changes, and update the version and manifest together. `NOTICE`
+records each local change and its reason. Identity-constant and build checks catch
+omitted local changes.
+## Explicit limitations
+- We do not measure widget values. The contract checks import integrity,
+reproducibility, identity constants, live hook and installer behavior, and one
+sample render through an installed shim laid out like the built package. Upstream
+vitest checks widget values (25 files), and runs only when `node` is available.
+- Upstream vitest is load-sensitive. Three CLI shell test groups intermittently
+fail at the default 5-second timeout (48/48 passed in isolation with 30 seconds).
+That instability is not detection power, so our contract does not depend on it.
+- Other CLI limits come from those CLIs' configuration files. A missing file or
+format change silences only its widget; it is not a dashboard-wide failure.

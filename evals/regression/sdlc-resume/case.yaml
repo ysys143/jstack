@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: sdlc-interrupted-release
+description: Does resume preserve an unknown release result and require readback?
+runs: 5
+tags: [regression, sdlc]

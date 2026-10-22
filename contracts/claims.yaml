@@ -1,0 +1,225 @@
+# Canonical merged jstack contract.
+version: 1
+schema:
+  필수:
+    - id
+    - 주장
+    - 검증등급
+    - source_refs
+  검증등급_허용값:
+    - 기계
+    - 인간 게이트
+    - 검증불가
+    - 미상
+  등급별_필수:
+    기계:
+      - tests
+    인간 게이트:
+      - 증거
+    검증불가:
+      - 사유
+    미상:
+      - 사유
+claims:
+  - id: suite-total-pinned
+    주장: "Contract suites pin declared check totals so silently removed checks cause a mismatch."
+    검증등급: 기계
+    source_refs:
+      - file: skills/_suite_lib.js
+        selector: function check_total
+      - file: tests/test_dev_agents.js
+        selector: check_total(check, results,
+    tests:
+      - path: tests/test_dev_agents.js
+        command: node tests/test_dev_agents.js
+  - id: no-tautological-assertions
+    주장: "No suite verdict evaluates to a constant without reading its target."
+    검증등급: 기계
+    source_refs:
+      - file: skills/_suite_lib.js
+        selector: function check_no_constant_assertions
+    tests:
+      - path: tests/test_dev_agents.js
+        command: node tests/test_dev_agents.js
+  - id: population-guard-single-owner
+    주장: "Root documents outside individual skill trees belong to the contract population, which one suite owns."
+    검증등급: 기계
+    source_refs:
+      - file: skills/_suite_lib.js
+        selector: completeness
+      - file: tests/test_dev_commands.js
+        selector: 'Inventory: unified'
+    tests:
+      - path: tests/test_dev_commands.js
+        command: node tests/test_dev_commands.js
+  - id: package-surface-fail-closed
+    주장: "The package fails if even one surface file is unclassified."
+    검증등급: 기계
+    source_refs:
+      - file: skills/author/references/package-surface.yaml
+        selector: 'unclassified: fail'
+    tests:
+      - path: skills/author/tests/run_tests.js
+        command: node skills/author/tests/run_tests.js
+  - id: preflight-refuses-looser-mode
+    주장: "Preflight rejects a requested mode looser than the mode detected from the tree."
+    검증등급: 기계
+    source_refs:
+      - file: skills/verify/scripts/preflight.js
+        selector: STRICTNESS
+    tests:
+      - path: skills/verify/tests/run_tests.js
+        command: node skills/verify/tests/run_tests.js
+  - id: changelog-version-parity
+    주장: "A mismatch between the top CHANGELOG version and the manifest version exits nonzero."
+    검증등급: 기계
+    source_refs:
+      - file: skills/verify/scripts/package_check.js
+        selector: top_version
+      - file: CHANGELOG.md
+        selector: '## 0.0.1'
+    tests:
+      - path: skills/verify/tests/run_tests.js
+        command: node skills/verify/tests/run_tests.js
+  - id: commit-format-enforced
+    주장: "Commit message format violations are detected before committing, with an explanation of what is wrong and why."
+    검증등급: 기계
+    source_refs:
+      - file: skills/gitrules/scripts/check_commit.js
+        selector: --help
+    tests:
+      - path: skills/gitrules/tests/run_tests.js
+        command: node skills/gitrules/tests/run_tests.js
+  - id: verifier-takes-no-executor-rationale
+    주장: "The verifier receives artifacts and originals, without the executor's rationale."
+    검증등급: 기계
+    source_refs:
+      - file: agents/quality-verifier.md
+        selector: "Do not receive the executor's"
+    tests:
+      - path: tests/test_dev_agents.js
+        command: node tests/test_dev_agents.js
+  - id: contracts-are-enforced
+    주장: "The three contract types in this directory are checked, not merely declared; missing required fields fail."
+    검증등급: 기계
+    source_refs:
+      - file: contracts/portable-contract.yaml
+        selector: 'profile: portable'
+      - file: contracts/change-impact.yaml
+        selector: 'rules:'
+    tests:
+      - path: tests/test_contracts.js
+        command: node tests/test_contracts.js
+  - id: second-opinion-actually-disagrees
+    주장: "The second-opinion skill obtains rebuttal rather than approval."
+    검증등급: 미상
+    사유: "Only the existence of external-model output is verified, not its quality. No axis yet measures whether a rebuttal was received. Retain the unknown grade so the claim does not disappear from accounting before a measure exists."
+    source_refs:
+      - file: skills/consult/SKILL.md
+        selector: consult
+  - id: emoji-blocked-before-write
+    주장: "Emoji are blocked before editing, writing, and Bash; removing hook registration makes checks fail."
+    검증등급: 기계
+    source_refs:
+      - file: hooks/hooks.json
+        selector: dispatch.js
+      - file: hooks/hook-policies.js
+        selector: id: 'emoji'
+      - file: hooks/block_emoji.js
+        selector: readFileSync(0
+    tests:
+      - path: tests/test_work_hooks.js
+        command: node tests/test_work_hooks.js
+  - id: connector-rules-are-machine-checked
+    주장: "A geometry checker measures connector rules rather than relying on prose."
+    검증등급: 기계
+    source_refs:
+      - file: skills/diagram/references/connector-rules.md
+        selector: Connector
+      - file: skills/diagram/scripts/verify-connectors.js
+        selector: collinear_overlap
+    tests:
+      - path: skills/diagram/tests/run_tests.js
+        command: node skills/diagram/tests/run_tests.js
+  - id: cjk-font-stack-enforced
+    주장: "The font-stack contract for Korean labels is enforced to prevent broken text in procurement diagrams."
+    검증등급: 기계
+    source_refs:
+      - file: skills/diagram/tests/test_cjk_contract.js
+        selector: check
+    tests:
+      - path: skills/diagram/tests/test_cjk_contract.js
+        command: node skills/diagram/tests/test_cjk_contract.js
+  - id: hwpx-zip-is-guarded
+    주장: "HWPX packing and unpacking do not write outside the tree, with at least eight checks enforcing this contract."
+    검증등급: 기계
+    source_refs:
+      - file: skills/hwpx/scripts/hwpx_zip.py
+        selector: zipfile
+    tests:
+      - path: skills/hwpx/tests/run_tests.js
+        command: node skills/hwpx/tests/run_tests.js
+  - id: office-cjk-font-checked
+    주장: "Office artifacts without East Asian font declarations are detected on the machine that created them."
+    검증등급: 기계
+    source_refs:
+      - file: skills/office/scripts/check_cjk_font.js
+        selector: font
+    tests:
+      - path: skills/office/tests/run_tests.js
+        command: node skills/office/tests/run_tests.js
+  - id: taxonomy-file-is-linted
+    주장: "The AI-tell taxonomy exits nonzero when it violates its own format."
+    검증등급: 기계
+    source_refs:
+      - file: skills/humanize/references/ai-tell-taxonomy.md
+        selector: '#'
+      - file: skills/humanize/scripts/lint_taxonomy.js
+        selector: function
+    tests:
+      - path: skills/humanize/tests/run_tests.js
+        command: node skills/humanize/tests/run_tests.js
+  - id: humanize-preserves-content
+    주장: "Rewriting changes style without changing content, and gates measure convergence."
+    검증등급: 기계
+    source_refs:
+      - file: skills/humanize/scripts/verify_gates.js
+        selector: function
+    tests:
+      - path: skills/humanize/tests/run_tests.js
+        command: node skills/humanize/tests/run_tests.js
+  - id: eval-answer-keys-are-bound
+    주장: "Evaluation answer keys are bound to committed blobs and cannot be silently replaced."
+    검증등급: 기계
+    source_refs:
+      - file: tests/test_evals.js
+        selector: check_total(check, results,
+    tests:
+      - path: tests/test_evals.js
+        command: node tests/test_evals.js
+  - id: procurement-register-survives-rewriting
+    주장: "Procurement proposal rewriting preserves commitment language while reading naturally to evaluators."
+    검증등급: 인간 게이트
+    source_refs:
+      - file: skills/humanize/references/procurement-taxonomy.md
+        selector: 조달
+      - file: agents/korean-procurement-naturalness-reviewer.md
+        selector: over-polishing
+    증거:
+      - "Rerun detectors to measure remaining K-O patterns. Zero remaining patterns is necessary, not sufficient."
+      - "Over-editing (genre drift, literary wording, or lost commitment function) requires human comparison with the original. A reviewer agent drafts the verdict; a person confirms it."
+    사유_보류: "Naturalness is a reader response, and readers are outside the repository. Residual patterns are measurable proxies for naturalness, not naturalness itself."
+  - id: generated-image-is-usable
+    주장: "Generated images are actually usable in documents."
+    검증등급: 검증불가
+    사유: "Only artifact existence is checked, not content. Identical prompts produce different images across runs, preventing frozen-output comparison. Such a comparison would require a pinned model version, which is not used here. Record the inability to measure instead of adding a sham test."
+    source_refs:
+      - file: skills/image/SKILL.md
+        selector: image
+  - id: science-router-picks-the-right-tool
+    주장: "The router for 209 science skills selects the right tool for the question."
+    검증등급: 미상
+    사유: "No answer key defines the right tool. test_tier_a_roster.py checks Tier A roster integrity, not selection accuracy. No accuracy axis has been defined; retain the unknown grade so the claim remains in accounting."
+    source_refs:
+      - file: skills/science/tests/test_tier_a_roster.js
+        selector: check

@@ -1,0 +1,33 @@
+{
+  "kdense": {
+    "repo": "K-Dense-AI/scientific-agent-skills",
+    "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+    "license": "MIT",
+    "license_file": "repos/kdense/LICENSE.md",
+    "commit": "36d8f13a1e754618794bf42f417884940077b4ae",
+    "commit_short": "36d8f13",
+    "commit_date": "2026-08-24",
+    "skill_count": 159
+  },
+  "gdm": {
+    "repo": "google-deepmind/science-skills",
+    "url": "https://github.com/google-deepmind/science-skills",
+    "license": "Apache-2.0",
+    "license_file": "repos/gdm/LICENSE",
+    "commit": "0b42509800f49e6eb7809505d96e20a890ef99bd",
+    "commit_short": "0b42509",
+    "commit_date": "2026-07-07",
+    "skill_count": 38
+  },
+  "academic": {
+    "repo": "Imbad0202/academic-research-skills",
+    "url": "https://github.com/Imbad0202/academic-research-skills",
+    "license": "CC BY-NC 4.0",
+    "license_file": "repos/academic/LICENSE",
+    "commit": "9469fc4d074f9166890d4488b1691da06aba15fc",
+    "commit_short": "9469fc4",
+    "commit_date": "2026-08-27",
+    "skill_count": 4,
+    "license_note": "[local review 2026-08-29] 상류는 '비표준 · 확인 필요'로 남겨 두었으나 repos/academic/LICENSE 전문을 읽어 확인했다 — Creative Commons Attribution-NonCommercial 4.0 International, Copyright (c) 2026 Cheng-I Wu. NOTICE.md 가 개인 프로젝트임을 밝힌다. NC 는 상업적 사용을 금지하므로 대가를 받는 작업에 쓰기 전에 판단할 것. [local review 2026-09-02] skill_count 를 8 에서 4 로 정정했다 — repos/academic/skills/<이름> 이 ../<이름> 을 가리키는 디렉토리 심링크라 rebuild-index.py 의 glob 이 같은 스킬을 두 번 셌다. 실물은 4종이고 전체 합계는 205 다."
+  }
+}

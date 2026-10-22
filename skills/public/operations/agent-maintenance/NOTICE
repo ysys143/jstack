@@ -1,0 +1,15 @@
+# Source and adaptation
+
+Adapted, with the owner's explicit request, from the user-owned local
+`~/.agents/skills/agent-maintenance` snapshot dated 2026-09-14. No separate license
+file was present in that personal source (license class: none). This is a jstack
+adaptation of its maintenance contracts, not a verbatim third-party distribution.
+
+Local destinations: SKILL.md and references/{profile,claude-migration,codex-migration,
+project-rename,plugin-cleanup}.md. Personal shell helpers, home mappings, command
+adapters and conversation data are excluded. Source snapshot hashes are in
+source-provenance.json; the original private snapshot is retained by the contributor.
+
+The personal Python migration implementations are not imported. jstack's existing
+skills/recall/scripts/migrate_sessions.ts remains the single execution engine for
+both hosts, with its existing owning tests and plan/apply/verify/rollback contracts.

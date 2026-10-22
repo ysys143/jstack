@@ -1,0 +1,58 @@
+# blob:c035c36782d82d5e7b3a64a978722fb28f30d0c7
+# Register boundaries and delta audit
+The skill's highest principle is to preserve content exactly. A statement alone
+cannot enforce that principle; it needs an audit procedure. The two lists and
+four audit steps below provide that procedure.
+## 1. Mutable: permitted edits
+These are style changes. Only changes in this layer qualify as polishing.
+| Axis | Permitted change | Example |
+|---|---|---|
+| Word order | Move adverbial phrases or relative clauses | Exchange their positions |
+| Particles | Replace case or auxiliary particles | `~에 대해` -> `~를` |
+| Endings | Vary endings within the same register | Break repeated `~이다` with `~인 것` |
+| Connections | Remove conjunctive adverbs or change connective endings | Remove `따라서`; join with `-며` |
+| Sentence boundaries | Split or join sentences | Split an 8-word clause into two sentences |
+| Modifiers | Remove degree adverbs or redundant modifiers | `매우 중요한` -> `중요한` |
+| List markers | Normalize symbols | `*` -> `-` |
+## 2. Immutable: protected content
+These belong to the content layer. Any delta affecting one of them damages the
+content rather than polishing it.
+1. Numbers, units, statistics, and dates.
+2. Proper names, organizations, projects, and products.
+3. Requirement IDs and RFP item numbers.
+4. Every character inside direct quotations.
+5. Causal, conditional, and concessive relationships and their direction.
+6. Item order and ranking.
+7. Register itself: converting a fragment-style paragraph to prose is not polishing.
+8. Commitment strength: `할 수 있다` and `한다` make different promises.
+9. Legal article numbers, technology stacks, and their versions.
+10. Human traces: owner comments, unresolved markers, and parenthetical notes.
+## 3. Four-step delta audit
+Run this before delivering edited text. Preserve the step order.
+1. **Align.** Align original and edited sentences and list their deltas. Count
+each unalignable segment as a delta because it is itself a defect signal.
+2. **Assign.** Classify each delta using the two lists above. Cite the relevant
+row number as evidence rather than supplying a narrative explanation.
+3. **Roll back.** If a delta touches any immutable item, roll back that edit.
+Revert individual edits, not the entire document.
+4. **Escalate unresolved cases.** Keep unassignable deltas unresolved and send
+them to a person. Neither discard nor pass them; passing an unassignable
+change would defeat the audit.
+## 4. Grade effects
+Reverse checks determine the grade regardless of the remaining finding count.
+| Condition | Grade |
+|---|---|
+| Changes to immutable items 1–2: numbers, dates, proper names | Immediate D |
+| Change to item 8: commitment strength | Immediate D |
+| Deletion of item 10: human traces | Immediate D |
+| Changes to items 5–6: relationships or order | C or lower |
+| Finishing with unassignable deltas | No grade |
+Immediate D comes from upstream noslop-ko part 4, reverse check 7. Our auditor's
+checklist was weaker, so this adopts the upstream threshold.
+## 5. Auditor application
+`content-fidelity-auditor` correctly excludes evaluation of style, rhythm, and
+naturalness. The four steps above give that auditor an executable procedure.
+`references/improvement-protocol.md` separately defines improvement measurement.
+## 6. Contract
+The reference-contract axes in `tests/run_tests.js` check this document. The
+mutable table, all 10 immutable items, and all four delta-audit steps must coexist.

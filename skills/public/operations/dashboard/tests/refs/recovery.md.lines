@@ -1,0 +1,136 @@
+# blob:c2d815a5c44716286ead096ed63d1d5d5155b166
+# Status line recovery
+This reference is the single description of why a dashboard status line
+disappears, how to diagnose it, and how to recover it. `SKILL.md`,
+`/jstack:dashboard-repair`, and the header of `scripts/install-statusline.mjs`
+summarize it and point here.
+Recovery is off by default. A user runs `install` or `repair` explicitly, or
+opts in once per Claude config directory for automatic recovery. Nothing here
+names a particular external tool, machine, or operating system: causes are
+reported as types with evidence.
+## Diagnose first
+Run the read-only report. It never writes a file.
+```bash
+node scripts/install-statusline.mjs status [--config-dir DIR]...
+```
+The script ships in the installed package's `payload` directory beside this
+reference; inside a Claude command it is
+`${CLAUDE_PLUGIN_ROOT}/skills/dashboard/scripts/install-statusline.mjs`.
+Without `--config-dir` it reads `${CLAUDE_CONFIG_DIR:-$HOME/.claude}`. Pass
+`--config-dir` once per Claude home to check several; the output then has a
+`homes` array. A setting in one home says nothing about another.
+Read these fields:
+| Field | Meaning |
+|---|---|
+| `healthy` | `true` when the command is this package's shim, the shim is current, the build resolves, and no selected snapshot is behind. Stop here when it is `true`. |
+| `owner` | `ours`, `empty`, `known-managed-by-another-tool`, or `user` |
+| `identity` | For another tool's value, the plugin identity derived from its path, or the name the user declared |
+| `causes` | Cause types with evidence; see the table below |
+| `resolves`, `installation`, `version` | The build a render loads and the installed package it came from; `null` means no build in this config directory |
+| `resolvedFrom` | `metadata` when the host installation registry named the package; `cache-scan` when the registry was unreadable and a bounded cache scan found it |
+| `optin` | The automatic recovery record: `autoRepair`, `autoRepairEffective`, `allowReplace`, `syncGlobs`, `codex` |
+| `preferred` | `false` when the running copy is not the installation the resolver prefers; that copy never repairs automatically |
+| `codex` | The Codex `tui.status_line` report for `$CODEX_HOME` |
+## Ownership classes
+| Class | What it covers | Repair |
+|---|---|---|
+| `ours` | This package's shim, or a build path inside this package | Repaired when broken |
+| `empty` | No `statusLine` command | Filled in |
+| `known-managed-by-another-tool` | A command inside another plugin's cache or data directory, or one the user declared with `--known-managed ID=SUBSTRING` | Preserved until the user allows that identity |
+| `user` | Anything else | Never replaced by repair |
+## Cause types
+| Cause | Symptom | What it means | Recovery |
+|---|---|---|---|
+| `whole-file-restoration` | The status line vanished after it had worked | `statusLine` is absent but the opt-in record shows this package installed it; the whole settings file was restored from an older copy | `repair`; if the restore source is a sibling file, keep it in sync with `syncGlobs` |
+| `ownership-contention` | A different status line appears | After this package installed its command, a user or another tool's value took the slot | Nothing is written. Allow a tool identity with `optin --allow-replace ID`; a user value is replaced only through setup with the user's agreement |
+| `identity-mismatch` | The line renders nothing or an old build | The command is this package's shim but belongs to another installation's data directory, such as a copy installed under a different marketplace name | `repair` points it at the preferred installation's shim |
+| `pinned-version` | The line stays on an old version after an update | The command points directly at one version's build | `repair` replaces it with the shim, which follows updates |
+| `installation-removed` | The line disappears after an update or cache cleanup | The command is ours, but the build it names is gone, or no build is installed | Update or reinstall jstack in this config directory, then `repair` |
+| `shim-missing` | The line is blank | The shim file the command runs does not exist | `repair` writes it |
+| `shim-stale` | Behavior lags behind the installed version | The shim differs from this package's shim | `repair` rewrites it |
+| `status-line-type` | The command is right but nothing runs | `statusLine.type` is not `command` | `repair` fixes the type |
+| `not-configured` | No status line was ever set up | `statusLine` is absent and no installation was recorded | Run `/jstack:dashboard-setup`, or `install` |
+| `no-build` | `repair` exits 1 | No dashboard build resolves under this config directory's plugins | Install or update jstack in this config directory; do not add a link or a pinned path |
+| `settings-unparsable` | `repair` exits 2 | `settings.json` cannot be read as JSON | Nothing is written. Fix the file, then `repair` |
+| `snapshot-out-of-sync` | Restoring a snapshot brings back an old status line | A sibling file selected by `syncGlobs` lacks this package's command | `repair` updates the selected snapshots |
+| `codex-status-line-lost` | The Codex footer reverted to its default | `tui.status_line` is absent but a layout was recorded | `repair --codex` or `codex repair` restores the recorded layout |
+## Repair
+```bash
+node scripts/install-statusline.mjs repair [--config-dir DIR]... [--codex]
+```
+Repair reads `settings.json` again right before writing, saves a backup beside it,
+writes through a temporary file and a rename, and keeps the file's permissions.
+A healthy directory is left untouched and the result is `action: unchanged`.
+| Exit | Meaning |
+|---|---|
+| `0` | Healthy, repaired, or reported |
+| `1` | No build the shim can resolve |
+| `2` | A configuration file could not be parsed, or changed during repair; nothing was written |
+| `3` | The value belongs to the user or to another tool that is not allowed; nothing was written |
+| `4` | A Codex `config.toml` layout this script does not edit safely; nothing was written |
+A repair started by the session-start hook or by `watch` uses trigger `hook`: it
+runs only when automatic recovery is effective, prints nothing, and always exits 0 so
+that a session can start. Its result is visible through the next `status`.
+## Opt-in settings
+The record lives beside the installed shim in
+`<config dir>/plugins/data/<data id>/statusline-repair.json` and is written only
+through `optin`:
+```bash
+node scripts/install-statusline.mjs optin [--config-dir DIR] --auto-repair on
+node scripts/install-statusline.mjs optin --allow-replace IDENTITY
+node scripts/install-statusline.mjs optin --known-managed ID=SUBSTRING
+node scripts/install-statusline.mjs optin --sync-glob "settings.json.PATTERN"
+node scripts/install-statusline.mjs optin --codex on
+```
+- `--auto-repair on` enables recovery at session start for this config directory.
+`JSTACK_DASHBOARD_STATUSLINE=1` enables it for one environment regardless of the
+record, and `JSTACK_DASHBOARD_STATUSLINE=0` disables it regardless of the record.
+- `--allow-replace IDENTITY` lets repair replace that tool's value; use the
+`identity` from `status`. `--deny-replace` removes it. Allowing
+`known-managed-by-another-tool` covers every tool and is rarely what a user wants.
+- `--sync-glob` selects sibling files of `settings.json` that another process uses
+as restore sources. Repair sets the same command in a selected file only when its
+own status line is empty or ours. It is off until a pattern is given;
+`--clear-sync-globs` removes the patterns.
+- `--codex on` records the current Codex layout so a lost `tui.status_line` can be
+restored. Codex repair adds the key only when it is missing: into the existing
+`[tui]` table, as a dotted `tui.status_line` at the root, or as one new `[tui]`
+table. It never replaces an existing value, including one chosen through the Codex
+status line picker, and it refuses an inline `tui` table, a duplicate `[tui]`, or
+`[[tui]]` with exit 4. Codex configuration is never created where no Codex home
+exists.
+- Several Claude homes each need their own opt-in: repeat the command with each
+`--config-dir`.
+## Keeping a watcher running
+```bash
+node scripts/install-statusline.mjs watch [--config-dir DIR]... [--interval SECONDS]
+```
+`watch` stays in the foreground. A change to `settings.json` or a sibling file is
+followed by a short settle delay, then a repair with trigger `hook`. A periodic pass
+(default 300 seconds, minimum 10) catches a replacement by rename that a file
+watcher can miss. It acts only for directories whose automatic recovery is
+effective and prints one line only when it repairs.
+jstack installs no operating-system service. To keep it running between sessions,
+start this command from whatever the user already uses to run programs at login
+or keep them alive, restart it when it exits, and pass every config directory it
+should cover. Running it inside a terminal multiplexer session is the simplest form.
+## Moving an existing machine to this version
+1. Update jstack in every profile through the route used to install it (see the
+repository README), then open a new session in each.
+2. For each Claude home, run `status --config-dir DIR`. Confirm that `resolves`
+lies inside the new version and that `resolvedFrom` is `metadata`.
+3. Run `repair --config-dir DIR`. Pinned commands and shims from another
+installation are repointed; user and other tools' values are reported, not
+changed.
+4. Opt in where recovery is wanted: `optin --config-dir DIR --auto-repair on`.
+Add `--allow-replace` only for a tool identity the user chooses to override, and
+`--sync-glob` only for restore sources the user names.
+5. For Codex, run `optin --codex on` after choosing the layout, then
+`repair --codex` to confirm.
+6. Optionally keep `watch` running with every config directory.
+7. Remove manual workarounds. List links in the plugin cache with
+`find DIR/plugins/cache -maxdepth 2 -type l`, and look for status line commands
+edited by hand to name a version directory. Remove one workaround at a time and
+run `status` again. When it stays `healthy: true` with `resolvedFrom: metadata`,
+the workaround is no longer needed. When it reports `no-build`, reinstall jstack in
+that directory instead of restoring the link.

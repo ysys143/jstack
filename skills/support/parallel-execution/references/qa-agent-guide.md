@@ -1,0 +1,228 @@
+# QA Agent Design Guide
+
+Use this guide when a build harness includes a QA agent. Based on bug patterns found in a real project (SatangSlide) and analysis of their root causes, it provides a systematic validation method for defects that QA agents commonly miss.
+
+---
+
+## Contents
+
+1. Defect patterns QA agents miss
+2. Integration coherence verification
+3. QA agent design principles
+4. Validation checklist template
+5. QA agent definition template
+
+---
+
+## 1. Defect Patterns QA Agents Miss
+
+### 1-1. Boundary Mismatch
+
+This is the most frequent defect. Two components are each implemented "correctly," but their contracts disagree at the point where they connect.
+
+| Boundary | Example mismatch | Why QA misses it |
+|----------|------------------|------------------|
+| API response → frontend hook | API returns `{ projects: [...] }`, but the hook expects `SlideProject[]` | Each side passes an isolated review; nobody compares them |
+| API response field name → type definition | API uses `thumbnailUrl` (camelCase), but the type uses `thumbnail_url` (snake_case) | A TypeScript generic cast prevents the compiler from detecting it |
+| File path → link href | The page is at `/dashboard/create`, but the link points to `/create` | Review does not compare the file tree with href values |
+| State-transition map → actual status update | The map defines `generating_template → template_approved`, but the code omits the transition | Review confirms that the map exists without tracing every update site |
+| API endpoint → frontend hook | The API exists, but no corresponding hook calls it | Review does not map the API list to the hook list one-to-one |
+| Immediate response → asynchronous result | The API immediately returns `{ status }`, but the frontend accesses `data.failedIndices` | Review checks types without distinguishing the immediate response from the asynchronous result |
+
+### 1-2. Why Static Code Review Does Not Catch These Defects
+
+- **Limit of TypeScript generics:** `fetchJson<SlideProject[]>()` compiles even when the runtime response is `{ projects: [...] }`.
+- **`npm run build` passing does not mean the behavior works:** When code uses type casts, `any`, or generics, the build can succeed even though the application fails at runtime.
+- **Existence checks and connection checks are different:** "Does the API exist?" and "Does the API response match what the caller expects?" are entirely different checks.
+
+---
+
+## 2. Integration Coherence Verification
+
+A QA agent must include the following **cross-comparison checks**.
+
+### 2-1. Cross-check API Responses Against Frontend Hook Types
+
+**Method:** Compare each API route's `NextResponse.json()` call with the `fetchJson<T>` type parameter in the corresponding hook.
+
+```
+Validation steps:
+1. Extract the shape of the object passed to NextResponse.json() in the API route.
+2. Inspect T in fetchJson<T> in the corresponding hook.
+3. Compare the shape and T field by field.
+4. Check response wrapping. If the API returns { data: [...] }, confirm that the hook reads .data.
+```
+
+**Patterns that require particular attention:**
+- Paginated APIs: `{ items: [], total, page }` when the frontend expects an array
+- Mismatches across snake_case database fields, camelCase API responses, and frontend type definitions
+- Shape differences between an immediate response (`202 Accepted`) and the final result
+
+### 2-2. Map File Paths to Link and Router Paths
+
+**Method:** Derive URL paths from page files under `src/app/`, then compare them with every `href`, `router.push()`, and `redirect()` value in the code.
+
+```
+Validation steps:
+1. Derive URL patterns from page.tsx paths under src/app/.
+   - Remove (group) segments from the URL.
+   - Preserve [param] as a dynamic segment.
+2. Collect every href=, router.push(, and redirect( value in the code.
+3. Confirm that every link maps to a page path that actually exists.
+4. Pay attention to URL prefixes for pages inside a route group, such as pages under dashboard/.
+```
+
+### 2-3. Trace State-transition Completeness
+
+**Method:** Extract every `status:` update in the code and compare it with the state-transition map.
+
+```
+Validation steps:
+1. Extract the allowed transitions from the state-transition map (STATE_TRANSITIONS).
+2. Search every API route for .update({ status: "..." }) patterns.
+3. Confirm that every update is declared in the map.
+4. Identify transitions declared in the map that no code executes (dead transitions).
+5. Confirm in particular that a transition from an intermediate state such as generating_template to a final state such as template_approved has not been omitted.
+```
+
+### 2-4. Map API Endpoints to Frontend Hooks One-to-One
+
+**Method:** List every API route and frontend hook, then determine whether each has its counterpart.
+
+```
+Validation steps:
+1. List endpoints by HTTP method from route.ts files under src/app/api/.
+2. List fetch URLs from use*.ts files under src/hooks/.
+3. Identify API endpoints that no hook calls and flag them as "unused."
+4. Determine whether each "unused" endpoint is intentionally internal, such as an administrative API, or represents an omitted caller.
+```
+
+---
+
+## 3. QA Agent Design Principles
+
+### 3-1. Use `general-purpose`, Not the `Explore` Type
+
+An `Explore` QA agent can only read. Effective QA must be able to:
+- Search patterns with `Grep`, such as extracting every `NextResponse.json()` call
+- Run scripts that automate cross-comparisons, such as API shapes against hook types
+- Make a correction when authorized and necessary
+
+**Recommendation:** Use the `general-purpose` type, and explicitly state a "validate → report → request correction" protocol in the agent definition.
+
+### 3-2. Prefer Cross-comparison Checks Over Existence Checks
+
+| Weak checklist item | Strong checklist item |
+|---------------------|-----------------------|
+| Does the API endpoint exist? | Does the API endpoint's response shape match the corresponding hook's type? |
+| Is a state-transition map defined? | Does every status update in the code agree with a transition in the map? |
+| Does the page file exist? | Does every link in the code point to a page that actually exists? |
+| Is TypeScript strict mode enabled? | Is any type safety bypassed through generic casts? |
+
+### 3-3. The "Read Both Sides Together" Principle
+
+To catch a boundary defect, QA cannot read only one side. It must:
+- Read the API route **and** its corresponding hook **together**.
+- Read the state-transition map **and** the actual update code **together**.
+- Read the file structure **and** link paths **together**.
+
+State this principle explicitly in the agent definition.
+
+### 3-4. Run QA Immediately After Each Module, Not Only After the Build
+
+If an orchestrator schedules QA only at "Phase 4: after everything is complete":
+- Defects accumulate and become more expensive to correct.
+- An early boundary mismatch propagates into later modules.
+
+**Recommended pattern:** As soon as each backend API is complete, cross-check that API and its corresponding hook (incremental QA).
+
+---
+
+## 4. Validation Checklist Template
+
+This integration-coherence checklist is for inclusion in the definition of a web-application QA agent.
+
+```markdown
+### Integration Coherence Verification (Web Application)
+
+#### API ↔ Frontend Connection
+- [ ] The response shape of every API route matches the generic type in the corresponding hook.
+- [ ] When a response is wrapped, such as `{ items: [...] }`, the hook unwraps it.
+- [ ] snake_case ↔ camelCase conversion is applied consistently.
+- [ ] The frontend distinguishes the shape of an immediate response (`202`) from the final result.
+- [ ] Every API endpoint has a corresponding frontend hook that is actually called.
+
+#### Routing Coherence
+- [ ] Every `href` and `router.push` value in the code maps to an actual page-file path.
+- [ ] Path validation accounts for route groups (`(group)`) being removed from URLs.
+- [ ] Dynamic segments (`[id]`) receive the correct parameters.
+
+#### State-machine Coherence
+- [ ] Every declared state transition executes in the code; there are no dead transitions.
+- [ ] Every status update in the code is declared in the transition map; there are no unauthorized transitions.
+- [ ] No transition from an intermediate state to a final state is missing.
+- [ ] Every status used in a frontend branch (`if status === "X"`) is actually reachable.
+
+#### Data-flow Coherence
+- [ ] Database schema field names map consistently to API response field names.
+- [ ] Frontend type-definition field names match the API response.
+- [ ] Both sides handle `null` and `undefined` consistently for optional fields.
+```
+
+---
+
+## 5. QA Agent Definition Template
+
+Include this core section in the build harness's QA agent.
+
+```markdown
+---
+name: qa-inspector
+description: "A QA validation specialist. Validates specification compliance, integration coherence, and design quality."
+---
+
+# QA Inspector
+
+## Core Responsibility
+Validate implementation quality against the specification and verify **integration coherence between modules**.
+
+## Validation Priority
+
+1. **Integration coherence** (highest) — Boundary mismatches are a major source of runtime errors.
+2. **Functional specification compliance** — APIs, state machines, and data models.
+3. **Design quality** — Color, typography, and responsiveness.
+4. **Code quality** — Unused code and naming conventions.
+
+## Validation Method: "Read Both Sides Together"
+
+For every boundary check, open and compare **both sides of the code at the same time**:
+
+| Validation target | Producer | Consumer |
+|-------------------|----------|----------|
+| API response shape | `NextResponse.json()` in route.ts | `fetchJson<T>` in hooks/ |
+| Routing | Page-file paths under src/app/ | `href` and `router.push` values |
+| State transitions | `STATE_TRANSITIONS` map | `.update({ status })` code |
+| Database → API → UI | Table column names | API response fields → type definitions |
+
+## Team Communication Protocol
+
+- As soon as you find a defect, send the responsible agent a concrete correction request with file, line, and correction method.
+- For a boundary defect, notify the agents responsible for **both** sides.
+- Send the leader a validation report that distinguishes passed, failed, and unverified items.
+```
+
+---
+
+## Real Failures Found in SatangSlide
+
+Every lesson in this guide was derived from the following real defects:
+
+| Defect | Boundary | Cause |
+|--------|----------|-------|
+| `projects?.filter is not a function` | API → hook | The API returned `{projects:[]}`, but the hook expected an array |
+| Every dashboard link returned 404 | File path → href | The `/dashboard/` prefix was missing |
+| Theme images were not visible | API → component | `thumbnailUrl` vs `thumbnail_url` |
+| Theme selection was not saved | API → hook | The select-theme API existed, but no hook called it |
+| The generation page waited forever | State transition → code | The transition to `template_approved` was missing from the code |
+| `data.failedIndices` crashed | Immediate response → frontend | The frontend tried to read a background result from the immediate response |
+| The view-slides link returned 404 after completion | File path → href | `/projects/` was used instead of `/dashboard/projects/` |

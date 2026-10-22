@@ -1,0 +1,34 @@
+# blob:77c501cfe7f80da7797aaf77c0e672b18aedc77c
+# Security discovery contract
+This reference applies only to the security-request branch of `audit`. Audit does
+not modify source or working files. Route necessary changes through a separate
+implementation and TDD workflow.
+## How to report candidates
+Each candidate includes a stable ID, `file:line`, the path from input to impact,
+a root-cause hypothesis, impact, attack prerequisites, existing defenses,
+counterevidence, severity rationale, and linked requirement IDs. A surface string
+whose input and impact paths cannot be connected remains only a candidate
+hypothesis. Group multiple messages from the same root cause after comparing their
+paths, assets, and impacts; preserve distinct boundaries as separate candidates.
+Separate static evidence from execution evidence. Candidate status is one of
+`candidate`, `confirmed`, `refuted`, or `inconclusive`; evidence level is `static`
+or `execution`. Static analysis alone cannot claim a `confirmed` execution
+reproduction. When the execution method, oracle, or isolation conditions are
+missing, leave the execution result `blocked` or `inconclusive`.
+## Triage order
+1. Verify the target ref, actual file hashes, entry points, and attacker privileges.
+2. For each candidate, trace input to boundary to impact and record defenses and
+counterevidence.
+3. Identify a reproduction method that the environment can execute and criteria
+for preserving normal behavior.
+4. Deduplicate by root cause and reassess severity using the asset, realistic
+prerequisites, and impact.
+5. Report the scope that was not executed and all remaining unknowns.
+Do not execute target code in static mode. Audit does not write a report file;
+the coordinator stores results inside the task. A discoverer's reasoning or
+self-reported tags are not evidence for an independent verifier's conclusion.
+## Behavior-preservation boundary
+A security fix may intentionally reject previously accepted input, so do not
+disguise it as routine behavior-preserving cleanup. Audit records only the defect
+and the expected minimum fix. The verify contract owns pre-fix reproduction,
+existing regressions, and variant inputs with the same root cause.

@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: diagram-connector-rules-recall
+description: Can it reproduce the plugin-defined connector rules 0 through 6 exactly?
+runs: 5
+tags: [discriminating, diagram, ablation-discriminating]

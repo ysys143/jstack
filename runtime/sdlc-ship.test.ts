@@ -1,0 +1,44 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { writeFileSync, unlinkSync } from 'node:fs';
+import path from 'node:path';
+import { releaseFixture } from './fixtures/sdlc_release.js';
+
+test('PR and ship completion requires exact readbacks, clean checked HEAD and rollback', async t => {
+  let response: unknown[] = [];
+  const f = await releaseFixture(t, 'pr-and-ship', () => ({ ok: true, output: JSON.stringify(response) }));
+  const { load, runStatus } = f;
+  const head = f.git('rev-parse', 'HEAD'), branch = f.git('branch', '--show-current');
+  const remote = path.join(f.home, 'remote.git'); f.git('init', '--bare', '-q', remote); f.git('remote', 'add', 'origin', remote);
+  const push = { remote: 'origin', branch, head };
+  await assert.rejects(f.event('invoke', { operation: 'push', target: push }), /approval/);
+  await f.event('approve', { gate: 'push', verdict: 'pass', target: push, source: f.source });
+  await f.event('invoke', { operation: 'push', target: push });
+  f.git('push', '-q', 'origin', `HEAD:refs/heads/${branch}`);
+  await f.event('readback', { operation: 'push' });
+  f.git('branch', 'base', 'HEAD^');
+  const pr = { repository: 'fixture/project', branch, head, base: 'base' };
+  await f.event('approve', { gate: 'pr', verdict: 'pass', target: pr, source: f.source });
+  await f.event('invoke', { operation: 'pr', target: pr });
+  await f.event('readback', { operation: 'pr' });
+  assert.equal(load(f.c, 'change').external[load(f.c, 'change').run!.effects.pr!].state, 'absent');
+  await f.event('invoke', { operation: 'pr', target: pr });
+  response = [{ state: 'open', head: { sha: head, ref: branch, repo: { full_name: pr.repository } }, base: { ref: 'base', repo: { full_name: pr.repository } }, number: 7, html_url: 'https://github.com/fixture/project/pull/7' }];
+  await f.event('readback', { operation: 'pr' });
+  await assert.rejects(f.event('ship', { base: 'base', rollback: 'base' }), /approval/);
+  await f.event('approve', { gate: 'ship', verdict: 'pass', source: f.source });
+  writeFileSync('untracked.txt', 'dirty');
+  await assert.rejects(f.event('ship', { base: 'base', rollback: 'base' }), /clean worktree/);
+  unlinkSync('untracked.txt');
+  await assert.rejects(f.event('ship', { base: 'base', rollback: 'missing' }), /rollback/);
+  await f.event('ship', { base: 'base', rollback: 'base' });
+  // An earlier successful PR readback cannot mask a PR closed before completion.
+  response = []; await f.event('complete');
+  assert.equal(runStatus(f.c, load(f.c, 'change')).runComplete, false);
+  assert.equal(load(f.c, 'change').run!.state, 'blocked');
+  response = [{ state: 'open', head: { sha: head, ref: branch, repo: { full_name: pr.repository } }, base: { ref: 'base', repo: { full_name: pr.repository } }, number: 7, html_url: 'https://github.com/fixture/project/pull/7' }];
+  await f.event('complete');
+  assert.equal(runStatus(f.c, load(f.c, 'change')).runComplete, true);
+  f.git('branch', '-f', 'base', 'HEAD');
+  assert.equal(runStatus(f.c, load(f.c, 'change')).runComplete, false);
+});

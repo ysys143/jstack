@@ -1,0 +1,238 @@
+# Comprehensive project collection (Git plus mtime)
+
+A two-stage collection pipeline that finds projects without Git commits and
+includes them in a weekly report.
+
+## Problem: the limits of Git log
+
+`collect_git.js` processes only projects containing a `.git` directory:
+
+```bash
+for repo_dir in "$GITHUB_DIR"/*/; do
+  [[ -d "$repo_dir/.git" ]] || continue  # Git repositories only
+  git -C "$repo_dir" log ...
+done
+```
+
+**Result:** projects such as these were omitted:
+
+- onprem_model_test_plan (0 commits)
+- openclaw_seoul_meetup_0315 (0 commits)
+- agent-memory (0 commits)
+- claude-multi-account (not a Git repository)
+
+## Solution: a two-stage collection pipeline
+
+### Stage 1: collect Git log first
+
+```bash
+node scripts/collect_git.js 2026-03-16 2026-03-22 raw/git_log.md
+```
+
+**Properties:** structured commit messages, exact date range, and version-control
+history.
+
+### Stage 2: supplement by file modification time
+
+```bash
+node scripts/collect_by_mtime.js 2026-03-16 raw/mtime_projects.md
+```
+
+**Implementation example:**
+
+```bash
+#!/usr/bin/env node
+GITHUB_DIR="${GITHUB_DIR:-$HOME/Documents/GitHub}"
+SINCE_DATE="$1"  # YYYY-MM-DD
+OUTPUT="${2:-/dev/stdout}"
+
+echo "# Projects collected by file modification time" > "$OUTPUT"
+echo "> Period: since $SINCE_DATE" >> "$OUTPUT"
+echo "" >> "$OUTPUT"
+
+# Recently modified folders, limited to 50 for performance
+for project_dir in $(ls -1t "$GITHUB_DIR" | head -50); do
+  full_path="$GITHUB_DIR/$project_dir"
+  [[ ! -d "$full_path" ]] && continue
+  [[ -d "$full_path/.git" ]] && continue  # Stage 1 handles Git repositories
+
+  recent_files=$(find "$full_path" \
+    -type f \
+    -newermt "$SINCE_DATE 00:00:00" \
+    ! -path "*/.git/*" \
+    ! -path "*/node_modules/*" \
+    ! -path "*/__pycache__/*" \
+    2>/dev/null | head -5)
+
+  [[ -z "$recent_files" ]] && continue
+
+  echo "## $project_dir" >> "$OUTPUT"
+  echo "" >> "$OUTPUT"
+
+  # Show README first
+  if [[ -f "$full_path/README.md" ]]; then
+    head -3 "$full_path/README.md" | sed 's/^/> /' >> "$OUTPUT"
+    echo "" >> "$OUTPUT"
+  fi
+
+  echo "**Recently modified files:**" >> "$OUTPUT"
+  echo "$recent_files" | while read -r file; do
+    rel_path="${file#$full_path/}"
+    echo "- $rel_path" >> "$OUTPUT"
+  done
+  echo "" >> "$OUTPUT"
+done
+```
+
+**Core operation:**
+
+```bash
+find "$full_path" \
+  -type f \
+  -newermt "$SINCE 00:00:00" \
+  ! -path "*/.git/*" \
+  ! -path "*/node_modules/*" \
+  ! -path "*/__pycache__/*" \
+  2>/dev/null
+```
+
+**Detected:** every project with a README or recently modified file, whether or
+not it is a Git repository.
+
+**Excluded:** generated `.git`, `node_modules`, and `__pycache__` content;
+`antigravity` and `tmux_team` system projects; and `weekly_wrapup`, the reporting
+tool itself.
+
+### Stage 3: filter and merge
+
+```bash
+bash .claude/hooks/validate-excluded-projects.sh raw/git_log.md
+bash .claude/hooks/validate-excluded-projects.sh raw/mtime_projects.md
+```
+
+**Automatically excluded:**
+
+- `ai_lab_share` — learning material, excluded from reports
+- `icarus` — personal neuroscience project
+- `hw_*` — temporary hardware files
+
+Projects already present in git_log are removed from the mtime results.
+
+## Output formats
+
+### git_log.md
+
+```markdown
+# Git commit history
+> Period: 2026-03-16 through 2026-03-22
+
+## onprem_model_test_plan (12 commits)
+- 2026-03-16 | d0aa287 | chore: update session state
+- 2026-03-16 | e66dd1e | fix: add missing release dates
+```
+
+### mtime_projects.md
+
+```markdown
+# Projects collected by file modification time
+> Period: since 2026-03-16
+
+## claude-multi-account (5 files)
+> Setup guide: Claude Code multi-account configuration
+
+**Recently modified files:**
+- setup.sh
+- README.md
+```
+
+## Best practices
+
+### Do
+
+- [O] Collect Git log first as the primary record.
+- [O] Add mtime results only when absent from git_log, avoiding duplicates.
+- [O] Describe a project with README or a summary of recent files.
+- [O] Apply automatic filtering through the hook.
+
+### Do not
+
+- [X] Collect by mtime alone; that loses commit information.
+- [X] List every file; keep only the ten most recent.
+- [X] Include generated content such as node_modules.
+- [X] Include old projects with no recent modifications.
+
+## Troubleshooting
+
+### A specific project is not detected
+
+**Cause:** the folder itself is old although a nested file changed.
+
+**Resolution:** `find -newermt` searches recursively and therefore detects deep
+files; do not use folder mtime as the only signal.
+
+### Symbolic links or external mounts
+
+Follow links with `find -L`, or exclude them with `-not -path`.
+
+### Date compatibility between macOS and Linux
+
+**macOS:**
+
+```bash
+find "$path" -newermt "2026-03-16 00:00:00" ...
+date -v-7d +%Y-%m-%d  # seven days ago
+```
+
+**Linux:**
+
+```bash
+find "$path" -newermt "2026-03-16 00:00:00" ...
+date -d "7 days ago" +%Y-%m-%d
+```
+
+**Portable helper:**
+
+```bash
+get_date_offset() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    date -v-${1}d +%Y-%m-%d
+  else
+    date -d "$1 days ago" +%Y-%m-%d
+  fi
+}
+```
+
+Confirm `find -newermt` compatibility as well as the different date flags:
+
+```bash
+# macOS: date -v-7d +%Y-%m-%d
+# Linux: date -d "7 days ago" +%Y-%m-%d
+```
+
+## Integrated workflow
+
+```bash
+#!/usr/bin/env node
+REPORT_DIR="reports/2026/W12_20260316-20260322"
+mkdir -p "$REPORT_DIR/raw"
+
+echo "[1/3] Collecting Git log..."
+node scripts/collect_git.js 2026-03-16 2026-03-22 "$REPORT_DIR/raw/git_log.md"
+
+echo "[2/3] Collecting mtime supplement..."
+node scripts/collect_by_mtime.js 2026-03-16 "$REPORT_DIR/raw/mtime_projects.md"
+
+echo "[3/3] Filtering excluded projects..."
+bash .claude/hooks/validate-excluded-projects.sh "$REPORT_DIR/raw/git_log.md"
+bash .claude/hooks/validate-excluded-projects.sh "$REPORT_DIR/raw/mtime_projects.md"
+
+echo "[OK] Collection complete"
+cat "$REPORT_DIR/raw/git_log.md"
+cat "$REPORT_DIR/raw/mtime_projects.md"
+```
+
+## Notes
+
+- `collect_git.js` targets every repository under `~/Documents/GitHub`.
+- `collect_by_mtime.js` inspects the 50 most recent folders for performance.
+- The custom exclusion list is defined in CLAUDE.md.

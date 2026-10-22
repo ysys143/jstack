@@ -1,0 +1,52 @@
+# Test portfolio
+
+Which kinds of tests a repository keeps decides how fast and trustworthy its
+suite can be. Use this reference when choosing a test level, adding a new kind of
+test, or judging whether existing tests actually assert anything. The verify
+skill's test evidence reference has the sources behind these rules.
+
+## Size by construction
+
+Define test sizes and enforce them from day one: a unit test uses no network, no
+real disk outside a temp dir, and no sleep, and each size has its own timeout.
+Enforcing size is the cheapest way to keep the inner loop fast and to prevent
+flaky tests, because flakiness grows with binary size, memory, and the use of
+emulators or browsers.
+
+## Shape of the suite
+
+- Keep a pyramid or trophy shape: static checks first, many unit tests, fewer
+  integration tests, and end-to-end tests only for critical journeys. Past a
+  handful of end-to-end tests, each new one needs a reason.
+- Prefer real or fake implementations to mocks; a fake with the real contract
+  catches more and breaks less on refactoring.
+- Between services, use contract tests instead of cross-service end-to-end tests.
+- Push each check down to the lowest level that can catch its bug.
+
+## Judge tests by oracle strength
+
+A test file's presence proves nothing. Require assertions of expected behavior,
+look at coverage **on the diff** in review rather than a global coverage target,
+and, where tests already cover the code, use **diff-based mutation testing**:
+mutate only the changed lines, filter out uninteresting lines, and ask whether any
+test fails. It is especially useful for generated tests. The verify skill's
+`node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/red_probe.js` proves that one command can fail for one explicit mutation.
+
+## Adjacent techniques
+
+| Technique | Adopt when | How to keep it fast |
+|---|---|---|
+| Property-based testing | Complex logic, parsers, serializers, model-against-implementation checks | Small example counts before merge, larger sweeps nightly; failures shrink to a reproducible case |
+| Continuous fuzzing | Code that parses untrusted input | Short sessions in CI to catch regressions, long campaigns asynchronously; returns per unit of compute fall quickly |
+| Snapshot tests | Output that is tedious to assert by hand | Use sparingly, keep snapshots small, and review every snapshot diff; many commits have to update them |
+| Diff-based mutation testing | Coverage is already high and you need to know whether tests assert anything | Only changed lines, with low-value mutants filtered |
+| Diff coverage in review | Always | Report on the changed lines, especially error paths |
+
+## Keep the suite healthy over time
+
+- Encode every human correction as a durable check (a test, lint rule, or type)
+  so the same judgment is never needed twice.
+- Check new and changed tests against a time budget and repeated runs
+  ([test budget](test-budget.md)).
+- Track system measures (review time, pull request size, change failure rate,
+  rework, time to green CI), not only how much code was generated.

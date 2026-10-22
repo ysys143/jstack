@@ -1,0 +1,302 @@
+# TDD Guide: Rust
+
+## Framework
+
+- **In-house Test Framework** — `#[test]`, `#[cfg(test)]` (No separate installation required)
+- **mockall** — trait-based mocking (download only crates.io 8500, officially recommended by Google AOSP)
+- **rstest** — fixtures, parametrization (`cargo add rstest --dev`)
+- **proptest** — property-based testing (recommended for new projects)
+- **wiremock-rs** (HTTP mock) — testing asynchronous HTTP external calls
+
+## `#[cfg(test)]` Philosophy
+
+Rust is designed at the **language level** to place unit tests inside source files.
+Reason (The Rust Book ch11-03):
+- Unit tests require access to private functions $\rightarrow$ only possible within the same file/module
+- Excluded at compile time via `#[cfg(test)]` $\rightarrow$ no test code in release binaries
+- The compiler enforces boundaries, not developer conventions.
+
+## Unit Testing vs Integration Testing
+
+| | Unit (`#[cfg(test)]`) | Integration (`tests/`) |
+|--|----------------------|-----------------|
+| Location | Inside `src/` source files | Project-root `tests/` |
+| Compilation | Same crate | Separate crate for each file |
+| Access | Private and public API | Public API only |
+| Purpose | Isolated module logic | Verify real usage patterns |
+
+`tests/` Each file in the directory is compiled into a **separate crate** $\rightarrow$ the same way external consumers use libraries.
+
+**Binary crate warning:** No public API in `main.rs` → difficult integration testing.
+Solution: Make `main.rs` a thin wrapper for `lib.rs` and test the lib.
+
+**Shared Helper Correct Position:**
+```
+tests/
+    common/
+        mod.rs       // CORRECT: helper file
+    // common.rs     // WRONG: Rust treats it as a separate suite and warns "0 tests"
+```
+
+## AAA Pattern
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mockall::predicate::*;
+
+    #[test]
+    fn should_return_discounted_price_when_valid_coupon_applied() {
+        // Arrange
+        let mut mock_pg = MockPaymentGateway::new();
+        mock_pg.expect_charge()
+            .with(eq(9000u32))
+            .times(1)
+            .returning(|_| Ok(()));
+        let service = CheckoutService { pg: mock_pg };
+
+        // Act
+        let result = service.checkout(10000, "SALE10");
+
+        // Assert
+        assert_eq!(result.unwrap(), 9000);
+    }
+}
+```
+
+## using mockall
+
+**`#[automock]` — Apply to trait, Automatic Mock type generation:**
+
+```rust
+use mockall::automock;
+
+#[automock]
+pub trait PaymentGateway {
+    fn charge(&self, amount: u32) -> Result<(), PaymentError>;
+    fn refund(&self, amount: u32) -> Result<(), PaymentError>;
+}
+// MockPaymentGateway is generated automatically
+
+// Usage
+let mut mock = MockPaymentGateway::new();
+mock.expect_charge()
+    .with(eq(9000u32))
+    .times(1)
+    .returning(|_| Ok(()));
+
+// Simulate an error
+mock.expect_charge()
+    .returning(|_| Err(PaymentError::Timeout));
+```
+
+**mockall is unnecessary in generic functions (more efficient):**
+```rust
+// Already testable; no mock crate needed
+fn process<R: Repository>(repo: &R) { ... }
+
+// In the test:
+struct FakeRepo { data: Vec<Item> }
+impl Repository for FakeRepo { ... }  // simple in-memory implementation
+```
+
+`dyn Trait`use mockall only if necessary. Prefer generic bounds if possible.
+
+**HTTP mock: wiremock-rs (asynchronous recommended)**
+```rust
+use wiremock::{MockServer, Mock, ResponseTemplate};
+use wiremock::matchers::{method, path};
+
+#[tokio::test]
+async fn test_external_api_call() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path("/users/1"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(&user))
+        .mount(&server)
+        .await;
+    // Use server.uri() in test code
+}
+```
+
+## rstest (fixture + parametrize)
+
+```rust
+use rstest::{fixture, rstest};
+
+#[fixture]
+fn mock_pg() -> MockPaymentGateway {
+    let mut mock = MockPaymentGateway::new();
+    mock.expect_charge().returning(|_| Ok(()));
+    mock
+}
+
+#[rstest]
+fn test_checkout_with_fixture(mock_pg: MockPaymentGateway) {
+    let service = CheckoutService { pg: mock_pg };
+    assert_eq!(service.checkout(10000, "SALE10").unwrap(), 9000);
+}
+
+#[rstest]
+#[case(10000, "SALE10", Ok(9000))]
+#[case(10000, "EXPIRED", Err(CheckoutError::ExpiredCoupon))]
+#[case(4900,  "MIN5000", Err(CheckoutError::BelowMinimum))]
+fn test_checkout_cases(
+    #[case] amount: u32,
+    #[case] coupon: &str,
+    #[case] expected: Result<u32, CheckoutError>,
+) {
+    let service = CheckoutService { pg: AlwaysSucceedPg };
+    assert_eq!(service.checkout(amount, coupon), expected);
+}
+```
+
+## proptest (property-based)
+
+**proptest vs quickcheck:**
+- proptest: Explicit Strategy object, automatic shrinking, composable $\rightarrow$ recommended for new projects
+- quickcheck: Based on arbitrary trait, faster, for simple cases
+
+proptest is inspired by Haskell Hedgehog (QuickCheck X), shrinking is always correct:
+```rust
+use proptest::prelude::*;
+
+proptest! {
+    #[test]
+    fn parses_any_valid_json(s in any::<String>().prop_filter("valid", |s| is_valid_json(s))) {
+        let result = parse_json(&s);
+        prop_assert!(result.is_ok());
+    }
+}
+```
+
+## Asynchronous Testing
+
+```rust
+// Basic tokio::test (single-thread)
+#[tokio::test]
+async fn test_async_checkout() -> Result<(), Box<dyn std::error::Error>> {
+    let result = async_service.checkout(10000, "SALE10").await?;
+    assert_eq!(result, 9000);
+    Ok(())
+}
+
+// Concurrent test (multi_thread flavor)
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn test_concurrent_requests() { ... }
+
+// Time control
+#[tokio::test(start_paused = true)]
+async fn test_timeout_logic() {
+    tokio::time::advance(Duration::from_secs(10)).await;
+    // Verify timeout logic
+}
+```
+
+**tokio::spawn panic warning:**
+```rust
+// WRONG: panic is silently swallowed
+tokio::spawn(async { panic!("oops") });
+
+// CORRECT: handle the JoinHandle result
+let handle = tokio::spawn(async { heavy_work().await });
+handle.await.unwrap();  // tests must unwrap the result
+```
+
+## Coverage
+
+**`cargo-llvm-cov` Recommended** (compared to cargo-tarpaulin):
+
+| | cargo-llvm-cov | cargo-tarpaulin |
+|--|----------------|-----------------|
+| Platform | macOS, Linux, Windows | Linux x86_64 primary |
+| Precision | Region level | Line level |
+| Output | LCOV, Cobertura, HTML | LCOV, HTML, XML |
+
+```bash
+cargo install cargo-llvm-cov
+cargo llvm-cov --html
+# target/llvm-cov/html/index.html
+
+# For CI
+cargo llvm-cov --lcov --output-path lcov.info
+```
+
+## diff coverage — gate only for new code
+
+Rust does not assume an absolute coverage threshold. That is right, but without any gates, there is no machine to catch "code entered without testing." Absolute % holds legacy hostage, so (43%) crates cannot make 80% with a single PR — the gate is not on the whole thing but on the **diff** — we only look at the lines added in this change.
+
+The LCOV output of `cargo llvm-cov` is entered as is.
+
+Requires Node.js 20+.
+
+```bash
+git fetch origin main
+
+cargo llvm-cov --workspace --lcov --output-path lcov.info
+
+pip install diff-cover                     # diff-cover 9+ reads LCOV
+diff-cover lcov.info --compare-branch=origin/main --fail-under=90
+
+node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
+    --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \
+    --coverage lcov.info --fail-under 90
+```
+
+**region level precision is not used directly in the gate.** The strength of `cargo llvm-cov` is counting multiple branches within a single line, but diff is a set of lines and there is no correspondence. When extracted by LCOV, it folds at the line level, so region information is used in the HTML report that people view, and gates are measured by lines.
+
+**Watch lines generated by macros.** Expanded code from `#[derive(...)]` and
+declarative macros can be attributed to source lines and reported as uncovered.
+If this recurs, exclude it with `#[coverage(off)]` (nightly) or
+`--ignore-filename-regex`, and explain the exclusion in the PR body.
+
+**If there are no executable new lines, it passes.** `Cargo.toml` If a PR with only document comments is dropped as 0%, the gate will soon be shut down.
+
+## Execution Command
+
+```bash
+cargo test                              # all tests
+cargo test checkout                     # filter by name
+cargo test -- --nocapture               # show println! output
+cargo test -- --test-threads=1          # sequential execution
+cargo test --lib                        # unit tests only
+cargo test --test checkout_integration  # one integration test
+```
+
+## Useful assertion
+
+```rust
+assert_eq!(left, right);
+assert_ne!(left, right);
+assert!(condition);
+assert!(matches!(value, Pattern::Variant { field }));
+
+// Panic test
+#[should_panic(expected = "index out of bounds")]
+fn test_out_of_bounds() { ... }
+```
+
+## Anti-pattern
+
+```rust
+// [X] use mockall for a generic function (unnecessary complexity)
+fn process(repo: &dyn Repository) { ... }  // vtable overhead
+// BETTER: fn process<R: Repository>(repo: &R) { ... }
+
+// [X] tests/common.rs (treated as a separate test binary)
+// CORRECT: tests/common/mod.rs
+
+// [X] ignore an error with unwrap()
+let result = service.checkout(amount, coupon).unwrap();
+// Failure cause is unclear; use expect("explanation") or the ? operator
+
+// [X] put a test helper in src without #[allow(dead_code)]
+pub fn test_helper() {}  // no cfg(test), so it enters the release binary
+
+// [X] hide a nondeterministic test with #[ignore]
+#[ignore]  // hides a race; fix the root cause
+
+// [X] call tokio::runtime::Runtime::block_on directly
+// Nested runtimes panic; use #[tokio::test].
+```

@@ -1,0 +1,90 @@
+# blob:ad5f139ff46ce234dab2c7ee3f3524029fc39466
+# Test budget
+A suite that was made fast stays fast only if every new test follows the same
+rules. A few new tests with a sleep, a real HTTP call, or a leaked timer make the
+suite slow and flaky again, and one slow new file can become the whole suite's
+long pole. The cheapest moment to prevent this is when the test is written.
+## Design checklist
+| Question | Good | Bottleneck |
+|---|---|---|
+| What level? | Unit test of the function or component; integration only for wiring | End-to-end test for logic a unit test could check |
+| Does it depend on time? | Fake timers, an injected clock, or a configurable interval | A sleep, or waiting out a real interval |
+| Does it test a failure? | A non-retried error, or zero retry delays injected | A thrown network error that the client retries with backoff |
+| What does it touch? | Temp dir, port 0, its own schema, in-memory fakes | Fixed paths, fixed ports, a shared database, real services |
+| What does it leave behind? | Nothing: servers closed, timers cleared, threads joined | Background timers or sockets that hold the process open |
+| What does it assert? | Expected behavior from the specification; fails when the fix is reverted | "No exception", or a snapshot of current output |
+| Where does it live? | The feature's test file, kept small | Appended to the largest, slowest file |
+A new end-to-end test needs a stated reason. Language-specific fixes for time,
+retries, and open handles are in the verify skill's test waits reference.
+## Budget check for new and changed tests
+Run the scanner and the profiler on the test files this change adds or modifies:
+BASE=${BASE:-origin/main}
+FILES=$(git diff --name-only --diff-filter=AM "$BASE"...HEAD | grep -E '(^|/)(test|tests|spec|__tests__)/|[._](test|spec)\.' || true)
+[ -z "$FILES" ] && exit 0
+node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/test_smells.js $FILES
+node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/test_profile.js --cmd "npx vitest run {file}" --max-seconds 2 --fail-on-waiting --repeat 5 $FILES
+- `--max-seconds` is the per-file budget: unit files 1 to 2 s, integration files
+up to 10 s, end-to-end set separately. A new file must never become the suite's
+current long pole.
+- `--fail-on-waiting` fails a file that mostly waits even under budget; that wait
+will grow.
+- `--repeat 5` runs each file five times; differing outcomes are reported as
+FLAKY. For stronger checks, add random order inside `--cmd` (`--randomize`,
+`-shuffle=on`, `pytest-randomly`) and run once with more workers than cores.
+- A WAITING, OVER, or FLAKY result is fixed in the test or in the code's timers,
+never by raising the budget. The profiler exits 1 on any violation, so the same
+command works as a CI step or a pre-push hook.
+- For Go, the unit is a package: pass `$(dirname $FILES | sort -u)` with
+`--cmd "go test ./{file}"`.
+## Enforce it in CI
+A GitHub Actions job for a JavaScript project (adapt the runner command). Keep the
+complete suite as a separate required check; this job only guards what the pull
+request adds.
+name: new-tests-budget
+on: pull_request
+jobs:
+budget:
+runs-on: ubuntu-latest
+steps:
+- uses: actions/checkout@v4
+with: { fetch-depth: 0 }
+- uses: actions/setup-node@v4
+with: { node-version: 22 }
+- run: npm ci
+- name: Budget for new and changed test files
+run: |
+FILES=$(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD \
+| grep -E '(^|/)(test|tests|spec|__tests__)/|[._](test|spec)\.' || true)
+[ -z "$FILES" ] && exit 0
+node "$JSTACK_PLUGIN_ROOT/skills/verify/scripts/test_smells.js" $FILES
+node "$JSTACK_PLUGIN_ROOT/skills/verify/scripts/test_profile.js" --cmd "npx vitest run {file}" \
+--max-seconds 2 --fail-on-waiting --repeat 5 $FILES
+Copy the two scripts into the repository, or point `JSTACK_PLUGIN_ROOT` at an
+installed jstack payload, when CI has no plugin installation.
+## A guard for structural fixes
+When a structural cause is fixed (a timer that held processes open, a retry that
+tests triggered), add a test that fails if it returns. For example, a fixture that
+leaves 30 s timers behind must exit within 10 s, run in a child process with a
+timeout. A change that reintroduces the problem then fails in seconds instead of
+silently adding minutes.
+## Review a test someone else wrote
+Agent-written tests often have weak or no assertions. Before accepting one:
+- Does each test assert the expected behavior from the specification or issue,
+not merely "no exception"?
+- Would it fail if the fix were reverted? Revert the source change and run it, or
+prove it with `node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/red_probe.js`.
+- Are error paths covered, not only the happy path?
+- Is it deterministic (stress it 20 times in random order) and fast (no waits)?
+Never make a test pass by deleting, skipping, special-casing, or loosening it
+unless the task is to change that test. If a test contradicts the
+specification, say so and ask.
+## Order of work for a new test
+1. Write it from the specification or bug report; run it and watch it fail for
+the right reason.
+2. Change the code; run the test and the affected tests.
+3. Run the budget check on the files added or changed, and fix any WAITING, OVER,
+or FLAKY result in the test.
+4. Report the budget check and the affected-check summary; the required gate runs
+the complete suite.
+5. Leave the suite at least as fast as you found it: no new sleeps, fixed ports,
+fixed paths, or real network calls.

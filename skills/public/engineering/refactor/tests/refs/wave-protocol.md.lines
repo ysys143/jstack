@@ -1,0 +1,81 @@
+# blob:d7df385cf5c5fa2410f98c37fcf0c0bd5dc775a3
+# Wave protocol — restraint, and what a baseline-free scan may claim
+`cleanup` sweeps the whole codebase by definition. That is the difference from
+`audit`, and it is also the reason two rules written for `audit` matter more
+here than there. This file carries both, restated for a skill that has no
+baseline.
+## Why this file exists at all
+The restraint rule and the delta/state split were first written for a
+diff-shaped review tool — a PR reviewer, where the set of things it may say is
+already bounded by the size of the change. `cleanup` has no such bound.
+| | `audit` | `cleanup` |
+|---|---|---|
+| Input | A named target with a baseline | The codebase, entire |
+| Output | A verdict | A work plan |
+| Natural bound on output size | The diff | **none** |
+**The flooding risk is overwhelmingly larger here.** A rule that keeps a PR
+review readable is a rule that keeps a whole-repository sweep from being useless.
+## Restraint — no nit-flood
+> Do not flood the review with nits. Prefer a small number of high-confidence
+> findings.
+A sweep that returns two hundred findings has not found two hundred problems; it
+has moved the sorting work onto the reader and called that a result. The
+findings that matter are then indistinguishable from the ones that do not,
+which is the same outcome as reporting nothing, at greater cost.
+### The output cap
+**One run reports at most twenty findings.** When more qualify, the list is
+truncated and the report states the truncation in the form:
+```
+Show N of M
+```
+Two rules govern the cut.
+1. **What is cut is the lower priority, not the lower confidence.** Cutting by
+confidence keeps the speculative findings and drops the certain ones, which
+inverts the restraint rule it was meant to serve
+2. **The count of what was cut is stated, never implied.** A silent truncation
+turns a bounded report into a false claim of completeness
+`scripts/cap_findings.js` enforces the cap so it does not depend on anyone
+remembering it. It sorts by severity, keeps the top twenty, and reports how many
+it cut.
+## Delta axes and state axes
+The taxonomy's axes divide by whether they need a baseline to mean anything.
+| Delta axis — needs a baseline | State axis — needs none |
+|---|---|
+| Pushed a file from under 1000 lines to over | The file is over 1000 lines |
+| Branch complexity **this change added** | Thin wrappers, identity abstractions |
+| A cohesive module became **more** coupled | Feature logic leaking onto a shared path |
+| The approval bar's five "the PR ..." items | Magic hiding a simple structure; casts and `any` that blur a contract |
+| | Code judo — restructuring that removes the branch entirely |
+**`cleanup` has no baseline, so the delta axes are void here.** Applying them
+anyway produces a finding whose evidence does not exist: nobody can say what a
+file's length was before, when there is no before.
+### Why the split is a burden question, not a bookkeeping one
+The upstream rule this comes with is *presumptive blocker* — the default verdict
+is refusal and the burden of proof sits with the author. In a PR that is exactly
+right: the author is present, the change is theirs, and they can discharge the
+burden.
+Run the same rule over a whole repository with no baseline and the author is
+gone. **The burden lands on whoever inherited the code**, for defects they did
+not introduce, with no bound on how many. That is not a review; it is an
+unbounded backlog handed to the wrong person.
+The split is what stops this. State axes stand on their own evidence and can be
+reported to anyone. Delta axes cannot, so here they are not reported at all.
+## `cleanup` produces a plan, not a verdict
+There is no baseline, so there is nothing to approve or refuse, so the vocabulary
+of refusal does not apply. **The output of a `cleanup` sweep never uses a verdict word.**
+It names what to change, under which axis, in what order — and the reader
+decides.
+This matches the survey form of the two output shapes: with a baseline, a
+verdict; without one, findings ordered by priority and no verdict word anywhere.
+## One wave, one axis
+A wave is one pass over the selected scope applying exactly one axis.
+| Rule | Why |
+|---|---|
+| One axis per wave | A pass that deletes dead code *and* inverts a dependency cannot be half-reverted when one of them is wrong |
+| At most twenty findings per wave | The cap is per run, and a wave is a run |
+| Tests re-run after each wave, not at the end | A failure after five mixed waves does not say which wave caused it |
+| A wave that cannot be locked is not run | Locking the behaviour comes before the first wave, not between waves |
+The pass order in `SKILL.md` is the wave order. Removing swallowing fallbacks
+comes before consolidating shared paths, because consolidating a fallback that
+swallows promotes the defect onto the shared path and the same bug then reaches
+every caller.

@@ -1,0 +1,157 @@
+# Taste Gate: pre-output checklist and delivery visual review
+
+Source: `up:diagram-design` `skills/diagram-design/SKILL.md` §9 (MIT).
+Keep this paired **one-to-one** with §6's six connector rules.
+Only the final visual-review section has a different source: `up:archify`
+`SKILL.md` §Delivery and `references/delivery-contract.md` (MIT).
+See the mapping table in `NOTICE` for the import record.
+
+**This document contains two contracts applied at different times.** They share a
+file because both require visual inspection and apply consecutively to the same artifact.
+
+| Sections | Timing |
+|---|---|
+| Type fit, omission test, signal, connectors, Korean text, automated checks | **Before output** |
+| Visual review | **At delivery, after output** |
+
+Run the following six sections **before** output. Any failure requires returning to
+pre-drafting decisions.
+
+## Type fit
+
+- [ ] When behavior matters, was the **semantic pattern chosen before the visual type**?
+- [ ] Does the visual type fit the layout?
+- [ ] Were type, pattern, size preset, and planned deletions stated **before drawing**?
+- [ ] **Could a table or paragraph do the same job?** If so, do not draw.
+- [ ] For an import, are format, size, density, and audience specified? Do the `viewBox` and type ramp match the preset?
+
+## Omission test: reversing upstream's deletion test
+
+**[Local reversal]** Upstream §9 asks what can be removed. That can improve web
+diagrams, but in procurement **removing an item can omit an RFP response** and lose
+points. Reverse the test: count **missing items**, not removable ones.
+
+- [ ] **Does the diagram omit any RFP requirement?** Compare requirement IDs.
+- [ ] Are all components promised in the proposal body present in the diagram?
+- [ ] Are interfaces and integration partners present? Without a relationship, there is no response.
+- [ ] If something is missing, is **its intentional omission documented**? Undocumented omissions cost points.
+
+**Do not run a deletion-seeking test here.** Actual duplication is addressed above
+by the type-fit question of whether a table or paragraph does the same job.
+
+This section applies to `procurement`. In `explanatory` context, simplify only when
+the reader's meaning survives and report merges, collapses, and deletions in a fidelity
+ledger. Required items remain mandatory in either context.
+
+## Signal
+
+- [ ] **Do the same distinctions remain when all color is removed?** Apply the grayscale
+      legibility dimension in `output-spec.md`. If not, add shape, line weight, border,
+      or label **redundantly with color**.
+- [ ] Does the legend cover **all and only** the types used? Reserve the bottom 60px
+      or rightmost 180px for it. Legend text must meet the effective-pt floor too.
+- [ ] Is the diagram within its procurement complexity budget: system architecture
+      20–40, project organization 15–25, WBS 30–60? See `output-spec.md`. Upstream's
+      standard of nine nodes, 12 arrows, and **at most two accent colors** targets
+      web diagrams and does not apply unchanged to our main categories.
+
+## Connectors: one-to-one with §6
+
+- [ ] **Were arrows drawn before boxes?** This is the prerequisite for the other checks
+      and validator. Reversing the order makes the validator always report zero findings.
+- [ ] Are there no diagonal connectors? Diagonals **automatically fail**.
+- [ ] Is label-to-connector clearance 6–10px?
+- [ ] Are there no overlapping connectors?
+- [ ] Are same-side attachment points separated by ≥12px?
+- [ ] Do connectors avoid passing behind third boxes? Any exception must satisfy dashed-line, label-placement, and arrowhead rules.
+- [ ] Do label masks avoid overlapping nodes painted later?
+
+## Korean text
+
+- [ ] Do Korean labels specify a **Korean font stack**, without reusing the Japanese stack?
+- [ ] Are CJK labels at least 12px in `viewBox` units?
+- [ ] **Are they at least 10pt effective size at final placement width?** Passing 12px
+      does not establish this (`scripts/check_effective_size.js`).
+- [ ] Were geometry validators run **again** after translation?
+
+## Automated checks
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-geometry.js <file>
+```
+
+The checklist supplies visual inspection and the validator supplies machine checks.
+**Run both.** Without the validator, the six rules become recitation; without the
+checklist, type fit, the deletion test, and signal lie outside inspection.
+
+## Visual review at delivery: automatic capture is not human review
+
+Source: `up:archify` `SKILL.md` §Delivery and `references/delivery-contract.md` (MIT).
+**Only the document contract was imported.** Upstream's 825-line `visual-check`
+(Node and Chrome DevTools pipe) was not imported. This implementation uses Python
+and does not add a Node dependency.
+
+**Only this section is a post-output contract.** The checklist above precedes drawing;
+this section applies at handoff. `SKILL.md`, Phase 5, invokes it and requires one
+status line in the report. Without a caller, this section would remain unread documentation.
+
+### Four statuses; automation can establish only one
+
+| Status | When |
+|---|---|
+| `visual_review: pending` | **Only automated capture or measurement was performed.** A screenshot is review material, not a passing verdict |
+| `visual_review: passed` | A person or image reader **actually inspected** the rendered artifact |
+| `visual_review: failed` | Inspection found concrete defects; record them |
+| `visual_review: skipped (이미지 리더 없음)` | No means of viewing the artifact was available |
+
+Passing automated measurements **does not promote** `pending` to `passed`.
+Doing so would make the claim of review meaningless.
+
+### Do not hide overflow to pass
+
+If labels exceed the `viewBox` or nodes invade the safe area, **repair the layout**.
+Do not obtain a pass through:
+
+- `overflow: hidden`, `clipPath`, or wrappers that crop SVG.
+- Content clipping that reports a truncated label as fitting.
+- **Typography reduction**: going below the 12px floor in `output-spec.md` automatically fails.
+- Stretching the SVG and breaking its aspect ratio.
+
+Repair in this order: **relocate -> reroute -> shorten -> restructure -> delete**.
+Shortening preserves meaning and minimum type sizes. Deletion is the last resort:
+record why the relationship is unnecessary and compare against the original input.
+Never delete a procurement requirement to satisfy geometry checks.
+
+### Limitations: no enforcement
+
+**This section has no validator.** `tests/run_tests.js` checks only whether the
+clauses remain in the document. Status reporting is a person's **self-report**.
+
+Automated overflow measurement needs a renderer, which was not imported. Claiming
+nonexistent enforcement would also invalidate the automated-checks section above.
+
+Even the document-presence check is narrow. The suite uses **complete sentences**
+as needles to detect reversals such as changing "does not promote" to "promotes"
+or deleting prohibited actions. An earlier version checked only six words and
+**stayed green when all three subsections were reversed**. Sentence needles still
+**cannot detect contradictory additions that leave the originals intact**: they
+check presence, not whole-document consistency. Detecting those contradictions
+requires a reader.
+
+## Upstream requirements not imported
+
+Upstream §9 contains 37 items. This version imports **18 plus three local Korean-text
+items**. Missing coverage is listed explicitly below.
+
+| Not imported | Reason |
+|---|---|
+| **Accessibility SVG contract** (`role="img"`, `aria-labelledby`, `<title>` as the first child before `<defs>`, diagram-specific ID prefixes) | Historical gap closed by the v2.6.22 bundled `self_check.py`; run it using `upstream-integration.md` |
+| All **4px grid** thresholds | Same reason |
+| Passing `self_check.py` | Now required for newly authored artifacts; its scope is accessibility, single-file safety, and motion basics, not layout correctness |
+| Six typography requirements, including the JetBrains Mono prohibition | Skin-specific contracts differ from our procurement context |
+
+The vendored `test-verify-geometry.js` still uses accessibility markup in its
+`SVG_HEAD` fixture. Accessibility enforcement now comes from the separate bundled
+`self_check.py`; the geometry fixture alone never establishes that enforcement.
+
+Run the JavaScript CLI checks with Node >=20.

@@ -1,0 +1,50 @@
+# NOTICE — provenance and local decision record
+
+**Vercel authored all 78 rules in this skill.** We authored only `SKILL.md`, `references/`, `rules/_sections.md`, and `tests/`.
+
+## Source
+
+| Item | Value |
+|---|---|
+| Inspiration and original | **Vercel** — <https://github.com/vercel-labs/agent-skills> |
+| Version | commit `063bee9` (2026-08-28) |
+| License | **MIT**, declared in the upstream README and skill frontmatter; the repository has no `LICENSE` file (`LICENSE.vercel-agent-skills`) |
+| Imported skills | `skills/react-best-practices` (70 rules) and `skills/composition-patterns` (8 rules) |
+| Byte binding | `UPSTREAM.sha256` (78 unaltered entries) |
+
+Upstream declares MIT in prose only. `LICENSE.vercel-agent-skills` records that declaration with the MIT terms; update this table if upstream adds a license file.
+
+## Four local changes
+
+**1. We combined two skills.** Upstream publishes performance rules as `react-best-practices` and authoring patterns as `composition-patterns`. Both govern React code and their prefixes do not overlap (`async-`, `bundle-`, and so on versus `architecture-`, `state-`, and so on). Combining them avoids paying for two persistent skill descriptions in every session.
+
+**2. We authored `rules/_sections.md`.** Both upstream skills have independently numbered section files. Keeping both would create two ordering authorities. We merged them into a twelve-section table, so this file is absent from `UPSTREAM.sha256`.
+
+**3. We omitted `_template.md`.** Upstream uses it to write new rules. We import rules rather than author them, and can fetch the template if that changes.
+
+**4. We omitted `AGENTS.md`, `README.md`, and `metadata.json`.** Those are upstream packaging. Our manifest and `SKILL.md` fill that role.
+
+## Rule content is unaltered
+
+All 78 files preserve upstream bytes and `UPSTREAM.sha256` enforces that. Six Vercel mentions remain because inspection found only context: one Fluid Compute note and two blog citations. Platform-independent rules such as LRU caching, function-result memoization, and barrel imports do not justify breaking source fidelity.
+
+## Known coupling: ten Next.js rules
+
+Ten of the 78 rules assume Next.js:
+
+- `server-hoist-static-io`
+- `server-after-nonblocking`
+- `server-cache-react`
+- `server-auth-actions`
+- `bundle-dynamic-imports`
+- `bundle-analyzable-paths`
+- `bundle-barrel-imports`
+- `bundle-defer-third-party`
+- `rendering-script-defer-async`
+- `rendering-hydration-suppress-warning`
+
+When Next.js is absent, these ten rules are out of scope. The routing table in `SKILL.md` records the same fact, and the contract suite reconciles this list with the files. The fourteen `js-` rules are plain JavaScript performance rules and do not require React.
+
+## Upstream drift
+
+React and Next rules age with framework versions. Update them through the `upstream` skill: fetch again, diff against `UPSTREAM.sha256`, reapply the four local decisions above, then update the version and manifest together.

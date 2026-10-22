@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a jstack malfunction with the fields `jst report draft` produces.
+title: "[report] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `jst report draft ID` fills these fields from local evidence and redacts them.
+        Remove home paths, user names, emails, tokens and organization profile values
+        before posting a hand-written report.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One line describing what went wrong.
+    validations:
+      required: true
+  - type: input
+    id: surface
+    attributes:
+      label: Surface
+      description: jstack skill, command, CLI action or hook, for example `jstack:disk-manager`, `jst report scan` or `hook:check_model_versions`.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence excerpt
+      description: Redacted tool error or hook output, at most 2,000 characters.
+      render: text
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: jstack version and package digest from `~/.jstack/installation.json` or, without one, the `package-receipt.json` of the managed marketplace or of the running plugin; host and host version, OS, and Node.
+      value: |
+        - jstack version:
+        - Package digest:
+        - Host:
+        - Host version:
+        - OS:
+        - Node:
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Doctor summary
+      description: Exit code of `scripts/doctor.js` and its blocked rows.

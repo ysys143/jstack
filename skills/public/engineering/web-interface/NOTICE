@@ -1,0 +1,42 @@
+# NOTICE — provenance and local decision record
+
+**Vercel authored this skill's rules.** We authored only `SKILL.md` and `tests/`.
+
+## Source
+
+| Item | Value |
+|---|---|
+| Inspiration and original | **Vercel** — <https://github.com/vercel-labs/web-interface-guidelines> |
+| Version | commit `e3d624b` |
+| License | **MIT** |
+| Imported artifact | `command.md` -> `references/web-interface-guidelines.md` (unaltered) |
+| Byte binding | `UPSTREAM.sha256` |
+
+Vercel also authored the wrapper skill: <https://github.com/vercel-labs/agent-skills/tree/main/skills/web-design-guidelines>. We imported only the rules, for the reasons below.
+
+## One local change with material consequences
+
+**The upstream skill fetches its rules on every invocation.**
+
+```bash
+curl -s https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+```
+
+We vendor the file for three reasons.
+
+1. **It otherwise fails without a network.** A marketplace installation includes the vendored artifact for offline sessions.
+2. **The contract otherwise has no subject to measure.** This repository measures reference content by volume floor, line survival, and commit-blob binding. None can measure content hidden behind a URL.
+3. **Silent upstream changes otherwise go unnoticed.** The URL targets `main`; vendoring plus a hash makes every update visible as a diff.
+
+The `diagram` skill reached the same decision when an upstream validator was restricted to a repository checkout and unavailable in marketplace installations.
+
+**The cost is freshness.** We retain old rules until we fetch an update. The `upstream` skill owns that update procedure.
+
+## The rules are byte-for-byte unchanged
+
+`UPSTREAM.sha256` binds their bytes. The rules are framework-independent accessibility, form, focus, and keyboard guidance and apply with or without React.
+
+## License text
+
+vercel-labs/web-interface-guidelines is MIT-licensed (Copyright (c) 2025 Vercel Labs);
+the full text is `LICENSE.web-interface-guidelines`.

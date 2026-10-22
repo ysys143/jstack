@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "requirementId": "R1",
+  "baselineSuite": "skills/proof/tests/run_tests.py",
+  "nativeSuite": "skills/proof/tests/run_tests.ts",
+  "baselineTotal": 80,
+  "nativeTotal": 80,
+  "unchangedDocumentFloors": {
+    "SKILL.md": 28,
+    "references/character-count.md": 6,
+    "references/spell-check.md": 6
+  },
+  "unchangedCombinedBodyDeletionFloor": 40,
+  "scriptOwnership": [
+    {
+      "baseline": [
+        {
+          "path": "scripts/korean_character_count.js",
+          "floor": 7
+        },
+        {
+          "path": "scripts/korean_character_count.py",
+          "floor": 15
+        }
+      ],
+      "native": {
+        "path": "scripts/korean_character_count.js",
+        "floor": 23
+      },
+      "reason": "One canonical Node counter owns both implementations contracts (7 + 15) plus the measured text/file/stdin route contract, for a floor of 23."
+    },
+    {
+      "baseline": [
+        {
+          "path": "scripts/korean_spell_check.py",
+          "floor": 7
+        }
+      ],
+      "native": {
+        "path": "scripts/korean_spell_check.js",
+        "floor": 7
+      },
+      "reason": "Native ESM probes intercept fetch before import, measuring CLI and direct-library consent boundaries without contacting the service."
+    }
+  ],
+  "axisChanges": [
+    {
+      "baseline": "Optional Python/Node parity for 16 inputs and both profiles",
+      "native": "Required deployed Node output against fixed expectations captured from the independent legacy Python implementation during authoring",
+      "reason": "The runtime does not execute Python or compare the canonical counter with itself. Unreadable output remains a failed judgment."
+    },
+    {
+      "baseline": "Python LINE_BREAKS declaration and use; all five forms",
+      "native": "Canonical JavaScript LINE_BREAK_PATTERN declaration and use by both counting paths; all five forms",
+      "reason": "Both original single-source checks survive with the native symbol and syntax."
+    },
+    {
+      "baseline": "Separate Python script deletion meta-judgment",
+      "native": "Text/file/stdin input-route equivalence with CRLF and emoji",
+      "reason": "Consolidating two script paths removes one duplicate ownership meta-judgment; a new actual runtime judgment replaces it and preserves the total of 80."
+    },
+    {
+      "baseline": "Restricted-PATH Python fallback with a declared optional Node parity skip",
+      "native": "Restricted-PATH child uses the known absolute Node executable and must retain every non-environmental judgment",
+      "reason": "Node is required for the native suite. No checker absence or skipped runtime judgment is accepted as success."
+    }
+  ],
+  "evidenceStatus": "Implementation crosswalk only; acceptance requires current hash-bound owning-suite and deletion results."
+}

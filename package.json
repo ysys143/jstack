@@ -1,0 +1,43 @@
+{
+  "name": "@ysys143/jstack",
+  "version": "0.0.1",
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "jstack runtime and installer for Claude Code and Codex",
+  "type": "module",
+  "bin": {
+    "jst": "dist/cli/main.js"
+  },
+  "files": [
+    "dist/",
+    "skills/support/host-audit/references/host-rules.json",
+    "LICENSE",
+    "README.md",
+    "NOTICE.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome lint .",
+    "lint:python": "uvx --from ruff==0.16.8 ruff check .",
+    "prepack": "npm run build && node dist/packaging/npm-package.js",
+    "test": "npm run build && node dist/packaging/prepare-native.js && node scripts/run-node-tests.mjs",
+    "inventory": "node dist/packaging/build.js inventory",
+    "release:local": "node dist/packaging/release.js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@types/node": "20.19.43",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "0.9.12",
+    "fflate": "0.8.3",
+    "smol-toml": "1.8.0",
+    "tar": "7.5.22",
+    "yaml": "2.8.3"
+  }
+}

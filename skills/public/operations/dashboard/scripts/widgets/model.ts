@@ -1,0 +1,226 @@
+/**
+ * Model widget - displays current Claude model name and version with effort level and fast mode
+ * e.g. "Opus 5.5(M) ↯"; the version is parsed from display_name (parseModelName also reads
+ * id-shaped names, but the widget itself only ever passes display_name)
+ * @handbook 2.1-naming-conventions
+ *
+ * Effort level: Shown for Opus, Sonnet, and Fable (MAX/X/H/M/L), hidden for Haiku
+ * Fast mode: Opus-only feature (Opus 5 / 4.8), indicated by ↯ symbol
+ *
+ * Data sources, in order: the live `effort.level` / `fast_mode` fields on stdin
+ * (Claude Code ≥ 2.1.25x — reflect mid-session `/effort`, `--effort`, session-only
+ * picks, and the default-effort hold on Fable 5 / Opus 4.8), then settings.json
+ * for older Claude Code versions that don't send them.
+ * @handbook 3.3-widget-data-sources
+ * @tested scripts/__tests__/widgets.test.ts
+ * @tested scripts/__tests__/model-settings.test.ts
+ */
+
+import { readFile, stat } from 'fs/promises';
+import { join } from 'path';
+import { getClaudeConfigDir } from '../utils/config-dir.js';
+import type { Widget } from './base.js';
+import type { WidgetContext, ModelData, EffortLevel } from '../types.js';
+import { RESET, getTheme } from '../utils/colors.js';
+import { ICON } from '../utils/emoji.js';
+import { parseModelName } from '../utils/formatters.js';
+import { isZaiProvider } from '../utils/provider.js';
+
+/**
+ * Effort badge labels, ordered high→low. An explicit map (not `effortLevel[0]`)
+ * because 'max' and 'medium' both start with 'M'. Typing it as
+ * Record<EffortLevel, string> makes the compiler require a label for every tier,
+ * so a newly added EffortLevel can't silently render a wrong/blank badge.
+ */
+const EFFORT_BADGE: Record<EffortLevel, string> = {
+  max: 'MAX',
+  xhigh: 'X',
+  high: 'H',
+  medium: 'M',
+  low: 'L',
+};
+
+/** Valid effort tiers, derived from the badge map so the two never drift. */
+const EFFORT_LEVELS = new Set<string>(Object.keys(EFFORT_BADGE));
+
+function isEffortLevel(value: unknown): value is EffortLevel {
+  return typeof value === 'string' && EFFORT_LEVELS.has(value);
+}
+
+interface ModelSettings {
+  effortLevel: EffortLevel;
+  fastMode: boolean;
+}
+
+/**
+ * Fallback effort used only when the user has never set one — no per-model
+ * `modelSettings[<id>].effortLevel` or top-level `effortLevel` in settings.json
+ * and no `CLAUDE_CODE_EFFORT_LEVEL` override. Claude Code's
+ * unset default is 'high' for every model the `/model` picker exposes (Opus 4.8,
+ * Sonnet 5, Fable 5; Haiku has no effort tier, so render() hides its badge), so
+ * this returns 'high'.
+ *
+ * When the user picks any tier from `/effort` (low/medium/high/xhigh/max), that
+ * value is read from settings.json/env upstream in getModelSettings() and this
+ * fallback is never consulted.
+ *
+ * `_modelId` is intentionally unused today, kept as the seam for restoring
+ * per-model defaults if some future model's unset default diverges from 'high'.
+ */
+export function getDefaultEffort(_modelId: string): EffortLevel {
+  return 'high';
+}
+
+/**
+ * Path is part of the cache key because CLAUDE_CONFIG_DIR can switch
+ * mid-process and mtime alone can collide across directories.
+ */
+let settingsCache: {
+  rawEffort: unknown;
+  rawModelSettings: unknown;
+  fastMode: boolean;
+  path: string;
+  mtime: number;
+} | null = null;
+
+/**
+ * Claude Code keys `modelSettings` by the model id with the `[1m]` context-window
+ * suffix stripped (and compares case-insensitively), while the status line's
+ * `model.id` keeps that suffix for 1M-context sessions — so both sides are
+ * normalized the same way before they're compared.
+ */
+function normalizeModelId(modelId: string): string {
+  return modelId.replace(/\[1m\]$/i, '').toLowerCase();
+}
+
+/** The validated `effortLevel` of one `modelSettings` entry, if it has one. */
+function effortOf(perModel: unknown): EffortLevel | undefined {
+  if (!perModel || typeof perModel !== 'object') return undefined;
+  const candidate = (perModel as Record<string, unknown>).effortLevel;
+  return isEffortLevel(candidate) ? candidate : undefined;
+}
+
+/**
+ * Resolve the effort tier for `modelId` from a parsed settings.json.
+ * `/effort` writes per-model values to `modelSettings[<model id>].effortLevel`
+ * (the top-level `effortLevel` is the legacy global key and may hold a stale
+ * value once per-model settings exist), so per-model wins, then top-level,
+ * then the default. Within `modelSettings` an exact key wins over a
+ * suffix-normalized match, mirroring Claude Code's own lookup order.
+ */
+function resolveEffort(
+  rawModelSettings: unknown,
+  rawEffort: unknown,
+  modelId: string,
+  defaultEffort: EffortLevel
+): EffortLevel {
+  if (rawModelSettings && typeof rawModelSettings === 'object' && modelId) {
+    const entries = rawModelSettings as Record<string, unknown>;
+    const exact = effortOf(entries[modelId]);
+    if (exact) return exact;
+    const wanted = normalizeModelId(modelId);
+    for (const [key, perModel] of Object.entries(entries)) {
+      if (normalizeModelId(key) !== wanted) continue;
+      const candidate = effortOf(perModel);
+      if (candidate) return candidate;
+    }
+  }
+  return isEffortLevel(rawEffort) ? rawEffort : defaultEffort;
+}
+
+async function getModelSettings(modelId: string): Promise<ModelSettings> {
+  const defaultEffort = getDefaultEffort(modelId);
+  // Same precedence as Claude Code: a valid env override beats settings.json
+  const envEffort = process.env.CLAUDE_CODE_EFFORT_LEVEL;
+  const envOverride = isEffortLevel(envEffort) ? envEffort : undefined;
+  const settingsPath = join(getClaudeConfigDir(), 'settings.json');
+
+  try {
+    const fileStat = await stat(settingsPath);
+    if (
+      settingsCache &&
+      settingsCache.path === settingsPath &&
+      settingsCache.mtime === fileStat.mtimeMs
+    ) {
+      return {
+        effortLevel: envOverride ?? resolveEffort(
+          settingsCache.rawModelSettings,
+          settingsCache.rawEffort,
+          modelId,
+          defaultEffort
+        ),
+        fastMode: settingsCache.fastMode,
+      };
+    }
+    const content = await readFile(settingsPath, 'utf-8');
+    const settings = JSON.parse(content);
+    const rawEffort = settings.effortLevel;
+    const rawModelSettings = settings.modelSettings;
+    const fastMode = settings.fastMode === true;
+    settingsCache = {
+      path: settingsPath,
+      mtime: fileStat.mtimeMs,
+      rawEffort,
+      rawModelSettings,
+      fastMode,
+    };
+    return {
+      effortLevel: envOverride ?? resolveEffort(rawModelSettings, rawEffort, modelId, defaultEffort),
+      fastMode,
+    };
+  } catch {
+    settingsCache = null;
+  }
+
+  return { effortLevel: envOverride ?? defaultEffort, fastMode: false };
+}
+
+export const modelWidget: Widget<ModelData> = {
+  id: 'model',
+  name: 'Model',
+
+  async getData(ctx: WidgetContext): Promise<ModelData | null> {
+    const { model, effort, fast_mode } = ctx.stdin;
+    const modelId = model?.id || '';
+
+    // Live session values win: Claude Code sends what the session is actually
+    // using, which settings.json can't know (session-only /effort picks,
+    // --effort, CLAUDE_CODE_EFFORT_LEVEL applied upstream, default-effort hold).
+    const liveEffort = isEffortLevel(effort?.level) ? effort.level : undefined;
+    const liveFastMode = typeof fast_mode === 'boolean' ? fast_mode : undefined;
+
+    if (liveEffort !== undefined && liveFastMode !== undefined) {
+      return {
+        id: modelId,
+        displayName: model?.display_name || '-',
+        effortLevel: liveEffort,
+        fastMode: liveFastMode,
+      };
+    }
+
+    const settings = await getModelSettings(modelId);
+    return {
+      id: modelId,
+      displayName: model?.display_name || '-',
+      effortLevel: liveEffort ?? settings.effortLevel,
+      fastMode: liveFastMode ?? settings.fastMode,
+    };
+  },
+
+  render(data: ModelData): string {
+    // Version is shown so sessions still on an older release stand out (#98).
+    // Badges key off the family alone, so the version never changes them.
+    const { family, version } = parseModelName(data.displayName);
+    const name = version ? `${family} ${version}` : family;
+    const icon = isZaiProvider() ? ICON.orangeCircle : '◆';
+
+    // Effort badge shown for Opus/Sonnet/Fable; Haiku has no effort tier
+    const supportsEffort = family === 'Opus' || family === 'Sonnet' || family === 'Fable';
+    const effortSuffix = supportsEffort ? `(${EFFORT_BADGE[data.effortLevel]})` : '';
+
+    // Fast mode indicator (Opus-only: Opus 5 / 4.8)
+    const fastIndicator = family === 'Opus' && data.fastMode ? ' ↯' : '';
+
+    return `${getTheme().model}${icon} ${name}${effortSuffix}${fastIndicator}${RESET}`;
+  },
+};

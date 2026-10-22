@@ -1,0 +1,161 @@
+# Formatting Hook Template
+
+This template provides a code/document formatting hook for Claude Code plugins.
+Formatting hooks automatically format code, JSON, markdown, or other files according to project standards.
+
+The `PostToolUse` lifecycle events run after the matched tool operation. This
+template handles the resulting payload; it cannot undo an operation that already
+completed. Report formatting or notification failures as failures of this hook.
+
+This Node.js 20+ template formats JSON and Markdown directly and invokes
+already-installed `shfmt` or `black` for shell and Python files. It does not
+install optional language formatters.
+
+## Template Structure and Usage
+
+Copy the entire packaged directory into `hooks/formatting-hook-template/`.
+Keep `format.js` and `package.json` together; `format.ts` is the editable source.
+The packaged JavaScript runs without compilation by the user.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/formatting-hook-template/format.js\""
+      }]
+    }]
+  }
+}
+```
+
+A hook declaration wires an event and matcher to a command. It has no per-hook
+`name` or `config`. Settings come from the environment. The host supplies
+`tool_input.file_path` on stdin; manual file arguments take precedence:
+
+```text
+node hooks/formatting-hook-template/format.js file.json notes.md
+```
+
+When neither arguments nor a stdin file path are available, the template scans
+the current directory for `*.json`, `*.md`, `*.sh`, and `*.py`. It excludes
+`.git`, `node_modules`, and directory symlinks. Review the selected directory
+before a manual all-files run.
+
+## Common Formatting Tasks
+
+### JSON Formatting
+
+JSON is parsed before writing. Invalid input returns failure and is preserved.
+Successful output uses the configured indent and a final newline. JSON object
+key order follows JavaScript parsing and serialization; this is a formatter,
+not a signed-document canonicalizer. Duplicate JSON keys cannot be preserved
+by parsing into an object.
+
+### Markdown Formatting
+
+Trailing spaces are removed per line when enabled, and a missing final newline
+is added when enabled. A Markdown hard break expressed with trailing spaces
+will therefore be removed; disable trimming for documents that use that syntax.
+Content is not reflowed and headings are not rewritten.
+
+### Shell Script and Python Formatting
+
+Shell files use `shfmt -w -i 4 -bn -ci -sr`; Python files use `black -q`.
+Missing executables produce a warning and leave those files untouched.
+A formatter that runs and fails makes the operation fail. Install and pin these
+optional tools through the project's own environment before enabling them.
+The Node hook itself needs neither Bash nor Python for JSON or Markdown work.
+
+## Configuration Options
+
+| Environment variable | Default | Meaning |
+| --- | --- | --- |
+| `HOOK_INDENT` | `2` | Integer JSON indentation from 0 through 10 |
+| `HOOK_TRAILING_NEWLINE` | `true` | Add a final newline to nonempty Markdown |
+| `HOOK_TRIM_WHITESPACE` | `true` | Remove trailing Markdown whitespace |
+
+The boolean flags are enabled only by the literal value `true`. This template
+uses environment configuration; it does not read `pyproject.toml`.
+
+### File Patterns and Conditional Formatting
+
+Library callers may pass patterns to `format_all(patterns, root, config)`.
+Patterns match file basenames and support `*` and `?`. Select files explicitly
+when ignoring generated output, vendor code, or project-specific exclusions.
+An unrecognized extension emits an informational message and is not modified.
+A missing file emits a warning so a stale editor event does not abort other
+files. Invalid formatting inputs remain a failure.
+
+## Integration with Git
+
+A post-edit formatter should not stage changes. For a pre-commit customization,
+read staged paths using a NUL-delimited Git command and invoke `format_file`
+with argument arrays. Do not interpolate filenames into a shell command. Only
+restage files when the workflow explicitly owns that action; partial staging
+requires a separate preservation strategy.
+
+```typescript
+const result = spawnSync('git', ['diff', '--cached', '--name-only', '-z'], {
+  encoding: 'utf8',
+});
+if (result.status !== 0) throw new Error('Cannot read staged paths');
+for (const file of result.stdout.split('\0').filter(Boolean)) {
+  if (!format_file(file)) process.exitCode = 1;
+}
+```
+
+Import `spawnSync` from `node:child_process`. Check the intended working
+directory and avoid formatting unrelated unstaged portions of a staged file.
+
+## Tools Integration and Error Handling
+
+Add other formatters by extension using `spawnSync(executable, argv)`, keeping
+filenames as individual arguments. Check status and distinguish unavailable
+tools from invalid input. The default traversal continues across all selected
+files and returns failure if any formatter fails. Console output is diagnostic;
+validate the resulting artifact where formatting affects a delivery contract.
+
+For format validation, parse the resulting JSON or run the project's own
+checker. Do not treat an external process starting successfully as proof that
+its output meets the contract.
+
+## Performance Optimization
+
+Select changed files for incremental runs. If parallelizing, ensure each output
+file has one writer and aggregate every result. Independent files can be handled
+concurrently, but a shared temporary filename or overlapping glob can introduce
+races. The supplied implementation is sequential and can visit a file more
+than once when caller-supplied patterns overlap.
+
+## Testing
+
+Use temporary files and Node's test runner. Check exact output, idempotence,
+invalid-JSON preservation, missing optional formatters, and nonzero formatter
+status. For example:
+
+```javascript
+import assert from 'node:assert/strict';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { format_file } from './format.js';
+
+const root = mkdtempSync(join(tmpdir(), 'format-test-'));
+try {
+  const file = join(root, 'sample.json');
+  writeFileSync(file, '{"name":"example"}');
+  assert.equal(format_file(file), true);
+  const once = readFileSync(file, 'utf8');
+  assert.equal(format_file(file), true);
+  assert.equal(readFileSync(file, 'utf8'), once);
+} finally {
+  rmSync(root, { recursive: true, force: true });
+}
+```
+
+Related templates: [validation](../validation-hook-template/README.md) and
+[notification](../notification-hook-template/README.md). Consult the author
+skill's hook references for native registration and trust requirements.

@@ -1,0 +1,51 @@
+name: Node compatibility
+run-name: Node compatibility (${{ inputs.scope || 'full' }})
+
+# Run the full compatibility matrix weekly or on demand. Pull requests and master
+# pushes use the minimal jstack contract lane and do not start this 27-job matrix.
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Full matrix, Windows tests, or affected Windows state tests
+        type: choice
+        default: full
+        options: [full, windows-diagnostic, windows-state]
+      diagnostic_node:
+        description: Node version for Windows diagnostics; full matrix is unchanged
+        type: choice
+        default: '20.0.0'
+        options: ['20.0.0', '20', '21', '22', '23', '24', '25', '26', 'node']
+      test_name_pattern:
+        description: Optional regex for windows-state diagnostics; full matrix always runs all tests
+        type: string
+        default: '.*'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(startsWith(inputs.scope, 'windows-') && '["windows-latest"]' || '["ubuntu-latest","macos-latest","windows-latest"]') }}
+        node: ${{ fromJSON(startsWith(inputs.scope, 'windows-') && format('["{0}"]', inputs.diagnostic_node || '20.0.0') || '["20.0.0","20","21","22","23","24","25","26","node"]') }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+        if: inputs.scope != 'windows-state'
+      - name: Validate affected Windows state consumers
+        if: inputs.scope == 'windows-state'
+        env:
+          JSTACK_TEST_NAME_PATTERN: ${{ inputs.test_name_pattern || '.*' }}
+        run: npm run build && node dist/packaging/prepare-native.js && node --test --test-name-pattern="$env:JSTACK_TEST_NAME_PATTERN" dist/runtime/os.test.js dist/runtime/profiles.test.js dist/runtime/skill_store.test.js dist/runtime/sqlite.test.js dist/cli/init.test.js dist/skills/public/operations/disk-manager/tests/measure.test.js dist/skills/public/operations/disk-manager/tests/history.test.js dist/skills/public/operations/disk-manager/tests/snapshot.test.js dist/skills/public/operations/disk-manager/tests/cli.test.js dist/skills/public/operations/disk-manager/tests/cli-history.test.js dist/skills/public/operations/disk-manager/tests/cli-snapshot.test.js dist/skills/public/operations/session-memory/tests/migrate_sessions.test.js

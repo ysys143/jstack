@@ -1,0 +1,9 @@
+{
+  "dependency": "sqlite3",
+  "version": "5.1.7",
+  "npmTarball": "https://registry.npmjs.org/sqlite3/-/sqlite3-5.1.7.tgz",
+  "integrity": "sha512-GGIyOiFaG+TUra3JIfkI/zGP8yZYLPQ0pl1bH+ODjiX57sPhrLU5sQJn1y9bDKZUFYkX1crlrPfSYt0BKKdkog==",
+  "licenseSha256": "7686f81e580cd6774f609a2d8a41b2cebdf79bc30e6b46c3efff5a656158981c",
+  "nativeAdapter": "runtime/sqlite.ts adapts the pinned N-API Database and Statement interfaces; no upstream install scripts execute.",
+  "sqliteLicense": "SQLite is in the public domain: https://sqlite.org/copyright.html"
+}

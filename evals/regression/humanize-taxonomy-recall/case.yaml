@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: humanize-procurement-taxonomy-recall
+description: Can it reproduce the plugin-defined procurement categories K through O exactly (not recoverable from general knowledge)?
+runs: 5
+tags: [regression, humanize, ablation-discriminating]

@@ -1,0 +1,56 @@
+# blob:bae9760fc1d84ed93d0543a24f4f8eeb1e71acea
+# Secrets — rotate first, scrub second
+## The one ordering rule
+**Rotate the credential before touching history.** Scrubbing first feels like
+containment and is not: the old value still authenticates, and anyone who
+already cloned or mirrored the repository still holds it. Rewriting history
+narrows *future* exposure only.
+If you can only do one of the two, rotate. A live repository with a dead key is
+safe. A clean history with a live key is not.
+## Was it exposed?
+Exposure is about where the object travelled, not about whether anyone was
+watching.
+| Where it got to | Treat it as |
+| --- | --- |
+| Staged or committed locally, never pushed | Not exposed — amend or reset, then rotate only if it also left in a backup or a shared worktree |
+| Pushed to a private remote | Exposed to every reader, every CI cache, every fork |
+| Pushed to a public remote | Compromised. Rotate now, then scrub |
+| Pasted into an issue, PR body, review comment, or chat | Compromised, and edits do not remove it — the edit history and notification emails keep the original |
+Uncertain which row applies? Take the lower one. The cost of an unnecessary
+rotation is a few minutes; the cost of a missed one is unbounded.
+## Deleting the line does not remove the secret
+A commit that removes the line adds a new blob; the old blob is still reachable
+from the old commit, and forge servers keep unreachable commits addressable by
+their SHA for a long time. Forks, pull-request refs, and mirrors are separate
+copies your force-push never reaches.
+So the removal is a three-part job, and the first part is not optional:
+1. Rotate at the issuer, and confirm the old value now fails.
+2. Rewrite the history that contains it, then force-push every affected ref.
+3. Ask the forge to expire cached views, and tell the fork owners.
+## What counts as a secret
+The shapes and their discriminators live in `references/secret-shapes.md`,
+along with the false-positive families — documentation examples, fixed test
+fixtures, public halves of keypairs, and content hashes. A detector that
+reports those is a detector nobody runs twice.
+Read that file before reporting anything. High-entropy alone is not a finding.
+## The gate belongs before the commit
+`.gitignore` is not a gate. It does not apply to a path git already tracks, so
+the file that is already in the index keeps being committed no matter what the
+ignore file says. Check with `git check-ignore -v <path>`, and for a tracked
+file use `git rm --cached` first.
+Put the cheap check in a pre-commit hook rather than in review: the reviewer
+sees the secret only after it has already been written to the object database.
+## Never
+- **Never commit a secret to fix later.** There is no later that undoes it.
+- **Never rotate silently.** Something is using that credential; a rotation
+nobody was told about is an outage you caused and did not name.
+- **Never put the secret in the report.** The finding, the ticket, and the
+commit message all get wider distribution than the file did. Refer to it by
+path, line, and issuer — never by value, and never by prefix long enough to
+be a value.
+## Boundary
+Judging code quality is the `audit` skill; removing the dead code left behind
+after a rotation is the `cleanup` skill. What git can and cannot reach when
+rewriting history — and the ignore-file mechanics — belong to the `gitrules`
+skill. This skill covers the credential itself: whether it is exposed, in what
+order to respond, and what the report may say. It stops there.

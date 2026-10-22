@@ -1,0 +1,15 @@
+# sha256 of unaltered upstream imports — vercel-labs/web-interface-guidelines @ e3d624b (MIT)
+#
+#   https://github.com/vercel-labs/web-interface-guidelines
+#
+# Imported upstream `command.md` byte-for-byte; only the filename changed
+# (`references/web-interface-guidelines.md`) to match our reference-layer naming convention.
+#
+# **Why vendor it.** Vercel's `web-design-guidelines` skill fetches this file from
+# raw.githubusercontent on every run. That hides the rules behind a URL, so an
+# offline skill cannot work and our contract layer (volume, line survival, and
+# blob binding) has no subject to measure. Vendoring solves both problems.
+#
+# See `NOTICE` for the complete rationale.
+
+5a775e6411f790f518dbc9c1fa7c50a89e6873502d9a3530a6eb223a590bcfe8  references/web-interface-guidelines.md

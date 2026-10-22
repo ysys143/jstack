@@ -1,0 +1,265 @@
+# blob:6dbf0b8fbc10bd17f5c03f244210712da945ebbb
+# Six mandatory connector rules
+Source: `up:diagram-design` `skills/diagram-design/SKILL.md` §6 (MIT).
+**Not `references/style-guide.md`**: treating that file as the source omits all six rules.
+These rules are **mandatory**. Check them through `taste-gate.md` before output.
+Two validators support them: `scripts/verify-geometry.js` and `scripts/verify-connectors.js`.
+## Rule 0: draw arrows before boxes (prerequisite)
+> **Draw arrows before boxes** so z-order puts lines behind nodes.
+> — Upstream `SKILL.md:263`, immediately before the six rules
+**This is the prerequisite for all six rules and the validator.** Later SVG elements
+paint on top, so arrows must come first to place lines **behind** nodes.
+Reversing the order invalidates rule 6, which **assumes** nodes paint after labels,
+and **neutralizes the validator**. `verify-geometry.js` checks whether a node declared
+after a mask clips it. Drawing boxes first puts masks later every time, producing
+zero findings while actual connectors crossing box fills go undetected.
+**Omitting one instruction invalidates the entire automated check.**
+## 1. Orthogonal connectors with rounded corners
+**Do not use diagonal `<line>` elements or slanted paths** between nodes that do not
+share an axis. Round every bend with an `r=8` quarter-circle (`r=6` minimum in tight
+layouts). Use a straight `<line>` only when endpoints share x or y.
+**Diagonal connectors automatically fail.**
+## 2. Label-to-connector clearance: 6–10px
+Labels **must not sit on arrows**: the connector must remain visible. Keep **at least
+6px** between the bottom edge of the label-mask rectangle and the connector stroke.
+For large labels, increase this to 8–10px if 6px looks cramped.
+**Masks must not touch or overlap strokes.**
+An opaque mask prevents arrows showing through letters, but **visible clearance**
+is a separate requirement that lets readers trace connections.
+### Validation (`--strict-rules`)
+`scripts/verify-connectors.js --strict-rules` emits `connector/label-gap`. It measures
+the gap between a label-mask rectangle and the **nearest axis-aligned connector
+segment**, failing below 6px or on overlap. Segments farther than 24px are not paired
+with the label. Proximity is the only association evidence; explicit SVG identifiers
+linking labels and connectors would remove the need for this proxy.
+`taste/mask-fill` checks the companion requirement that masks be **opaque**, using
+the canvas color. `fill="none"`, `transparent`, or `fill-opacity < 1` lets strokes
+show through text.
+## 3. No connector overlap
+Two connectors must not share a path, stack beside each other, or overlap along any
+segment. If they must cross at a point, use a **bridge/hop** primitive. Route naturally
+overlapping connectors with an offset of **≥12px**.
+If connectors stack, redesign the layout: nodes are too close or the diagram exceeds
+its budget and needs an overview plus details.
+### Enforced checks
+`scripts/verify-connectors.js` checks two conditions:
+- **Collinear overlap**: fail at **≥8px** overlap on the same axis and fixed coordinate
+(epsilon `1e-4`), using `connector/ambiguous-corridor`. Lower the threshold with
+`--min-overlap`. Report only the **single longest overlap** per connector pair.
+- **Crossings without hops**: actual X crossings fail with `connector/proper-crossing`.
+**Drawing a rounded `Q`/`C` hop at the crossing passes this check** because curves
+update only the cursor and are omitted from straight segments. This is a geometric
+proxy for the presence of a hop.
+Endpoint-only T junctions are not flagged; the check requires strict opposite sides.
+### Unenforced conditions and limitations
+- **Near-parallel noncollinear lines are not measured.** A 1px difference in fixed
+coordinates escapes collinearity, leaving rule 4's full-length ≥12px clearance
+to **visual inspection**.
+- **Overlaps shorter than 8px are missed**, inheriting upstream's default.
+- **Overlap between curved `Q`/`C` segments is not measured**. Curves update only
+the cursor. Entirely curved connectors silence orthogonality, overlap, and crossing
+checks; that unmeasurable state itself emits `connector/no-segments`.
+- Implicit closing segments from `Z` are not measured either.
+- **The upstream sibling exemption was not ported.** `up:archify` exempts connectors
+sharing `from`/`to` as intentional fan-out/fan-in topology. Our SVG lacks those
+identifiers, and **rule 3 above has no such exemption**, making **our checks stricter**.
+Sibling crossings fail too. Use `--no-crossings` where that produces false positives.
+- **Paths containing arc commands (`A`/`S`/`T`) fail as uncheckable**. Otherwise the
+parser consumes their arguments as the previous command and **fabricates segments**.
+Measured examples: `A` after `H` created a false 52px corridor; `A` after `L`
+created three false diagonals. This failure is intentional; rewriting with
+`M/L/H/V/Q/C` allows validation.
+## 4. Fan attachment points on the same side
+When two or more connectors enter or leave the **same side** of a box, each needs
+**its own attachment point**. **Two connectors cannot share one point.** For N
+attachments on a side of length L, place attachment k (1..N) at
+`L * k / (N + 1)` from the leading corner. Adjacent points need **≥12px** separation
+(8px minimum on very small boxes).
+When destinations diverge, route **orthogonally from each individual attachment**.
+**Do not merge strokes near the box** (upstream `SKILL.md:277`).
+Parallel connectors heading in the same direction must remain ≥12px apart **along
+their entire length**, not just at attachments. If readers cannot distinguish the
+two arrows at a glance, the layout has failed.
+### Validation (`--strict-rules`)
+`connector/attachment-fan` measures **attachment spacing only**. It locates each
+connector endpoint on a box side within 1px tolerance. Adjacent points on the same
+side fail below 12px, or below 8px for sides shorter than 48px. Shared points emit
+the same code.
+**Full-length ≥12px near-parallel clearance still requires visual inspection.**
+This check cannot detect paths that separate at the attachment but converge later.
+## 5. Do not pass behind a third box (one exception)
+**Do not pass behind a box that is neither source nor destination.** Route around it
+by default.
+The sole exception is a spanning node, such as a footer service or horizontal layer
+bar, **physically occupying the only straight route** between source and destination.
+Then all three conditions apply:
+- Use a **dashed** stroke (`stroke-dasharray="4,3"`) to mean transit, not interaction.
+- Place the label at a **visible end**, usually the source, so it is not hidden behind
+the intermediate box.
+- Resolve arrowheads **only at the actual destination**, never on the intermediate edge.
+When uncertain, route around. This exception covers narrow cases where routing
+around is geometrically impossible; it is not a shortcut around layout work.
+### Validation (`--strict-rules`)
+`connector/third-box-transit` checks **all three exception conditions**.
+| Condition | Measurement |
+|---|---|
+| Dashed stroke | Look for `stroke-dasharray` in attributes, inline `style`, then CSS classes |
+| Label at a visible end | Check whether the connector's label mask lies inside the transit box |
+| Arrowhead at the actual destination | Check whether the connector's final endpoint lies on the transit-box edge |
+Any failing condition is named in `evidence.failedConditions`.
+**Zone containers are not third boxes**: zones paint before arrows and are exempt
+for the same ordering reason as rule 6. A rectangle fully containing another node
+box is treated as a zone.
+## 6. Label masks must not overlap nodes painted later
+Rule 2 separates labels from **their own connectors**; this rule separates them from
+**boxes**. Nodes paint after labels, so a mask intruding into a node is covered by its
+fill and leaves text rendered as **fragments straddling the border**.
+Place labels on segments crossing empty canvas. For a connector leaving a node's
+right edge, start its mask beyond the node's `x + width`.
+A mask **fully inside** a node is a badge chip and is allowed. Overlap with a zone
+container is also allowed because zones paint first.
+## Validation
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-geometry.js <file>
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-connectors.js <file>
+```
+The first enforces rule 6 (label-mask clipping); the second enforces rules 1
+(diagonals) and 3 (overlaps/crossings). **Enable rules 2, 4, and 5 with `--strict-rules`.**
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/verify-connectors.js --strict-rules <file>
+```
+**Only rule 0 remains unenforced**. Visual inspection through `taste-gate.md` owns
+paint-order review.
+### Why rules 2, 4, and 5 are disabled by default
+**The four shipped examples retain rule 2 debt.** There are seven measured findings:
+`example-architecture.html` has one, `example-sequence-oauth.html` two, and
+`example-swimlane.html` three (`connector/label-gap`); `example-dp-integration.html`
+has one `connector/third-box-transit`. The examples are upstream derivatives bound
+to sentinel-stripped hashes in `UPSTREAM.sha256`; changing them is separate work.
+Enabling the rules by default would **ship examples that fail our own validator**.
+Perpetual failures invite disregard, so defaults remain off and `tests/run_tests.js`
+locks the seven findings as measured debt, failing if they silently increase.
+**Upstream restricts this validator to use "From a repository checkout"**; marketplace
+installs lack it. Vendoring makes it available here. See `NOTICE` for the rationale.
+## Legend exclusion markers
+To exclude only legend sample lines, use these **exact case-sensitive** markers:
+```html
+<!-- verify-connectors:legend:BEGIN -->
+<!-- verify-connectors:legend:END -->
+```
+Zero or more **disjoint, non-nested** pairs are allowed. Exclude only the span of a
+valid `BEGIN` followed by its matching `END`. Connectors before and after each span
+remain subject to checks.
+Generic comments such as `<!-- Legend -->` have no machine meaning. Orphan `BEGIN`
+or `END`, reversed ordering, and nested markers **fail closed** with
+`input/legend-markup`. In those cases, exclude nothing and inspect every connector.
+## Diagnostic contract (`--json`)
+`scripts/verify-connectors.js --json` writes **exactly one diagnostic envelope** to
+stdout instead of human-readable lines. JSON and text output share one source;
+`message` is identical to the human-readable string.
+The following is **actual execution output** from changing one connector in
+`example-architecture.html` from `y2="272"` to `y2="300"`, saving it as `diag.html`,
+and running `verify-connectors.js diag.html --json`. Only `supportedFixes` is
+abbreviated for space. The suite compares these strings with execution results.
+```json
+{"schemaVersion": 1, "ok": false, "source": "verify-connectors",
+"summary": {"files": 1, "findings": 2, "connectors": 5},
+"diagnostics": [
+{"code": "connector/diagonal", "severity": "error",
+"message": "diag.html:84: connector 1 segment 1 is diagonal (168,272 -> 220,300) - connector-rules.md rule 1 requires orthogonal runs",
+"subject": {"file": "diag.html", "line": 84, "connector": 1, "segment": 1},
+"evidence": {"from": [168.0, 272.0], "to": [220.0, 300.0], "dx": 52.0, "dy": 28.0, "tolerance": 0.01},
+"supportedFixes": [ ... five repair stages ... ]},
+{"code": "connector/proper-crossing", "severity": "error",
+"message": "diag.html:84: connectors 1 and 5 cross at (197.714,288) with no hop - connector-rules.md rule 3 requires a bridge/hop there; drawing the crossing as a Q/C rounded hop passes this check",
+"subject": {"file": "diag.html", "line": 84, "connector": 1, "otherConnector": 5},
+"evidence": {"at": [197.71428571428572, 288.0]},
+"supportedFixes": [ ... five repair stages ... ]}]}
+```
+Field names follow upstream `up:archify` `shared/diagnostics.mjs`
+(`normalizedDiagnostic` / `rendererFailure`) exactly.
+### Codes
+**This table covers the complete emitted set.** An earlier version listed only five
+of ten codes, omitting `connector/unsupported-path-command` and `input/no-connectors`
+from all references. The suite extracts emitted codes from source and compares them
+with this table; divergence fails.
+| `code` | Meaning | severity |
+|---|---|---|
+| `connector/diagonal` | Rule 1: a straight segment is slanted | error |
+| `connector/ambiguous-corridor` | Rule 3: two connectors overlap collinearly | error |
+| `connector/proper-crossing` | Rule 3: an X crossing lacks a hop | error |
+| `connector/unreadable-geometry` | Cannot read `<line>` coordinates `x1/y1/x2/y2` | error |
+| `connector/no-segments` | No straight segments extracted from `<path>`; rules 1 and 3 cannot be measured | error |
+| `connector/unsupported-path-command` | Unmodeled command (`A`/`S`/`T` …) whose arguments would be consumed by the previous command, fabricating segments | error |
+| `input/no-connectors` | Zero connectors; no rule 1 or 3 checks were performed | error |
+| `input/connector-population-mismatch` | Parser count is below the independent count; population silently collapsed | error |
+| `input/legend-markup` | Orphan, reversed, or nested legend markers; inspect all connectors without exclusions | error |
+| `input/read` | Cannot open the file | error |
+| `input/decode` | File is not UTF-8 | error |
+| `input/json-parse` | Cannot read `--baseline` JSON or **its shape differs** | warning |
+| `repair/deletion-without-evidence` | Findings and connector counts both decreased | warning (error with `--strict-deletion`) |
+| `connector/label-gap` | Rule 2: label mask overlaps a connector or lies within 6px (`--strict-rules`) | error |
+| `connector/attachment-fan` | Rule 4: adjacent same-side attachments are within 12px, or 8px on short sides (`--strict-rules`) | error |
+| `connector/third-box-transit` | Rule 5: transit behind a non-endpoint box fails one or more of the three exception conditions (`--strict-rules`) | error |
+| `taste/mask-fill` | Label mask is not opaque, allowing strokes through text (`--strict-rules`) | error |
+| `taste/writing-mode` | Vertical `writing-mode` defeats both width checks (`--strict-rules`) | error |
+`input/connector-population-mismatch` compares connector counts from an **independent
+path** with the arrow parser. `input/no-connectors` catches only zero, missing cases
+where two of three connectors silently disappear. The population check closes that gap.
+**Parsing failures must not be silent.** Unreadable input is itself a finding.
+An earlier attribute regex failed to read `x1`, parsed no `<line>` elements, and
+incorrectly reported a green zero-findings result.
+### Five repair stages (`supportedFixes`)
+**Deletion comes last and requires evidence.**
+| order | action | Meaning | requiresEvidence |
+|---|---|---|---|
+| 1 | `relocate` | Move attachments to another side or point | false |
+| 2 | `reroute` | Route as two orthogonal L segments (horizontal and vertical) | false |
+| 3 | `shorten` | Shorten labels or paths to remove collisions | false |
+| 4 | `restructure` | Reposition nodes to eliminate the slanted connection | false |
+| 5 | `delete` | Last resort; record evidence before deletion | **true** |
+**The five stages are a local addition, absent upstream.** Upstream `supportedFixes`
+is an unordered string array. To expose order and `requiresEvidence` to machines,
+we intentionally diverge to an **object array**. `NOTICE` records the incompatibility:
+feeding this envelope directly to upstream tools will break them.
+Read and parse failures use an empty repair list. Relocating an attachment is not
+a valid instruction when the file could not be opened.
+### Deletion comparison (`--baseline`)
+```
+node scripts/verify-connectors.js --all --json > before.json
+node scripts/verify-connectors.js --all --json --baseline before.json
+```
+If findings decrease together with `summary.connectors`, emit
+`repair/deletion-without-evidence`. **The default warning does not affect the exit
+code.** Only `--strict-deletion` enforces failure through the return code.
+## Limitations: what remains unenforced
+- **Deletion-last and evidence requirements are mostly policy, not enforcement.**
+The machine measures only decreasing `summary.connectors`, and by default emits
+a warning. `requiresEvidence: true` is just a field: no code requests evidence or
+blocks unsupported deletion.
+- Defaulting to error would create **false positives**: legitimate redesigns can
+reduce relationships and connector counts too. A false-positive-prone validator
+can be worse than no validator.
+- **Diagonals drawn as `Q`/`C` curves remain outside coverage.** JSON output adds no
+detection capability; it only wraps existing results.
+- **Failure to read valid syntax is a parser defect, not a diagram finding**.
+Exponent coordinates (`1e2`) and single-quoted attributes (`x1='100'`) once caused
+false `unsupported-path-command` and `unreadable-geometry`/`no-segments` findings.
+The parser was fixed without weakening the rules.
+- Lines without `marker-end` are not counted as connectors. Removing arrowheads
+moves them outside this validator, though the taste gate still applies.
+- **`--strict-rules` is off by default.** A person must enable it for new diagrams.
+`SKILL.md` Phase 3 instructs this, but no code forces the flag.
+- **Label-to-connector pairing is a proximity proxy.** SVG lacks linking identifiers,
+so the nearest segment within 24px wins. For a label midway between connectors,
+coordinates determine the pairing.
+- **CSS parsing is shallow**: it reads class sets and element names of the final
+compound selector, not specificity, media queries, or descendant combinators.
+Splitting compounds into individual classes once applied `.connector.auth` dashes
+to solid `class="connector primary"` lines, silencing rule 5 findings during porting.
+- **Rule 4 checks attachment spacing only.** Even combined with rule 3's collinear
+overlap check, full-length ≥12px clearance misses near-parallel noncollinear paths.
+- Label-mask, node, and zone classification uses **size heuristics**: masks are
+8–20px high, nodes at least 40x24, and zones fully contain other nodes. Diagrams
+outside those ranges can invalidate all three checks.
+Run the JavaScript CLI checks with Node >=20.

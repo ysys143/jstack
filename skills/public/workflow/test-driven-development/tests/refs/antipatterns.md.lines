@@ -1,0 +1,118 @@
+# blob:406914695eebcae28e01c30143bfd53dfc86b53a
+# Anti-patterns — read regardless of language detection
+`langs/` loads only the detected language, so its rules are **visible only when that language is detected**. The following three costly anti-patterns occur across languages and belong in this separate document. Read it before Phase 3 (red).
+These three were selected for what they break, rather than how common they are.
+| Anti-pattern | What collapses |
+|---|---|
+| Flaky tests | Trust in the entire CI. Once rerunning becomes the response to red, real regressions pass the same way |
+| Order dependency | Locality of failure. It becomes impossible to know which test broke what |
+| Excessive mock | The subject of verification. What passes is not the code but the mock |
+---
+## 1. Flakiness — clock, randomness, and network
+A flaky test produces different results against the same code. **Omitting this anti-pattern carries the largest cost**: when a test fails once in ten runs, the team learns to rerun it. CI then becomes noise instead of evidence. Recovering trust takes longer than losing it.
+Nondeterminism has three main sources. Address all three to avoid leaving one exposed.
+### Axis 1 — clock
+```
+[X] wait for asynchronous completion with sleep
+time.Sleep(100 * time.Millisecond) # Go
+await new Promise(r => setTimeout(r, 100)) # JS
+time.sleep(0.1) # Python
+[O] wait for a completion signal or inject a clock
+inject a channel, sync.WaitGroup, or Sleeper interface # Go
+vi.useFakeTimers() / jest.useFakeTimers() # JS/TS
+freezegun or a function that accepts a clock # Python
+#[tokio::test(start_paused = true)] + tokio::time::advance() # Rust
+inject Clock.fixed(...) (java.time.Clock) # Java
+```
+`sleep` fails on slow machines and passes on fast ones: the result is a race, not a verdict. Increasing the delay (100ms -> 500ms) only reduces the failure probability while slowing the suite.
+Reading "current time" directly from the code is the same flaw. The tests that fail only around midnight, month-end, leap years, and daylight saving time transitions come from here. **The clock is a dependency — inject it.**
+### Axis 2 — randomness
+```
+[X] base a verdict on unseeded randomness, UUIDs, or hash iteration order
+[O] fix the seed (seed=42) or inject the generator
+- Log a failing seed; a failure that cannot be reproduced cannot be fixed.
+- Property-based tests (hypothesis, proptest, jqwik, fast-check) use
+randomness but shrink a counterexample into a reproducible minimal case.
+They differ from unseeded randomness.
+```
+The same applies to relying on map or dictionary iteration order. Go intentionally randomizes the order, and Python's set iteration order depends on the hash seed. **Sort and compare or use order-independent comparison.**
+### Axis 3 — network and shared resources
+```
+[X] use a real HTTP endpoint, real DNS, a shared development DB, or fixed port (:8080)
+[O] use an in-process test server (httptest.NewServer, msw, responses)
+bind to port 0 and use the port chosen by the OS
+when starting a container, isolate its schema or database for each test
+use a temporary directory for files, never a fixed path in the repository
+```
+A test that reaches the external network makes **someone else's uptime part of your CI result**.
+When the actual integration point needs verification, use a separate contract test and identify whether a failure belongs to our code or the external service.
+### When you find flakiness
+1. **Isolate** — do not delete or silently skip. Deleting a flaky test only hides the remaining defect.
+2. **Determine the cause** — which of the three? If none of them, it is highly likely a race condition in the production code (in that case, the test is correct).
+3. **Verify by repeated execution** — `go test -race -count=100` · `pytest --count=100` · `npx vitest --retry=0 --repeats=100`. Claims of correction are supported by evidence of repeated execution.
+### Rules for every new test
+Most flaky tests are flaky from the day they are written, so these rules apply when the test is created, not after it fails.
+1. Never sleep to wait; await or poll a condition with a deadline.
+2. Await everything; nothing outlives the test. Close servers, pools, and sockets, clear timers, and join threads.
+3. Simulate the failure you mean. A non-retried error (such as HTTP 500) tests "the load failed"; a thrown network error triggers the client's retry backoff.
+4. Control time (fake or injected clock) and randomness (seeded, with the seed printed).
+5. No shared mutable global state; fresh fixtures per test.
+6. Give every external resource to one test or worker: temp dir, port 0, database schema, unique names.
+7. Be tolerant where the domain is: compare floats approximately and sort unordered collections. Never assert on exact durations.
+8. Declare a dependency you truly need (a named group) instead of relying on order.
+9. The test passes alone, in any order, and twice in a row. Stress new and changed tests before merge, especially generated ones; `references/test-budget.md` has the commands and the time budget.
+---
+## 2. Order dependence
+**Test B passes only after test A completes.** Merely saying that tests must be independent is weaker than naming this anti-pattern: the principle alone does not identify violations.
+```
+[X] accumulate state in module globals, singletons, or class variables
+[X] have test B read a database row created by test A
+[X] depend on an environment variable, working directory, or locale set by an earlier test
+[X] write to a fixed filesystem path and have the next test read it
+[O] have each test create and undo its own fixture
+setUp/tearDown · @pytest.fixture · t.Cleanup · @BeforeEach
+roll back the transaction or create a fresh schema for every test
+```
+**The symptom is either "it passes when run alone but fails when run in full" or the reverse.** The latter is more dangerous — because it is green in the full execution, no one knows, and that test only increases the count of passes without verifying anything.
+### How to Catch It — Shake the Order
+```bash
+pytest -p randomly # pytest-randomly: shuffle each run
+go test -shuffle=on ./... # Go 1.17+
+npx vitest --sequence.shuffle # Vitest
+mvn test -Dsurefire.runOrder=random
+cargo test -- --test-threads=1 # Rust: expose shared state hidden by parallelism
+```
+**Passing once in shuffled order is not evidence.** Run repeatedly with different seeds and record failing seeds.
+Parallel execution can reveal resource contention while hiding order dependence. Changing execution order makes failures intermittent and easy to misdiagnose as flakiness. If order dependence is suspected, first reproduce it by shuffling a single-threaded run.
+---
+## 3. Excessive mocking — abstraction without integration verification
+Replacing every collaborator with a test double makes tests fast and stable, but **verifies the double configuration instead of the code**. This commonly explains why all unit tests pass while deployment breaks.
+```
+[X] mock the SUT itself; this is a meaningless test
+[X] give a double a different contract from the real collaborator
+(the real object raises on 404 while the double returns None)
+[X] verify every mock-call argument and order; this copies the implementation
+into the test and breaks on every refactor, blocking change without catching regressions
+[O] replace only boundaries: network, clock, filesystem, and randomness
+[O] compare doubles for types you do not own against the real object in a contract test
+```
+**Decision criterion:** Is there at least one test in the repository that calls the actual collaborator? If not, that boundary is **unverified everywhere**.
+### Do not mix levels
+This is why `/generate-test --level unit|integration|e2e|smoke` (an auto-test-generator command to be inherited by this plugin) accepts a level: permitted test doubles differ by level.
+| Level | May be replaced by test doubles | Must be real |
+|---|---|---|
+| unit | All out-of-process dependencies | SUT and its value objects |
+| integration | External SaaS · Payment providers | DB · Queue · ORM mappings · Migrations |
+| e2e | None (or payment sandbox) | Entire path |
+| smoke | None | Deployed artifact |
+Using `--level integration` while mocking the DB produces a unit test. A test that is integration in name only misses schema mismatches, N+1 queries, and transaction-boundary defects.
+### Ratios
+Many unit tests and fewer higher-level tests are normal (the test pyramid). The problem is **zero higher-level tests**: the repository then has no mechanism for catching integration defects. Defining a slice as end-to-end behavior addresses this gap when every slice gets a higher-level test.
+---
+## What This Document Does Not Cover
+- **AAA violations and missing assertions** — the anti-pattern section of each
+language guide covers these in language-specific syntax; they are not repeated here.
+- **Coverage gates** — the diff-coverage section of each file under `langs/` and
+`scripts/test_gates.js`.
+- **Completion judgment** — the `verify` skill. "Tests pass" and "the requirement
+is satisfied" are different questions.

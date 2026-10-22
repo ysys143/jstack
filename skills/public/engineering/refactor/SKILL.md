@@ -1,0 +1,114 @@
+---
+name: refactor
+description: "Refactor a bounded code-quality issue with tests protecting behavior. Triggers: 리팩터링, 코드 정리."
+---
+
+# Cleanup — fix, one axis at a time
+
+## Before anything
+
+**Lock the behaviour first.** A cleanup that changes behaviour is not a cleanup;
+it is an undocumented change riding inside one.
+
+1. Working tree clean — `git status --short` empty
+2. The relevant tests pass **now**, and you saw them pass
+3. If there are no tests, write the narrowest ones that pin the behaviour you
+   are about to move
+
+**If you cannot lock it, say so and stop.** Cleaning unlocked behaviour trades a
+known mess for an unknown one.
+
+## Scope is an argument, not a skill
+
+```
+cleanup --scope=diff   --axes=slop      # axis 8 only, current changes
+cleanup --scope=file   --axes=5,6
+cleanup --scope=all    --axes=3
+```
+
+**Default is `--scope=diff`.** Widening the scope widens the blast radius, and
+two axes degrade at `--scope=all` (see the taxonomy).
+
+## The axes
+
+`references/quality-taxonomy.md` is **the single source of truth**, and this
+skill holds it. `audit` references this file and keeps no copy — one file, zero
+copies.
+
+## Reference map
+
+Four files sit under this skill. Each answers one question, and none of them
+repeats another.
+
+| File | Answers | Read it when |
+|---|---|---|
+| `references/quality-taxonomy.md` | Which axes exist, which property each belongs to, and how they map to the upstream eight | Always — it is the canonical list, and `audit` reads this same copy |
+| `references/slop-criteria.md` | For axis 8, which symptoms are admitted and **who or what settles each one** | Before reporting anything as slop. No adjudicator, no finding |
+| `references/lang-matrix.md` | Which detector applies in this language, which cells are an empty set, and where the detector is blind | Before claiming an axis found nothing — in some languages "nothing" means the tool cannot see |
+| `references/wave-protocol.md` | How much one run may report, what gets cut, and which axes are void without a baseline | Before the first wave, and before writing the report |
+
+`scripts/cap_findings.js` enforces the twenty-finding cap from the wave protocol
+and prints `Show N of M` when it truncates. Pipe the findings through it rather
+than trusting anyone to remember the cap.
+
+## What this skill may not claim
+
+`cleanup` sweeps without a baseline, so the delta axes — pushed past 1000 lines,
+branch complexity *this change added*, a module that became *more* coupled, the
+approval bar — are **void here**. They need a before, and there is none.
+Reporting them anyway moves the burden of proof onto whoever inherited the code.
+The output is a work plan, ordered by priority, and it uses no verdict word.
+
+## One axis per pass
+
+Do not mix. A pass that removes dead code *and* inverts a dependency cannot be
+reverted by half when one of them is wrong.
+
+| Pass | Order | Why this order |
+|---|---|---|
+| 1 | Delete unreachable (axis 3) | Nothing else has to consider it afterwards |
+| 2 | Remove swallowing fallbacks (axis 6) | **Before DRY** — consolidating a swallow promotes the defect to every caller |
+| 3 | Inline thin wrappers (axis 5) | Now the shared paths are honest |
+| 4 | Narrow contracts (axis 7) | The remaining shape is visible |
+| 5 | Split by change axis (axis 1) | Last — the file is smaller already |
+
+**Re-run the tests after each pass.** Not at the end.
+
+## Restraint
+
+Three things stop a cleanup.
+
+1. **The test does not pass after the pass** — revert that pass, do not patch forward
+2. **The diff grew past what the finding justified** — a one-line finding does
+   not license a module rewrite
+3. **You are about to change behaviour to make it cleaner** — that is a
+   different task and needs `plan`
+
+**Deleting a test to make a pass green is never a cleanup.**
+
+## Report
+
+Say what changed, which axis each change served, and what you left alone with
+the reason. **What you deliberately did not touch is part of the result** —
+otherwise the next person re-finds it and assumes it was missed.
+
+## Boundaries
+
+| Task | Owner |
+|---|---|
+| Judging without changing | `audit` skill |
+| Deciding a behaviour change | `plan` skill |
+| Confirming it is still correct | `verify` skill |
+
+## Limits (stated)
+
+- This skill **changes files**. It needs a clean tree and passing tests first
+- It does not decide whether a finding is worth fixing — `audit` ranked them
+- Axis 8 (slop) fires **only from the closed list** in the taxonomy. Anything
+  outside that list is not reported as slop
+
+## Optional SDLC caller
+
+Return the original result and input hashes to an explicitly selected SDLC caller.
+Keep the clean-tree prerequisite: do not commit or stash to satisfy it without
+authorization. Standalone calls require no run context.

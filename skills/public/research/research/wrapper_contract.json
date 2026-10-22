@@ -1,0 +1,62 @@
+{
+  "profile": "jstack-lite",
+  "_comment": [
+    "The three required axes cannot be off; tests/run_tests.js enforces this.",
+    "Do not set a tier key: upstream prohibits overrides, which would require a fork.",
+    "Select a set of steps rather than a tier.",
+    "This file implements references/tier-profile.md; that document is authoritative on disagreement."
+  ],
+  "required_axes": {
+    "step_1_coverage_matrix": {
+      "on": true,
+      "why": "Half of requirements-to-response mapping: ensure every RFP item is reflected in the response."
+    },
+    "step_12_instruction_critic": {
+      "on": true,
+      "model": "opus",
+      "why": "The other half, precisely what light tier discards. Missing requirements can disqualify a submission."
+    },
+    "step_14_5_cite_check": {
+      "on": true,
+      "model": "opus",
+      "why": "One of the few axes with demonstrated effectiveness at blocking entirely hallucinated citations.",
+      "sample_rate": 1.0,
+      "why_sample_rate": "Upstream default 0.6 gives round(1/0.6)=2, or 50% effective coverage. One citation can disqualify a procurement proposal, so require 100%. Change configuration, not code: no fork or upstream-update conflict. See references/cite-check.md for the rationale and stepwise behavior."
+    }
+  },
+  "optional_axes": {
+    "step_12_dialectic_critic": {
+      "on": true,
+      "model": "sonnet",
+      "why": "One of four RACE dimensions; disabling it leaves the dimension unchecked. Use sonnet for diversity of perspective rather than accuracy."
+    },
+    "step_12_depth_critic": {
+      "on": true,
+      "model": "sonnet",
+      "why": "Same rationale as above."
+    },
+    "step_12_width_critic": {
+      "on": true,
+      "model": "sonnet",
+      "why": "Same rationale as above."
+    },
+    "step_10_triple_draft": {
+      "on": false,
+      "why": "Triple cost justified by stylistic consistency and context saturation, not quality."
+    }
+  },
+  "budgets": {
+    "step_3_depth_loci_max": 2,
+    "step_10_source_target": "20-50",
+    "step_16_paragraph_chars_cjk": 800,
+    "step_16_paragraph_chars_en": 1500,
+    "_why": "Cost and length contracts. source_target satisfies draft-orchestrator must_read_note_ids of 20-50; paragraph lengths inherit upstream char_targets_no_word_boundary CJK tuning. See references/tier-profile.md."
+  },
+  "source_lenses": {
+    "kr_primary": {
+      "on": true,
+      "file": "references/kr-sources.md",
+      "why": "Upstream breadth-sweep institutional sources cover only UK Companies House, SEC, and arXiv families. Searches across upstream found zero matches for 나라장터, 조달청, DART, 알리오, RISS, and KCI: a source-coverage gap, not a translation-quality issue."
+    }
+  }
+}

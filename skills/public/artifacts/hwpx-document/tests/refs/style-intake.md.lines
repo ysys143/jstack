@@ -1,0 +1,28 @@
+# blob:dcbdd38efae829e3f398a09106e7d5e3d3c9e153
+# Style Intake
+Use this when the user provides a new reference standard, template, or regulation file. The goal is to map Markdown structure into that specific HWPX style, not to force the previous proposal's style names.
+## First Infer From The Reference
+Run:
+```powershell
+python scripts\analyze_template.py reference.hwpx
+```
+Inspect the reference for:
+- Named paragraph styles for headings such as `2.`, `2.1`, `2.1.1`, `2.1.1.1`, or equivalent names.
+- Body paragraph style, font family, size, line spacing, indent, and alignment.
+- Local ordered list style such as `(1)`, `1)`, `가.`, or another required pattern.
+- Unordered/bullet style and whether literal markers like `○`, `□`, `-`, or `•` are style-generated or typed text.
+- Table style: width, header row style, body cell style, border/fill rules, caption style, and table spacing.
+- Page setup: paper size, margins, columns, header/footer, and page-number behavior.
+If the reference clearly contains these rules, proceed with the best inferred mapping and note the assumptions briefly.
+## Ask Only For Gaps
+If the reference does not clearly answer a mapping, ask concise questions before conversion. Prefer one short grouped question instead of a long checklist.
+Ask for the missing items that matter:
+- Heading levels: what styles/fonts/sizes should map to Markdown headings and numbered text like `2.1`, `2.1.1`, `2.1.1.1`?
+- Body text: which style, font, size, line spacing, indent, and alignment should normal paragraphs use?
+- Lists: should `1. text` become `(1) text`, stay `1. text`, or use a reference numbering style?
+- Bullets: should bullets be style-generated or literal markers?
+- Tables: which style should table header/body/caption use, and are there fixed widths, borders, fills, or row-height rules?
+If the user says to proceed without details, generate a first draft from the best reference inference and mark uncertain mappings in the response. Then use HITL feedback to refine.
+## Default Mapping Is A Starting Point
+The converter recognizes common proposal names such as `내용 위계 1`, `내용 위계 2`, `(1)`, `2.`, `2.1`, `2.1.1`, `표 내용`, `표 캡션`, and `그림 캡션`. Treat these as defaults from one successful reference, not universal requirements.
+When a new reference uses different names, either infer equivalent IDs from the reference layout or ask the user to identify the intended style mapping.

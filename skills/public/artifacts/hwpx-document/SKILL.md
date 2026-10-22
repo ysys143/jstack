@@ -1,0 +1,161 @@
+---
+name: hwpx-document
+description: "Create or validate HWPX from Markdown or a reference HWP style. Triggers: HWPX 변환, 한글 문서."
+---
+
+# Proposal HWPX
+
+Use this skill for Korean proposal documents that must be converted from Markdown to `.hwpx` while preserving a reference HWP/HWPX style. It is standalone and does not call any other HWPX skill.
+
+## Phase 0: check tools
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/hwpx/scripts/ensure_hwpx.js
+```
+
+- exit 0: `.hwpx` creation and validation plus `.hwp` input are available.
+- exit 1: **`.hwpx` remains available.** Only `.hwp` input is unavailable; it requires Windows and Hancom COM.
+- exit 2: `lxml` is missing. Explain the requirement and stop.
+
+**Check on demand.** Do not require lxml installation from users who are not using this skill.
+
+
+## Workflow
+
+1. Confirm the source Markdown, output `.hwpx`, and reference `.hwp` or `.hwpx`.
+2. Prefer a reference `.hwpx`. If only `.hwp` is available, use the converter's Windows COM path.
+3. Analyze the reference style with `scripts/analyze_template.py`.
+4. Resolve style mapping uncertainty using `references/style-intake.md`; ask only for unclear or missing rules.
+5. Convert with `scripts/md_to_hwpx.py`.
+6. Validate with the bundled `scripts/validate_hwpx.py --semantic`.
+7. Hand the generated `.hwpx` to the user for HITL visual review, then iterate on concrete feedback.
+
+## Commands
+
+```powershell
+$Skill = "<this skill directory>"
+$env:PYTHONUTF8 = "1"
+
+python "$Skill\scripts\md_to_hwpx.py" `
+  "source.md" `
+  "output.hwpx" `
+  --reference "reference.hwpx" `
+  --title "문서 제목" `
+  --roman-to-arabic `
+  --preserve-heading-numbers `
+  --validate `
+  --semantic-validate
+```
+
+For `.hwp` references, the converter caches the converted reference under the OS temp directory by default. Use `--reference-cache-dir <dir>` when the cache must be explicit.
+
+Validation only:
+
+```powershell
+python "$Skill\scripts\validate_hwpx.py" "output.hwpx" --semantic
+```
+
+Reference inspection:
+
+```powershell
+python "$Skill\scripts\analyze_template.py" "reference.hwpx"
+```
+
+Plugin invocation:
+
+```powershell
+# Claude plugin commands resolve the installed plugin root through this variable.
+$Skill = "$env:CLAUDE_PLUGIN_ROOT\payload\skills\hwpx"
+# Users install dependencies (lxml) themselves; the skill does not install them.
+# Adding packages to a user environment without consent is difficult to reverse.
+#   uv pip install -r "$Skill\requirements.txt"
+python "$Skill\scripts\validate_hwpx.py" "output.hwpx" --semantic
+```
+
+When invoked through `/jstack:convert`, use `${JSTACK_PLUGIN_ROOT}/skills/hwpx` or `$env:CLAUDE_PLUGIN_ROOT\payload\skills\hwpx` instead of asking the user to locate the skill directory manually.
+
+Fallback template builder:
+
+```powershell
+python "$Skill\scripts\build_hwpx.py" --template report --output "fallback.hwpx"
+```
+
+Use `templates/base` and `templates/report` only through `scripts/build_hwpx.py` for low-level fallback documents or validator fixtures. Normal proposal conversion should use `md_to_hwpx.py` with a real reference HWPX/HWP file.
+
+## Rules
+
+- Read `references/markdown-proposal-rules.md` before changing conversion behavior.
+- Read `references/style-intake.md` when a new reference standard is used or style mapping is ambiguous.
+- Read `references/example-flow.md` when another agent needs a concrete end-to-end interaction pattern.
+- Read `references/validation-rules.md` before changing validation behavior.
+- Read `references/hitl-review.md` before changing final delivery or batch handoff behavior.
+- Read `references/com-windows-guide.md` before changing `.hwp` or Hancom COM conversion behavior.
+- Read `references/troubleshooting.md` when Hancom opens a structurally valid file incorrectly.
+- Read `references/hwpx-format.md` for **the format's own values** — HWPUNIT
+  conversions (1/7200 inch · 100 per pt · 283.46 per mm), A4 page size in
+  HWPUNIT, XML namespaces, and the element structure of `section*.xml`.
+  These are internal constants: **do not compute them.**
+- Read `references/workflows.md` for single-file / batch / reference-analysis
+  command sequences.
+- Read `references/xml-structure.md` before writing `hp:secPr`, `hp:pic`, or
+  `hh:paraPr` by hand. Those three have **attribute-vs-child** traps that make
+  Hancom show a repair dialog or silently drop the formatting.
+- Read `references/hangul-practice.md` when the output opens but looks wrong in
+  a Korean-document way — table header rows lost across pages, floating objects
+  drifting, styles that do not apply, page counts differing per machine.
+- Read `references/render-checklist.md` before handing the file to a person:
+  it draws the line between what the validator already proved and what only a
+  human opening Hancom can see, and it says **when** to ask for that review.
+- Read `references/kordoc-public-doc.md` for Korean bullet-style prose (개조식) and official-document (공문서) conventions —
+  the legal 8-level item markers, indentation, and date notation that decide
+  paragraph-shape mapping. Style correction itself belongs to `humanize`.
+
+## References
+
+| File | Contents |
+|---|---|
+| `references/hwpx-format.md` | HWPUNIT conversions, **A4 dimensions**, namespaces, element structure |
+| `references/markdown-proposal-rules.md` | Markdown-to-proposal conversion rules |
+| `references/style-intake.md` | Style mapping for new reference templates |
+| `references/validation-rules.md` | Validator coverage |
+| `references/hitl-review.md` | Final delivery and batch handoff gates |
+| `references/com-windows-guide.md` | `.hwp` and Hancom COM path |
+| `references/troubleshooting.md` | Structurally valid files rendered differently by Hancom |
+| `references/example-flow.md` | End-to-end interaction example |
+| `references/workflows.md` | Single-file, batch, and reference-analysis command sequences |
+| `references/xml-structure.md` | Header/section relationships, ID references, required secPr and `hp:pic` children |
+| `references/hangul-practice.md` | Table overflow, object anchoring, paragraph-property inheritance, font substitution |
+| `references/render-checklist.md` | Automated versus human review boundaries and HITL timing |
+| `references/kordoc-public-doc.md` | Korean bullet-style endings and official-document hierarchy/notation (absorbed from kordoc) |
+
+**Answer unit and dimension questions from the first reference above, not by calculation.**
+Some actual values differ from conversions: A4 height is not the result of converting
+297mm. The actual format value is authoritative.
+- `lxml` is required (`requirements.txt`). `pywin32` and Hancom Office are optional and only needed for `.hwp` references — `requirements-windows.txt` is the Windows extra set. The skill does not install them on the user's behalf.
+- Do not use scripts or examples that depend on the external `hwpx` Python package.
+- Do not insert `○` or `□` as text. Use reference paragraph/bullet styles.
+- Do not emit Markdown pipe tables as text. Create real `hp:tbl` tables.
+- Do not write converted reference sidecars next to a read-only `.hwp`; use the cache option.
+- Do not claim visual approval until a human has opened the file in Hancom or the target viewer.
+- Do not assume the default style names fit every reference. Infer from the provided reference first, then ask the user for missing heading, body, list, caption, and table rules.
+
+## Included Tools
+
+- `scripts/md_to_hwpx.py`: Markdown proposal to HWPX converter.
+- `scripts/batch_convert.py`: batch runner for one Markdown directory.
+- `scripts/validate_hwpx.py`: structural and semantic HWPX validator.
+- `scripts/analyze_template.py`: reference style/layout inspection.
+- `scripts/text_extract.py`: quick HWPX text extraction.
+- `scripts/build_hwpx.py`: template + XML builder for low-level work.
+- `scripts/office/pack.py` and `scripts/office/unpack.py`: safe HWPX ZIP round-trip helpers.
+- `scripts/fix_borders.py`: detects and repairs `charPr` wired to a bordered
+  `borderFill` — the defect that boxes every single character.
+- `scripts/sanitize_template.py`: strips the client document's residue from the
+  output (preview thumbnail, author metadata, tracked changes, unused styles).
+- `scripts/hwpx_zip.py`: stdlib-only HWPX zip read/write shared by the two
+  scripts above and by the hook; it is the single place that enforces the
+  `mimetype`-first-and-stored invariant.
+- `hooks/hwpx_guard.js`: PreToolUse guard that inspects a `.hwpx` **at the
+  moment it is handed to the user**, not when it is generated. Register it from
+  the plugin root's `hooks/hooks.json`; it is fail-open by design.
+- `templates/base` and `templates/report`: fallback skeletons used by `scripts/build_hwpx.py`.

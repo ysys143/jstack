@@ -1,0 +1,182 @@
+# NOTICE — dashboard
+
+This skill **vendors upstream code**. We authored only `SKILL.md`, `references/`,
+`tests/`, `scripts/install-statusline.mjs`, and the local changes listed below.
+
+| Field | Value |
+|---|---|
+| Upstream | `uppinote20/claude-dashboard` |
+| Version | **v1.34.0** (commit `f0937fefdde558afedad2522bc8573897164bd16`) |
+| License | **MIT**; full text in `LICENSE.upstream` |
+| Imported files | 106 upstream-scoped files: 91 byte-identical, 15 locally modified (10 payload files and 5 host-level files) |
+| Byte binding | `UPSTREAM.sha256` (91 unchanged-file entries) |
+
+## Imported content
+
+`scripts/` (90 TypeScript files total, including 25 Vitest test files), `dist/` (2 bundles),
+`locales/{en,ko}.json`, `package.json`, `package-lock.json`, `tsconfig.json`,
+`vitest.config.ts`, and `LICENSE`.
+
+v1.34.0 adds `scripts/widgets/prompt-cache.ts`; no files in the recorded scope
+were deleted. The imported `LICENSE` is unchanged at this revision.
+
+At the plugin root: `hooks/ensure-statusline.mjs` and
+`commands/{check-usage,dashboard-setup,dashboard-alias,dashboard-repair}.md`.
+
+## Excluded content
+
+| Content | Reason |
+|---|---|
+| `.github/workflows/` | Our CI uses `validate-plugins.yml`; upstream workflows must not execute in this repository |
+| `.claude-plugin/{plugin,marketplace}.json` | We already have manifests; **two marketplaces do not merge** |
+| `website/`, `images/`, `demo.gif` | Documentation assets (4MB), not deliverables; README links upstream |
+| `CLAUDE.md`, `CONTRIBUTING.md` | Upstream project conventions conflict with ours |
+| `README.md` | Upstream installation differs from our layout; this skill uses `SKILL.md` |
+
+## Local changes
+
+**1. `hooks/ensure-statusline.mjs`: opt-in recovery trigger.**
+Upstream rewrites user `settings.json` at every `SessionStart`. The repository
+already evaluated hooks affecting machine state each session:
+`multi-ai-delegate/hooks/council_state.py` was not inherited because of session
+locking risk, and the session-and-git automatic commit hook was opt-out.
+Here the hook does nothing unless the user enabled automatic recovery for that
+config directory (a `statusline-repair.json` record in the plugin data directory,
+written by setup or `install-statusline.mjs optin`) or set
+`JSTACK_DASHBOARD_STATUSLINE=1`; `=0` disables it. When enabled it calls the
+installer's idempotent `repair`, so a healthy configuration is neither written nor
+logged. The hook derives the payload root from its own file location, because
+`CLAUDE_PLUGIN_ROOT` names the package root one level above `payload/`. Its
+retained pinned-path match accepts any marketplace and plugin name.
+
+**2. `scripts/statusline-shim.mjs`: installation resolved from host metadata.**
+Upstream looks for the fixed identity
+`cache/claude-dashboard/claude-dashboard/<version>/dist/index.js`. An earlier port
+fixed its own marketplace and plugin name instead, and every render resolved nothing
+when the package was installed under another marketplace name. The shim now reads
+`plugins/installed_plugins.json`, prefers the installation whose data directory it
+sits in, and locates the build beneath each recorded `installPath`; only without a
+usable metadata entry does it scan `cache/<marketplace>/<plugin>/<version>/`, a
+bounded depth. The only fixed strings are the build locations inside the package
+(`DIST_SUBPATHS`: `payload/skills/dashboard/dist/index.js`, and the earlier layout
+without `payload/`) and the `JSTACK-DASHBOARD-SHIM` ownership marker.
+
+**3. `scripts/build.js`: remove upstream manifest synchronization.**
+That step rewrites the two excluded manifests. Keeping it would produce both
+bundles and then exit 1 because the files are missing: **successful artifacts with
+a failed exit status**, preventing exit-status enforcement of reproducibility.
+
+**4. Commands: `dashboard.md` renamed to `dashboard-setup.md`, installation by script.**
+Upstream's setup command pasted a node snippet that scanned the plugin cache. The
+snippets accepted only `X.Y.Z` versions and omitted `payload/`, so nothing installed
+under a staging version. They now call `scripts/install-statusline.mjs` (setup,
+repair) or `${CLAUDE_PLUGIN_ROOT}` (check-usage). The shell alias, which runs outside
+Claude Code, reads the active owned shim from settings and delegates its usage mode;
+it no longer scans a fixed marketplace or plugin cache path. The rename is required
+because a command
+named like the `dashboard` skill is hidden behind the skill. Setup also offers the
+emoji-free layout first and lists the new prompt-cache widgets in the detailed mode.
+
+**5. `scripts/widgets/rate-limit.ts`: text marker instead of the warning emoji.**
+Upstream renders `ICON.warning` when limit data cannot be read. That branch is the
+only emoji an otherwise emoji-free layout can produce, and organization policy
+forbids emoji in output. The unreadable state now keeps its label and is named in
+text: `5h: --`. The upstream vitest case `should render a text marker when API
+failed` follows the same expectation. The source and test are declared as local
+changes and leave `UPSTREAM.sha256`. The rebuilt `dist/index.js` also includes
+this adaptation and is excluded from the hash list.
+
+**6. `scripts/install-statusline.mjs`: installation, health, and repair (locally authored).**
+It resolves the build with the shim's resolver, copies the shim, confirms through the
+installed copy which build a render loads, and only then writes `statusLine`, with a
+backup and an atomic rename, keeping mode and indentation. It classifies the current
+value as `ours`, `empty`, `known-managed-by-another-tool`, or `user`; repair never
+replaces `user`, replaces another tool's value only for an identity the user allowed,
+and defers on unparsable files. It reports cause types with evidence, can check
+several config directories, can keep user-selected sibling snapshots in sync, offers
+a foreground watcher with no required OS service, and adds a missing Codex
+`tui.status_line` without changing an existing layout.
+
+**7. Status-line vitest cases: jstack package layout and installation identity.**
+`scripts/__tests__/statusline-shim.test.ts` and
+`scripts/__tests__/ensure-statusline.test.ts` now exercise the packaged dashboard
+build path, an installation identity supplied by fixture metadata, and the
+opt-in SessionStart hook. Upstream fixtures assumed its standalone plugin cache
+and command paths, so those two files are locally modified and excluded from
+the unchanged-file hash list.
+
+**8. `vitest.config.ts`: exclude obsolete standalone command-document cases.**
+The unchanged upstream `commands-config-dir.test.ts` reads `commands/setup.md`,
+`commands/update.md`, `commands/setup-alias.md`, and `README.md`. jstack deliberately
+does not ship those documents. Its owning dashboard contract instead executes the
+jstack installer, checks the packaged commands for stale paths, and exercises the
+SessionStart hook. The upstream test remains in the import for provenance but is
+excluded from the applicable Vitest run; the configuration is locally modified and
+excluded from the unchanged-file hash list.
+
+**9. `scripts/widgets/prompt-cache.ts`: text markers instead of the new state emojis.**
+v1.34.0 added the warm-state Hot Springs glyph and cold-state Snowflake glyph. The
+widget and its documentation examples now use the `warm` and `cold` text markers,
+and its upstream widget tests assert those strings. The two glyph constants remain
+byte-identical to upstream in `scripts/utils/emoji.ts`: the widget does not use them,
+so retaining them preserves unchanged-file hash coverage without affecting output.
+This source file and `scripts/__tests__/widgets.test.ts` are excluded from
+`UPSTREAM.sha256` as local changes. The rebuilt `dist/index.js` includes this policy
+along with the rate-limit adaptation and is excluded from the hash list.
+
+## Known divergence: emoji
+
+**Statusline output contains emoji.** Of 38 widgets, 24 use `ICON` from
+`scripts/utils/emoji.ts`. **There is no global off switch.**
+
+Measured with our `block_emoji.py` hook as the detector:
+
+| Display mode | Distinct emoji |
+|---|---|
+| `compact` | 1 (U+26A0) |
+| `normal` | 2 |
+| `detailed` | 7 |
+
+These display-mode counts are the earlier measurement and have not been remeasured
+against v1.34.0. The two new prompt-cache glyphs do not add terminal emoji after local
+change 9:
+
+| Upstream state | New glyph | Local output |
+|---|---|---|
+| Warm cache | Hot Springs (`U+2668 U+FE0F`) | `warm` |
+| Cold cache | Snowflake (`U+2744 U+FE0F`) | `cold` |
+
+**A zero-emoji configuration exists**: choose widgets with `displayMode: custom`.
+Measured example:
+
+    {"displayMode": "custom",
+     "lines": [["model", "context", "cost", "rateLimit7d"],
+               ["sessionName", "version"]]}
+
+    Result: exactly zero emoji, retaining model, context bar, percentage, tokens,
+    cost, and the 7-day limit, whether or not limit data can be read.
+
+The earlier example included `projectInfo`. It emits U+1F4C1 whenever the input has
+a workspace directory; that measurement used input without one.
+
+`disabledWidgets: ["rateLimit"]` did not remove them: `rateLimit` is not a widget
+id. Compact's U+26A0 was `rateLimit5h`'s error state (`scripts/widgets/rate-limit.ts`),
+printed whenever limit data cannot be read, as in a sample input without limits.
+Local change 5 replaced that glyph with `5h: --`, so the limit widgets are now
+emoji-free in both states. **Choose custom widgets** rather than merely disabling
+that widget. `references/reading.md` includes the configuration.
+
+Because jstack distributes `block_emoji.py`, document this tension. **There is no
+mechanical conflict**: block_emoji examines only `PreToolUse` tool_input for Edit,
+Write, MultiEdit, NotebookEdit, and Bash. The statusline is terminal rendering,
+not a tool call. This was measured.
+
+If organization policy is determined to cover terminal output, disable this skill
+(the default-off hook then does nothing) or propose an upstream setting.
+
+## Upstream drift
+
+This record now pins v1.34.0 at commit `f0937fefdde558afedad2522bc8573897164bd16`.
+For a future update, reacquire the recorded scope, compare against `UPSTREAM.sha256`,
+reapply the local changes, and update **version fields and manifests together**.
+Identity-constant and build reproducibility axes detect omitted reapplication.

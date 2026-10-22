@@ -1,0 +1,7 @@
+{
+  "name": "fixture-marketplace",
+  "owner": { "name": "fixture" },
+  "plugins": [
+    { "name": "somebody-else", "source": "./plugins/somebody-else" }
+  ]
+}

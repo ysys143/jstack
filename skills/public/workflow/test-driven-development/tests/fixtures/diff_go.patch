@@ -1,0 +1,9 @@
+diff --git a/pkg/calc/calc.go b/pkg/calc/calc.go
+index 1111111..2222222 100644
+--- a/pkg/calc/calc.go
++++ b/pkg/calc/calc.go
+@@ -9,0 +10,4 @@ func Add(a, b int) int {
++func Sub(a, b int) int {
++	if a < b {
++		return 0
++	}

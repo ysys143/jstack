@@ -1,0 +1,84 @@
+{
+  "_comment": "Tier-2 mechanical substitutions from Claude notation to Codex notation. Handle only paths and filenames; semantic differences require SKILL.codex.md.",
+  "_comment_literals": "Apply substitutions only to notation. Some documents quote literal forbidden strings, so a global Claude Code replacement would invalidate their rule. The negative lookbehind preserves those literal contexts.",
+  "substitutions": [
+    {
+      "from": "CLAUDE\\.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": "~/\\.claude/settings\\.local\\.json",
+      "to": "~/.codex/config.toml"
+    },
+    {
+      "from": "~/\\.claude/settings\\.json",
+      "to": "~/.codex/config.toml"
+    },
+    {
+      "from": "\\.claude/settings\\.local\\.json",
+      "to": "~/.codex/config.toml"
+    },
+    {
+      "from": "\\.claude/settings\\.json",
+      "to": "~/.codex/config.toml"
+    },
+    {
+      "from": "~/\\.claude/skills",
+      "to": "~/.codex/skills"
+    },
+    {
+      "from": "~/\\.claude/plugins",
+      "to": "~/.codex/plugins"
+    },
+    {
+      "from": "`skillOverrides`",
+      "to": "`[[skills.config]]` (config.toml, path + enabled)"
+    },
+    {
+      "from": "`/plugin`",
+      "to": "`config.toml` 의 `[plugins.\"<name>\"]`"
+    },
+    {
+      "from": "/plugin marketplace add",
+      "to": "config.toml 의 [marketplaces.*] 항목 추가"
+    },
+    {
+      "from": "(?<!Generated with )Claude Code",
+      "to": "Codex"
+    },
+    {
+      "from": "Claude가 ",
+      "to": "Codex가 "
+    },
+    {
+      "from": "Claude는 ",
+      "to": "Codex는 "
+    }
+  ],
+  "blockers": [
+    {
+      "pattern": "Task\\(",
+      "reason": "subagent invocation syntax differs"
+    },
+    {
+      "pattern": "subagent_type",
+      "reason": "subagent selection differs"
+    },
+    {
+      "pattern": "AskUserQuestion",
+      "reason": "Codex has no equivalent choice UI tool"
+    },
+    {
+      "pattern": "ExitPlanMode|EnterPlanMode",
+      "reason": "plan-mode semantics differ"
+    },
+    {
+      "pattern": "mcp__claude|claude-in-chrome",
+      "reason": "Claude-specific MCP"
+    },
+    {
+      "pattern": "oh-my-claudecode",
+      "reason": "OMC plugin dependency"
+    }
+  ]
+}

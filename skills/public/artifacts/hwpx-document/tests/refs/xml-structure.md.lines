@@ -1,0 +1,178 @@
+# blob:38e45b231d6cb6edd7ab78a3a15d35e9ea36015c
+# HWPX XML structure: header/section relationships and ID references
+`references/hwpx-format.md` supplies **values**: HWPUNIT, A4 dimensions, namespaces.
+This document supplies **structure**: required parent/child relationships and what
+Hancom does when those relationships are wrong.
+The failures here were extracted from **actual Hancom rejections**, not inferred
+from a schema. They describe concrete failure behavior rather than theoretical expectations.
+---
+## 1. File responsibilities: header defines, section references
+| File | Contains | Does not contain |
+|---|---|---|
+| `Contents/header.xml` | **Definitions** of fonts, character/paragraph properties, border fills, styles, numbering | Body text |
+| `Contents/section0.xml` | Paragraphs, tables, objects, and **references** to definitions | Formatting definitions |
+This boundary is **strict**. Sections have no place for inline formatting definitions.
+Create an `<hh:paraPr>` in the header, then reference its `id` from the section's
+`paraPrIDRef`.
+### Five ID-reference pairs
+| Referencing attribute | Header definition | Definition container |
+|---|---|---|
+| `hp:p/@paraPrIDRef` | `hh:paraPr/@id` | `hh:paraProperties` |
+| `hp:p/@styleIDRef` | `hh:style/@id` | `hh:styles` |
+| `hp:run/@charPrIDRef` | `hh:charPr/@id` | `hh:charProperties` |
+| `hp:tbl/@borderFillIDRef`, `hp:cellzone`, `hp:tc/hp:cellBorderFill/@borderFillIDRef` | `hh:borderFill/@id` | `hh:borderFills` |
+| `hh:charPr/@borderFillIDRef` (within the header) | `hh:borderFill/@id` | `hh:borderFills` |
+**All IDRef values are compared as strings.** `"01"` and `"1"` differ.
+`validate_hwpx.py --semantic` checks this through `reference/undefined`.
+**Each container has an independent ID namespace.** `charPr id="2"` and
+`borderFill id="2"` are unrelated. Missing this distinction makes unexpected boxes
+around every character difficult to diagnose. See `scripts/fix_borders.py` and §5.
+**`itemCnt` is functional metadata.** `<hh:charProperties itemCnt="7">` must match
+the child count. Adding entries without updating it makes Hancom silently discard
+later items, often delaying detection because no error dialog appears.
+---
+## 2. `hp:secPr`: misplaced attributes trigger a corruption dialog
+**This is the most costly failure.** Generators often express page settings like this:
+```xml
+<!-- Incorrect: Hancom displays a "파일이 손상되었습니다" corruption dialog -->
+<hp:secPr pageWidth="59528" pageHeight="84186"
+leftMargin="8504" rightMargin="8504" topMargin="5668"/>
+```
+`pageWidth`, `pageHeight`, `leftMargin`, `rightMargin`, `topMargin`, and
+`bottomMargin` **are not `hp:secPr` attributes**. OWPML defines no such attributes;
+Hancom treats the entire secPr as unreadable rather than ignoring them.
+The actual schema nests **`hp:margin` inside an `hp:pagePr` child**.
+Actual content from `templates/base/Contents/section0.xml`:
+```xml
+<hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134"
+tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT"
+outlineShapeIDRef="1" memoShapeIDRef="0"
+textVerticalWidthHead="0" masterPageCnt="0">
+<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>
+<hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>
+<hp:visibility hideFirstHeader="0" hideFirstFooter="0" .../>
+<hp:lineNumberShape restartType="0" countBy="0" distance="0" startNumber="0"/>
+<hp:pagePr landscape="WIDELY" width="59528" height="84186" gutterType="LEFT_ONLY">
+<hp:margin header="4252" footer="4252" gutter="0"
+left="8504" right="8504" top="5668" bottom="4252"/>
+</hp:pagePr>
+<hp:footNotePr>…</hp:footNotePr>
+<hp:endNotePr>…</hp:endNotePr>
+<hp:pageBorderFill type="BOTH" borderFillIDRef="1" .../>
+</hp:secPr>
+```
+Margin names are `left`, `right`, `top`, and `bottom`, not `leftMargin`.
+The same element also contains `header`, `footer`, and `gutter`.
+### secPr placement contract
+Place `hp:secPr` **inside the first `hp:run` of section0.xml's first paragraph**.
+Outside that paragraph or in the second paragraph, it causes Hancom to lose section
+settings. `hp:colPr` belongs in the same location as its companion.
+`validate_hwpx.py --semantic` checks this with `document/structure`, reporting
+`first paragraph is missing hp:secPr`. The same check covers **child completeness**:
+all six required children above must exist. An incomplete secPr may still open,
+but page size and margins revert to Hancom defaults and invalidate procurement formatting.
+---
+## 3. `hp:pic`: missing required children can crash Hancom
+Pictures can **crash Hancom itself**, without a dialog or log, instead of merely
+preventing a file from opening. The required children are therefore listed in full.
+```xml
+<hp:pic reverse="0">
+<!-- 1. Shared ShapeComponent fields: fixed order -->
+<hp:offset x="0" y="0"/>
+<hp:orgSz width="30000" height="20000"/>
+<hp:curSz width="30000" height="20000"/>
+<hp:flip horizontal="0" vertical="0"/>
+<hp:rotationInfo angle="0" centerX="15000" centerY="10000" rotateimage="1"/>
+<hp:renderingInfo>
+<hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+<hc:scaMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+<hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+</hp:renderingInfo>
+<!-- 2. Placement -->
+<hp:sz width="30000" widthRelTo="ABSOLUTE"
+height="20000" heightRelTo="ABSOLUTE" protect="0"/>
+<hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0"
+holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN"
+vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>
+<hp:outMargin left="0" right="0" top="0" bottom="0"/>
+<!-- 3. Picture-specific fields -->
+<hp:lineShape color="#000000" width="0" style="NONE" endCap="FLAT"
+headStyle="NORMAL" tailStyle="NORMAL"
+headfill="1" tailfill="1" headSz="MEDIUM" tailSz="MEDIUM"
+outlineStyle="NORMAL" alpha="0"/>
+<hp:imgRect>
+<hc:pt0 x="0" y="0"/>
+<hc:pt1 x="30000" y="0"/>
+<hc:pt2 x="30000" y="20000"/>
+<hc:pt3 x="0" y="20000"/>
+</hp:imgRect>
+<hp:imgClip left="0" right="30000" top="0" bottom="20000"/>
+<hp:inMargin left="0" right="0" top="0" bottom="0"/>
+<hp:imgDim dimwidth="30000" dimheight="20000"/>
+<hc:img binaryItemIDRef="image1" bright="0" contrast="0"
+effect="REAL_PIC" alpha="0.0"/>
+</hp:pic>
+```
+**Four frequent omissions account for most crashes:**
+1. All four vertices `hc:pt0` through `hc:pt3` under `hp:imgRect`; three are insufficient.
+2. `hp:imgClip`, set to the **full image area** even without cropping.
+3. `hp:imgDim`, even if its values match `curSz`.
+4. All three matrices under `hp:renderingInfo`; none may be omitted.
+### Register pictures in three places
+Correct picture XML without registered binary data opens as an empty rectangle.
+| Location | Entry |
+|---|---|
+| `BinData/image1.png` | Actual image bytes |
+| `<opf:manifest>` in `Contents/content.hpf` | `<opf:item id="image1" href="BinData/image1.png" media-type="image/png"/>` |
+| `META-INF/manifest.xml` | An `<odf:file-entry>` for the same path |
+`hc:img/@binaryItemIDRef` references the **manifest `id`, not a file path**.
+Using a path produces an empty picture without an error.
+---
+## 4. `hh:paraPr`: alignment and margins are children too
+Paragraph properties have the same attribute-versus-child trap as secPr.
+```xml
+<!-- Incorrect: no error, but the entire style is ignored -->
+<hh:paraPr id="1" align="JUSTIFY" indent="0" left="0" right="0"/>
+```
+Hancom renders this with **default paragraph properties**. The silent failure appears
+as formatting that does not apply. The actual structure uses children:
+```xml
+<hh:paraPr id="1" tabPrIDRef="0" condense="0" fontLineHeight="0"
+snapToGrid="1" suppressLineNumbers="0" checked="0">
+<hh:align horizontal="JUSTIFY" vertical="BASELINE"/>
+<hh:heading type="NONE" idRef="0" level="0"/>
+<hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="KEEP_WORD"
+widowOrphan="0" keepWithNext="0" keepLines="0"
+pageBreakBefore="0" lineWrap="BREAK"/>
+<hh:margin>
+<hc:intent value="0" unit="HWPUNIT"/>
+<hc:left value="0" unit="HWPUNIT"/>
+<hc:right value="0" unit="HWPUNIT"/>
+<hc:prev value="0" unit="HWPUNIT"/>
+<hc:next value="0" unit="HWPUNIT"/>
+</hh:margin>
+<hh:lineSpacing type="PERCENT" value="160" unit="HWPUNIT"/>
+<hh:border borderFillIDRef="2" offsetLeft="0" offsetRight="0"
+offsetTop="0" offsetBottom="0" connect="0" ignoreMargin="0"/>
+</hh:paraPr>
+```
+Margins are **child elements carrying `value` and `unit`**, not numeric attributes.
+Hancom-generated files may wrap this block in `hp:switch` / `hp:case` for version
+branching. Finding `hh:margin` then requires descending through that wrapper.
+Use **descendant searches** such as `findall(".//hh:margin")` rather than only direct children.
+---
+## 5. Order for header edits
+Editing the section before its header creates a broken intermediate file. Use this order:
+1. **Add the definition** to the header and update `itemCnt`.
+2. **Reference its `id`** from the section.
+3. Run `validate_hwpx.py --semantic` and require zero `reference/undefined` findings.
+4. For **deletion**, reverse the order: remove references before removing definitions.
+Deleting definitions first makes every intermediate validation fail, obscuring actual
+defects. This is why the five-stage repair sequence in `references/validation-rules.md`
+places `delete` last and requires evidence.
+---
+## 6. Topics covered elsewhere
+- **Values**, including HWPUNIT conversions, A4 dimensions, and namespace URIs: `references/hwpx-format.md`.
+- **Korean-document symptoms**, including table overflow, anchoring, and font substitution: `references/hangul-practice.md`.
+- **Validator coverage**: `references/validation-rules.md`.
+- **Structurally valid files opened differently by Hancom**: `references/troubleshooting.md`.

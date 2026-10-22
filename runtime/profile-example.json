@@ -1,0 +1,34 @@
+{
+  "workspace": {
+    "schemaVersion": 1,
+    "configDir": "<selected absolute config directory>",
+    "account": "<identity returned by discovery>"
+  },
+  "reporting": {
+    "schemaVersion": 1,
+    "subjectName": "<user-selected report subject>",
+    "sheetNamePattern": "<current-month sheet naming pattern>",
+    "nameColumn": "C",
+    "dateColumn": "B",
+    "learnedColumn": "D",
+    "goalColumn": "E"
+  },
+  "conventions": {
+    "schemaVersion": 1,
+    "commitLanguage": "ko",
+    "commitTypes": [
+      "feat",
+      "fix",
+      "refactor",
+      "test",
+      "docs",
+      "chore",
+      "style",
+      "remove",
+      "perf"
+    ],
+    "subjectVerbEnding": "korean",
+    "footerStyle": "resolves",
+    "autocommitLanguage": "ko"
+  }
+}

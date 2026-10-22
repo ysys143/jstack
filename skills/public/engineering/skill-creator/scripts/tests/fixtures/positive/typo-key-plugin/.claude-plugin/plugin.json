@@ -1,0 +1,6 @@
+{
+  "name": "typo-key-plugin",
+  "description": "Fixture plugin for validate_plugin.sh.",
+  "version": "1.0.0",
+  "author": { "name": "fixture" }
+}

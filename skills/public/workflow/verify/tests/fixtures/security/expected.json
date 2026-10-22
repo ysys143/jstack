@@ -1,0 +1,5 @@
+{
+  "python": {"vulnerable": {"../canary.txt": "ALLOWED", "inside.txt": "ALLOWED", "..%2fcanary.txt": "ALLOWED"}, "normal": {"../canary.txt": "DENIED", "inside.txt": "ALLOWED", "..%2fcanary.txt": "DENIED"}, "shallow": {"../canary.txt": "DENIED", "..%2fcanary.txt": "ALLOWED"}},
+  "javascript": {"vulnerable": {"guest": "ALLOWED", "admin": "ALLOWED", "visitor": "ALLOWED"}, "normal": {"guest": "DENIED", "admin": "ALLOWED", "visitor": "DENIED"}, "shallow": {"guest": "DENIED", "visitor": "ALLOWED"}},
+  "go": {"vulnerable": {"-1": "ALLOWED", "5": "ALLOWED", "-2": "ALLOWED"}, "normal": {"-1": "DENIED", "5": "ALLOWED", "-2": "DENIED"}, "shallow": {"-1": "DENIED", "-2": "ALLOWED"}}
+}

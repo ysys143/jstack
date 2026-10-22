@@ -1,0 +1,137 @@
+# Local feedback
+
+Use this procedure when diagnosing a failed check or repeated corrections. The
+goal is to answer a specific correctness question with the smallest useful run.
+For ordinary edits, start with affected checks without inventing a failing test.
+
+## Collect the failure inventory
+
+Read complete available logs and retain command exit status. A truncated tool
+response or log tail is not the failure inventory. Extract all failures, group
+suspected common causes, and keep exceptions and unclassified failures visible.
+If full logs are unavailable, state the gap before judging the failure count.
+
+Compare revision and failure signature across branches. Several red runs may
+expose one shared defect; a retry passing on unchanged input does not prove a fix.
+Distinguish assertion failures, setup errors, resource contention, and external
+service failures. Diagnose the actual response before inferring permission,
+network, or credential restrictions.
+
+## Divide independent investigations
+
+When failures span independent causes or environments, batch independent log
+reads and focused checks within machine capacity. Begin investigating understood
+failures while completing the inventory across all OS/version combinations.
+Keep one owner responsible for that inventory so a representative failure cannot
+hide a different failure in another job.
+
+Use agents only when the session permits delegation and each assignment can
+return independently checkable evidence. Without delegation authority or tools,
+continue independent tool calls concurrently. Keep small or tightly coupled
+changes with one owner when handoff and integration would cost more than they save.
+
+Split by correctness question and dependency boundary. For example, Windows
+ownership, Node copy semantics, and contract aggregation can be investigated
+independently while the inventory owner checks for omitted signatures. Give each
+assignment its input revision, failure signatures, target environment, exclusive
+edit paths or read-only scope, and smallest useful check. Use isolated worktrees
+when needed; shared runtime or workflow files have one editing owner.
+
+Require this handoff before integrating a result:
+
+```text
+Failure signatures covered; remaining exceptions:
+Cause and reproducer, or unresolved hypothesis:
+Changed paths and shared dependencies:
+Check command, tested input, environment, exit status, and raw log:
+```
+
+One coordinator integrates related fixes and owns broad CI dispatch. Workers
+return focused evidence rather than independently triggering duplicate full runs.
+Before widening, reconcile every known failure with evidence or a named remaining
+remote question. Check affected consumers and aggregation/packaging gates; account
+for input changes that invalidate another worker's result. A worker's green test
+does not establish that the combined changes pass. Validate the integrated input
+and retain required platform coverage.
+
+## Form and check a hypothesis
+
+Skip this procedure when failure output or the preceding diff directly identifies
+the cause; fix it without completing the template. For a defect, observe failure
+before the fix and success afterward when feasible; otherwise report the
+reproduction limit.
+
+Keep a short note in the current task context; a separate file is optional:
+
+```text
+Observation and input/environment:
+Candidate causes (file, function, config, input condition, ordering or timing;
+  one only when no serious rival exists):
+  - <cause> | falsified if: <observation, with attempt count if intermittent> | cheapest check: <command>
+Smallest discriminating command and predicted result per cause:
+Next broader check once one cause is located:
+```
+
+Write each falsifier before observing its result; do not move the criterion after
+seeing the result. Choose the cheapest observation with the greatest power to
+distinguish the current candidates. Control the relevant clock boundary, path
+input, DB fixture, or process ordering.
+
+After each observation, drop causes it contradicts. Parsimony ranks only causes
+that still fit all evidence; it never restores a refuted cause because it is
+simpler. Reopen a refuted cause only when new evidence shows that its falsifying
+observation was wrong, such as an environment mismatch or intermittent result.
+
+For a defect limited to a platform, branch, or input kind, record where it IS and
+the closest comparable IS-NOT. Eliminate any cause that cannot explain both
+sides.
+
+Once a cause is localized, stop discriminating among hypotheses. Inspect related
+callers and analogous implementations for the same mechanism. If human error
+caused the defect, report why it was possible as an open item. Writing a guard
+test belongs to the tdd workflow.
+Resolve understood failures together before rerunning a broad suite.
+
+If the same failure survives two hypothesis-driven corrections, pause broad
+reruns and revisit the hypothesis or add instrumentation. Continue diagnosis;
+this is not a user approval gate or a limit on necessary fixes. Retry unchanged
+input only for an explicit intermittency or external-failure question, with a
+finite attempt/time budget. Record failures and total attempts. One green retry
+does not settle an intermittent defect.
+
+For a failure unrelated to the change, rerun that one test once. If it flips,
+report it as flaky with its seed, order, and output instead of looping the suite;
+[flaky tests](flaky-tests.md) covers detection, retries, and quarantine. Read a
+repository quarantine list before interpreting failures.
+
+## Choose the environment and widen scope
+
+| Question | First useful execution |
+| --- | --- |
+| Logic, path transformation, time boundaries | Focused local test with explicit inputs |
+| Queries, transactions, migrations | Relevant local integration fixture |
+| Native file locking, process termination, OS tooling | Target OS, focused test first |
+| GitHub event, permission, runner configuration | Relevant Actions job |
+
+Read existing project commands before running them. A required checker that is
+absent or collects unexpectedly zero checks leaves the claim unverified.
+Use the progression that applies: reproducer → package and consumers → required
+integration → required CI. Preserve required gates and actual platform coverage;
+local success or cross-compilation does not prove another OS works.
+
+Before an authorized remote run, address locally reproducible failures and name
+the remaining question that needs that environment. Use existing filters and
+workflow controls. This procedure does not authorize a push or workflow dispatch.
+If impact is uncertain or a shared contract changed, include its known consumers.
+
+## Preserve evidence and stop redundant execution
+
+Retain the command, input identity, environment, result, and log location.
+Record partial results even when the next check fails. Apply the freshness rule
+in the parent verify skill before reusing results; never substitute an assertion
+that a prior run passed for its actual evidence. Once affected and required
+checks pass, finish the authorized work unless new evidence warrants more checks.
+
+Keep context compact: write the full log to a file and read the summary line and
+the failing tests, searching the file for more. Configure a quiet reporter when
+the runner offers one.

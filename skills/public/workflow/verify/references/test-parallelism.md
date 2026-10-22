@@ -1,0 +1,204 @@
+# Test parallelism
+
+Parallel execution is the largest safe speed-up once waits are gone. Two limits
+cap it: **isolation**, because tests that share state break or flake, and the
+**long pole**, because wall time is at least max(longest unit, total / workers).
+Numbers and sources: [test evidence](test-evidence.md).
+
+## Isolation checklist
+
+A test unit must pass **alone, in any order, twice in a row, and next to any
+other unit**. Check each item:
+
+1. **Filesystem**: a fresh temp dir per test or file (`mkdtemp`, `tmp_path`,
+   `t.TempDir()`, `@TempDir`, `tempfile::tempdir()`); no fixed `/tmp/x`; never
+   write into the repository.
+2. **Ports**: bind port **0** and read the assigned port; never hard-code 3000 or
+   8080. Asking the OS for a free port and passing it to a child process is
+   acceptable in practice despite the small race.
+3. **Databases**: per worker, a separate database file, schema, or name that
+   includes the worker id (`JEST_WORKER_ID`, `VITEST_POOL_ID`, pytest-xdist
+   `worker_id`, `TEST_ENV_NUMBER` in parallel_tests), or a transaction rolled back
+   after each test.
+4. **Environment**: variables set by a test stay process-local only when each file
+   runs in its own process (Node `node:test`, Jest, and the default Vitest pools);
+   with threads or `--no-isolate`, reset them.
+5. **Global and static state**: singletons, caches, registries, and module-level
+   state are reset in `beforeEach` or `setUp`. Static state is the most common
+   root of order-dependent tests.
+6. **External names**: unique queue, topic, bucket, and key names per test.
+7. **Time and randomness**: a fake or injected clock; a seeded generator with the
+   seed printed.
+8. **No order assumptions**: no test relies on data that another test created.
+   When a group truly must share, declare it (pytest-xdist `--dist loadgroup`
+   with `@pytest.mark.xdist_group`, or one file).
+9. **Resources**: timeouts sized for a loaded CI machine, and no more workers than
+   cores; many flaky tests fail only under resource contention.
+
+Isolation level: one process per file is the usual balance. One process per
+test can cost more than the tests themselves. Turn isolation off
+(`vitest --no-isolate`, `node --test-isolation=none` on Node 24 and later,
+`--experimental-test-isolation=none` on Node 22) only after repeated and
+random-order runs pass.
+
+## Workers per runner
+
+| Runner | Parallel across files | Notes |
+|---|---|---|
+| Node `node:test` | `node --test --test-concurrency=N` | Recent Node defaults to `availableParallelism() - 1`; older setups often pin 1 |
+| Jest | `--maxWorkers=N` or `50%` | Default is cores minus one; `--runInBand` or `-i` forces serial |
+| Vitest | `--maxWorkers=N`; `--pool=forks` or `--pool=threads` | `fileParallelism: false` forces serial |
+| Mocha | `--parallel --jobs N` | |
+| Playwright | `--workers=N`; `fullyParallel: true` | `fullyParallel` also runs tests within a file in parallel |
+| pytest | `pytest -n auto` (pytest-xdist) | `--dist worksteal` balances uneven files; `--dist loadscope` keeps module fixtures together |
+| Go | packages in parallel by default (`-p`); `t.Parallel()` with `-parallel N` within a package | |
+| Gradle | `maxParallelForks = N` in `tasks.test` | `forkEvery` only to contain leaks |
+| Maven Surefire | `<forkCount>1C</forkCount>` with `<reuseForks>true</reuseForks>` | JUnit 5: `junit.jupiter.execution.parallel.enabled=true` |
+| Rust | `cargo nextest run` (process per test) | `cargo test -- --test-threads=N` for libtest |
+| Rails | `parallelize(workers: :number_of_processors, work_stealing: true)` | Fewer than 50 tests stay serial by default |
+| RSpec | `parallel_rspec -n N` (parallel_tests) | |
+
+Make the count overridable, with a default near the CPU count and 1 for
+debugging, for example in `package.json`:
+`"test": "node --test --test-concurrency=${TEST_WORKERS:-10} 'test/**/*.test.js'"`.
+
+## Prove it
+
+    for i in 1 2 3; do <full test command> || break; done   # three green runs in a row
+    npx jest --randomize --showSeed          # replay with --seed=<n>
+    npx vitest run --sequence.shuffle
+    node --test --test-randomize             # Node 24 and later; replay with --test-random-seed=<n>
+    pytest -p randomly                       # pytest-randomly; replay with --randomly-seed=<n>
+    go test -shuffle=on ./...
+    bundle exec rspec --order rand           # replay with --seed <n>
+
+A failure that appears only in parallel or in random order is an isolation bug.
+Find the shared resource and fix it; do not lower the worker count to hide it.
+Zero failures and zero cancelled units are required.
+
+## Cut isolation overhead once independence is proven
+
+After repeated and random-order runs pass:
+
+- Share one worker process per group of files: `vitest --no-isolate` (or
+  `isolate: false` per project), `node --test-isolation=none`, Surefire
+  `reuseForks=true`.
+- Use lighter environments: the node environment instead of jsdom where it
+  suffices.
+- Preload the application once (Spring for Rails) and reuse one database and
+  schema per worker with transaction rollback per test.
+- Recycle workers that grow in memory instead of isolating every test (Jest
+  `workerIdleMemoryLimit: '512MB'`).
+- Move slow end-to-end tests into their own shard or job so they start at time
+  zero.
+
+## The long pole
+
+- `scripts/test_profile.js` prints the projected wall time for several worker
+  counts with a longest-processing-time-first schedule, and the long pole. That
+  schedule is within 4/3 of optimal.
+- When the long pole is close to the projected wall time, split that unit by
+  feature or move its slow part into its own unit so it starts at time zero.
+- Start the slowest units first. Jest sorts by previous duration; for other
+  runners, order the unit list by recorded duration.
+
+## Sharding across CI machines
+
+Built-in `--shard` flags split by **count or hash, not duration** (Jest
+`--shard=i/n`, Vitest `--shard`, Node `--test-shard`, Playwright `--shard` without
+`fullyParallel`). Uneven shards waste machines. Duration-aware options:
+
+- CircleCI: `circleci tests run --command "xargs <runner>" --split-by=timings` (needs JUnit timing results)
+- Knapsack Pro in queue mode; Buildkite Test Engine Client (`bktec`)
+- pytest: `pytest --store-durations`, then `pytest --splits 4 --group 2 --splitting-algorithm least_duration` (pytest-split)
+- Ruby: `parallel_tests --group-by runtime`
+- Bazel: `shard_count` in BUILD with `--test_sharding_strategy=explicit`
+- Rust: `cargo nextest run --partition slice:1/4`
+
+Shard only after removing waits and using every core on one machine. Each shard
+repeats the serial setup, so aggregate compute rises; report that cost with the
+wall-time gain.
+
+## Settings per ecosystem
+
+**JavaScript and TypeScript**
+
+    npx jest --maxWorkers=50%                        # default is cores minus one
+    npx jest --shard=2/4                             # shards by path hash, not duration
+    node --test --test-concurrency=8 --test-shard=1/3   # shards by file count
+    vitest run --reporter=blob --shard=1/3 && vitest run --merge-reports
+    NODE_COMPILE_CACHE=node_modules/.cache/node-compile-cache vitest run
+    npx playwright test --shard=1/4                  # set fullyParallel: true for test-level balance
+
+**Python**
+
+    pytest -n auto --dist worksteal                  # physical cores; -n logical needs psutil
+    pytest -n auto --dist loadscope                  # keep module and class fixtures on one worker
+    pytest --durations=20 --durations-min=0.5
+
+**JVM**
+
+    // build.gradle.kts
+    tasks.withType<Test>().configureEach {
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+    }
+    // gradle.properties: org.gradle.parallel=true, org.gradle.caching=true, org.gradle.configuration-cache=true
+    // ./gradlew test --build-cache --configuration-cache --parallel
+
+    <!-- Maven Surefire: one JVM per core, reused -->
+    <forkCount>1C</forkCount>
+    <reuseForks>true</reuseForks>
+
+    # src/test/resources/junit-platform.properties
+    junit.jupiter.execution.parallel.enabled=true
+    junit.jupiter.execution.parallel.mode.default=concurrent
+    junit.jupiter.execution.parallel.mode.classes.default=concurrent
+    junit.jupiter.execution.parallel.config.strategy=dynamic
+
+**Go**
+
+    go test ./...                   # packages in parallel (-p = GOMAXPROCS); results cached
+    go test -parallel 8 ./...       # cap t.Parallel() tests within one binary
+    go test -json ./... | tee test.json   # per-test Elapsed for profiling
+
+Call `t.Parallel()` in independent tests.
+
+**Rust**
+
+    cargo nextest run --workspace                    # process per test; reports slow tests
+    cargo nextest run --partition slice:1/4          # or hash:1/4 for CI sharding
+
+**Ruby and Rails**
+
+    # test/test_helper.rb
+    class ActiveSupport::TestCase
+      parallelize(workers: :number_of_processors, work_stealing: true)   # or with: :threads
+      parallelize_setup { |worker| ... }   # per-worker resources
+    end
+    # config.active_support.test_parallelization_threshold = 50 (default)
+
+    PARALLEL_WORKERS=8 bin/rails test
+    bundle exec parallel_rspec -n 8 --group-by runtime   # after recording a runtime log
+    bin/spring binstub --all                             # preloader
+
+**Bazel**
+
+    bazel test //... --remote_cache=grpcs://cache.example:443 --cache_test_results=auto
+    bazel test //... --disk_cache=~/.cache/bazel-disk --remote_download_minimal
+    bazel test //... --test_sharding_strategy=explicit   # with shard_count = N in BUILD
+    bazel test //... --runs_per_test=20 --test_output=errors   # flake hunting only
+
+Profiling beyond `scripts/test_profile.js`: the Vitest duration breakdown, Jest
+per-file times with `--logHeapUsage`, `cargo nextest` slow-test reports,
+`rspec --profile 20`, Gradle Build Scan and `--profile`, Bazel `--profile` with
+`bazel analyze-profile`, and `python -X importtime` for startup.
+
+## Cache results
+
+Key dependency and environment caches by lockfile first; caching the build
+environment roughly halves many CI builds. Then cache **test results by input
+hash**, which is safe only for hermetic, order-independent tests: the Go test
+cache, Bazel `--remote_cache` with `--cache_test_results=auto`, `nx affected` with
+the Nx cache, `turbo run test --affected` with declared outputs. Maintain caches;
+stale artifacts are common. Keep a complete uncached run on a schedule or after
+merge.

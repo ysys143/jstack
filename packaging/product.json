@@ -1,0 +1,15 @@
+{
+  "name": "jstack",
+  "description": "A shared Claude Code and Codex plugin for development, research, and document work.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Jaesol Shin"
+  },
+  "keywords": [
+    "development",
+    "workflow",
+    "documents",
+    "korean"
+  ],
+  "skillCatalog": "contracts/skill-catalog.json"
+}

@@ -1,0 +1,70 @@
+# Judgment rules for writing reports
+
+**This is work judgment, not tool usage.** Update this file when team conditions
+such as membership, writing style, or shared project names change. Keep it
+separate from `gws-cli.md`, which belongs to a different class.
+
+Ported from the upstream `weekly-wrapup` skill at commit adb6b55.
+
+## A Commit Message Is Not a Verified Fact
+
+**A commit message records intent at authoring time, not a verified fact.** Copying
+it directly into a result report can publish events that never happened. The
+following types **must be confirmed with the user** when presenting a draft.
+
+| Type | Commit example | Reality | Safe wording |
+|---|---|---|---|
+| **Definitive claim** | `Site visit date confirmed` | No confirmation occurred | Omit until confirmed |
+| **Author attribution** | `WIP: add business proposal` | The author committed material received from someone else | `Reviewed supplied material` |
+| **Wrong work target** | Six `research:` commits in the `ollama` repository | The target was a FreeToken report; ollama was only the work location | Name the actual research target |
+| **Completion claim** | `H12 measurement complete` | Measurement scope and conclusion still need confirmation | Include only after user confirmation |
+
+Keywords requiring review: **확정 · 완료 · 합의 · 승인 · 배포 · 전달**
+(confirmed, completed, agreed, approved, deployed, delivered).
+
+`git show --stat` can suggest authorship from the shape of a change, such as a
+large batch of new files versus incremental editing. **The final decision is
+different: user confirmation remains the reliable source.**
+
+## Scrum Cell Style
+
+**Match the density of teammates' cells.** Read other cells in the same sheet
+first and write at that level. The usual shape is **three to five lines per
+project**: a `- project/axis` line followed by one or two indented details.
+
+```text
+- ods ax
+  Test SQS-based AI Worker message handling
+  Measure runtime/resource use
+```
+
+**Exclude these:**
+
+| Exclude | Reason | Replacement |
+|---|---|---|
+| Version numbers (`v0.7.30`, `v1.2.48`) | Internal information teammates cannot interpret | Omit |
+| Release wording (`released ...`) | The result is the **content**, not the act of releasing | Say what was built or fixed |
+| Internal identifiers (`H9`, `task_segment_facts`) | They convey no meaning | Explain what the item does |
+| English feature names (`burn`, `sync`, `identity`) | — | Korean terms (`구독 소진`, `동기화`, `식별자`) |
+
+**Keep measurements.** Values such as `331 seconds every 60 seconds` or `2.2
+seconds` communicate the size of a defect. Keep project names because they are
+shared team vocabulary.
+
+**Style:** Column D, yesterday's work, uses terse bullet endings such as
+`- ~했음` and `- ~않음`. Do not use the formal `~습니다` style.
+In English terms, preserve the terse Korean bullet style and forbid formal sentence endings.
+
+**Commit count does not determine importance.** Collapse one cleanup applied across roughly
+20 repositories into one line even if it produced many commits. A single commit
+that delivered a document can still be the week's main result.
+
+## Ambiguous Projects
+
+1. **Analyze:** inspect README, file modification times, and Git status.
+2. **Offer options:** ask the user whether to include or exclude it.
+3. **Obtain approval:** use the user's domain knowledge for the final decision.
+4. **Apply:** reflect the approved decision automatically.
+
+**Personal work cannot be classified reliably or automatically.** Always ask about a project
+that appears unrelated to work.

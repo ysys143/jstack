@@ -1,0 +1,27 @@
+{
+  "description": "Node test files that exercise complete CLI, package, host, or workflow lifecycles. New tests stay in the fast group unless listed here. Read by scripts/run-node-tests.mjs and scripts/test_budget.ts.",
+  "integration": [
+    "cli/checked-lifecycle.test.ts",
+    "cli/download.test.ts",
+    "cli/init.test.ts",
+    "cli/lifecycle.test.ts",
+    "cli/npm-artifact.test.ts",
+    "hosts/claude/hooks/hooks-migration.test.ts",
+    "packaging/build.test.ts",
+    "packaging/sdlc.test.ts",
+    "runtime/sdlc-release.test.ts",
+    "runtime/sdlc-ship.test.ts",
+    "runtime/sqlite.test.ts",
+    "skills/public/artifacts/svg-diagram/tests/diagram-migration.test.ts",
+    "skills/public/engineering/repository-setup/tests/project_portability.test.ts",
+    "skills/public/engineering/repository-setup/tests/setup-migration.test.ts",
+    "skills/public/engineering/skill-creator/tests/author_runtime_migration.test.ts",
+    "skills/public/workflow/verify/tests/workflow-migration.test.ts",
+    "skills/public/workflow/verify/tests/runtime-migration.test.ts",
+    "skills/support/runtime-adaptation/tests/bridge_migration.test.ts"
+  ],
+  "budget": {
+    "fast": { "maxSeconds": 3, "repeat": 5 },
+    "integration": { "maxSeconds": 30, "repeat": 2 }
+  }
+}

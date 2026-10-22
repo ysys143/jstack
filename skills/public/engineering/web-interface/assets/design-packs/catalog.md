@@ -1,0 +1,43 @@
+## 카탈로그 — 웹사이트 (40)
+
+- `web-swiss-grid` — Swiss Grid Minimal: 엄격한 12열 모듈러 그리드와 좌측 정렬 비대칭, 단일 강조색의 장식 없는 순수 그리드.  · mono/minimal-sans/strict-grid/balanced/none
+- `web-neo-brutalism` — Neo-Brutalism: 거친 검정 하드 보더와 오프셋 하드 섀도, 원색 블록의 채도 충돌과 굵은 디스플레이의 antidesi…  · vivid-primary/heavy-display/asymmetric/dense/snappy
+- `web-glassmorphism` — Glassmorphism: 반투명 서리 낀 유리 표면과 backdrop-blur, 그라디언트 배경 위 부유하는 패널의 깊이감.  · gradient/minimal-sans/centered/airy/subtle
+- `web-editorial-longform` — Editorial Longform: 단일 좁은 본문 컬럼과 큰 세리프 본문, 오버사이즈 헤드라인·드롭캡의 잡지 기사형 롱폼.  · mono/serif-editorial/centered/airy/subtle
+- `web-dark-terminal` — Dark Tech / Terminal: 거의 검정 배경에 모노스페이스 텍스트와 형광 강조색, 헤어라인 그리드의 개발자 콘솔 미감.  · dark/mono/strict-grid/dense/subtle
+- `web-claymorphism` — Claymorphism Soft: 통통하게 부푼 점토 같은 3D 표면과 더블 섀도, 파스텔 톤의 촉각적 장난감 미감.  · pastel/minimal-sans/centered/airy/playful
+- `web-big-type-statement` — Big Type Statement: 화면을 가득 채우는 초대형 디스플레이 타이포가 콘텐츠 자체, 음수 자간과 무채 + 강조 하나.  · mono/heavy-display/full-bleed/airy/subtle
+- `web-y2k-chrome` — Y2K Chrome Revival: 메탈릭 크롬 그라디언트와 홀로그램 광택, 블롭 형태·베벨 버튼의 레트로 사이버 미감.  · gradient/mixed/asymmetric/dense/playful
+- `web-botanical-organic` — Botanical Organic: 흙빛·세이지·테라코타 어스 톤과 손그림 식물·유기 곡선 블롭, 자연 질감 배경의 웰니스 톤.  · earth/serif-editorial/asymmetric/airy/subtle
+- `web-monospace-docs` — Monospace Docs: 전면 모노스페이스 타이포로 짠 라이트 모드 문서 사이트, 헤어라인 표 보더와 정렬의 정밀함.  · mono/mono/strict-grid/dense/none
+- `web-minimal-luxury` — Minimal Luxury Fashion: 광활한 여백과 넓은 자간의 산세리프, 흑·백·아이보리 무채의 침묵하는 패션 하우스 럭셔리.  · mono/minimal-sans/full-bleed/airy/subtle
+- `web-memphis-postmodern` — Memphis Postmodern: 원색·파스텔 충돌과 무작위처럼 흩뿌린 기하 도형, 테라초 질감의 포스트모던 키치.  · vivid-primary/mixed/asymmetric/dense/playful
+- `web-news-journal-grid` — News / Journal Grid: 다단 밀집 그리드와 굵은 세리프 헤드라인, 가는 룰 구획의 신문 1면 미감 — 밀도가 곧 권위.  · mono/serif-editorial/strict-grid/dense/none
+- `web-fun-illustrated` — Fun Illustrated: 플랫한 손맛 일러스트와 채도 높은 다색 팔레트, 둥근 굵은 산세리프의 명랑하고 친근한 톤.  · vivid-primary/heavy-display/centered/balanced/playful
+- `web-ai-gradient-mesh` — AI Gradient Mesh: 흐르는 멀티 컬러 메시 그라디언트가 배경 전면을 채우고 그 위 솔리드 흰 카드, 글로우·노이즈 텍스처…  · gradient/minimal-sans/full-bleed/balanced/subtle
+- `web-dark-luxury` — Dark Luxury: 깊은 차콜 배경에 금·샴페인 메탈릭 강조와 얇은 세리프 디스플레이, 어둠과 광택의 프리미엄 연출.  · dark/serif-editorial/full-bleed/airy/subtle
+- `web-archive-library` — Archive / Library: 빽빽한 표·리스트·인덱스와 세리프·모노 혼합, 종이빛 베이지 배경의 디지털 아카이브 카탈로그 미감.  · earth/mixed/strict-grid/dense/none
+- `web-material-expressive` — Material Expressive: Material 3 Expressive의 토널 색 시스템과 모핑 셰이프, 스프링 기반 통통한 모션의 …  · vivid-primary/minimal-sans/block-grid/balanced/playful
+- `web-risograph-print` — Risograph Print: 2~3색 스폿 컬러의 의도적 오프셋과 거친 망점·그레인, 형광 잉크 톤의 리소그래프 인쇄 미감.  · vivid-primary/heavy-display/block-grid/balanced/snappy
+- `web-bauhaus-geometric` — Bauhaus Geometric: 바우하우스 조형 원리 — 원·삼각형·사각형의 기본 도형, 빨강·노랑·파랑 3원색에 검정·흰색, 기하학…  · vivid-primary/heavy-display/block-grid/balanced/snappy
+- `web-precision-fintech` — 정밀 핀테크 라이트: 오프화이트와 잉크 네이비 본문, 상단 1/3을 가르는 이리데센트 파스텔 밴드, 음수 자간 가는 그로테…  · mono/minimal-sans/asymmetric/balanced/subtle
+- `web-blueprint-grid` — 블루프린트 그리드: 흰 또는 잉크 블랙 캔버스에 1px 헤어라인 도트/라인 그리드를 청사진처럼 노출하고 콘텐츠를 격자에 …  · mono/mono/strict-grid/balanced/subtle
+- `web-luminous-dark-bento` — 루미너스 다크 벤토: 딥 차콜 위 비대칭 벤토 타일이 1px 발광 보더로 떠 있고, 라디얼 글로우와 마이크로모션이 인터페이…  · dark/minimal-sans/block-grid/balanced/snappy
+- `web-warm-workspace` — 웜 워크스페이스: 따뜻한 오프화이트와 잉크 그레이, 단색 라인 일러스트와 둥근 카드, 휴머니스트 세리프+산세리프 혼합의…  · earth/mixed/centered/airy/subtle
+- `web-iridescent-marketing-flow` — 이리데센트 마케팅 플로우: 밝은 화이트 배경에 곡면형 컬러 블록이 흐르듯 끼어들고 굵은 산세리프·둥근 버튼·풀폭 일러스트 배너로…  · vivid-primary/heavy-display/full-bleed/balanced/playful
+- `web-spatial-immersive-hero` — 스페이셜 이머시브 히어로: 스크롤에 따라 배경색이 전환되고 텍스트가 등장·소멸하는 수직 슬라이더, 부유하는 입체 오브제와 영화적…  · dark/minimal-sans/full-bleed/airy/playful
+- `web-tactile-soft-product` — 택타일 소프트 프로덕트: 그레이지 배경에 부드러운 다중 그림자를 단 둥근 카드가 미세하게 떠 있고, 절제된 민트·코랄 강조와 …  · pastel/minimal-sans/centered/balanced/snappy
+- `web-editorial-confidence` — 에디토리얼 컨피던스: 넓은 화이트 캔버스에 비대칭 다단, 큰 디스플레이 세리프 헤드라인과 단일 진한 면강조색, 헤어라인 룰…  · vivid-primary/serif-editorial/asymmetric/balanced/subtle
+- `web-signal-monochrome` — 시그널 모노크롬: 순백·순흑 고대비 캔버스에 단일 시그널 컬러가 CTA에만 점처럼 찍히고, 빽빽한 위계와 색 반전 호버…  · mono/minimal-sans/asymmetric/dense/snappy
+- `web-immersive-media-grid` — 이머시브 미디어 그리드: 잉크 블랙 배경에 풀블리드 미디어 타일이 모듈러 그리드로 빽빽이 깔린 몰입형 콜라주, 큰 산세리프와 …  · dark/heavy-display/block-grid/dense/playful
+- `web-atelier-archive-serif` — 아틀리에 아카이브 세리프: 오프화이트 캔버스에 12열 엄격 그리드를 노출하되 갤러리 도록처럼 좌측 작품 인덱스 리스트와 우측 큰…  · mono/mixed/strict-grid/airy/none
+- `web-haute-jewelry-noir` — 오트 주얼리 누아르: 거의 순흑 캔버스 위 단 하나의 제품 렌더가 라디얼 스포트라이트로 떠 있고, 가는 하이콘트라스트 세리…  · dark/serif-editorial/centered/airy/playful
+- `web-cinematic-marque-reveal` — 시네마틱 마퀴 리빌: 잉크 블랙 캔버스에 21:9 시네마틱 풀블리드 키 비주얼과 스크롤 순차 리빌, 굵은 와이드 디스플레이…  · dark/heavy-display/full-bleed/airy/snappy
+- `web-poetic-hospitality-scroll` — 포에틱 호스피탈리티 스크롤: 따뜻한 샌드·리넨 톤의 풀블리드 환경 사진 위 시처럼 짧은 휴머니스트 세리프 카피, 켄 번스식 줌·디…  · earth/serif-editorial/full-bleed/airy/playful
+- `web-iridescent-noir-prestige` — 이리데센트 누아르 프레스티지: 딥 잉크 블랙 배경 위 텍스트 가장자리와 헤어라인 보더에만 절제되어 스미는 홀로그래픽 메탈릭 셰이딩,…  · gradient/mixed/asymmetric/airy/subtle
+- `web-tactile-luxury-editorial` — 택타일 럭셔리 에디토리얼: 따뜻한 크림·샌드 배경에 종이 그레인·패브릭 위브 텍스처와 비대칭 다단 매거진 레이아웃, 세리프+산세…  · earth/mixed/asymmetric/balanced/subtle
+- `web-prestige-saas-restraint` — 프레스티지 SaaS 리스트레인트: 차분한 오프화이트 배경에 절제된 그로테스크 헤드라인과 비대칭 제품 스크린샷, 잉크 슬레이트 단색과 스…  · mono/mixed/asymmetric/airy/snappy
+- `web-grand-serif-statement` — 그랜드 세리프 스테이트먼트: 오프화이트 캔버스를 가득 채우는 초대형 디스플레이 세리프가 콘텐츠 자체가 되는 풀블리드 빅타이포, 음…  · mono/serif-editorial/full-bleed/balanced/subtle
+- `web-velvet-dark-boutique` — 벨벳 다크 부티크: 딥 와인-차콜 배경에 벨벳 매트 질감과 골드-브론즈 헤어라인 보더를 두른 모듈러 벤토 룩북 타일, 세…  · dark/mixed/block-grid/balanced/subtle
+- `web-couture-color-block` — 쿠튀르 컬러 블록: 흰 캔버스에 딥 버건디·포레스트·코발트의 깊은 채도 솔리드 컬러 블록이 비대칭으로 깔리고 가는 디스플…  · vivid-primary/serif-editorial/asymmetric/airy/none
+

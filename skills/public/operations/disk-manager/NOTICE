@@ -1,0 +1,7 @@
+Disk manager is adapted at the owner's explicit request from their personal
+disk-manager skill, external disk_utils.zsh, refresh.sh and launchd configuration.
+License class: none (user-authored source supplied for incorporation).
+Personal source bytes, incident logs, project identifiers, databases and host
+configuration are not redistributed. Generic procedures are corrected and the
+execution engine is rewritten in TypeScript using jstack's existing SQLite adapter.
+Docker documentation links are reference material, not bundled upstream code.

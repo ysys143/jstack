@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<report name="calc">
+  <package name="com/example">
+    <sourcefile name="Calc.java">
+      <line nr="10" mi="0" ci="3"/>
+      <line nr="11" mi="2" ci="0"/>
+    </sourcefile>
+  </package>
+</report>

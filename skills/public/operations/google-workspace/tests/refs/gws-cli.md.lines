@@ -1,0 +1,131 @@
+# blob:7d4b993beae8375493dbc9a26418db83cb6209ab
+---
+name: gws-setup
+description: Install Google Workspace CLI (gws), configure multiple accounts, and authenticate. Use when installing gws, setting up multi-account authentication, or debugging gws auth or Drive issues.
+---
+# Google Workspace CLI (gws) setup guide
+## When to use
+- Installing and initially configuring gws
+- Separating personal and work accounts
+- Debugging OAuth authentication errors
+- Looking up Drive or Sheets API usage
+## [WARN] Before installation: two tools share the same name
+Homebrew provides **two conflicting tools** named `gws`.
+| | `brew install gws` | `brew install googleworkspace-cli` |
+|---|---|---|
+| Purpose | Manage Git repository workspaces | Google Workspace API CLI |
+| Desired tool | [X] | [O] |
+Install `googleworkspace-cli`.
+## Installation
+```bash
+brew install googleworkspace-cli
+gws --version
+# gws 0.16.0
+```
+There is no npm distribution; this is a Rust binary.
+## Multiple Accounts
+Separate configuration directories with
+`GOOGLE_WORKSPACE_CLI_CONFIG_DIR`.
+### Directory layout
+```text
+~/.config/
+├── gws-personal/ # personal account
+│ ├── client_secret.json
+│ └── credentials.enc
+└── gws-work/ # work account
+├── client_secret.json
+└── credentials.enc
+```
+### Create directories
+```bash
+# Copy the existing default configuration to personal
+cp -r ~/.config/gws ~/.config/gws-personal
+# Create the work-account directory
+mkdir -p ~/.config/gws-work
+```
+### Define aliases in ~/.zshrc or aliases.zsh
+```zsh
+alias gws-personal='GOOGLE_WORKSPACE_CLI_CONFIG_DIR=~/.config/gws-personal gws'
+alias gws-work='GOOGLE_WORKSPACE_CLI_CONFIG_DIR=~/.config/gws-work gws'
+```
+## Authentication with OAuth2
+### Prepare a GCP project
+1. Open [console.cloud.google.com](https://console.cloud.google.com).
+2. Under APIs & Services → Library, enable required APIs such as Drive, Gmail,
+and Sheets.
+3. Under APIs & Services → Credentials, create an OAuth 2.0 Client ID.
+4. Download `client_secret.json` to `~/.config/gws-{account}/`.
+### Register test users while the app is unverified
+> This is mandatory when the application has not completed Google verification.
+1. Open APIs & Services → OAuth consent screen.
+2. Under Test users, choose + ADD USERS and add the account email.
+### Log in
+```bash
+gws-personal auth login
+gws-work auth login
+# Check authentication status
+gws-personal auth status
+# Success when "auth_method" is "oauth2"
+```
+## Usage examples
+### Drive: search for files
+```bash
+# Basic search in My Drive only
+gws-personal drive files list --params '{"q": "name contains '\''keyword'\''", "pageSize": 10}'
+# Search all drives, including shared drives; these parameters are mandatory
+gws-work drive files list --params '{
+"q": "name='\''filename'\''",
+"includeItemsFromAllDrives": true,
+"supportsAllDrives": true,
+"corpora": "allDrives",
+"pageSize": 10
+}'
+# Shared spreadsheets only
+gws-work drive files list --params '{
+"q": "sharedWithMe=true and mimeType='\''application/vnd.google-apps.spreadsheet'\''",
+"pageSize": 10
+}'
+```
+### Sheets: read data
+```bash
+# Inspect spreadsheet structure and sheet names
+gws-work sheets spreadsheets get --params '{"spreadsheetId": "SPREADSHEET_ID"}'
+# Read data from one sheet
+gws-work sheets spreadsheets values get --params '{
+"spreadsheetId": "SPREADSHEET_ID",
+"range": "sheet-name"
+}'
+```
+## Gotchas
+### Error 403: access_denied
+**Symptom:** During login, the browser says `gws-cli has not completed the
+Google verification process`.
+**Cause:** The OAuth app is in test mode and the account is not registered as a
+test user.
+**Resolution:** GCP Console → OAuth consent screen → Test users → add the account
+email.
+### Shared-drive files do not appear in search
+**Symptom:** `drive files list` returns no results.
+**Cause:** Default search covers My Drive only and excludes shared-drive files.
+**Resolution:** add these parameters:
+```json
+{
+"includeItemsFromAllDrives": true,
+"supportsAllDrives": true,
+"corpora": "allDrives"
+}
+```
+## Main environment variables
+| Variable | Meaning |
+|---|---|
+| `GOOGLE_WORKSPACE_CLI_CONFIG_DIR` | Configuration directory; the key to account separation |
+| `GOOGLE_WORKSPACE_CLI_TOKEN` | Pre-issued OAuth2 access token |
+| `GOOGLE_WORKSPACE_CLI_CLIENT_ID` | OAuth Client ID |
+| `GOOGLE_WORKSPACE_CLI_CLIENT_SECRET` | OAuth Client Secret |
+| `GOOGLE_WORKSPACE_PROJECT_ID` | GCP project ID |
+## References
+- [Official GitHub repository](https://github.com/googleworkspace/cli)
+- [Drive API query syntax](https://developers.google.com/drive/api/guides/search-files)
+The `gws-work` alias above is only an account-separation example. Actual runs
+read `configDir` from `~/.jstack/profiles/<name>/workspace.json` and verify the
+snapshot account immediately before a remote write.

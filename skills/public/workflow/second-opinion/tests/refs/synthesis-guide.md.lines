@@ -1,0 +1,98 @@
+# blob:badec804c4ce063c6a50b297dcb0dc67b5e3775d
+# Reading a panel — without averaging it away
+`ai-council.md`'s bridge hands back two raw, independent answers. What you do
+with those two answers next is where a multi-model panel most often fails —
+not in the querying, in the reading. The exact way this class of tool fails
+is **taking the median of the models' opinions** and calling it the answer.
+Three rules keep that from happening; the rest of this document is the
+mechanical steps that apply them.
+## The three rules
+**Role ≠ lens.** Which CLI answered a prompt is not the same thing as which
+angle was examined. "agy said X, Codex said Y" describes two vendors, not
+two perspectives — if both were asked the identical question with no
+distinction of what to look for, a difference in their answers may be
+genuine disagreement, or it may just be two models sampling the same
+underspecified prompt differently. `SKILL.md`'s own principle — give
+reviewers **different angles**, correctness versus failure-under-load versus
+what a hostile user does versus what breaks on the next change — is what
+turns two vendor calls into an actual panel. Assign the lens in the prompt
+(`--mode review` for correctness, a debug-framed prompt for failure
+scenarios); do not assume the model boundary supplies one for free.
+**Disagreement is the deliverable.** When agy and Codex disagree, that
+disagreement is the useful output of the panel, not friction to be smoothed
+over before reporting back. Do not silently prefer one AI's answer because
+it sounds more confident, matches your prior, or came from the backend
+usually strong in that domain — "Codex is usually right about code" is a
+role, not evidence for this particular claim. Every disputed point gets
+carried forward paired with **the single question that would resolve it** —
+a concrete test to run, an input to try, a file to re-read — not filed away
+as "requires further investigation," which is a way of saying nothing
+happened.
+**Never average.** Do not compute a consensus, a middle ground, or a
+"balancing both perspectives" verdict. If agy says the function is correct
+and Codex names a race condition, the synthesis is not "probably mostly
+fine" — it is "run the case Codex named." A false consensus that removes a
+real finding is worse than reporting the disagreement raw and letting the
+reader decide, because it looks resolved when it is not. `references/framing.md`
+makes the same point about a verdict from one model: it is evidence, not
+permission — a panel of two verdicts is two pieces of evidence, not one
+averaged one.
+## Reading the panel's output
+### Step 1: Agreement analysis
+Identify claims or recommendations that appear in **both** responses,
+independently arrived at. These are the panel's highest-confidence output —
+present them first, and say plainly that both backends converged on them
+without prompting from each other.
+### Step 2: Disagreement analysis
+Where the two disagree, do not resolve it by fiat. For each disputed point,
+record:
+- What each side claims
+- **The question that would settle it** — not a category ("this may be a
+race condition") but something checkable ("two callers reaching line 40
+with the lock already released")
+- If checkable right now, check it before reporting rather than after
+A disputed point with no resolving question attached is an unfinished
+synthesis, not a nuanced one.
+### Step 3: Unique insights
+A point raised by only one backend is not automatically weaker — it may be
+the one the other backend's training or tooling made it blind to. Report it
+on its own terms; do not discount it for being unconfirmed by the other
+side, and do not credit it just because it came from the backend "known for"
+that kind of insight (agy for documentation and context, Codex for code
+reasoning) — that is role, again, not lens.
+### Step 4: Output format
+```
+## Council Synthesis
+### Agreed Findings
+- [Finding] (both agree, independently)
+### Disputed Points
+- [Point]: agy says X, Codex says Y.
+Resolving question: [the concrete test/input/read that would settle it]
+[Checked: result, if run] / [Unchecked: pending]
+### Unique Insights
+- From agy: [insight]
+- From Codex: [insight]
+### What this changes
+[What action follows — not a single "unified recommendation" manufactured by
+splitting the difference between two answers]
+```
+The last section is deliberately not called "Recommendation." A single
+unified recommendation is exactly the shape an averaged verdict takes when
+it is dressed up as a conclusion — naming it "what this changes" keeps the
+disagreement visible in the write-up instead of dissolving at the last step.
+## Code review synthesis
+1. Categorize by severity: Critical / Warning / Info.
+2. De-duplicate findings both backends flagged identically — that is
+agreement collapsing correctly, not averaging (the finding did not change
+shape; it was just said twice).
+3. For a genuine conflict between the two, do not lean toward the stricter
+recommendation by default — strictness is not evidence, and a rule that
+auto-resolves every conflict toward the same pole is itself a hidden
+average. Name both findings and the test or read that would show which
+one is right.
+## Research synthesis
+1. Cross-reference factual claims between the two responses.
+2. Flag contradictions prominently rather than picking whichever claim
+sounds more authoritative.
+3. Prefer specific, cited claims over vague assertions from either side —
+but a citation is grounds to check it, not grounds to trust it outright.

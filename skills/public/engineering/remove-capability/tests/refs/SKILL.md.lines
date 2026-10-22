@@ -1,0 +1,61 @@
+# blob:6f29a46875908844130e4bb98000e8d12cc6831c
+# Prune — the decision is about cost, not usage
+## What justifies removal
+A skill costs its name and description on **every turn of every session**,
+whether it fires or not. So the question is not "has anyone used it lately" but
+**does the description still earn the space it occupies**.
+| Remove when | Do not remove because |
+| --- | --- |
+| Its description overlaps a neighbour's, so neither fires reliably | It has not fired recently — a rarely-needed skill can still be worth its line |
+| The judgement it holds moved into another skill | It is short — length is not the cost, the description is |
+| It routes somewhere instead of doing the work | You would write it differently now — that is a rewrite, not a removal |
+| The tool it wraps is gone, and nothing replaced it | Nobody remembers why it exists — find out first |
+The last "do not" is the one that gets ignored. A skill whose reason nobody
+remembers is the exact case where the record has to be read before the delete,
+because the reason it was written is not recoverable afterwards.
+## Overlap is resolved by merge, not by deletion
+When two skills claim the same request, the fix is usually to move the useful
+half and then delete — not to delete and assume the neighbour covers it. Check
+that the neighbour actually says what the removed one said. The `author` skill
+covers where the moved material belongs.
+Deleting a skill whose content had no home is how a plugin loses a capability
+that nothing announces the loss of.
+## Delete every trace, in one commit
+A partial removal is worse than none: it leaves references that resolve to
+nothing and a catalog that promises what is not there. The full list is in
+`references/removal-checklist.md`; the shape is:
+1. The skill directory itself, including its tests and frozen baselines.
+2. Every neighbour's boundary sentence that names it — those are checked, so a
+stale name fails a suite that is not the one you were editing.
+3. The inventory and the marketplace catalog entry.
+4. The red-suite case set, so nothing measures detection on a tree that is gone.
+One commit, because a half-applied removal that is bisected through looks like
+two different defects.
+## Verify by running the neighbours
+After the delete, run the suites of every skill that named the removed one, plus
+the path gate. The gate is what catches a reference left in a reference file,
+which is the trace most often missed — nothing else reads those paths.
+If a suite goes green only because its subject vanished, that is not a pass.
+A check that disappears is not a check that succeeded.
+## Measure the folder before you argue about it
+`scripts/prune.js` reads the installed skill folders and reports what is already
+broken there: dangling links, a directory whose name disagrees with its
+frontmatter `name`, descriptions past the listing cap, config entries pointing
+at nothing. It changes nothing and deletes nothing — the removal decision above
+stays a human one, and this only supplies the numbers it is made against.
+Its exit code is the part another tool reads, and it has three states because a
+clean scan and a scan that never happened are different facts:
+| Exit | Meaning |
+| --- | --- |
+| 0 | Scanned, nothing wrong |
+| 1 | Scanned, found issues |
+| 2 | Could not scan — no config directory to look at |
+Folding "could not look" into "found nothing" is the same defect as counting a
+vanished check as a passing one, one layer down. A diagnostic that always
+returns success cannot be aggregated by anything.
+`--json` reports the same counts the table prints, produced by the same
+function, so the human view and the machine gate can never disagree about how
+many issues there were.
+## Boundary
+Removing dead code inside a skill is the `cleanup` skill; deciding whether the
+skill is any good is the `audit` skill. This skill covers taking one out.

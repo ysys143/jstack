@@ -1,0 +1,29 @@
+{
+  "repository": "anthropics/claude-plugins-official",
+  "commit": "a86e34672c44fa1fb1ae2b2c4143abcf26612ace",
+  "license": "Apache-2.0",
+  "checked": "2026-09-07",
+  "adaptation": "Discovery, project-grounded diagnosis, concise targeted repair; replaced grading, additions-only maintenance and repeated approval with host-scoped evidence and existing authorization. Runtime helper is new jstack code. License was added after the skill; its own commit is recorded below.",
+  "files": [
+    {
+      "commit": "a86e34672c44fa1fb1ae2b2c4143abcf26612ace",
+      "url": "https://raw.githubusercontent.com/anthropics/claude-plugins-official/a86e34672c44fa1fb1ae2b2c4143abcf26612ace/plugins/claude-md-management/skills/claude-md-improver/SKILL.md",
+      "sha256": "b06c7420be08ca1c7f6d75f7f4709fdb787624a2d363e2f8052216d8c780f85b"
+    },
+    {
+      "commit": "a86e34672c44fa1fb1ae2b2c4143abcf26612ace",
+      "url": "https://raw.githubusercontent.com/anthropics/claude-plugins-official/a86e34672c44fa1fb1ae2b2c4143abcf26612ace/plugins/claude-md-management/skills/claude-md-improver/references/quality-criteria.md",
+      "sha256": "383def16b05dca948297dd1acb33f007cb1b1b2c368454d424c5634348a8bab1"
+    },
+    {
+      "commit": "a86e34672c44fa1fb1ae2b2c4143abcf26612ace",
+      "url": "https://raw.githubusercontent.com/anthropics/claude-plugins-official/a86e34672c44fa1fb1ae2b2c4143abcf26612ace/plugins/claude-md-management/skills/claude-md-improver/references/templates.md",
+      "sha256": "de0aa3ac30120a0c77f9cd82738a75ed8326864f98feb89356a253f2deaf3ab0"
+    },
+    {
+      "commit": "aecd4c852f10b466245f18383fa6aad8c0b10d57",
+      "url": "https://raw.githubusercontent.com/anthropics/claude-plugins-official/aecd4c852f10b466245f18383fa6aad8c0b10d57/plugins/claude-md-management/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    }
+  ]
+}

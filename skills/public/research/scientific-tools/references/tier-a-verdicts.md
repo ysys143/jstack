@@ -1,0 +1,95 @@
+# Tier A verdicts: assess each of the 15 skills
+
+<!-- sources -->
+출처: `kdense` = [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) @ 36d8f13 (MIT) · `gdm` = [google-deepmind/science-skills](https://github.com/google-deepmind/science-skills) @ 0b42509 (Apache-2.0)
+
+## Why this document exists
+
+**The tier A roster lists skill names, and each name directly consumes the top-level budget.** Promotion was category-wide: all 12 `analysis-methodology` skills were
+promoted as "library-independent methodology", with three more from
+`scientific-communication-publishing`. No individual assessment was performed,
+leaving **five direct overlaps with local skills on the roster without review**.
+
+This document assesses all 15 individually. The roster table is the machine-readable
+canonical source; `tests/test_tier_a_roster.js` parses it and checks actual files
+under `repos/`.
+
+## G-1: "library-independent" does not describe all 12 skills
+
+The promotion rationale for all 12 `analysis-methodology` skills was
+library-independent methodology. **That description is true for five and false for seven.**
+
+| Category | Count | Criterion |
+|---|---:|---|
+| Actual methodology | **5** | Supplies decision rules that remain valid if a particular package disappears |
+| Library instructions | **7** | Describes specific API calls and arguments; becomes obsolete when the package changes |
+
+The seven skills' own text supplies the evidence. `hypogenic` identifies itself in
+its description as a **wrapper** for ChicagoHAI HypoGeniC/HypoRefine.
+`literature-review` uses PubMed/arXiv/bioRxiv APIs; `scientific-visualization` uses
+Matplotlib/Seaborn/Plotly; half of `exploratory-data-analysis` inventories file
+formats and sandbox rules. These limitations were explicit, but category-wide
+promotion did not examine them.
+
+## G-20: roster (machine-readable canonical source)
+
+The schema uses two verdict values: `존치` retains a skill as a pipeline-stage
+reference; `배제` removes it from the roster while preserving its imported files
+under `repos/` and access through the router. `대체처` identifies the replacement,
+or `없음` when there is none. Korean schema labels and replacement-location tags
+are retained for parser compatibility.
+
+| 상류 스킬 | 출처 | 경로 | 판정 | 대체처 | 사유 |
+|---|---|---|---|---|---|
+| `experimental-design` | `kdense` | `repos/kdense/skills/experimental-design/SKILL.md` | 존치 | — | Fisher's three principles, pseudoreplication, aliasing/resolution, and a blocking decision tree. Remains valid without a package |
+| `statistical-power` | `kdense` | `repos/kdense/skills/statistical-power/SKILL.md` | 존치 | — | SESOI first; shrink pilot estimates for winner's curse; prohibit post-hoc power calculations. Sample-size justification directly supports proposal methodology |
+| `statistical-analysis` | `kdense` | `repos/kdense/skills/statistical-analysis/SKILL.md` | 존치 | — | Test selection, effect-size CIs, and multiple-comparison correction. **Read the four corrections in `stats-corrections.md` first** |
+| `scientific-critical-thinking` | `kdense` | `repos/kdense/skills/scientific-critical-thinking/SKILL.md` | 존치 | — | GRADE and Cochrane ROB. Also invoked independently outside the pipeline to verify vendor benchmarks and competitor claims |
+| `hypothesis-generation` | `kdense` | `repos/kdense/skills/hypothesis-generation/SKILL.md` | 존치 | — | A 12-object separation table covering observations, hypotheses, mechanisms, estimands, predictions, and evidence |
+| `exploratory-data-analysis` | `kdense` | `repos/kdense/skills/exploratory-data-analysis/SKILL.md` | 배제 | 없음 | Half the content inventories file formats and sandbox rules. `reproducibility.md` absorbs the pinned-version requirements |
+| `hypogenic` | `kdense` | `repos/kdense/skills/hypogenic/SKILL.md` | 배제 | 없음 | Self-identifies as a ChicagoHAI HypoGeniC wrapper. Implements a particular paper and has no invocation condition in our work |
+| `literature-review` | `kdense` | `repos/kdense/skills/literature-review/SKILL.md` | 배제 | `research`(이 저장소) | One of five direct overlaps. `research` owns literature research and includes a Korean primary-source lens |
+| `peer-review` | `kdense` | `repos/kdense/skills/peer-review/SKILL.md` | 배제 | `proposal-review`(플러그인 밖) | One of five direct overlaps. Local skills already own argument review |
+| `scientific-brainstorming` | `kdense` | `repos/kdense/skills/scientific-brainstorming/SKILL.md` | 배제 | `consult`(이 저장소) | One of five direct overlaps. Independent generation followed by structured discussion duplicates the adversarial second-opinion skill |
+| `scientific-visualization` | `kdense` | `repos/kdense/skills/scientific-visualization/SKILL.md` | 배제 | `dataviz`(내장) | One of five direct overlaps. Covers Matplotlib/Seaborn/Plotly usage; the built-in skill owns chart design |
+| `scientific-writing` | `kdense` | `repos/kdense/skills/scientific-writing/SKILL.md` | 배제 | `sciwrite`(플러그인 밖) | One of five direct overlaps. Local skills already own manuscript style |
+| `citation-management` | `kdense` | `repos/kdense/skills/citation-management/SKILL.md` | 배제 | 없음 | Zotero/BibTeX tool instructions. Rarely invoked because academic papers are not our main output |
+| `venue-templates` | `kdense` | `repos/kdense/skills/venue-templates/SKILL.md` | 배제 | `hwpx`(이 저장소) | Conference and journal submission templates. Our destination is procurement HWPX, whose typesetting belongs to another skill |
+| `market-research-reports` | `kdense` | `repos/kdense/skills/market-research-reports/SKILL.md` | 배제 | `research`(이 저장소) | Market reports with traceable evidence are a research-pipeline output format, not a separate skill slot |
+| `literature_search_openalex` | `gdm` | `repos/gdm/skills/literature_search_openalex/SKILL.md` | 존치 | — | One literature-search skill for the pipeline. The only GDM branch among 38 with a methodology connection; strictly requires tool outputs |
+
+**존치 6 · 배제 10.** Five of the original 15 are retained. The sixth is a `gdm`
+literature-search skill added from outside that list.
+
+## Reasons for exclusion
+
+| Reason | Skills | Why this warrants exclusion |
+|---|---|---|
+| **정면 중복** | `literature-review` · `peer-review` · `scientific-brainstorming` · `scientific-visualization` · `scientific-writing` | Two skills at the same layer force a choice each time. Centering the pipeline removes that choice |
+| **Library instructions** | `exploratory-data-analysis` · `citation-management` | These are not methodology, so the library-independent promotion rationale does not apply |
+| **Specific implementation** | `hypogenic` | Wraps one paper's implementation rather than supplying general decision rules |
+| **Output mismatch** | `venue-templates` · `market-research-reports` | Their format or workflow layer differs from our final outputs |
+
+## Budget accounting
+
+The following accounting block retains its machine-parsed labels.
+
+```
+tier A 15종  ->  존치 5종            10 슬롯 반환
+             +  gdm 문헌검색 1종      1 슬롯 소비
+             ------------------------------------
+             순 반환 9 ~ 10 슬롯
+```
+
+**Whether the saving is nine or ten slots depends on registering the one
+literature-search skill.** Keeping it only as a pipeline reference without listing
+its name saves ten. This table supports either choice and does not force the decision.
+
+## Falsification condition
+
+Evidence against this arrangement would be **the five retained skills being invoked
+independently outside the pipeline more often than within it**. In that case, they
+should be standalone skills rather than references. Measure the share of their
+invocations originating in pipeline stages: **revert this arrangement if that share
+does not exceed half**. The most likely candidate is `scientific-critical-thinking`,
+since vendor benchmark verification is also useful without running a research pipeline.

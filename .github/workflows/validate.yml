@@ -1,0 +1,227 @@
+name: Validate jstack candidate
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'package*.json'
+      - 'tsconfig.json'
+      - 'cli/**'
+      - 'skills/**'
+      - 'runtime/**'
+      - 'hosts/**'
+      - 'packaging/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'contracts/**'
+      - 'evals/**'
+      - 'README.md'
+      - 'CAPABILITIES.md'
+      - 'NOTICE.md'
+      - 'AGENTS.md'
+      - '.github/workflows/validate.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'package*.json'
+      - 'tsconfig.json'
+      - 'cli/**'
+      - 'skills/**'
+      - 'runtime/**'
+      - 'hosts/**'
+      - 'packaging/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'contracts/**'
+      - 'evals/**'
+      - 'README.md'
+      - 'CAPABILITIES.md'
+      - 'NOTICE.md'
+      - 'AGENTS.md'
+      - '.github/workflows/validate.yml'
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      skip_deletion:
+        description: Omit deletion controls from this manual run
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.0.0'
+          cache: npm
+      # Node 20.0.0 ships npm 9.6.4, which skips libc-gated optional
+      # dependencies and leaves Biome without its platform binary.
+      - run: npm install -g npm@9.9.4
+      - run: npm ci --ignore-scripts
+      - name: Lint authored JavaScript and TypeScript
+        run: npm run lint
+      - run: npm run build
+      - name: Restore scheduling history
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/jstack-contract-history/timings.json
+          key: jstack-contract-timings-v1-${{ runner.os }}-node20-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: jstack-contract-timings-v1-${{ runner.os }}-node20-
+      - name: Plan affected contracts
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        env:
+          JSTACK_CONTRACT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          JSTACK_CONTRACT_SELECTION_MODE: ${{ vars.JSTACK_CONTRACT_SELECTION_MODE || 'enforce' }}
+        run: |
+          node dist/scripts/select_contract_suites.js \
+            --base "$JSTACK_CONTRACT_BASE" --head HEAD \
+            --mode "$JSTACK_CONTRACT_SELECTION_MODE" > "$RUNNER_TEMP/jstack-contract-plan.json"
+      - name: Select validation depth
+        run: |
+          integration_mode=full
+          if [ "$GITHUB_EVENT_NAME" = pull_request ] || [ "$GITHUB_EVENT_NAME" = push ]; then
+            # A quick lane is only usable when the plan carries the suites it must run; anything else stays full.
+            integration_mode=$(node -e 'const p=JSON.parse(require("node:fs").readFileSync(process.argv[1],"utf8"));if(!["quick","full"].includes(p.integrationMode))process.exit(2);console.log(p.integrationMode==="quick"&&Array.isArray(p.quickSuites)&&p.quickSuites.length?"quick":"full")' "$RUNNER_TEMP/jstack-contract-plan.json")
+            # Pull requests and pushes keep build, lint and only the contracts the plan
+            # names (execution: selected). A plan that needs every suite, such as a code,
+            # workflow, packaging or root-document change, waits for the weekly schedule
+            # or a manual run, which execute everything.
+            if node -e 'const p=JSON.parse(require("node:fs").readFileSync(process.argv[1],"utf8"));process.exit(p.execution==="selected"?0:1)' "$RUNNER_TEMP/jstack-contract-plan.json"; then
+              echo "Minimal lane: scoped contracts"
+            else
+              echo "JSTACK_MINIMAL_LANE=1" >> "$GITHUB_ENV"
+              echo "Minimal lane: build, lint and the always-on gates only; the weekly schedule and manual runs execute every contract"
+              echo "Minimal lane: the plan is full, so contracts other than the listing gate, and the delivery checks, run in the weekly schedule or a manual run." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+          echo "JSTACK_INTEGRATION_MODE=$integration_mode" >> "$GITHUB_ENV"
+          echo "Validation depth: $integration_mode"
+      - name: Verify fast and integration Node tests
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          node dist/packaging/prepare-native.js
+          if [ "$JSTACK_INTEGRATION_MODE" = full ]; then
+            JSTACK_LOOPBACK_TEST=1 node scripts/run-node-tests.mjs all
+          else
+            node scripts/run-node-tests.mjs fast
+          fi
+      - name: Prepare native test dependencies
+        if: (github.event_name == 'pull_request' || github.event_name == 'push') && env.JSTACK_MINIMAL_LANE != '1'
+        run: node dist/packaging/prepare-native.js
+      # The gate runs in the minimal lane as well: there it is the only step that
+      # executes a changed Node test file for its own sake.
+      - name: Budget new and changed Node tests
+        if: github.event_name == 'pull_request'
+        env:
+          JSTACK_TEST_BUDGET_BASE: ${{ github.event.pull_request.base.sha }}
+        run: node dist/scripts/test_budget.js --base "$JSTACK_TEST_BUDGET_BASE" --head HEAD
+      - name: Install the optional-test environment manager
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - name: Lint authored Python
+        run: npm run lint:python
+      # The listing gate (jstack's share of the model-facing skill listing and the
+      # per-entry description limits) lives in the host-audit suite. Most description
+      # changes make the plan full, which the minimal lane leaves to the weekly run,
+      # and a scoped plan runs only its owner's suite, so neither lane would run it;
+      # this step runs that one suite on every pull request and push, in either lane.
+      - name: Gate the skill listing size
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        run: node dist/packaging/run_contracts.js --output "$RUNNER_TEMP/jstack-listing-gate" host-audit
+      - name: Prepare isolated specialist test dependencies
+        if: env.JSTACK_MINIMAL_LANE != '1'
+        env:
+          JSTACK_SPECIALIST_HOME: ${{ runner.temp }}/jstack-specialists
+        run: |
+          features=(deck deck-image image diagram-fonts hwpx)
+          if [ "$JSTACK_INTEGRATION_MODE" = quick ]; then
+            selected=$(node -e 'const p=JSON.parse(require("node:fs").readFileSync(process.argv[1],"utf8"));const suites=p.quickSuites;if(!Array.isArray(suites)||!suites.length)process.exit(2);const selected=new Set(suites);console.log([["deck",["deck","deck-image"]],["image",["image"]],["diagram",["diagram-fonts"]],["hwpx",["hwpx"]]].filter(([owner])=>selected.has(owner)).flatMap(([,features])=>features).join(" "))' "$RUNNER_TEMP/jstack-contract-plan.json")
+            if [ -z "$selected" ]; then echo 'No selected specialist environment'; exit 0; fi
+            read -r -a features <<< "$selected"
+          fi
+          for feature in "${features[@]}"; do
+            node dist/runtime/specialists.js setup "$feature" --home "$JSTACK_SPECIALIST_HOME"
+          done
+      # The journey-qa suite runs the upstream checks only outside the quick lane; they need OCR,
+      # SVG rendering, the DejaVu Sans Mono font and tmux for terminal steps. A missing tool fails the suite, it is not skipped.
+      - name: Install system tools for the journey-qa suite
+        if: env.JSTACK_MINIMAL_LANE != '1' && env.JSTACK_INTEGRATION_MODE != 'quick'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends tesseract-ocr librsvg2-bin fonts-dejavu-core fontconfig tmux
+      - name: Build and run owning contracts
+        if: env.JSTACK_MINIMAL_LANE != '1'
+        env:
+          JSTACK_SPECIALIST_HOME: ${{ runner.temp }}/jstack-specialists
+          SKIP_DELETION: ${{ inputs.skip_deletion }}
+        run: |
+          args=(--output "$RUNNER_TEMP/jstack-contracts" --timing-history "$RUNNER_TEMP/jstack-contract-history/timings.json")
+          if [ "$GITHUB_EVENT_NAME" = pull_request ] || [ "$GITHUB_EVENT_NAME" = push ]; then
+            args+=(--plan "$RUNNER_TEMP/jstack-contract-plan.json")
+          fi
+          if [ "$JSTACK_INTEGRATION_MODE" = quick ]; then args+=(--quick); fi
+          # Deletion controls are opt-in: only the weekly schedule and manual runs
+          # execute them, unless a manual run sets skip_deletion.
+          if { [ "$GITHUB_EVENT_NAME" = schedule ] || [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; } && [ "$SKIP_DELETION" != true ]; then args+=(--deletion); fi
+          node dist/packaging/run_contracts.js "${args[@]}"
+      - name: Check delivery membership and source paths
+        if: env.JSTACK_MINIMAL_LANE != '1'
+        env:
+          JSTACK_RUNTIME_ROOT: ${{ runner.temp }}/jstack-contracts/jstack
+          JSTACK_PACKAGE_ROOT: ${{ runner.temp }}/jstack-contracts/package
+        run: |
+          node dist/packaging/build.js check "$JSTACK_PACKAGE_ROOT"
+          node dist/scripts/check_jev_reachability.js --package "$JSTACK_PACKAGE_ROOT/payload"
+          node "$JSTACK_PACKAGE_ROOT/payload/skills/author/scripts/check_package_surface.js" \
+            --root "$JSTACK_PACKAGE_ROOT/payload" \
+            --surface "$JSTACK_PACKAGE_ROOT/payload/skills/author/references/package-surface.yaml"
+          node dist/scripts/check_paths_regression.js
+          node dist/scripts/check_cost.js
+          node dist/scripts/check_spec_refs.js
+          node dist/scripts/check_attribution.js
+          node dist/scripts/check_hook_order.js
+          node dist/scripts/check_suite_lib_parity.js
+      - name: Prepare scheduling history from a full integration run
+        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && inputs.skip_deletion != true
+        run: |
+          mkdir -p "$RUNNER_TEMP/jstack-contract-history"
+          cp "$RUNNER_TEMP/jstack-contracts/suites/timings.json" "$RUNNER_TEMP/jstack-contract-history/timings.json"
+      - name: Save scheduling history
+        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && inputs.skip_deletion != true
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/jstack-contract-history/timings.json
+          key: jstack-contract-timings-v1-${{ runner.os }}-node20-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Preserve validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jstack-contract-evidence
+          path: |
+            ${{ runner.temp }}/jstack-contracts/summary.json
+            ${{ runner.temp }}/jstack-contracts/selection-plan.json
+            ${{ runner.temp }}/jstack-contracts/suites/*.out
+            ${{ runner.temp }}/jstack-contracts/suites/**/*.json
+          retention-days: 7
+      # A separate artifact, so the contract evidence above keeps its layout.
+      - name: Preserve listing gate evidence
+        if: always() && (github.event_name == 'pull_request' || github.event_name == 'push')
+        uses: actions/upload-artifact@v4
+        with:
+          name: jstack-listing-gate-evidence
+          path: |
+            ${{ runner.temp }}/jstack-listing-gate/summary.json
+            ${{ runner.temp }}/jstack-listing-gate/suites/*.out
+          retention-days: 7

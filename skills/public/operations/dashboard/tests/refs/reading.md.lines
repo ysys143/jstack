@@ -1,0 +1,79 @@
+# blob:2b2be159a2dbbdedd7ee1567ac2d50fd2c2f4cd9
+# Reading the statusline
+`SKILL.md` defines when to enable it and its boundaries. This document explains
+**how to interpret the numbers after enabling it**.
+## Three display modes
+| Mode | Lines | Added information |
+|---|---|---|
+| `compact` | 1 | Model, context, cost, 5-hour/7-day limits |
+| `normal` | 2 | Project, session ID, elapsed time, burn rate, todos |
+| `detailed` | 6 | Configuration counts, token breakdown, predictions, other CLI limits |
+Choose with `/jstack:dashboard-setup`. Settings go to `~/.claude/claude-dashboard.local.json`.
+**The filename remains upstream's**: bundled code reads it, so do not rename it.
+## Using it without emoji: measured configuration
+Default modes measured with our `block_emoji.py` detector:
+| Mode | Distinct emoji |
+|---|---|
+| `compact` | 1 (U+26A0) |
+| `normal` | 2 (U+26A0, U+23F1) |
+| `detailed` | 7 |
+**A zero-emoji configuration exists.** `disabledWidgets` cannot remove compact's
+U+26A0 through that path. Choose widgets with `custom` instead.
+```json
+{
+"displayMode": "custom",
+"lines": [["model", "context", "cost", "rateLimit5h", "rateLimit7d", "rateLimit7dFable"],
+["sessionName", "version"]]
+}
+```
+Measured result: **zero emoji**, with a real workspace directory in the input,
+both with readable rate limits and with none:
+```
+◆ Opus(H) │ ████░░░░░░ │ 40% │ 80K/200K │ $3.20 │ 5h: 42% (1h59m) │ 7d: 93% (4d15h)
+v2.1.0
+```
+`/jstack:dashboard-setup noemoji` writes this configuration.
+**Do not add `projectInfo`.** It prints U+1F4C1 (folder) whenever the input carries
+a workspace directory, which every real session does. An earlier measurement
+listed it as emoji-free because its sample input had no directory, so the widget
+rendered nothing. Measure candidate widgets with a directory present.
+**The limit widgets stay emoji-free in both states.** Upstream printed U+26A0 from
+`rateLimit5h` when limit data could not be read (logged out, API key, request
+failure). A local change in `scripts/widgets/rate-limit.ts` names that state in
+text instead, keeping the label: `5h: --`. `rateLimit7d` and `rateLimit7dFable`
+hide themselves in the same state, and `7d-F` arrives only from the API, never
+from stdin, so it is absent until a usage request succeeds.
+`◆`, `█`, and `│` **are not emoji**. Upstream `scripts/utils/emoji.ts` explicitly
+excludes non-emoji typographic symbols, and our hook also accepts them. Measurement:
+U+25C6, U+2588, and U+2502 passed; U+26A0, U+23F1, and U+2705 were blocked.
+For less output, use `{"displayMode":"custom","lines":[["context","cost"]]}`.
+This two-widget configuration also emits zero emoji.
+## Widgets
+The widget table in the `/jstack:dashboard-setup` command is authoritative for all 38
+widgets and their meanings. This section covers common or confusing values.
+| Widget | Interpretation |
+|---|---|
+| `context` | Progress bar, percentage, and used tokens/window size; percentage helps anticipate compaction |
+| `cost` | Accumulated USD for **this session**; `todayCost` covers the whole day |
+| `rateLimit5h`, `rateLimit7d` | Plan allowance consumed; `depletionTime` predicts exhaustion at the current rate |
+| `burnRate` | Tokens per minute; spikes indicate large tool-output intervals |
+| `cacheHit` | Cache hit rate; low values indicate prompt prefixes changing each turn |
+| `codexUsage`, `geminiUsage`, `antigravityUsage`, `zaiUsage` | Shown **only when the corresponding CLI is installed**; absence is not a defect |
+| `budget` | Requires `dailyBudget` configuration |
+`contextBar`, `contextPercentage`, and `contextUsage` are components of `context`
+and can be placed separately.
+## Missing output
+| Symptom | First check |
+|---|---|
+| No statusline | Was `/jstack:dashboard-setup` run for this config directory? Absence before setup is normal |
+| Set up but absent | Use `/jstack:dashboard-repair`; its `status` step shows the owner, shim, and resolved build |
+| Only one CLI's limits are absent | Check CLI installation/login; the widget hides itself when unavailable |
+| Warning symbol instead of limits | Limit data could not be read; check login state |
+| Old values after updating | Each render resolves the latest version again; use dashboard-repair if the issue persists |
+## One-time query
+```
+/jstack:check-usage # Human-readable
+/jstack:check-usage --json # Machine-readable
+/jstack:check-usage --lang ko
+```
+No statusline is required. Use `/jstack:dashboard-alias` for a shell alias.

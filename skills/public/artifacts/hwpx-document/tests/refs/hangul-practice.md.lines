@@ -1,0 +1,120 @@
+# blob:1a9001f41dadaaaf32e8c9cc189c0128abec5ea3
+# Six recurring Hangul issues in procurement documents
+**None of these six is covered by the upstream sources.** Schema references explain
+elements but not delivery symptoms such as missing headers when a cost table spans
+three pages. These entries record recurring issues from actual proposal delivery.
+Each uses **symptom, cause, remedy** because readers arrive with an unexpected
+artifact, not an XML element name.
+---
+## 1. Table headers disappear across page breaks
+**Symptom.** Cost breakdowns or requirements-traceability tables span multiple pages,
+but column headings disappear after the first page. Evaluators cannot identify cells.
+**Cause.** `hp:tbl/@repeatHeader` is `"0"`. A hardcoded value remains unnoticed while
+a table fits one page, then fails as content grows.
+**Remedy.** Tables whose first row is a header need `repeatHeader="1"`.
+`scripts/md_to_hwpx.py` already writes this value.
+### Three `pageBreak` values
+| Value | Hancom behavior | When to use |
+|---|---|---|
+| `TABLE` | Keeps the table whole; if it does not fit, moves **the entire table to the next page** | Two- or three-row summaries that must remain together |
+| `CELL` | Splits **between cells**; paragraphs within one cell do not cross pages | Default for long cost-breakdown tables |
+| `NONE` | Does not split; overflow is **clipped and invisible** | Do not use |
+`repeatHeader="1"` matters only with `pageBreak="CELL"`. `TABLE` does not split,
+so there is no repeated header. **Choose the two settings together.**
+Using `TABLE` for a long table can move it wholesale to the next page, leaving
+half-page gaps that appear to be incorrect margins.
+---
+## 2. Images and diagrams drift to unexpected locations
+**Symptom.** Editing one paragraph moves an architecture diagram two pages forward,
+or leaves it printed over body text.
+**Cause.** Five interdependent anchoring attributes on `hp:pos`.
+| Attribute | Value | Meaning |
+|---|---|---|
+| `treatAsChar` | `1` | Treats the object **as a character**, keeping it with its anchor paragraph |
+| `treatAsChar` | `0` | Free placement; the four attributes below take effect |
+| `vertRelTo` | `PARA` \| `PAGE` \| `PAPER` | Vertical reference: paragraph, editing area, or paper |
+| `horzRelTo` | `PARA` \| `COLUMN` \| `PAGE` \| `PAPER` | Horizontal reference |
+| `flowWithText` | `1` | Object follows its anchor paragraph when it moves |
+| `allowOverlap` | `0` | Hancom moves the object away from overlapping objects |
+**Default to `treatAsChar="1"` for procurement documents.** Captions and explanatory
+text need to remain on the same page as diagrams, which free placement cannot guarantee.
+`treatAsChar="0"` plus `vertRelTo="PAPER"` is especially risky: the object stays
+fixed to the page while body text moves underneath it. `allowOverlap="0"` considers
+**other objects only**, not body text.
+**Remedy.** Use `treatAsChar="1"` for diagrams. If free placement is essential, use
+`vertRelTo="PARA"` with `flowWithText="1"` as the safest available combination.
+---
+## 3. Formatting does not apply: paragraph-property precedence
+**Symptom.** Editing a header style does not change the body, or assigning the
+"개요 2" style still gives body-text indentation.
+**Cause.** `hp:p` holds `styleIDRef` and `paraPrIDRef` **simultaneously**.
+```xml
+<hp:p id="…" paraPrIDRef="0" styleIDRef="3" …>
+```
+Header style 3 already references its own paragraph properties:
+```xml
+<hh:style id="3" type="PARA" name="개요 2" paraPrIDRef="3" charPrIDRef="0" …/>
+```
+The effective value is **the paragraph's direct `paraPrIDRef="0"`**, representing
+body-text properties, not the style's `paraPrIDRef="3"`. The style panel displays
+"개요 2", while the page uses body formatting.
+**Rule.** A directly assigned IDRef **overrides** the style's IDRef. The same applies
+to `charPrIDRef`: `hp:run/@charPrIDRef` overrides the style's character properties.
+**Two remedies:**
+- To manage formatting through styles, write `hp:p/@paraPrIDRef` with **the same
+value** as the style's `paraPrIDRef`. It is required and cannot be omitted.
+- When mapping a reference, read `paraPrIDRef` **alongside** each style name in
+`scripts/analyze_template.py` output. Mapping names alone reproduces this defect.
+---
+## 4. Footnote numbering continues across sections
+**Symptom.** Chapter 2's first footnote starts at 17) instead of 1), or numbering
+unexpectedly restarts at 1) in every chapter.
+**Cause.** `hp:secPr/hp:footNotePr/hp:numbering/@type`.
+| Value | Behavior |
+|---|---|
+| `CONTINUOUS` | Continues across the whole document; template default |
+| `ON_SECTION` | Restarts at 1 **for each section** |
+| `ON_PAGE` | Restarts at 1 for each page |
+`newNum` supplies the restart value and is ignored for `type="CONTINUOUS"`.
+That explains why setting `newNum` to 1 can appear ineffective.
+**Caution.** Settings are inside `hp:secPr` and apply **per section**. Adding a section
+without copying secPr uses Hancom defaults. This is why `md_to_hwpx.py` inherits the
+reference's `secPr` through `deepcopy`.
+`endNotePr` has the same structure. Endnote placement depends on whether
+`placement/@place` is `END_OF_DOCUMENT` or `END_OF_SECTION`.
+---
+## 5. Four objects that text replacement cannot handle
+If the client template contains WordArt, layout controls, tracked changes, or form
+objects, **text replacement is insufficient**.
+| Object | Element | Problem | Remedy |
+|---|---|---|---|
+| WordArt (글맵시) | `hp:textart` | A **shape**, not text; absent from extraction, search, and spelling checks | Preserve cover WordArt; a person edits its content in Hancom |
+| Layout controls | `hp:ctrl` family | Page breaks, column breaks, and hidden content are **invisible controls** | Carry `hp:ctrl` when rewriting paragraphs; deleting it breaks pagination |
+| Tracked changes | `hh:trackChange`, `hh:trackChangeAuthor` | Client review history retains **author names** | Remove before delivery with `scripts/sanitize_template.py` |
+| Form objects | `hp:formButton`, `hp:formCheckButton`, `hp:formEdit` | Input values reside in object properties rather than ordinary XML text | Remove from procurement outputs and replace with ordinary tables |
+**Shared rule.** If any of these appears in the reference, do not claim correct
+formatting until a person opens the converted file in Hancom. The gate in
+`references/hitl-review.md` applies.
+---
+## 6. Missing Hamchorom fonts change the document
+**Symptom.** macOS or Linux shows more lines, overflowing tables, and different page
+counts, while Windows with Hancom installed looks correct.
+**Cause.** `<hh:font face="함초롬바탕" type="TTF" isEmbedded="0"/>`.
+`isEmbedded="0"` means **the font is absent from the file**. Hamchorom ships with
+Hancom Office; machines without it substitute a system font. Different spacing
+and character widths move line breaks, tables, and page boundaries.
+**Consequences:**
+- **Page and line counts are valid only on a machine with Hancom installed.** Do not
+assess maximum-page requirements using counts from another machine.
+- The validator cannot detect substitution: it happens during rendering and leaves
+no XML trace. `references/render-checklist.md` defines this boundary.
+**Explicit substitution.** Some versions allow `<hh:substFont face="…" type="TTF"/>`
+as an `hh:font` child. Naming a substitute is better than arbitrary system selection,
+but **does not equalize spacing** or make pagination measurements valid.
+**Do not set `isEmbedded="1"`.** Embedding fonts raises redistribution-license issues,
+and procurement clients redistribute delivered artifacts.
+---
+## Topics covered elsewhere
+- **Structure** and parent/child relationships: `references/xml-structure.md`.
+- **Values**, including HWPUNIT and A4 dimensions: `references/hwpx-format.md`.
+- **What machines can check before human review**: `references/render-checklist.md`.

@@ -1,0 +1,84 @@
+# blob:2cc6d2c4e10c9a187c5557679bdd08dc66ef564f
+---
+name: korean-spell-check
+description: Use Nara/PNU Korean spell-check surfaces conservatively to proofread Korean text, chunk long input, and return change-focused correction suggestions.
+license: MIT
+metadata:
+category: writing
+locale: ko-KR
+phase: v1
+---
+# Korean Spell Check
+## What this skill does
+Perform final Korean proofreading through Bareun Hangul (formerly the PNU
+spelling/grammar checker), which incorporates National Institute of Korean
+Language-style rules.
+- Default entry: https://nara-speller.co.kr/speller/.
+- For automation, use the legacy form POST surface
+https://nara-speller.co.kr/old_speller/results at low request volume only.
+- Split long text into chunks and check sequentially.
+- Present each original, suggested correction, and reason.
+## Policy first
+The legacy surface https://nara-speller.co.kr/old_speller/ states noncommercial
+use and free access only for individuals or students. Its robots.txt permits /
+but excludes /test_speller/. Use this skill only for user-directed final review,
+low-frequency requests, and proofreading documents, email, or READMEs.
+Do not use it for bulk batches, SaaS backend integration, or unauthorized resale
+or republication inside commercial services. Investigate provider permission or
+a paid API agreement first for those uses.
+## When to use
+- "이 한국어 문장 맞춤법 검사해줘"
+- "README 한국어 문장 최종 검수해줘"
+- "마크다운 파일 전체에서 띄어쓰기/맞춤법 오류를 잡아줘"
+- "AI 교정보다 규칙 기반 한국어 검사기로 한 번 더 확인해줘"
+## When not to use
+- Bulk transmission of code blocks, logs, or mostly English text.
+- Sensitive originals that must not be sent to an external web service.
+- Work requiring a commercial bulk-processing API.
+## Prerequisites
+Internet access, Node.js 20+, and this skill's scripts/korean_spell_check.js
+(included on installation).
+The commands below use jstack's Node port. The observed Python request behavior in
+the following historical notes is provenance, not evidence of current service
+availability. The consent boundary and current library API are in `SKILL.md`.
+## Verified surface notes
+The observed public site was https://nara-speller.co.kr/speller/. Ordinary shell
+or Node fetches could receive Cloudflare 403 responses in the tested environment,
+while a browser-style User-Agent with Python urllib POST returned actual result
+HTML from old_speller/results. The free surface returns HTML; no documented
+public JSON API was confirmed.
+## Workflow
+### 1. Obtain the text or file path
+Check directly supplied text. For files, accept UTF-8 text/Markdown. If code
+blocks dominate, clarify whether the user wants a narrower scope first.
+### 2. Keep requests conservative
+Use chunks of about 1500 characters, with at least one second between requests.
+Do not process too many files at once.
+### 3. Run the helper
+```bash
+node -- scripts/korean_spell_check.js --file README.md --format json
+```
+Short text can be supplied with --text:
+```bash
+node -- scripts/korean_spell_check.js --text "아버지가방에들어가신다." --format text
+```
+### 4. Return change-focused output
+Present the corrected full sentence/paragraph, major changes, and each original,
+suggestion, and reason. If needed, explain that results come from a public web
+checker and final contextual judgment requires human review.
+Example JSON fields (actual Korean correction content):
+```json
+{
+"original": "아버지가방에들어가신다",
+"suggestions": ["아버지가 방에 들어가신다"],
+"reason": "띄어쓰기, 붙여쓰기, 음절 대치와 같은 교정 방법에 따라 수정한 결과입니다."
+}
+```
+## Done when
+The public-surface policy has been checked, long text is chunked, output centers
+on original/suggestion/reason, and low-frequency noncommercial scope is clear.
+## Notes
+- guide: https://nara-speller.co.kr/guide/
+- main UI: https://nara-speller.co.kr/speller/
+- old UI / form post: https://nara-speller.co.kr/old_speller/, https://nara-speller.co.kr/old_speller/results
+- robots: https://nara-speller.co.kr/robots.txt

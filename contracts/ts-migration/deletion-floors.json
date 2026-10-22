@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "baselineSource": "scripts/check_floor_parity.py",
+  "floors": {
+    "skills/agent-maintenance": 0,
+    "skills/audit": 10,
+    "skills/author": 54,
+    "skills/bridge": 12,
+    "skills/cleanup": 8,
+    "skills/consult": 14,
+    "skills/dashboard": 10,
+    "skills/decide": 2,
+    "skills/deck": 51,
+    "skills/delegate": 4,
+    "skills/diagram": 25,
+    "skills/emoji": 2,
+    "skills/host-audit": 2,
+    "skills/gitrules": 7,
+    "skills/help": 2,
+    "skills/humanize": 50,
+    "skills/hwpx": 32,
+    "skills/image": 8,
+    "skills/models": 4,
+    "skills/office": 5,
+    "skills/plan": 11,
+    "skills/proof": 6,
+    "skills/prune": 5,
+    "skills/react": 7,
+    "skills/recall": 8,
+    "skills/research": 10,
+    "skills/science": 8,
+    "skills/secrets": 3,
+    "skills/setup": 16,
+    "skills/tdd": 14,
+    "skills/team": 10,
+    "skills/ui": 47,
+    "skills/upstream": 3,
+    "skills/verify": 33,
+    "skills/workspace": 17,
+    "skills/wrapup": 0,
+    "tests/test_contracts.py": 0,
+    "tests/test_dev_agents.py": 8,
+    "tests/test_dev_commands.py": 17,
+    "tests/test_dev_hooks.py": 0,
+    "tests/test_dev_pr_label.py": 0,
+    "tests/test_evals.py": 0,
+    "tests/test_floor_parity.py": 0,
+    "tests/test_onboarding.py": 0,
+    "tests/test_profiles.py": 0,
+    "tests/test_repack.py": 0,
+    "tests/test_repository.py": 0,
+    "tests/test_session_migration.py": 0,
+    "tests/test_skill_store.py": 0,
+    "tests/test_work_agents.py": 0,
+    "tests/test_work_commands.py": 0,
+    "tests/test_work_hooks.py": 0,
+    "skills/disk-manager": 6,
+    "skills/issue-report": 1,
+    "skills/journey-qa": 2,
+    "skills/requirements-interview": 3,
+    "skills/sdlc": 4
+  },
+  "populationChanges": [
+    {
+      "suite": "skills/humanize",
+      "baselineRecords": 44,
+      "nativeRecords": 45,
+      "reason": "The standalone ASD-STE100 suite remains consolidated in humanize. Restoring the published clean-rewrite, debloat, and reorder references adds their measured coverage records and expanded SKILL/direct coverage, returning the native suite population to 44; ASD rule, fidelity, copyright, and Korean-boundary assertions remain in the owning suite. The narrative research-report reference adds its own measured coverage record."
+    },
+    {
+      "suite": "skills/author",
+      "baselineRecords": 57,
+      "nativeRecords": 58,
+      "reason": "Added separately measured validation-template TOML license ownership."
+    },
+    {
+      "suite": "skills/proof",
+      "baselineRecords": 7,
+      "nativeRecords": 6,
+      "crosswalk": "contracts/ts-migration/proof-suite-crosswalk.json",
+      "reason": "Two counter implementations became one canonical counter. Its deletion floor is 23, above the original floors sum 7 + 15; the normalized total of 80 suite judgments (excluding environment-dependent reference checks) and all document floors are preserved."
+    },
+    {
+      "suite": "skills/setup",
+      "baselineRecords": 12,
+      "nativeRecords": 15,
+      "reason": "Register the existing project-portability script deletion axis alongside its owning repository-setup contracts. Absorbed test speed guidance adds the testing-guidance reference and the NOTICE provenance axes."
+    },
+    {
+      "suite": "tests/test_dev_commands.py",
+      "baselineRecords": 11,
+      "nativeRecords": 14,
+      "reason": "Daily and weekly work-report commands each have an owning deletion axis; register both existing measurements. The shared runtime/CLI-PATH.md guide for a missing jstack command adds its own measured deletion axis."
+    },
+    {
+      "suite": "skills/verify",
+      "baselineRecords": 20,
+      "nativeRecords": 33,
+      "reason": "Absorbed test speed guidance adds five references (test waits, parallelism, selection, flaky tests, evidence), the test_profile and test_smells scripts, and NOTICE provenance, each with its own measured deletion axis. The interactive CLI reference adds one more measured deletion axis, and the restored CI diagnosis reference adds another. The shared ship-gates reference adds a semantic and order deletion axis."
+    },
+    {
+      "suite": "skills/tdd",
+      "baselineRecords": 11,
+      "nativeRecords": 14,
+      "reason": "Absorbed test speed guidance adds the test-budget and test-portfolio references and NOTICE provenance, each with its own measured deletion axis."
+    },
+    {
+      "suite": "skills/plan",
+      "baselineRecords": 6,
+      "nativeRecords": 8,
+      "reason": "Added the pre-mortem reference and provenance NOTICE; their measured per-file deletion floors are 3 and 1, increasing plan from 6 to 8."
+    },
+    {
+      "suite": "skills/plan",
+      "baselineRecords": 8,
+      "nativeRecords": 9,
+      "reason": "Added the migration verification reference with its own measured per-file deletion floor of 3, increasing plan from 8 to 9."
+    },
+    {
+      "suite": "skills/audit",
+      "baselineRecords": 8,
+      "nativeRecords": 10,
+      "reason": "The OWASP Cheat Sheet situation map and its NOTICE provenance contract add two measured deletion controls to the audit suite."
+    },
+    {
+      "suite": "skills/plan",
+      "baselineRecords": 9,
+      "nativeRecords": 11,
+      "reason": "Restored the brainstorming and consensus-plan references with their own measured per-file deletion floors of 16 each, increasing plan from 9 to 11. The NOTICE floor rises from 1 to 3 because it now also records their derived sources."
+    },
+    {
+      "suite": "tests/test_dev_commands.py",
+      "baselineRecords": 14,
+      "nativeRecords": 16,
+      "reason": "The /brainstorming and /consensus-plan commands each have an owning deletion axis with a measured per-file floor of 6, increasing the suite from 14 to 16."
+    },
+    {
+      "suite": "tests/test_dev_commands.py",
+      "baselineRecords": 16,
+      "nativeRecords": 17,
+      "reason": "The /install-skill command has an owning deletion axis with a measured per-file floor of 6, increasing the suite from 16 to 17."
+    },
+    {
+      "suite": "skills/sdlc",
+      "baselineRecords": 0,
+      "nativeRecords": 4,
+      "reason": "New explicit SDLC owner: three document deletion axes and the skill-body deletion control; behavior is exercised by runtime fixtures."
+    },
+    {
+      "suite": "skills/author",
+      "baselineRecords": 58,
+      "nativeRecords": 54,
+      "reason": "jstack removed the four scripts that opened pull requests against the organization marketplace, with their per-script floor records."
+    },
+    {
+      "suite": "skills/deck",
+      "baselineRecords": 50,
+      "nativeRecords": 51,
+      "reason": "LICENSE.pptx-design-styles records the upstream MIT declaration and has its own provenance contract."
+    },
+    {
+      "suite": "skills/humanize",
+      "baselineRecords": 45,
+      "nativeRecords": 50,
+      "reason": "NOTICE and four upstream MIT license texts (im-not-ai, noslop-ko, fluent-korean, kordoc) each have a provenance contract."
+    },
+    {
+      "suite": "skills/hwpx",
+      "baselineRecords": 30,
+      "nativeRecords": 32,
+      "reason": "NOTICE (hwpx-skill attribution) and LICENSE.kordoc each have a provenance contract."
+    },
+    {
+      "suite": "skills/image",
+      "baselineRecords": 6,
+      "nativeRecords": 8,
+      "reason": "NOTICE and LICENSE.slopslap each have a provenance contract."
+    },
+    {
+      "suite": "skills/react",
+      "baselineRecords": 6,
+      "nativeRecords": 7,
+      "reason": "LICENSE.vercel-agent-skills records the upstream MIT declaration and has its own provenance contract."
+    },
+    {
+      "suite": "skills/setup",
+      "baselineRecords": 15,
+      "nativeRecords": 16,
+      "reason": "LICENSE.claude-plugins-official carries the Apache-2.0 text for the adapted instruction-maintenance procedure."
+    },
+    {
+      "suite": "skills/ui",
+      "baselineRecords": 46,
+      "nativeRecords": 47,
+      "reason": "LICENSE.web-interface-guidelines carries the upstream MIT text."
+    },
+    {
+      "suite": "skills/workspace",
+      "baselineRecords": 24,
+      "nativeRecords": 17,
+      "reason": "jstack removed the scheduled scrum draft mail (its reference, five scheduler files, two scripts and the scrum-rows evaluation); NOTICE and LICENSE.corca were added with provenance contracts."
+    }
+  ]
+}

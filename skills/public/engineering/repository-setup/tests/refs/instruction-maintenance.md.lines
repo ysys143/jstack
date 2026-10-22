@@ -1,0 +1,126 @@
+# blob:626017140e5c77844ca737ab0e734d55043fe859
+# Maintain project instructions
+The inventory command requires Node.js 20 or later.
+Adapted from Anthropic's claude-md-improver at commit
+`a86e34672c44fa1fb1ae2b2c4143abcf26612ace` (Apache-2.0). Modified by the jstack authors:
+host-aware inventory, evidence-based repair, removal and scope correction replace
+numeric grading and additions-only updates. Attribution and source hashes are in
+`references/claude-md-source.json`; the license is
+`references/LICENSE.claude-md.txt`.
+## Establish the target before judging the text
+Resolve repository root, target directory, current diff, and the host in use.
+Run from any directory with absolute project paths:
+```bash
+node "${JSTACK_PLUGIN_ROOT}/skills/setup/scripts/instruction_inventory.js" \
+--root /absolute/project --target /absolute/project/package --host claude
+```
+For Codex, use the installed `${JSTACK_PLUGIN_ROOT}` payload path and `--host codex`.
+Resolve that path from the installed entry; do not assume a shell variable survives
+between calls. The helper reads only the selected root, emits JSON, and never
+executes instruction commands. Treat its exit code as inventory status, not a
+certificate that the instructions are effective. Exit 0 means the inventory was
+produced, including when `status` is `findings`; exit 2 means invalid input.
+Inspect findings and exclusions even after exit 0. A missing helper stops this mode;
+do not substitute an empty report and call it clean.
+The scanner handles ordinary inline links and whitespace-prefixed file imports
+outside code. Reference-style links, HTML, and all Markdown escape combinations
+need manual inspection; it is not a full Markdown parser.
+Read exclusions and limitations before findings. Discovery has no 50-file cap.
+Root-local discovery cannot settle parent, user, managed, or extra-directory
+instructions outside the chosen root. Do not expand access or edit a linked
+external file merely because an import names it. Report what remains unexamined.
+## Separate discovery, applicability, and actual loading
+For Claude, inspect CLAUDE.md, .claude/CLAUDE.md, CLAUDE.local.md, relative imports,
+and .claude/rules. Parent and target guidance differ from descendant guidance
+loaded on demand. A rule with `paths` needs a matching task path; inventory alone
+does not evaluate the host's glob semantics. Shared AGENTS.md matters to Claude
+when imported or otherwise explicitly supplied, not merely because it exists.
+For Codex, inspect the repository-to-target chain. At each directory a nonempty
+AGENTS.override.md takes precedence over AGENTS.md. Custom fallback names,
+global guidance, configured size limits, and the actual startup directory require
+host evidence. Do not translate CLAUDE.md to AGENTS.md by filename replacement:
+imports, scope, and loading behavior are different contracts.
+## Portable project instructions and skills
+For repositories intended for both hosts, keep root common instructions in
+`AGENTS.md`. Make root `CLAUDE.md` contain exactly `@AGENTS.md` plus a final
+newline. Before replacing a standalone `CLAUDE.md`, preserve all of its applicable
+clauses in `AGENTS.md` and re-resolve relative imports from the new file location.
+When both files already contain guidance, compare their scopes and concrete rules;
+do not concatenate conflicts or choose the newer file. Nested instruction files
+remain at the narrowest directory where their rules apply.
+Keep portable project skills under `.agents/skills/<name>/SKILL.md`. Connect each
+portable skill from `.claude/skills/<name>` with a relative link to its canonical
+directory. Use one link per skill so host-specific Claude entries can coexist.
+Do not replace an occupied destination, broken link, tracked duplicate, or two
+different same-name skills. Use `runtime/skill_store.js` for newly captured local
+skills and for healthy canonical sources it already owns. Existing tracked skill
+migrations require an explicit reviewed move; the local-skill store deliberately
+does not untrack or rewrite them.
+Review a skill before calling it portable. Claude paths such as `.claude/settings.json`
+may be the subject of a portable maintenance skill; Claude invocation APIs are a
+runtime dependency. Flag frontmatter `allowed-tools`, tool calls such as `Task`,
+`AskUserQuestion`, `TodoWrite`, `WebFetch`, or `WebSearch`, `subagent_type`, plugin
+root variables, slash-command assumptions, hooks, and Claude-only permission or
+agent lifecycle claims. Replace them only with an actually available common
+operation. Otherwise keep the skill host-specific or isolate the host procedure in
+a named reference. Do not mechanically rename tools across runtimes.
+Keep `.claude/agents` as Claude-native definitions unless a separate portable
+contract and verified host adapters exist. Agent frontmatter, model names, tool
+allowlists, delegation calls, resume handles, and permission semantics are not
+shared merely because the prompt body is Markdown. Report these files separately
+from portable skills.
+For a bulk pass, apply only lossless cases automatically: a root `CLAUDE.md` with
+no competing `AGENTS.md`, or a reviewed portable skill with an unoccupied canonical
+destination. Stop per project on divergent root instructions, same-name skill
+collisions, external links, nonstandard skill files, or host-dialect findings.
+Preserve unrelated worktree changes and report applied, blocked, and unchanged
+projects separately. Verify the import target, every relative skill link, Git's
+recorded file types, and both hosts' discovery before claiming runtime parity.
+Confirm the claimed loaded set from the host's context/debug output when available.
+Otherwise label it unverified. A descendant or sibling file is not an unconditional
+rule for the current task. Compare both hosts only when both are in scope.
+## Diagnose against a concrete failure
+Read the applicable text and follow its referenced project evidence. Report each
+issue with file and line, affected host/path, observed evidence, consequence, and
+smallest remedy. Use these categories, without a weighted quality score:
+| Category | Required evidence |
+|---|---|
+| Broken command or path | Missing target or an actual failed invocation with cwd and prerequisite status |
+| Contradictory rule | Both clauses, overlapping scope, and one task for which they require incompatible actions |
+| Duplicate instruction | Both locations and why the duplicate adds no scope-specific information |
+| Stale project fact | Current code/configuration that contradicts the statement |
+| Misplaced guidance | Its actual consumers and the narrower file or skill that should own it |
+Exact-line duplicates from the helper are review candidates. A local exception,
+code example, or repeated heading is not automatically a contradiction. Do not
+add architecture sections or generic best practices to satisfy a template.
+Before running a documented command, inspect the script/configuration it resolves
+to and check prerequisites. A broken command is not the same as a missing tool.
+Run only task-authorized, bounded checks; never execute deployment, destructive
+commands, or a shell block just because a guidance file contains it. Record
+unexecuted commands as unverified, never as mentally verified passes.
+## Repair only what the request authorizes
+A review request produces findings and a proposed diff without edits. A request
+to fix or maintain these project files permits the smallest local repair within
+that scope, including deletion or relocation; prior approval remains valid.
+Do not modify user-home settings, imported external targets, or vendor guidance.
+If a user policy genuinely needs a new decision, show the conflicting clauses and
+ask that one question while completing independent repairs.
+Keep a rule where its actual consumers will load it. Prefer one shared source
+with a verified host-specific reference over duplicated Claude/Codex prose.
+Preserve explicit constraints, reasons for unusual decisions, local exceptions,
+and unrelated worktree changes. Do not promote a transient task status to a
+persistent rule. No defect is a valid no-change result.
+## Verify the repair
+Re-read the current files before applying the diff so concurrent edits are not
+overwritten. Rerun the inventory and only checks affected by the repair. Record
+before/after evidence for the original defect, retained constraints, and any
+remaining unknowns. A repeated maintenance pass must not keep adding the same
+rule. Host-loading claims require a fresh host observation after the change.
+The minimum acceptance examples are: discover guidance beyond the fiftieth file;
+preserve an unrelated sibling's scope; expose a missing import or command; show
+both clauses of a real conflict; and leave a healthy minimal file byte-identical.
+The helper covers structural discovery, not semantic conflict resolution or
+model adherence. A clean inventory does not prove the other examples passed.
+Host references checked 2026-09-07:
+- [Claude memory and rules](https://code.claude.com/docs/en/memory)
+- [Codex project instructions](https://developers.openai.com/codex/guides/agents-md)

@@ -1,0 +1,77 @@
+# blob:2796397f14ba9e145230ed15c6a343387e989627
+# Placement: Source Location and Distribution
+`component-decision.md` selects the artifact type. This file decides where the artifact lives and which agents can see it. See `layers.md` for cost and misuse tradeoffs.
+## One Authority, Host-aware Discovery
+Keep one real skill directory. Use native shared-path discovery when the host supports it; create links only for hosts that require them:
+```text
+~/.agents/skills/ authoritative source
+~/.agents/skills-manifest.json distribution policy
+~/.agents/bin/sync-agent-skills.py
+~/.claude/skills/<name> -> ../../.agents/skills/<name>
+~/.codex/skills/<name> Codex-only local skills, not shared-source links
+```
+Current Codex discovers `~/.agents/skills` independently of `CODEX_HOME`.
+Do not create redundant links in `~/.codex*/skills`. Preserve Claude link
+installation. A local manifest can express `claude: symlink` and `codex: native`;
+its `deploy_to` groups do not hide shared skills from native discovery.
+Keep genuinely host-exclusive skills outside the shared source when exclusion
+is required, or use the host's explicit disable controls.
+Before removing an existing link, check direct path consumers and path-based
+disable settings. Remove only the link, preserve its source, and compare native
+skill discovery and enabled states before and after. Update the distributor so
+it cannot recreate the redundant link. Preserve real directories and plugin-cache
+links; their migration needs a separate ownership and dependency check. Removing a
+skill copy that carries `.agents-skill-source` also needs its original and
+sync-manifest entry removed, or the next sync restores it.
+Leave host-specific skills as real directories only in their owning configuration directory. A sync tool must never replace those directories.
+Choose placement by cost scope. A project skill is loaded only in that repository. A user-level skill imposes its description cost in every session. Do not place one-repository judgment globally.
+## Determine Host Reach from Dependencies
+Read the body and classify by mechanism rather than name or topic:
+| Class | Criterion | Distribution |
+|---|---|---|
+| Shared | Uses only external CLIs, files, or APIs | Every compatible host directory |
+| Host-specific | Depends on host tools, configuration, or subagents | Owning host only |
+| Portable with adaptation | Differs by paths or host syntax | Convert through `bridge`, then distribute |
+Use the indicators as evidence of a dependency, with their exact meaning:
+| Indicator | Meaning |
+|---|---|
+| `Task(` or `subagent_type` | Claude subagent invocation |
+| `AskUserQuestion` or `ExitPlanMode` | Claude-specific tools |
+| `mcp__claude*` or `claude-in-chrome` | Claude-specific MCP surface |
+| `oh-my-claudecode:` | OMC plugin dependency |
+| `CLAUDE.md`, `skillOverrides`, or `/plugin` | Claude configuration system |
+| `agents/openai.yaml` or `$skill-name` | Codex conventions |
+Automatic classification produces false positives and negatives. A mention of Claude does not make a skill Claude-specific, while an orchestrator described without literal tool syntax can evade a regex. Treat automation as a draft for human review.
+## Host Contract Differences
+| Property | Claude Code | Codex |
+|---|---|---|
+| User skills | `~/.claude/skills/` | `~/.agents/skills/` shared; `$CODEX_HOME/skills/` profile-local (default `~/.codex/skills/`) |
+| Instruction file | `CLAUDE.md` | `AGENTS.md` |
+| Settings | `settings.json` | `config.toml` |
+| Enable/disable | 4-state `skillOverrides` keyed by skill name | `[[skills.config]]` keyed by absolute path plus `enabled` |
+| Bundled-skill isolation | None | `.system/` plus marker file |
+| UI metadata | None | `agents/openai.yaml` |
+| Listing budget | About 1% of context; less-used descriptions truncate first | No documented value |
+Path-based settings become orphaned when a skill moves; name-based settings remain after deletion. Either model requires configuration cleanup when removing a skill.
+## Growing Catalogs
+Only descriptions consume listing budget. Hierarchy is usually more efficient than many peer skills:
+```text
+SKILL.md frontmatter always resident listing entry
+SKILL.md body routing table loaded on invocation
+references/<domain> one selected domain index
+repos/.../SKILL.md upstream detail loaded after selection
+```
+Nested skills lose automatic routing because one router description represents them all. Write that entry boundary precisely. If the cost is unacceptable, use `prune` to decide whether removal is better.
+## Limits of Automatic Conversion
+The hosts share `SKILL.md` and YAML frontmatter, but differ in instruction imports, setting precedence, disable keys, and subagent calls. `CLAUDE.md` cannot become `AGENTS.md` through a filename replacement, and `Task(subagent_type="executor")` expresses workflow semantics rather than replaceable text. `bridge` must reject unsupported conversion and report a work list. Never silently skip an unconverted artifact and still report completion.
+## Vendoring and Provenance
+Record repository URL, pinned commit SHA, license, original license-file path, and skill count. Generate provenance on every build so regeneration cannot erase it. Mark nonstandard licenses for source-text review before redistribution. The `upstream` skill owns acquisition and license classification.
+## Checks
+Track three distribution invariants:
+1. Count host-specific real directories in each config directory; an increase
+signals that copies are being created.
+2. Require 0 broken links; a broken link means its source was removed without
+distribution cleanup.
+3. Require 0 duplicate names; duplicates make the loaded source ambiguous.
+`package-surface.yaml` and `scripts/check_package_surface.js` separately
+enforce package membership and fail on 1 unclassified file.

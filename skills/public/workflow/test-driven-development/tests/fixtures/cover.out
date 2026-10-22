@@ -1,0 +1,2 @@
+mode: atomic
+example.com/m/pkg/calc/calc.go:10.28,13.3 2 5

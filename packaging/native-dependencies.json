@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "dependency": "sqlite3",
+  "version": "5.1.7",
+  "napiVersion": 6,
+  "upstream": "https://github.com/TryGhost/node-sqlite3/tree/v5.1.7",
+  "license": "BSD-3-Clause",
+  "sqliteVersion": "3.44.2",
+  "assets": [
+    {
+      "key": "darwin-arm64",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-darwin-arm64.tar.gz",
+      "sha256": "84a34404b12ff212adbca70eff76c2e4dd83b91245eed0b4569438f928567afc",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "e476b3077cee91f9e8a679e7d8303fb6e5e0c5815c25aa06033159ae533857c6",
+      "size": 2037662,
+      "archiveSize": 986686
+    },
+    {
+      "key": "darwin-x64",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-darwin-x64.tar.gz",
+      "sha256": "5f4662107faf0a9d15d00661be6ae1fb09ce3f85c109a3552e1771d48083b43d",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "725e799dc40eab4dc9c296d17f743cf8e0c994bf7bcaba74558381f724cd2de5",
+      "size": 2187592,
+      "archiveSize": 1076639
+    },
+    {
+      "key": "linux-arm64",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-linux-arm64.tar.gz",
+      "sha256": "0f112c63a74bebdffce298792c264b3af4b85d7fe1975a4bca1227438f531dbb",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "a25c139449cd0852f242ce2aacfc04033c629f74566b331d47661eeb507b3dbc",
+      "size": 2059080,
+      "archiveSize": 1058790
+    },
+    {
+      "key": "linux-arm64-musl",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-linuxmusl-arm64.tar.gz",
+      "sha256": "ce982ea60aad176623e8dd56cb777562b1968dc34a5c4667d49089e19b27729c",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "10232e4f05dfa8885bfa898821ac14ce4117dde45255326c6a561e6845417926",
+      "size": 2126048,
+      "archiveSize": 1069025
+    },
+    {
+      "key": "linux-x64",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-linux-x64.tar.gz",
+      "sha256": "6d1f7a95e5aca90db1fd6a2839380a021d5ee23d46f2d7c520ded094da813fed",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "c9bd0419f77efb3b5d3a691fda04e265f740ad8dc195f0b56003cdeac92e9a34",
+      "size": 2236384,
+      "archiveSize": 1091820
+    },
+    {
+      "key": "linux-x64-musl",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-linuxmusl-x64.tar.gz",
+      "sha256": "d206816e03f7ce56057d4f118ce70fa8b8b0e2c35fa0b75c601ee6e792dc6f6c",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "989f727c690c37d0b72fddb223671cca0841d133acbc219452ba356320020864",
+      "size": 2300680,
+      "archiveSize": 1107307
+    },
+    {
+      "key": "win32-ia32",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-win32-ia32.tar.gz",
+      "sha256": "8cd346d2341f4dbda30a2b592656ea14290d86d70608585628256ba4e89153a3",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "031bdfe3e3c980befda3127d4f3756842417f3e6707ec10ef376e2781460abef",
+      "size": 1604096,
+      "archiveSize": 845198
+    },
+    {
+      "key": "win32-x64",
+      "url": "https://github.com/TryGhost/node-sqlite3/releases/download/v5.1.7/sqlite3-v5.1.7-napi-v6-win32-x64.tar.gz",
+      "sha256": "7a55f7adb5fc3126156c56253511ec5ac38110531281ecbafbe71244555e93ce",
+      "archivePath": "build/Release/node_sqlite3.node",
+      "binarySha256": "f806f89dc41dde00ca7124dc1e649bdc9b08ff2eff5c891b764f3e5aefa9548c",
+      "size": 1892864,
+      "archiveSize": 1005116
+    }
+  ]
+}

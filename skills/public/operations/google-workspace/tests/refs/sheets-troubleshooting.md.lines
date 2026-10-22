@@ -1,0 +1,111 @@
+# blob:4d562218163f8a95411ffc517f7658838033eaa9
+---
+name: gws-sheets-troubleshooting
+description: >
+Troubleshooting for reading and writing through the gws Sheets API.
+Use when gws sheets write fails, unexpected argument errors occur, or Google Sheets API calls behave unexpectedly.
+metadata:
+author: jstack
+version: "0.1.0"
+category: troubleshooting
+tags: [session-extracted, gws, google-sheets, debugging]
+source: session-learning
+---
+# gws Sheets troubleshooting
+## When to use
+- `gws sheets spreadsheets values update` fails
+- an `unexpected argument` error appears
+- Google Sheets cell reads or writes behave unexpectedly
+## Common issues
+### `unexpected argument '--spreadsheetId' found`
+**Symptom:**
+```text
+error: unexpected argument '--spreadsheetId' found
+Usage: gws spreadsheets values update [OPTIONS]
+```
+**Cause:** gws CLI does not accept spreadsheetId, range, or valueInputOption as
+individual flags. Send URL parameters in `--params` JSON and the request body in
+`--json`.
+**Wrong:**
+```bash
+gws sheets spreadsheets values update \
+--spreadsheetId "SHEET_ID" \
+--range "sheet!D8" \
+--valueInputOption RAW \
+--values '[["content"]]'
+```
+**Correct:**
+```python
+import subprocess, json, os
+env = {**os.environ, "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": os.path.expanduser("~/.config/gws-work")}
+sheet_id = "SHEET_ID"
+tab = "sheet-name"
+row = 8
+params = json.dumps({"spreadsheetId": sheet_id, "range": f"{tab}!D{row}", "valueInputOption": "RAW"})
+body = json.dumps({"values": [["cell content"]]})
+r = subprocess.run(
+["gws", "sheets", "spreadsheets", "values", "update",
+"--params", params, "--json", body],
+env=env, capture_output=True, text=True
+)
+print(r.stdout) # {"updatedCells": 1, ...}
+```
+The rule is: URL query parameters go in `--params`; the request body goes in
+`--json`; both values are JSON strings.
+### Tab Name with Korean Text or Spaces Causes a Parse Error
+**Symptom:** range parsing fails or returns an empty response.
+**Cause:** wrapping a value such as `'March week 3'!D8` in an outer single quote
+collides with shell escaping.
+**Wrong:**
+```bash
+--range "'March week 3'!D8" # outer single quotes
+```
+**Correct:**
+```python
+params = json.dumps({"range": "March week 3!D8", ...}) # plain tab-name!cell-address
+```
+Python `json.dumps` produces the JSON string, so no additional quoting is needed.
+### `gws sheets +read` returns nested JSON
+**Symptom:** code cannot extract the actual cell value from a `+read` response.
+**Correct parsing:**
+```python
+result = subprocess.run(
+["gws", "sheets", "+read", "--spreadsheet", sheet_id, "--range", f"{tab}!C{row}"],
+env=env, capture_output=True, text=True
+)
+import json
+data = json.loads(result.stdout)
+cell_val = data.get("values", [[""]])[0][0] # first cell value
+```
+## Parallel Updates Pattern
+When updating several rows, run five independent Python processes in the
+background and inspect each output for OK or ERR:
+```python
+# Write one independent script per row and run it with run_in_background=True.
+def write_cell(row, col, val, env, sheet_id, tab):
+params = json.dumps({"spreadsheetId": sheet_id, "range": f"{tab}!{col}{row}", "valueInputOption": "RAW"})
+body = json.dumps({"values": [[val]]})
+r = subprocess.run(
+["gws", "sheets", "spreadsheets", "values", "update", "--params", params, "--json", body],
+env=env, capture_output=True, text=True
+)
+print(f"{'OK' if r.returncode==0 else 'ERR'}: {col}{row}")
+```
+## Daily Scrum cell-address example: never use as real addresses
+| Day | Example person's row | Column D, learned yesterday | Column E, today's goal |
+|---|---:|---|---|
+| Mon | row 8 | D8 | E8 |
+| Tue | row 12 | D12 | E12 |
+| Wed | row 16 | D16 | E16 |
+| Thu | row 20 | D20 | E20 |
+| Fri | row 24 | D24 | E24 |
+Read the actual person from local `reporting.json`, and verify the tab, row, and
+name column every time. This table only illustrates four-row spacing and contains
+no organization's or person's real work data.
+**Column-D offset:** D means "what I learned yesterday," so Tuesday's learning is
+written to Wednesday's example cell D16.
+## References
+- [Official gws help](https://developers.google.com/workspace/reference):
+`gws sheets spreadsheets values update --help`
+- `draft-first-workflow.md` and `scrum-cells.md`: the complete Daily Scrum
+workflow, split from the upstream weekly-wrapup skill

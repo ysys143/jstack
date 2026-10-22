@@ -1,0 +1,74 @@
+# NOTICE — third-party provenance for the deck skill
+
+## corazzon/pptx-design-styles (MIT)
+
+references/styles.md derives from this work:
+
+- Original author: **corazzon (TodayCode / 오늘코드)**
+- Source: https://github.com/corazzon/pptx-design-styles
+- Declared license: **MIT**
+
+### Observed upstream state (2026-08-29)
+
+**The upstream repository has no LICENSE file.** The GitHub API root listing
+contained only .github, .gitignore, README.md, README_ko.md, SKILL.md, assets,
+preview, and references. GET /repos/corazzon/pptx-design-styles/license also
+returned no license file.
+
+License declarations appear only in prose:
+
+- README.md:5: "원본 크레딧: corazzon (TodayCode / 오늘코드) — MIT License"
+- README_ko.md:148: "MIT 라이선스 — 자유로운 사용, 수정 및 배포가 가능합니다."
+- SKILL.md frontmatter: license: MIT, original-author, original-source
+
+The copyright year and formal notice therefore could not be confirmed upstream.
+The text below uses the standard MIT terms and confirmed copyright-holder name;
+the year is omitted because upstream did not state one. Replace it with the
+upstream LICENSE if that file is added.
+
+### MIT License
+
+```
+MIT License
+
+Copyright (c) corazzon (TodayCode / 오늘코드)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OF OR IN CONNECTION WITH
+THE SOFTWARE.
+```
+
+### Our changes
+
+references/styles.md selects and re-describes the original styles rather than
+copying the source text.
+
+- Reduced 30 styles to three: 07 Swiss International, 13 Monochrome Minimal, and
+  27 Architectural Blueprint. Density ledger L-17 records overlapping axes:
+  07 and 13 share grammar and differ in palette. The other 27 introduce procurement
+  evaluation deductions or disappear in monochrome print.
+- Re-described three substantive axes: background brightness, title typeface,
+  and decoration density.
+- Added the Korean font contract, absent from all 30 upstream styles. This is
+  original work and is not covered by that imported MIT license.
+
+## marp-cli (MIT)
+
+references/marp.md is our usage guide, not a copy of marp-cli code or documentation.
+marp-cli itself is not bundled; the skill invokes the user's environment.
+
+- Source: https://github.com/marp-team/marp-cli — MIT

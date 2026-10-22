@@ -1,0 +1,7 @@
+diff --git a/src/main/java/com/other/Calc.java b/src/main/java/com/other/Calc.java
+index 1111111..2222222 100644
+--- a/src/main/java/com/other/Calc.java
++++ b/src/main/java/com/other/Calc.java
+@@ -9,0 +10,2 @@ public class Calc {
++    int sub(int a, int b) { return a - b; }
++    int neg(int a) { return -a; }

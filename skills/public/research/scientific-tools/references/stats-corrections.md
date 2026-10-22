@@ -1,0 +1,119 @@
+# Corrections to 4 upstream `statistical-analysis` recommendations
+
+<!-- sources -->
+출처: `kdense` = [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) @ 36d8f13 (MIT)
+
+This document is not a catalog. It identifies four instructions to override
+**before** following `repos/kdense/skills/statistical-analysis/SKILL.md`.
+Keep the remaining advice: upstream recommendations on multiple-comparison
+correction, mandatory effect-size CIs, and prioritizing Q-Q plots at n>=100 are sound.
+
+Each correction has four parts: **upstream instruction / error / evidence / local
+action**. Without evidence, a proposed change is a preference and does not belong here.
+
+## Root cause: conditional test selection
+
+Corrections 1 and 2 share a root cause. At `SKILL.md:56`, the upstream workflow says
+to commit to a planned test because choosing after seeing results is p-hacking.
+At `SKILL.md:59`, it then says to switch to a remedial test if an assumption fails.
+**These instructions contradict each other within the same screen.** Changing the
+test after examining data is precisely what the first step prohibits, even when
+called an assumption check.
+
+**Selecting the main test through a preliminary test is conditional test selection;
+the combined two-stage procedure does not retain the nominal type I error rate.**
+That is why correction 1 **removes**, rather than relaxes, the branch.
+
+---
+
+## Correction 1: remove the variance pretest and Welch branch (G-11)
+
+| Field | Content |
+|---|---|
+| **Upstream instruction** | `SKILL.md:120` includes `check_homogeneity_of_variance` (Levene) in assumption checks; `SKILL.md:138-139` prescribes Welch's t-test when homogeneity is violated. Welch is thus used only after a significant Levene test |
+| **Error** | The branch itself is wrong. Levene does not establish equal variances: nonsignificance can reflect insufficient power. Selecting the main test conditional on a pretest also prevents the combined procedure from retaining nominal alpha |
+| **Evidence** | Zimmerman (2004, *BJMSP* 57(1):173-181) numerically demonstrated type I error distortion under conditional pretesting. Rasch, Kubinger, and Moder (2011, *Statistical Papers* 52:219-231) concluded that pretesting assumptions does not pay off. Delacre, Lakens, and Leys (2017, *IRSP* 30(1):92-101) prescribe **Welch as the default** |
+| **Local action** | **Always default to Welch without a pretest.** Use an equal-variance t-test only when the design guarantees equal variances (such as repeated measurements with the same instrument and lot), and record the justification. Retain Levene only as a descriptive result for reporting, never for test selection |
+
+```python
+# Upstream: correction='auto' uses Welch only when variances/sample sizes differ (conditional selection)
+# Local: correction=True always uses Welch
+pg.ttest(group1, group2, correction=True)
+pg.welch_anova(dv='score', between='group', data=df)   # The same rule applies to three or more groups
+```
+
+Do not copy the example report at `references/assumptions_and_diagnostics.md:379`
+that interprets a nonsignificant Levene test as indicating equal group variances.
+**Nonsignificance does not establish equal variances.**
+
+---
+
+## Correction 2: do not report Mann-Whitney U as a median difference (G-12)
+
+| Field | Content |
+|---|---|
+| **Upstream instruction** | `SKILL.md:398` tells users to report medians rather than means after a nonparametric test |
+| **Error** | The interpretation does not match the test. MWU's null is `P(X > Y) = P(Y > X)`, not equality of medians. A median-difference interpretation requires a location-shift model with equal distribution **shapes and spreads**. When shapes differ, MWU can be significant despite equal medians, and the converse can also occur |
+| **Evidence** | Divine et al. (2018, *The American Statistician* 72(3):278-286), "The Wilcoxon-Mann-Whitney Procedure Fails as a Test of Medians", states the conclusion in its title. Fagerland & Sandvik (2009, *Statistics in Medicine* 28(10):1487-1497) describe misleading behavior under unequal variances and asymmetry |
+| **Local action** | **Describe stochastic superiority.** Report the estimated probability that a value from group A exceeds one from group B. Give rank-biserial correlation (`RBC` from `pg.mwu`) or the common-language effect size `P(X > Y)`. Include medians as descriptive statistics, **not as the test interpretation**. If the median difference itself is the estimand, use a test or bootstrap CI for medians instead of MWU |
+
+**Korean reporting examples.**
+
+- Avoid: "중앙값이 유의하게 달랐다(U = ..., p = ...)"
+- Use: "무작위로 뽑은 A 군 값이 B 군 값보다 클 확률은 0.71 이었다(rank-biserial r = .42, U = ..., p = ...). 두 분포의 형태가 달라 중앙값 차이로는 해석하지 않는다."
+
+---
+
+## Correction 3: remove the omnibus gate and run Tukey HSD directly (G-13)
+
+| Field | Content |
+|---|---|
+| **Upstream instruction** | `SKILL.md:188-189` calls `pg.pairwise_tukey` only under `if aov['p_unc'].values[0] < 0.05:` |
+| **Error** | This is a Fisher LSD-style two-stage procedure. Tukey HSD **already controls familywise error (FWER)** through the studentized range distribution and needs no preliminary gate. The gate loses overall power without improving that control, especially when one strongly differing pair is diluted in the omnibus F test |
+| **Evidence** | Hsu (1996, *Multiple Comparisons: Theory and Methods*) derives Tukey's FWER control. Conversely, Hayter (1986, *JASA* 81(396):1000-1004) shows that gated Fisher LSD fails to control FWER for k > 3: **the gate is not a safeguard** |
+| **Local action** | **Delete the gate.** When post-hoc pairwise comparisons are planned, run Tukey HSD regardless of the omnibus result and report omnibus F as a separate summary |
+
+```python
+aov = pg.anova(dv='score', between='group', data=df, detailed=True)
+posthoc = pg.pairwise_tukey(dv='score', between='group', data=df)  # No gate
+```
+
+---
+
+## Correction 4: replace the Bayesian t-test example with Kruschke BEST (G-14)
+
+| Field | Content |
+|---|---|
+| **Upstream instruction** | `SKILL.md:221-227` gives a normal-likelihood model that **shares one** `sigma = pm.HalfNormal('sigma', sigma=10)` between both groups |
+| **Error** | Two problems coincide. (1) Shared variance reintroduces the equal-variance assumption removed by correction 1. (2) A normal likelihood lets an outlier pull the posterior. Defaulting to Welch in the frequentist example while using equal variances in the Bayesian example is also internally inconsistent |
+| **Evidence** | Kruschke (2013, *JEP: General* 142(2):573-603), "Bayesian estimation supersedes the t test", supplies the standard alternative: **group-specific variances and a t likelihood with estimated degrees of freedom nu**. Heavy tails provide robustness to outliers within the model |
+| **Local action** | **Use BEST as the default example.** Give each group a separate `sigma`, use `pm.StudentT`, and estimate `nu`. Match priors to the data scale and state them in the report, as upstream `SKILL.md:245` already correctly requires |
+
+```python
+with pm.Model() as best:
+    mu1 = pm.Normal('mu_group1', mu=0, sigma=10)
+    mu2 = pm.Normal('mu_group2', mu=0, sigma=10)
+    s1 = pm.HalfNormal('sigma_group1', sigma=10)   # Group-specific variance
+    s2 = pm.HalfNormal('sigma_group2', sigma=10)
+    nu = pm.Exponential('nu_minus_one', 1 / 29.) + 1
+    pm.StudentT('y1', nu=nu, mu=mu1, sigma=s1, observed=group_a)
+    pm.StudentT('y2', nu=nu, mu=mu2, sigma=s2, observed=group_b)
+    pm.Deterministic('difference', mu1 - mu2)
+```
+
+---
+
+## Application summary
+
+| Situation | Upstream | Local rule |
+|---|---|---|
+| Two-group mean comparison | Welch only after significant Levene | **Always Welch** |
+| Three or more groups | ANOVA, then Welch ANOVA if equal variance is violated | **Always Welch ANOVA** |
+| Nonparametric two-group comparison | MWU followed by median reporting | **Stochastic superiority + rank-biserial** |
+| Post-hoc pairwise comparisons | omnibus p < .05 gate | **Tukey HSD without a gate** |
+| Bayesian two-group comparison | Shared sigma, normal likelihood | **Group-specific sigma, StudentT (BEST)** |
+
+**This document takes precedence over upstream.** If it conflicts with the
+`statistical-analysis` SKILL.md, follow this document. Do not edit the imported
+upstream text: `repos/` belongs to the original authors, and local decisions belong
+only in this file.

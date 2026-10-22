@@ -1,0 +1,67 @@
+# NOTICE — adapted procedures
+
+This skill carries three procedures adapted from upstream projects: the
+pre-mortem, the brainstorming (design-shaping) core and the consensus-plan
+recipe. Each is rewritten in jstack's terms and is not a vendored copy.
+
+## Pre-mortem procedure
+
+This procedure is adapted from `tjboudreaux/cc-thinking-skills`, pinned at
+commit `7b8fece345dfaa11773be7152ccd194589cb5437`. The source is the
+[upstream pre-mortem skill](https://github.com/tjboudreaux/cc-thinking-skills/blob/7b8fece345dfaa11773be7152ccd194589cb5437/skills/thinking-pre-mortem/SKILL.md).
+
+The procedure has been rewritten in jstack's terms for Phase 2, its version 2
+contract, and plan-body ownership. Its effectiveness has not been measured:
+upstream unmeasured; jstack unmeasured.
+
+### License
+
+MIT License
+
+Copyright (c) 2025 TJ Boudreaux
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Brainstorming (design shaping)
+
+`references/brainstorming.md` is adapted from the Superpowers `brainstorming`
+skill (`obra/superpowers`), pinned at commit
+`b36e0829c6d0140e93cfef2ca599b1b07d4a7797`. The source is the
+[upstream brainstorming skill](https://github.com/obra/superpowers/blob/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/brainstorming/SKILL.md).
+
+The reference rewrites it in jstack's terms and lists its deliberate differences
+from upstream. It is an adapted recipe, not the upstream skill: jstack selects it
+only on an explicit request, where upstream is used before any creative work,
+and an exact `superpowers:brainstorming` request remains an upstream provider
+request. The
+original MIT notice (Copyright (c) 2025 Jesse Vincent) is retained in
+`references/brainstorming-LICENSE.txt`.
+
+## Consensus-plan recipe
+
+`references/consensus-plan.md` is adapted from the Ralplan skill of
+`Yeachan-Heo/oh-my-claudecode`, pinned at commit
+`5281b19e0d64f8e6dc6767f2130299a88af2dc71`. The source is the
+[upstream ralplan skill](https://github.com/Yeachan-Heo/oh-my-claudecode/blob/5281b19e0d64f8e6dc6767f2130299a88af2dc71/skills/ralplan/SKILL.md).
+
+The reference rewrites it in jstack's terms and lists its differences from
+upstream. It is an adapted recipe, not the upstream skill; an exact OMC
+`ralplan` request remains an upstream provider request. The original MIT notice
+(Copyright (c) 2025 Yeachan Heo) is retained in
+`references/consensus-LICENSE.txt`.

@@ -1,0 +1,130 @@
+# blob:b8b3afa92d7a285c1b05bdeb60c8bf43d5818c0d
+# Validation cost
+Use when checks are slow, CI repeats setup, caches are ineffective, or concurrent
+local runs contend for resources. Diagnose with existing commands first. Modify
+validation infrastructure only within the requested implementation scope.
+## Measure the bottleneck
+Measure feedback wall time separately from total runner/compute time. Record
+queueing, checkout, install/build, fixture setup, and test execution where the
+tools expose them. Find the dependency chain delaying completion and the slowest
+shard. Faster completion can still consume more aggregate compute.
+Compare like-for-like inputs, runner capacity, concurrency, and cache state.
+Keep tail latency visible; do not infer a stable improvement from one fast run.
+Report unknown costs as unmeasured and retain correctness checks while optimizing.
+## Reduce repeated setup before adding workers
+Keep checks individually callable, and share preparation in aggregate execution.
+Use maintained entry points with the same semantics locally and in CI. Group
+short checks when runner startup and dependency setup dominate, preserving every
+check's status and logs. Filter unnecessary work before allocating a runner where
+the workflow supports it. Keep non-gating bookkeeping off the merge critical path.
+Install only required dependencies. Reuse builds and fixtures when their inputs
+match. Compare cache hit rate and restore/save cost against rebuilding; a cache
+can cost more than the work it replaces. Artifact caching and passing-test
+evidence are separate: apply the parent's freshness rule to the latter.
+Inspect test duration distribution before adding shards. Split disproportionate
+work units where the runner can actually schedule them, then measure both wall
+time and total compute. Do not assume that doubling workers halves runtime.
+## Bound concurrency and preserve isolation
+Separate parallel investigation from parallel test execution. Independent failure
+analysis can shorten diagnosis while a full OS matrix is already parallel.
+Use the ownership and handoff procedure in [local feedback](local-feedback.md)
+when splitting investigations. Parallelize work that can advance independently;
+serialize edits to shared files and integrate before broad validation. Measure
+diagnosis time, avoided reruns, and final required execution separately. Do not
+claim that more investigators shorten a mandatory check's own runtime.
+Account for other agents and worktrees on the same machine before starting heavy
+suites. Use an existing coordinator or lock when available; deduplicate identical
+in-flight inputs only when the result and ownership can be observed. Allow cheap
+focused tests to proceed within capacity. Do not cancel another worker's run or
+reclaim its lock without ownership evidence.
+Inspect resource contention before extending timeouts. Adding a scheduler, cache,
+or lock has its own correctness costs: invalidation, stale ownership, cancellation,
+and partial results. Do not implement these as incidental fixes to a test failure.
+State sharing requires explicit eligibility and cleanup. Keep isolation for tests
+with timers, global mutations, or other state that cannot be safely reset. Schema
+snapshots can accelerate ordinary DB tests; retain real migration-path checks.
+Prebuilt environments must track toolchain and dependency changes. Reduced setup
+must not silently reduce platform coverage or hide fixture leakage.
+## Speed up a slow test suite
+Use when the suite itself is the bottleneck. Never trade correctness for speed:
+keep every check, and let the repository's required gate (CI or the merge gate)
+run the complete suite. Local runs follow the affected-check scope in Phase 1 of
+SKILL.md; [test selection](test-selection.md) covers selection tools. Change
+tests only within the requested scope and report each change. Numbers behind
+these rules: [test evidence](test-evidence.md).
+Do not hide a symptom: no longer timeouts, added retries, forced exits
+(`--forceExit`, `--exit`, `--test-force-exit`, `os._exit`), disabled isolation,
+skipped tests, or weakened assertions. Each hides a cause; find the cause.
+1. Baseline. Find the exact command the gate runs (CI configuration, package
+scripts, Makefile, AGENTS.md) and how to run one file and one test; do not guess
+a runner. Run it once and record wall time, passed, failed, and skipped counts,
+worker count, CPU count (`nproc` or `sysctl -n hw.ncpu`), and the time of each
+part.
+2. Profile each unit (file, package, or suite):
+`node scripts/test_profile.js --cmd "<run one unit with {file}>" UNITS...`.
+Read four signals: WAITING units (low CPU share, high wall time); the serial
+sum against wall time at the current worker count; the long pole against the
+projected wall time; and time before the first test or after the last one,
+which is serial setup. High CPU spent again on unchanged inputs is repeated
+work; the rest is real work. A unit that fails alone is order dependent; see
+[flaky tests](flaky-tests.md). `node scripts/test_smells.js TEST_DIRS` adds
+static hints: sleeps, fixed ports and paths, real network calls, retry
+settings, serial-only settings, and focused tests.
+3. Remove waits first; they are usually the largest share. Parallelism before
+this only overlaps the waiting, and the idle unit stays the long pole. Diagnose
+and fix with [test waits](test-waits.md). Re-profile after each fix; stop when
+no unit is WAITING or each remaining one has a stated reason.
+4. Remove repeated work. Reuse a result only when every input that decides it is
+hashed and the hash is recomputed where the result is reused. A variant run that
+changes a document or script must rerun every check that reads it. Variant
+runs such as mutation or deletion copies are the usual source of repetition.
+5. Parallelize after isolation: [test parallelism](test-parallelism.md) has the
+isolation checklist, worker settings per runner, and proof runs. Three
+consecutive green runs and one random-order run are required; a failure only in
+parallel is an isolation bug, not a reason to lower workers.
+6. Split the long pole. With P workers, wall time is at least
+max(longest unit, total / P). Split the longest unit by feature or move its slow
+part into its own unit, and start the slowest units first.
+7. Cut serial setup and cache. Key dependency caches by lockfile, start services
+once per worker, and reuse compiled output. Cache test results by input hash
+only for hermetic tests (Bazel, the Go test cache, Nx, Turborepo), and do not
+bypass such a cache by habit. In CI, fix overhead before the tests themselves:
+cache the environment, skip unaffected steps, finish early, and never retry
+blindly. [Test parallelism](test-parallelism.md) has settings per ecosystem.
+8. Order the local run: tests that failed recently first, then new or changed
+tests, then the fastest.
+9. Prove equivalence with the same command on the same machine. Passing checks
+must not decrease and no skips are added. Shared CI runners vary between runs;
+compare unchanged units before attributing a CI difference to the change. When
+a slow test becomes fast, confirm it still fails for the defect it guards; slow
+tests sometimes pass for the wrong reason or with a weaker assertion than they
+could have.
+10. Lock it in. Add a regression test for each structural fix, such as a fixture
+that leaves long timers behind and must still exit within a few seconds.
+Budget new and changed test files:
+`node scripts/test_profile.js --cmd "<run one file>" --max-seconds 2 --fail-on-waiting --repeat 5 FILES`.
+The tdd skill carries the test design checklist; the setup skill carries
+templates for writing the rules where contributors and agents read them.
+A speed-up is done when:
+- before and after numbers come from the same command, per part and in total;
+- the same or more checks pass, with no new skips and no weakened assertions;
+- the complete suite passes three times in a row at the new worker count, and
+once in random order where the runner supports it;
+- no unit is WAITING, or each remaining one is explained;
+- structural fixes have regression tests, the rules are written down, and the
+required gate runs everything.
+When the remaining time is real work on inputs that change, further gains are
+structural: sharding or larger runners. They usually cost more aggregate compute,
+so present them as options with their cost instead of applying them.
+## Record the result
+Compare the same checks before and after an optimization and verify behavior at
+the affected boundaries. Record latency, aggregate compute when available, setup
+cost, and correctness evidence. Update the owning agent guidance when new tests
+must follow eligibility or cleanup rules. Structural simplification alone does
+not establish measured savings.
+Report p95 as well as the median; uneven times cause more context switching than
+slow but predictable ones. Show an expected duration for CI where the platform
+allows it. Count compute, money, and energy with the time saved: disable idle
+scheduled workflows and cut redundant runs.
+These principles draw on [Linear's CI redesign](https://linear.app/now/ci-bottleneck-reworked).
+Its numerical results are examples, not targets or evidence for another project.

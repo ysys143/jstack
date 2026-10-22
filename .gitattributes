@@ -1,0 +1,3 @@
+# Package receipts and upstream provenance bind exact Git blob bytes.
+# Preserve authored line endings, including embedded upstream CRLF files.
+* -text

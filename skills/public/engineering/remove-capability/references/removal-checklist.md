@@ -1,0 +1,36 @@
+# Removal checklist
+
+## In the plugin tree
+
+| Trace | How it is found |
+| --- | --- |
+| The skill directory | It is the obvious one, and the only one people do |
+| Frozen baselines under `tests/refs/` | They go with the directory; a stray one blocks nothing but confuses the next freeze |
+| Boundary sentences naming it in other skills | Grep the name; the neighbours' suites check that named skills exist |
+| Reference-file mentions | The path gate resolves these; grep alone misses prose mentions |
+| The red-suite case set | Detection measured against a missing tree is a false number, not zero |
+
+## Outside the plugin tree
+
+| Trace | Why it is easy to miss |
+| --- | --- |
+| The inventory | It is generated-looking, so people assume it regenerates |
+| The marketplace catalog entry | It lives in a different file from everything else in the removal |
+| Promotion-gate expectations | A count that no longer matches blocks a promotion for a reason that reads as unrelated |
+
+## The order
+
+Delete the directory last. Everything that references it is easier to find
+while the thing still exists — grep for the name works, the gate resolves the
+paths, the suites still run. Removing the target first turns each remaining
+trace into a separate search.
+
+## What is not part of a removal
+
+Rewriting a neighbour to absorb the removed skill's job is a **separate**
+change, and it goes in its own commit. Bundling it means the diff cannot answer
+either question: what was removed, and what was added to compensate.
+
+If the neighbour needs no change, say so in the commit message. Silence there
+reads as "not considered", and the next reader has to redo the analysis to find
+out whether the capability survived.

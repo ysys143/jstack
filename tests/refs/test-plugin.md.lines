@@ -1,0 +1,28 @@
+# blob:af9367e3b4aed0f250b4b7a314ae9af46599e66f
+---
+description: Run and judge jstack's contract suites
+---
+# /test-plugin — run and judge the plugin contract suites
+## Run
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js" # all suites
+node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js" audit # selected suite only
+```
+## Exit codes
+| Code | Meaning |
+|---|---|
+| 0 | Every suite that ran passed |
+| 1 | One or more suites failed (failed checks are included) |
+| 2 | **No suite was available to run** |
+Code 2 is essential. Treating zero passing checks as 0 would report “verification
+success” even after the entire tree disappeared. A missing check did not pass.
+This command checks the plugin's own contract suites. Its target differs from
+`/validate`, which checks the format and content of user-created deliverables.
+Frozen references are compared with Git blobs, so run the complete check in a
+development checkout. An installation cache without `.git` can run package and
+workflow runtime checks, but must not claim success for the full source suite.
+## When a suite fails
+Read the failed checks as printed. Their names state what they lock, which usually
+identifies the broken contract without further interpretation.
+When intentionally changing the contract count, update `check_total` as well. It
+is a **change detector**, not a measurement; auto-adjusting it would detect nothing.

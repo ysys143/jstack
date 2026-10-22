@@ -1,0 +1,30 @@
+# blob:906513878e2e85dc0b39b4522ac74fa25d4c69b5
+---
+description: "Run pre-merge gates in order; stop on failure"
+---
+# /ship — enforce the gate
+Read `${CLAUDE_PLUGIN_ROOT}/skills/verify/references/ship-gates.md` for the shared
+ship contract used by both hosts.
+## Sequence (stop when a preceding step fails)
+1. **Is the worktree clean?** `git status --short` must be empty. Uncommitted
+changes are not the subject of these checks.
+2. **Do the checks pass?** Run the repository's own check command (for this plugin, `scripts/run_suites.js`: `node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js"`). Zero passing checks is not a pass.
+3. **Can the change merge with the base?** Resolve conflicts at this gate.
+4. **Is there a rollback path?** Establish one first if absent.
+Each step matters **only when the preceding step is green**. Running step 2 after
+step 3 lets conflict resolution pass without being checked.
+## On failure
+Failure means **stop**, not merely report a finding. Proceeding with "mostly
+passing" defeats the gate. A gate that exists but does not block is worse than
+no gate: with no gate, people know they must check manually.
+## Acceptance walkthrough
+This is an offer, not a gate. When the diff changes how a new user starts (install or
+setup documents, `Dockerfile` or `docker-compose*`, `.env.example`, first-run or
+onboarding screens or routes) and the `journey-qa` skill is available, and
+`git config --local --get branch.<branch>.jstack-walkthrough` prints nothing, ask whether
+to run a new-team walkthrough. Never start it without a yes, and record the answer as
+`/pr` does (`jstack-walkthrough declined` or `ran`) so the branch is asked once. The
+answer does not change the verdict of the steps above.
+## Boundaries
+**Do not push or merge.** This command produces a verdict.
+Do not suggest a bypass around checks.

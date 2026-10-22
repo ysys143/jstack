@@ -1,0 +1,14 @@
+diff --git a/src/one.py b/src/one.py
+index 1111111..2222222 100644
+--- a/src/one.py
++++ b/src/one.py
+@@ -9,0 +10,2 @@ def one():
++    x = 1
++    y = 2
+diff --git a/src/two.py b/src/two.py
+index 3333333..4444444 100644
+--- a/src/two.py
++++ b/src/two.py
+@@ -4,0 +5,2 @@ def two():
++    z = 3
++    w = 4

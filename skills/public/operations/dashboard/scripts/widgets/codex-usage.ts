@@ -1,0 +1,99 @@
+/**
+ * Codex usage widget - displays OpenAI Codex CLI usage limits
+ * Shows model and each rate-limit window in a single line, labeled by the
+ * window's own duration (Plus returns 5h + 7d, Pro a single 7d)
+ * @handbook 3.3-widget-data-sources
+ * @tested scripts/__tests__/widgets.test.ts
+ */
+
+import type { Widget } from './base.js';
+import type { WidgetContext, CodexUsageData } from '../types.js';
+import { getColorForPercent, colorize, getTheme } from '../utils/colors.js';
+import { ICON } from '../utils/emoji.js';
+import { isCodexInstalled, fetchCodexUsage } from '../utils/codex-client.js';
+import { formatTimeRemaining, formatWindowLabel } from '../utils/formatters.js';
+import { debugLog } from '../utils/debug.js';
+
+/**
+ * Format rate limit with optional reset time
+ */
+function formatRateLimit(
+  label: string,
+  percent: number,
+  resetAt: number | null,
+  ctx: WidgetContext
+): string {
+  const color = getColorForPercent(percent);
+  let result = `${label}: ${colorize(`${Math.round(percent)}%`, color)}`;
+
+  if (resetAt) {
+    const resetTime = formatTimeRemaining(new Date(resetAt * 1000), ctx.translations);
+    if (resetTime) {
+      result += ` (${resetTime})`;
+    }
+  }
+
+  return result;
+}
+
+export const codexUsageWidget: Widget<CodexUsageData> = {
+  id: 'codexUsage',
+  name: 'Codex Usage',
+
+  async getData(ctx: WidgetContext): Promise<CodexUsageData | null> {
+    const installed = await isCodexInstalled();
+    debugLog('codex', 'isCodexInstalled:', installed);
+    if (!installed) {
+      return null;
+    }
+
+    const limits = await fetchCodexUsage(ctx.config.cache.ttlSeconds);
+    debugLog('codex', 'fetchCodexUsage result:', limits);
+    if (!limits) {
+      // Return error state instead of null to show warning indicator
+      return {
+        model: 'codex',
+        planType: '',
+        primaryPercent: null,
+        primaryResetAt: null,
+        secondaryPercent: null,
+        secondaryResetAt: null,
+        isError: true,
+      };
+    }
+
+    return {
+      model: limits.model,
+      planType: limits.planType,
+      primaryPercent: limits.primary?.usedPercent ?? null,
+      primaryResetAt: limits.primary?.resetAt ?? null,
+      primaryWindowSeconds: limits.primary?.windowSeconds ?? null,
+      secondaryPercent: limits.secondary?.usedPercent ?? null,
+      secondaryResetAt: limits.secondary?.resetAt ?? null,
+      secondaryWindowSeconds: limits.secondary?.windowSeconds ?? null,
+    };
+  },
+
+  render(data: CodexUsageData, ctx: WidgetContext): string {
+    const { translations: t } = ctx;
+    const theme = getTheme();
+    const parts: string[] = [];
+
+    parts.push(`${colorize(ICON.blueDiamond, theme.info)} ${data.model}`);
+
+    if (data.isError) {
+      parts.push(colorize(ICON.warning, theme.warning));
+    } else {
+      if (data.primaryPercent !== null) {
+        const label = formatWindowLabel(data.primaryWindowSeconds, t.labels['5h'], t);
+        parts.push(formatRateLimit(label, data.primaryPercent, data.primaryResetAt, ctx));
+      }
+      if (data.secondaryPercent !== null) {
+        const label = formatWindowLabel(data.secondaryWindowSeconds, t.labels['7d'], t);
+        parts.push(formatRateLimit(label, data.secondaryPercent, data.secondaryResetAt, ctx));
+      }
+    }
+
+    return parts.join(` ${colorize('│', theme.dim)} `);
+  },
+};

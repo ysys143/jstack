@@ -1,0 +1,19 @@
+# outcomes.jsonl: procurement field-validation ledger, append-only, one project per line.
+# This is a zero-record ledger, not an empty file. Lines starting with # are comments.
+# Recording procedure: references/improvement-protocol.md section 4.
+#
+# Required fields:
+#   run_id: copy YYYY-MM-DD-NNN assigned by pipeline Phase 0
+#   사업: identifying project name; abbreviations allowed; stays inside the organization
+#   결과: only "수주" / "탈락" / "미정"
+#   cat: copy category_summary from 02_detection.json
+# Optional field:
+#   순위: include if known, otherwise omit
+#
+# Example (comment, not counted as a record):
+# {"run_id":"2026-08-28-001","사업":"OO청 차세대 OO시스템","결과":"수주","순위":1,"cat":{"K":32,"L":8,"M":12,"N":18,"O":4}}
+#
+# At 10 records, calculate K–O activation frequencies and outcome correlations,
+# then reassess S1 severity. Until then, keep the provisional label on K–O S1
+# in procurement-taxonomy.md.
+# Schema check: tests/test_outcomes_schema.py

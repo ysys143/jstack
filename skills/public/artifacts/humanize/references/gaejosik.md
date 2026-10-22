@@ -1,0 +1,92 @@
+# Fragment-style convention: thresholds by level and scope limits
+
+Fragment style is the default register of public reports and procurement
+summaries, but the procurement pipeline long lacked it (`개조식` and `bold` had
+0 matches in its documents). This is the canonical source of fragment-style
+thresholds, read directly by the style-editing workflow.
+
+`references/register-axis.md` classifies register. This document defines only
+the values and limits applied after classification as 개조식-무어미.
+
+## 1. Character thresholds by level
+
+Measurements cover 2,288 lines in 15 publicly available local-government reports.
+
+| Level | Marker | Median | Sample |
+|---|---|---|---|
+| Major item | □ | 22 characters | — |
+| Item | ○ | 31 characters | 264 lines |
+| Detail | - | 48 characters | 307 lines |
+
+These medians describe practice in the 15-report sample, not regulations.
+Neither the handbook nor the presidential decree specifies character counts.
+Use them only as **warning thresholds**, never as violation criteria.
+
+Two properties hold well relative to sample size: lengths increase monotonically
+at deeper levels, and items are shorter than details, contrary to the assumption
+that higher levels are longer. Both properties are unlikely to coincide by chance
+in a sample of 15 reports.
+
+## 2. Measured endings
+
+There were 0 `~다` endings among 264 item lines. Nominal forms and `-임/함/됨`
+endings dominate every level. This also describes observed practice, not a
+regulation, as upstream explicitly states.
+
+## 3. Scope: exclude drafting and dispatch documents
+
+Do not apply the `~다` ending rule to `official` documents: 기안문 and 시행문.
+Polite endings are normative there, so the rule would produce false positives
+throughout. Preserve scope limits alongside rules; dropping them can make the
+false-positive cost exceed the rule's value.
+
+## 4. Item markers indicate hierarchy
+
+`1) 2) 3)` are hierarchy markers. 「행정업무의 운영 및 혁신에 관한 규정
+시행규칙」 defines eight marker levels, read together with indentation.
+Repeating a level's markers across blocks is normal; do not count it as repetitive listing.
+
+State the legal hierarchy accurately. The enforcement rule is a **Ministry of
+the Interior and Safety ordinance**, not a presidential decree. The parent
+regulation is the decree. Its latest amendment is 2024-05-21; check amendment
+history when citing it. Do not accept citations giving only "현행" for the
+period of validity.
+
+## 5. Notation rules
+
+These follow the 2020 handbook and remain applicable:
+
+- Write dates with three periods: `2026. 9. 2.`
+- Omit leading zeros from months and days.
+- Do not put a colon after `붙임`.
+- Increase indentation by two character positions per level.
+
+## 6. The introductory template is advisory
+
+`[수단]하고, [수단]하여 [목적]하고자 함.` reflects drafting practice in a
+particular local government; the handbook does not mandate it. Treat it as a
+recommendation, not a warning or violation.
+
+## 7. Evidence ranking
+
+| Rank | Evidence | Use here |
+|---|---|---|
+| 1 | Presidential decree: parent regulation | Marker hierarchy and notation |
+| 2 | 2020 행정업무운영 편람 | Notation details |
+| 3 | National Institute of Korean Language (국립국어원) | Language conventions |
+| — | Practice statistics from 15 reports | Character lengths and observed endings |
+
+Label evidence outside ranks 1–3 as practice and preserve that qualification.
+
+## 8. Ownership
+
+This file alone owns the fragment-style thresholds. Other skills link here
+instead of keeping numeric copies. If style editing and conflicting guidance
+live in different plugins, their first encounter occurs on a user's document.
+
+The register section in `references/procurement-taxonomy.md` links here.
+
+## 9. Contract
+
+`tests/test_gaejosik_attribution.js` verifies that the three thresholds exist
+here, no other document duplicates them, and the procurement taxonomy links here.

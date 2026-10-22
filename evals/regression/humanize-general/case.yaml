@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: humanize-general-smoke
+description: Does general-mode humanization preserve facts while removing the targeted Korean AI-writing patterns?
+runs: 5
+tags: [regression, humanize, general]

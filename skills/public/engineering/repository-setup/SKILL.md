@@ -1,0 +1,185 @@
+---
+name: repository-setup
+description: "Keep repository conventions and AGENTS.md or CLAUDE.md current. Triggers: 프로젝트 설정, AGENTS.md."
+---
+
+# Setup — read first, then change the least
+
+## Optional jstack onboarding and skill storage maintenance
+
+For jstack init or organization profile setup, read
+`${JSTACK_PLUGIN_ROOT}/runtime/ONBOARDING.md`. Investigate only the selected
+account, prepare ambiguous choices for the user, and store actual business data
+under `~/.jstack/profiles/<name>/`. Keep credentials in the original tool's store.
+This optional onboarding does not replace `workflow.py init` or run on every task.
+Existing manual settings survive reinitialization; missing fields block only
+the dependent feature. Do not continue into repository convention setup afterward.
+
+For user skill connection or sharing changes, read
+`${JSTACK_PLUGIN_ROOT}/runtime/SKILL-STORAGE.md` and use `runtime/skill_store.js`.
+The common runtime owns placement; do not maintain a second implementation here.
+`JSTACK_PLUGIN_ROOT` in these shared guides means the actual installed plugin root.
+Doctor requests run only `inspect`; conflicting files or profiles are preserved.
+
+## Instruction maintenance mode
+
+For CLAUDE.md or AGENTS.md review, improvement, or recurring instruction drift,
+read `references/instruction-maintenance.md` and run
+`scripts/instruction_inventory.js` with the repository root, target directory,
+and actual host. This mode ends after its report or authorized edits: do not
+continue into PR policy registration, preset loading, or session setup.
+
+When the request covers cross-host project layout, use the portable-project
+section in that reference. Run
+`node "${JSTACK_PLUGIN_ROOT}/skills/setup/scripts/project_portability.js" audit --root /absolute/project`
+before changes and use its `apply` action only for an authorized lossless case.
+Treat root `AGENTS.md` as the common instruction
+source and a root `CLAUDE.md` containing only `@AGENTS.md` as the Claude adapter.
+Treat `.agents/skills` as the common project-skill source and `.claude/skills`
+entries as relative links. This is a migration target, not permission to merge
+different instructions or move host-native agents without reviewing semantics.
+
+Review requests are read-only. An existing request to fix the project guidance
+authorizes minimal repository-local edits; do not ask for the same approval again.
+Correct, remove, or relocate stale rules instead of only appending. Preserve
+unrelated edits and explicit user constraints. Discovered files are not proof
+of host loading, and duplicate text is not proof of a semantic conflict.
+Healthy guidance may need no change. Session memory belongs to the `recall` skill.
+
+## Comment convention governance mode
+
+When the request concerns comment style, comment lint, an ESLint custom rule, or
+sharing a project hook for comment review, read
+`references/comment-convention-governance.md`. Use that procedure to inspect the
+repository's actual comments, ESLint, hook, CI, and CODEOWNERS setup and prepare
+the smallest rule proposal and review packet. Do not load it for ordinary setup.
+This mode proposes shared configuration and external review actions; it does not
+apply them without the user's authorization.
+
+## The repository already decided most of this
+
+A repository that has been worked in has conventions, whether or not they are
+written down. Setup that ignores them installs a second set of rules, and every
+later contributor has to guess which one applies.
+
+So the order is: **read, report, then propose.** Read the conventions file, the
+test layout, the commit history's shape, the lint configuration. Report what you
+found, including where the repository contradicts itself. Only then propose
+changes, and only the ones the rest depends on.
+
+Discovering that the repository already does something a different way is a
+successful outcome of this skill, not an obstacle to it.
+
+## Change the fewest things
+
+| Do | Do not |
+| --- | --- |
+| Add what is missing and needed now | Add configuration for a tool nobody uses yet |
+| Adopt the existing style even where you would choose another | Reformat the tree to a preferred style |
+| Write down a convention already followed in practice | Invent a convention the code does not follow |
+| Leave a working setup alone | Replace a working tool with an equivalent one |
+
+Treat every row as a preservation decision: require current evidence before
+adding a tool or convention, and leave established working choices in place.
+A house style you did not pick is still the house style, and a repository with
+one consistent style is worth more than one with your preferred style in the
+files you touched.
+
+## Never silently rewrite shared configuration
+
+Editing a settings file that other tools also write is how a setup step destroys
+someone else's state. Read it, show the exact change, and let the user apply it
+or approve it — the file is not yours, and its other writers are not in this
+conversation.
+
+Never write outside the repository at all without saying so first. Home-directory
+configuration affects every other project on that machine.
+
+## Say what you did not do
+
+Report the checks that came back clean and the things you deliberately left
+alone. A setup report that lists only changes reads as "everything else was
+missing", and the next person redoes the reading you already did.
+
+`references/checklist.md` has what to read, in what order, and what each finding
+implies.
+
+When the repository's test commands or testing rules are missing, unclear, or
+slow for agents, `references/testing-guidance.md` has the setup items, an
+AGENTS.md testing section, and a TESTING.md template.
+
+## The PR label policy has to be decided, not defaulted
+
+`gh pr create` is blocked until `.claude/pr-policy.json` exists. This is the one
+place setup cannot leave alone, because the absent state is indistinguishable
+from "this repository does not label" — and only one of those should let a PR
+out.
+
+Read before proposing, as everywhere else. Run a `gh pr create` and the hook
+prints what it discovered: the repository's label set, how its existing PRs are
+labelled, and which documents already declare a rule. That output is the
+reading; do not re-derive it by hand.
+
+| What the discovery shows | Register |
+| --- | --- |
+| Groups that most PRs already carry | The suggested policy, unchanged |
+| A rule declared in a document but not followed in practice | The suggested policy, and raise the gap with the user — the document or the practice is wrong |
+| No consistent shape | An empty file, and say the repository does not label |
+
+The empty file is a real answer, not a fallback. Write it when the repository
+genuinely has no policy, and say in the report that you wrote it and why.
+
+**Do not invent labels.** If a group looks like it should exist but no PR uses
+it, that belongs in the report, not in the file — a policy that requires a label
+nobody has ever applied blocks every PR from the moment it lands.
+
+## Loading a convention preset is still a change
+
+`scripts/load_guidelines.js` appends named convention blocks — Karpathy, Kent
+Beck, Cherny and the rest — to a project's `CLAUDE.md`. It appends; it never
+edits what is already there, and it skips a block whose heading it finds. That
+makes it safe to re-run and useless for correcting a block already loaded.
+
+Read before loading, as everywhere else. A repository whose `CLAUDE.md` already
+says the same thing in its own words does not need the preset, and loading it
+anyway leaves two statements of one rule that drift apart.
+
+Two presets can also contradict each other outright: one says to fix a bug
+without asking, another says to stop and ask. A contradiction with no declared
+priority is applied at random, so it has to be resolved in the project's file
+rather than left to the reader. `references/convention-conflicts.md` carries the
+resolutions and the clause-ownership transfers behind them.
+
+## What setup does not own
+
+Project instruction maintenance belongs here. Preparing session history and
+recall wiring belongs to the `recall` skill through `/jstack:setup-recall`.
+Installing Google Workspace support and guiding OAuth belongs to the `workspace`
+skill through `/jstack:setup-workspace`. Do not use either command as a general
+project-maintenance entry point.
+
+## In a Python repository, the switches are already spent
+
+The uv hook is on by default; the two ruff hooks run only when
+`JSTACK_HOOK_LEGACY_RUFF=1` is set. Whichever of them run, a project's only way to
+say "not here" is a `[tool.claude-hooks]` table with six keys in it.
+That table is the whole negotiating surface, so treat writing to it as the
+last step of a setup pass, not the first.
+
+`references/python-convention.md` lists the six, their defaults, the exact
+spelling each hook matches, and the two keys under the same table that belong to
+another skill.
+
+## Verify by running, not by inspecting
+
+A configuration that looks right is not a configuration that works. Run the test
+command, the lint command, the build — once, after the change — and report what
+came back. If something was already failing before you touched anything, say so
+with the output; inheriting a red state silently makes it look like yours.
+
+## Boundary
+
+Depending on an external tool is the `bridge` skill; writing a new skill for
+this plugin is the `author` skill. What the PR label rule *means*, and what the
+policy file's fields do, is the `gitrules` skill — this skill covers getting the
+file to exist in a repository that has none.

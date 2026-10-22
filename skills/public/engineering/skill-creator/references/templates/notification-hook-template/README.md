@@ -1,0 +1,204 @@
+# Notification Hook Template
+
+This template provides event notification hooks for Claude Code plugins.
+Notification hooks send alerts, update status, record events, or trigger external integrations when plugin actions occur.
+
+The `PostToolUse` lifecycle events run after the matched tool operation. This
+template handles the resulting payload; it cannot undo an operation that already
+completed. Report formatting or notification failures as failures of this hook.
+
+This Node.js 20+ template sends configured event notifications to the console,
+a Slack webhook, or a desktop notification service. Console is the default.
+External channels must be explicitly configured for the intended recipients.
+
+## Template Structure and Usage
+
+Copy the complete packaged directory to `hooks/notification-hook-template/`.
+Keep `notify.js` and `package.json` together; `notify.ts` is the editable source.
+The compiled JavaScript runs without a shell script or user compilation.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/notification-hook-template/notify.js\""
+      }]
+    }]
+  }
+}
+```
+
+`Bash` is the host tool matcher. Native hooks have no `post_commit` or
+`post_generate` event. A `PostToolUse` event only says a matched tool ran; the
+script must inspect `tool_input.command` and the result before claiming a
+commit succeeded. The default stdin event is `tool_name`, so it does not infer
+a successful commit automatically. A declaration has no per-hook `name` or
+`config` field.
+
+Manual invocation accepts an event and level:
+
+```text
+node hooks/notification-hook-template/notify.js commit success
+node hooks/notification-hook-template/notify.js generate failure
+```
+
+Arguments override the stdin event. Levels `success`, `failure`, and `warning`
+have distinct console prefixes; other values use `[INFO]`.
+
+## Notification Types
+
+### Console Notifications
+
+`notify_console(level, message)` emits one prefixed message. It is also the
+fallback when no configured channel succeeds. Prefer concise event details and
+an actionable location; avoid secrets or private document excerpts.
+
+### Slack Notifications
+
+`notify_slack(url, message)` sends a JSON object with a `text` property using an
+HTTP POST and a ten-second timeout. JSON serialization preserves quotes and
+line breaks safely. Non-success HTTP responses and connection errors return
+false, allowing other channels or the console fallback to run. A webhook URL
+is a credential: keep it in the environment and out of source files and logs.
+
+### Desktop Notifications
+
+On macOS, the template passes the title and message as `osascript` arguments;
+it does not interpolate them into AppleScript source. Other platforms try an
+already-installed `notify-send`. If neither service is available, the console
+fallback remains available. Windows users can add a native notification adapter
+with the same boolean success contract; the template does not require WSL.
+
+### GitHub Comments and Email Notifications
+
+GitHub and email are customization examples, not built-in channel names. Add a
+channel only after defining its target and authorization policy. Use a local
+CLI with argument arrays, or an API client with structured request bodies.
+Include a timeout and check delivery status. Do not infer a recipient from an
+account name, and do not turn a local validation run into a message send.
+
+For a GitHub implementation, pass a temporary body file to the CLI instead of
+interpolating a multiline body into a shell command. For email, keep recipient
+configuration separate from authentication. Return false on delivery failure
+and preserve console diagnostics without printing tokens.
+
+## Event Context and Message Templates
+
+`get_event_context('commit')` and `post_commit` read the current Git short hash,
+subject, and author. Outside a Git repository they return an empty object.
+`generate` and `post_generate` read name, version, and description from
+`.claude-plugin/plugin.json`. Unknown events return an empty object.
+
+The built-in templates are:
+
+| Template | Output |
+| --- | --- |
+| `default` | JSON representation of the event context |
+| `commit_success` | Commit hash, author, and subject |
+| `plugin_generated` | Plugin name and version |
+
+To add a template, extend `render_template` with explicit field defaults.
+Use structured context rather than command substitution. Validate rich-message
+payloads against the chosen channel's schema before sending. A template name
+alone does not establish that the event actually succeeded.
+
+## Configuration
+
+| Environment variable | Default | Meaning |
+| --- | --- | --- |
+| `HOOK_RATE_LIMIT_ENABLED` | `true` | Enable rate limiting when exactly `true` |
+| `HOOK_RATE_LIMIT_MAX_PER_HOUR` | `10` | Nonnegative integer notification limit |
+| `HOOK_NOTIFY_CHANNELS` | `console` | Comma-separated `console,slack,desktop` |
+| `HOOK_SLACK_WEBHOOK_URL` | empty | Explicit Slack webhook |
+| `SLACK_WEBHOOK_URL` | empty | Fallback webhook when the hook-specific value is absent |
+| `HOOK_NOTIFY_TEMPLATE` | `default` | Message template name |
+
+Configuration is read from the environment, not `hooks.json` or
+`pyproject.toml`. A caller may supply `notify_on` in a library configuration to
+disable selected levels. Unknown channels produce warnings. The template does
+not load a `.env` file automatically.
+
+## Conditional Notifications
+
+Filter irrelevant events before rate accounting and delivery. For example,
+allow a successful release notification only after verifying the release
+command and its exit status, then include the exact version and artifact
+identity. A changed-file threshold or a selected branch can be an additional
+condition; neither proves an operation succeeded.
+
+If suppressing duplicate notifications, use an explicit event identity and
+bounded persistence. Do not deduplicate solely by message text when distinct
+operations can produce the same description.
+
+## Rate Limiting
+
+The default limiter counts notifications during a rolling hour. It stores
+numeric timestamps in a per-user temporary directory, validates that directory,
+and uses an exclusive lock directory before updating history. Old timestamps
+are discarded. Concurrent callers wait briefly for the lock; a lock that stays
+busy fails visibly rather than being deleted while another process may own it.
+
+The history file rejects symlinks and malformed data. A timestamp is recorded
+before delivery, so failed delivery attempts still count toward the limit.
+The default limit covers this template per user; choose a separate directory
+when independent plugin limits are required. On Windows, place an explicitly
+configured directory under a user-owned location when stronger ACL isolation
+is required by the deployment.
+
+## Error Handling
+
+Channel failures allow other configured channels to continue. When no channel
+succeeds, the message is printed to the console. Invalid configuration or
+unsafe rate storage fails the hook with a diagnostic. Rate-limit exhaustion
+prints a warning and exits successfully without delivery.
+
+Do not retry indefinitely: bounded retries can be added for transient HTTP
+errors, but they must preserve the rate accounting and avoid duplicate sends.
+Record delivery metadata without logging webhook URLs or authorization headers.
+
+## Testing
+
+Use synthetic context and console output for ordinary tests. Test the HTTP
+transport only against a local fixture server or an explicitly authorized test
+endpoint. Verify JSON quoting, timeout behavior, non-success HTTP responses,
+unknown channels, and the console fallback.
+
+For the limiter, use a private temporary directory and a supplied clock:
+
+```javascript
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { check_rate_limit, load_config } from './notify.js';
+
+const root = mkdtempSync(join(tmpdir(), 'notification-test-'));
+try {
+  const config = load_config({ HOOK_RATE_LIMIT_MAX_PER_HOUR: '1' });
+  assert.equal(await check_rate_limit(config, root, 1000), true);
+  assert.equal(await check_rate_limit(config, root, 1001), false);
+  assert.equal(await check_rate_limit(config, root, 3601001), true);
+} finally {
+  rmSync(root, { recursive: true, force: true });
+}
+```
+
+## Integration Examples
+
+For a CI/CD pipeline notification, supply the verified job outcome, immutable
+revision, and result URL as context. For a release announcement, bind the
+message to the actual published version and artifact rather than a planned
+version. Enable external channels only in a workflow that is authorized to send
+to the configured destination. Tests and local previews should keep console as
+their channel.
+
+Related templates: [validation](../validation-hook-template/README.md) and
+[formatting](../formatting-hook-template/README.md). Consult the author skill's
+native hook references for installation, event matching, and trust behavior.
+
+Keep notification fixtures local: select the console channel and an isolated rate
+directory for tests. Assert the emitted message and the rate decision separately;
+a suppressed notification should leave the registered tool result unchanged.

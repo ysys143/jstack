@@ -1,0 +1,135 @@
+# blob:a4c4ad3616f7cb083c597f44943c3174f2bcd461
+# Gitrules — git conventions
+## Why these four together
+Branch, commit, PR, and secrets **are called at the same moments.** You branch
+when starting, commit and open a PR when finishing, and check for leaked secrets
+in between. Kept apart they cost four always-on descriptions and still fail to
+be read together.
+## Branches — `<type>/<kebab-case>`
+```
+feat/add-model-version-checker # new feature
+fix/emoji-detection-bug # bug fix
+refactor/update-helper-logic # restructuring
+docs/add-development-guide # documentation
+test/hook-coverage # tests
+chore/update-omc-hot-paths # build, config
+```
+| Type | When |
+|---|---|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `refactor` | Structure changes with no behaviour change |
+| `docs` | Documentation |
+| `test` | Tests |
+| `chore` | Build, config, dependencies |
+**No usernames** (`jaesol-shin/...` is out). Type and name are separated by a
+**slash** (not `feature-new-plugin`).
+**The default branch is exempt.** `master` carries no type prefix because the
+rule is about *work* branches — there is nothing to name it after. The checker
+does not know this and reports `master` as malformed; the gap is in the checker,
+not in the rule.
+Work branches use the two-part `<type>/<desc>` form that `CLAUDE.md` names as
+this repository's convention (`docs/add-development-guide`,
+`chore/update-omc-hot-paths`). Upstream `session-and-git` documents a
+`<folder>/<category>/<desc>` form (`web/feature/...`); it is kept for reference
+at `references/branch.md`. Do not create new branches in it.
+## Commits — Conventional Commits
+```
+<type>(<scope>): <subject>
+<body>
+<footer>
+```
+`(scope)` is optional — for plugin work use `plugins`, `git`, `model-checker`.
+**Subject** — 50 characters or fewer, no trailing period, ends with an action
+verb (add, modify, change, or remove).
+**Body** — separated from the subject by a blank line; the first paragraph is
+**why** (problem, motivation), the second is **how** (approach). Wrap at 72.
+**Never advertise the tool, and never add an AI co-author trailer.**
+`Generated with Claude Code` and `Co-Authored-By: Claude ...` are both out,
+including a trailer a harness adds on its own; remove it before committing.
+`scripts/check_commit.js` rejects both phrases, the bracketed
+`Generated with [Claude Code]` form, and `Claude-Session:` trailers, whatever
+their case, when a line starts with one (a footer may follow an emoji); a
+sentence that quotes a phrase mid-line passes. A `Co-Authored-By` line is an AI
+only with an `anthropic.com` address, or the name `Claude` alone or followed by
+model words and version numbers; a human co-author such as `Claude Monet` is not
+rejected. The `block_ai_attribution` hook denies a `git commit` or
+`gh pr create` that carries any of them, in every repository where jstack is
+enabled, because skill text alone did not stop Claude Code's default trailer.
+Claude Code's own `attribution` setting stops them at the source.
+Types match the branch list plus `style`, `remove`, and `perf`. The upstream
+original — full table plus body examples — is kept at `references/commit.md`.
+## PRs — the repository owns the label rule
+```bash
+gh pr create --title "feat(plugins): ..." --label "feature" --label "@web" --body "..."
+```
+**The rule is not written here.** It lives in `.claude/pr-policy.json`, per
+repository, and `validate_pr_label.py` reads it at `gh pr create` time. A rule
+written into this skill would be this organization's rule applied to every
+repository the plugin is installed in — and it would silently do nothing
+outside one GitHub owner.
+The policy file records both the rule and the evidence for it: which documents
+declared it, how many PRs were observed, and at what rate. That is what a later
+reader needs to answer "why is this label required".
+| The file says | Then |
+| --- | --- |
+| Required label groups | Missing one blocks the PR |
+| `rules: []` | Nothing is enforced; this repository does not label |
+| `enforced: false` | The evidence was weak — it warns and lets the PR through |
+**The file must exist before a PR can be opened**, even empty. Empty means
+someone decided this repository has no label policy; absent means nobody has
+looked. The two are not the same, and only one of them should let a PR out.
+For this repository the discovered policy is two groups — one `@`-prefixed
+position and one plain category. Read the current values from the file or from
+`gh label list`, not from this paragraph; a list copied into prose goes stale
+without anyone noticing.
+The upstream original — the full label tables it used to declare as the rule —
+is kept at `references/pr.md`, demoted to an example of this repository's
+observed values. `@package` is dropped from it: `.claude/pr-policy.json`
+records it as a `phantom_labels` entry, not as an allowed one.
+The body carries two sections: `## Summary` and `## Test plan`.
+## Secrets — stop them before the commit
+`.gitignore` is a **repository-wide** rule; `.git/info/exclude` is **local only**.
+Personal settings nobody else needs go in the latter.
+**A secret already committed is not fixed by rewriting history** — revoke and
+reissue it immediately. Tool choices are in `references/secrets.md`.
+## Checking
+Requires Node.js 20+.
+```bash
+node ${JSTACK_PLUGIN_ROOT}/skills/gitrules/scripts/check_commit.js --staged
+node ${JSTACK_PLUGIN_ROOT}/skills/gitrules/scripts/check_commit.js --branch
+node ${JSTACK_PLUGIN_ROOT}/skills/gitrules/scripts/check_commit.js --message "feat: 무엇을 추가"
+```
+**The checker sees format** — type, length, banned phrases, branch shape.
+Whether the body actually explains *why* is read by a person.
+### Organization overrides
+An organization profile can carry `conventions.json` under
+`~/.jstack/profiles/<name>/`: commit language, allowed commit and branch types,
+subject and body limits, a Korean action-noun ending, the `Resolves: #<n>`
+footer, and the automatic commit language. The checker applies the profile named
+by `JSTACK_PROFILE`, else the default profile, and names the source in its verdict;
+without one it applies the rules above. `check_commit.js --conventions` prints the active
+values, and `--defaults` ignores the profile for one check.
+When the profile's commit or automatic commit language disagrees with this
+repository's recent history, a message check and `--conventions` exit 3 and print
+the current state, a recommendation and how to roll back; branch checks still run.
+**Ask the user and record the answer** with `check_commit.js --choose repository`
+or `--choose profile`; never choose for them. The choice holds for this repository
+and its linked worktrees until the effective conventions change (a profile edit
+or a jstack update of the defaults) or the history turns to the other language. A legacy
+`<folder>/<category>/<desc>` branch scheme in a profile is recorded, not enforced.
+## Boundaries
+| Task | Owner |
+|---|---|
+| Session wrap-up, retrospective, next steps | `/wrap` command |
+| Running the commit itself | `/commit` command |
+| Opening the PR | `/pr` command |
+| A credential that is already in the repository | `secrets` skill |
+| Registering the PR policy in a new repository | `setup` skill |
+| `gh` missing or signed out | `bridge` skill |
+## Limits (stated)
+- The checker sees **format**. It cannot measure whether the body explains why and how
+- Secret *detection* is not in this skill — use `gitleaks`; the choice is in the reference
+- PR label rules come from `.claude/pr-policy.json`, discovered per repository — this skill does not carry the values
+- Policy discovery needs `gh`; without it a registered policy still enforces but changes to it go undetected (the `bridge` skill's probe recipes — that reference lives there, not here)
+- The default-branch exemption is stated wider than the checker implements: `--branch` still calls `master` malformed. The gap is in the checker; the rule is what this document says

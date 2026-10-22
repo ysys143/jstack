@@ -1,0 +1,63 @@
+# Security Verification Contract
+
+Security verification extends the existing task workflow. It reuses the task contract, receipt, and target binding instead of creating another runner or state authority. `security_contract.py` evaluates the specification and observations; `workflow.js` owns execution and receipts.
+
+## Specification and Results
+
+`security/scope.json` has this abbreviated structure. Compute hashes from real files and populate all four stages in `executions`.
+
+```json
+{
+  "schemaVersion": 1,
+  "taskId": "task-id",
+  "target": {
+    "ref": "HEAD",
+    "files": [{"path": "app.py", "sha256": "..."}],
+    "baseline": {"ref": "BASE", "files": [{"path": "security/baseline/app.py", "sha256": "..."}]}
+  },
+  "threatModel": {
+    "assets": ["..."], "entryPoints": ["..."], "attacker": "...",
+    "boundaries": ["..."], "assumptions": [{"claim": "...", "source": "..."}]
+  },
+  "findingsPath": "security/findings.json",
+  "executions": [{
+    "id": "exec-1", "findingId": "F-1", "requirementId": "SEC-1",
+    "stage": "reproduce", "targetState": "original", "cwd": "security/baseline",
+    "executionBoundary": "trusted-local",
+    "input": {"path": "security/inputs/F-1/poc.json", "sha256": "..."},
+    "timeoutSeconds": 120,
+    "prerequisites": [{"name": "python", "argv": ["python3", "--version"], "expectedExit": 0}],
+    "environmentRequirements": [{"name": "fixture", "argv": ["true"], "expectedExit": 0}],
+    "oracle": {
+      "path": "security/oracle.py", "sha256": "...", "argv": [],
+      "runtimeArgv": ["python3"], "expected": [{"name": "signal", "value": "..."}],
+      "review": "security/oracle-review.json"
+    }
+  }]
+}
+```
+
+Runner stdout must be exactly one JSON result. Success requires a matching `executionId`, `status: passed`, `inputProcessed: true`, `checksRun > 0`, a nonempty `observations` array in which every item has `passed: true`, and observed values equal to the oracle's `expected` values. An arbitrary summary such as `allPassed` and exit code zero are insufficient. A hash mismatch, multiple JSON objects, empty observations, or zero executions produces failure or `blocked`.
+
+## Stages and Evidence
+
+Every finding requires four stages:
+
+| Stage | Target state | Purpose |
+|---|---|---|
+| `reproduce` | `original` | Show the original defect with the original input. |
+| `fix-reproduce` | `current` | Show the same input produces the expected result after the fix. |
+| `regression` | `current` | Preserve existing behavior. |
+| `variant` | `current` | Block a varied input with the same root cause. |
+
+Every execution includes nonempty prerequisites and environment requirements, the real oracle path and runtime, expected values, and a review record. `runtimeArgv` contains exactly one executable; the coordinator appends pinned oracle, input, and target arguments. Review JSON binds bytes and expectations, but does not prove reviewer independence. When evaluation independence is required, the coordinator that observed the actual review links it with `record-review`; recording only a reviewer name is insufficient.
+
+Reports distinguish `pending`, `passed`, `failed`, `blocked`, and `not_applicable`. The current machine fix verification requires every stage and does not treat skipped or not-applicable stages as success. Keep static `candidate`, `refuted`, or `inconclusive` judgments and evidence strength in the audit report. Inputs to fix verification remain `candidate` and `static` until reproduction succeeds.
+
+Only a passing original reproduction permits `findingResults` to record `confirmed`, `execution`, and the reproduction ID. A failed reproduction is `inconclusive`, not `refuted`. Rerun the original on every verification. Promotion requires that reproduction and all three later stages pass. `stale` preserves historical evidence while excluding it from current proof.
+
+Missing required stages cannot be offset by aggregate success. Static completion is not a safety claim. Report when dynamic execution is blocked. A target, input, oracle, or specification change invalidates the earlier receipt. `target.files` records original bytes at initialization; after a fix, bind the receipt to current file hashes. Keep evidence inside the task and reject symlink escapes and traversal.
+
+## Execution Boundaries
+
+`trusted-local` permits only reviewed local code and controlled fixtures; it does not provide operating-system isolation. The schema can express `isolated`, but the current version blocks it because no isolation adapter exists. Never accept a fabricated `isolationReceipt`. A successful environment probe also does not turn trusted-local execution into an OS sandbox.

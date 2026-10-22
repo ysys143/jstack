@@ -1,0 +1,37 @@
+---
+description: Commit related changes with the repository's conventions
+---
+
+# /commit — decide what belongs in one commit
+
+## Sequence
+
+1. **Read the actual changes** with `git status --short` and `git diff`. Writing
+   from memory can produce a message that contradicts the diff.
+2. **Separate unrelated changes.** One commit has one reason because you cannot
+   revert only half of it as a unit.
+3. **Read the last 20 commit messages and follow their format:** title length,
+   tense, prefixes, and language. Follow the repository, not personal preference.
+   Run `check_commit.js --conventions` from the `gitrules` skill; if it exits 3,
+   the organization profile disagrees with this repository: show the user its
+   current state, recommendation and rollback lines, ask which to follow, and
+   record the answer with `--choose` before committing.
+4. Explain **why**, rather than merely what changed. The diff already shows what.
+
+## Exclusions
+
+| Exclude | Reason |
+|---|---|
+| Generated files and build outputs | Reproducible output obscures the diff |
+| Credentials | Deleting a committed secret is insufficient; use the `secrets` skill |
+| Unrelated formatting changes | They conceal the substantive change |
+| Debug output | The next reader cannot distinguish intent from leftovers |
+
+## Boundaries
+
+**Do not push.** A commit can be reverted; a push changes other people's state.
+Sending changes to a remote is the user's decision.
+
+Never bypass hooks with `--no-verify`. Investigate the reason a hook blocked work.
+
+The `gitrules` skill contains the complete rules.

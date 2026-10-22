@@ -1,0 +1,29 @@
+# SHA-256 of unchanged upstream imports: up:humanize @ 0.6.0 (self-authored).
+#
+# Upstream is this repository itself, not an external source. See the up:humanize
+# entry in refactor/jstack-source-ledger.md (plugins/humanize/, self-authored).
+# Therefore there is no LICENSE.* text here; byte binding and version provenance
+# are the required records.
+#
+# Why frozen:
+# tests/run_tests.py previously read upstream parity from the installation cache:
+# ~/.claude/plugins/cache/<marketplace>/humanize/0.6.0/skills/humanize-kr/references
+# That path disappears when plugins/humanize/ is deleted under the repack plan,
+# versions advance beyond 0.6.0, or tests run on another machine. Its absence
+# reduced four parity checks to one failure and broke check_total. It did not
+# silently pass, but could only stay green on this machine.
+#
+# What is frozen:
+# The check measures category IDs using ^#{2,3} ([A-Z]~?[A-Z]?-?\d*)\.
+# Freeze whole originals anyway. Extracting only IDs risks later regenerating
+# them from our own files and reducing the test to ours >= ours. Originals plus
+# hashes preserve source provenance in the diff.
+#
+# Update procedure when upstream plugins/humanize/ advances beyond 0.6.0:
+# 1. Copy the new version into tests/upstream-<version>/.
+# 2. Update both hashes and directory names in this manifest.
+# 3. Set run_tests.py UPSTREAM and UPSTREAM_PARITY floors from new measurements.
+# 4. A reduced floor means upstream removed categories; record the evidence.
+#
+d80c55df7e207c47fe66d3359a98fcbd22ff1112330ac9512e0b44e00d2f4902  tests/upstream-0.6.0/ai-tell-taxonomy.md
+554bda0e3dd1c754775c351baf8a78f9804b4f02cfba9982bd8d5fc3fac0e182  tests/upstream-0.6.0/procurement-taxonomy.md

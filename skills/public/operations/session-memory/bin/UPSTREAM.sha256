@@ -1,0 +1,21 @@
+# sha256 of imported artifacts — cc-session-sync (https://github.com/ysys143/cc-session-sync)
+#
+# Intermediate source: plugins/session-search/bin/ @ 539406b (legacy plugin tree).
+# The hashes below bind the current distribution. main.rs is modified to select profiles;
+# only Cargo.toml and README.md are byte-identical to the original blobs. Original verification:
+#
+#   git show 539406b:plugins/session-search/bin/main.rs | shasum -a 256
+# Original main.rs SHA256: 4a0da9760dd024197fb9676f448ffdb965fc27d2f43df484b74abbdc09b9d048
+#
+# **Padding can forge line counts but not hashes.** This file exists because the
+# 713-line Rust source could be replaced by a stub while documentation contracts
+# (needles and volume) stay green; needles can occur in comments.
+#
+# **Layout and profile paths changed.** The old tree placed main.rs directly in bin/, while Cargo.toml
+# declares `path = "src/main.rs"`. Cargo rejects the old layout:
+#   error: can't find bin `sync` at path `.../src/main.rs`
+# (measured 2026-09-02 with cargo 1.95.0). Moving it to src/ built in 22.9 seconds.
+# After importing from the original hash, we added profile-path resolution and runtime tests.
+81c198b01bca00a12cb54c9c9c0f62cb2398dcc40cf6be7d5eb782a054ee6803  src/main.rs
+1791c4fbdfc2e633966ce3ff969e47f55968034c69e7b73a78923dfecd6299ff  Cargo.toml
+c496aa14d01655917bc0916fbf373ade5a887add8269c7c45b4eacfdd2996d9f  README.md

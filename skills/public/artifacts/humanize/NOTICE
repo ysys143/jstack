@@ -1,0 +1,15 @@
+# NOTICE — humanize
+
+The taxonomy, pipeline and register references adapt rules from these MIT-licensed
+projects; their license texts are kept beside this file.
+
+| Source | License text | Adapted into |
+|---|---|---|
+| [epoko77-ai/im-not-ai](https://github.com/epoko77-ai/im-not-ai) | `LICENSE.im-not-ai` | `references/ai-tell-taxonomy.md`, `references/empirical-validation.md`, `references/pipeline-general.md`, `scripts/` |
+| [jkf87/noslop-ko](https://github.com/jkf87/noslop-ko) | `LICENSE.noslop-ko` | `references/register-invariants.md`, `references/ai-tell-taxonomy.md` |
+| [snflkd/fluent-korean](https://github.com/snflkd/fluent-korean) | `LICENSE.fluent-korean` | `references/ai-tell-taxonomy.md` and the `fluent-korean` output styles |
+| [chrisryugj/kordoc](https://github.com/chrisryugj/kordoc) | `LICENSE.kordoc` | `references/register-axis.md` |
+
+The abstract-metaphor and dash rules (taxonomy categories L and J-3) follow the
+principles of benelog's gist "클로드 문체 없애기 지침", which carries no license. Only the
+principles are used; the wording is original and no text is copied from the gist.

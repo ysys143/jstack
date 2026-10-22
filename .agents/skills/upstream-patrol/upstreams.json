@@ -1,0 +1,982 @@
+{
+  "lastRunAt": "2026-10-04T15:27:38.177Z",
+  "upstreams": [
+    {
+      "id": "kdense-scientific-agent-skills",
+      "repo": "K-Dense-AI/scientific-agent-skills",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "36d8f13a1e754618794bf42f417884940077b4ae",
+          "upstreamPaths": [
+            "skills"
+          ],
+          "localPaths": [
+            "skills/public/research/scientific-tools/repos/kdense"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/research/scientific-tools/references/_sources.json",
+            "form": "full"
+          },
+          "ownerSkill": "scientific-tools",
+          "notes": [
+            "Full repository copy; retain its original paths and license."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "google-deepmind-science-skills",
+      "repo": "google-deepmind/science-skills",
+      "branch": "main",
+      "license": {
+        "spdx_id": "Apache-2.0",
+        "class": "Apache-2.0"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "0b42509800f49e6eb7809505d96e20a890ef99bd",
+          "upstreamPaths": [
+            "skills"
+          ],
+          "localPaths": [
+            "skills/public/research/scientific-tools/repos/gdm"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/research/scientific-tools/references/_sources.json",
+            "form": "full"
+          },
+          "ownerSkill": "scientific-tools",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "id": "academic-research-skills",
+      "repo": "Imbad0202/academic-research-skills",
+      "branch": "main",
+      "license": {
+        "spdx_id": "CC-BY-NC-4.0",
+        "class": "CC BY-NC 4.0"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "9469fc4d074f9166890d4488b1691da06aba15fc",
+          "upstreamPaths": [
+            "skills"
+          ],
+          "localPaths": [
+            "skills/public/research/scientific-tools/repos/academic"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/research/scientific-tools/references/_sources.json",
+            "form": "full"
+          },
+          "ownerSkill": "scientific-tools",
+          "notes": [
+            "NC condition applies; pause before any proposed absorption."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "diagram-design",
+      "repo": "cathrynlavery/diagram-design",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": "ac490fd1ac4b4014100f93e729cb4ad198700bd4",
+          "tag": null,
+          "upstreamPaths": [
+            ".claude-plugin/plugin.json",
+            "skills/diagram-design"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/svg-diagram/SKILL.md",
+            "skills/public/artifacts/svg-diagram/references",
+            "skills/public/artifacts/svg-diagram/scripts"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/artifacts/svg-diagram/NOTICE",
+            "form": "short7"
+          },
+          "ownerSkill": "svg-diagram",
+          "notes": [
+            "Imported v2.6.7; local edits and ports must be preserved."
+          ]
+        },
+        {
+          "mode": "snapshot",
+          "pin": "8d8b2993ee2256ee7dfc0eeb3b5713aba3b60792",
+          "tag": "v2.6.22",
+          "upstreamPaths": [
+            "skills/diagram-design"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/svg-diagram/repos/diagram-design"
+          ],
+          "pinRecordedIn": {
+            "file": "NOTICE.md",
+            "form": "full"
+          },
+          "ownerSkill": "svg-diagram",
+          "notes": [
+            "Source hash manifest is skills/public/artifacts/svg-diagram/UPSTREAM.v2.6.22.json."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "archify",
+      "repo": "tt-a1i/archify",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": "2026-10-04T14:09:30.434Z",
+      "state": "defer",
+      "reviews": [
+        {
+          "date": "2026-10-04T14:09:30.434Z",
+          "scope": [
+            "archify/SKILL.md",
+            "archify/renderers/shared/geometry.mjs",
+            "archify/renderers/shared/diagnostics.mjs",
+            "archify/scripts/check-render-output.mjs"
+          ],
+          "verdict": "defer",
+          "note": "major rewrite: Archify v3.0.0 (716 commits, 35 on imported paths). The geometry fix 652227f4 (rectsOverlap float tolerance) targets renderer layout code that was not ported; our verify-connectors already uses EPS=0.0001. LICENSE copyright line changed wording only, class still MIT. Needs a deliberate re-port decision, not a patrol absorption.",
+          "pr": null
+        }
+      ],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": "0853a805003514776bef3593ecca091409828902",
+          "upstreamPaths": [
+            "archify/SKILL.md",
+            "archify/renderers/shared/geometry.mjs",
+            "archify/renderers/shared/diagnostics.mjs",
+            "archify/scripts/check-render-output.mjs"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/svg-diagram/SKILL.md",
+            "skills/public/artifacts/svg-diagram/references/type-placement.md",
+            "skills/public/artifacts/svg-diagram/references/taste-gate.md",
+            "skills/public/artifacts/svg-diagram/scripts/verify-connectors.ts",
+            "skills/public/artifacts/svg-diagram/assets/upstream"
+          ],
+          "pinRecordedIn": {
+            "file": "NOTICE.md",
+            "form": "full"
+          },
+          "ownerSkill": "svg-diagram",
+          "notes": [
+            "The port is deliberately adapted; do not replace it with upstream bytes."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ai-is-fast-your-tests-are-slow",
+      "repo": "hunkim/ai-is-fast-your-tests-are-slow",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": "9b076d08ffb5e6dd1e652b67984d533a6251810b",
+          "upstreamPaths": [
+            "skills/fast-tests"
+          ],
+          "localPaths": [
+            "skills/public/engineering/repository-setup/references/testing-guidance.md"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/repository-setup/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "repository-setup",
+          "notes": []
+        },
+        {
+          "mode": "adapted",
+          "pin": "9b076d08ffb5e6dd1e652b67984d533a6251810b",
+          "upstreamPaths": [
+            "skills/fast-tests"
+          ],
+          "localPaths": [
+            "skills/public/workflow/verify/references/local-feedback.md",
+            "skills/public/workflow/verify/references/validation-cost.md",
+            "skills/public/workflow/verify/scripts/test_profile.ts",
+            "skills/public/workflow/verify/scripts/test_smells.ts"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/verify/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "verify",
+          "notes": []
+        },
+        {
+          "mode": "adapted",
+          "pin": "9b076d08ffb5e6dd1e652b67984d533a6251810b",
+          "upstreamPaths": [
+            "skills/fast-tests"
+          ],
+          "localPaths": [
+            "skills/public/workflow/test-driven-development/references/test-budget.md",
+            "skills/public/workflow/test-driven-development/references/antipatterns.md"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/test-driven-development/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "test-driven-development",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "id": "vercel-agent-skills",
+      "repo": "vercel-labs/agent-skills",
+      "branch": "main",
+      "license": {
+        "spdx_id": null,
+        "class": "none recorded upstream"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "063bee94c3f4df8453406c830b0a7df0f2860278",
+          "upstreamPaths": [
+            "skills/react-best-practices/rules",
+            "skills/composition-patterns/rules"
+          ],
+          "localPaths": [
+            "skills/public/engineering/react-performance/rules"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/react-performance/UPSTREAM.sha256",
+            "form": "short7"
+          },
+          "ownerSkill": "react-performance",
+          "notes": [
+            "Do not treat a missing upstream license as an implicit grant."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "web-interface-guidelines",
+      "repo": "vercel-labs/web-interface-guidelines",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "e3d624baaf29dc1fc645aff3e38f03e564d2d6b1",
+          "upstreamPaths": [
+            "command.md"
+          ],
+          "localPaths": [
+            "skills/public/engineering/web-interface"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/web-interface/UPSTREAM.sha256",
+            "form": "short7"
+          },
+          "ownerSkill": "web-interface",
+          "notes": [
+            "Only imported the rules document; output wrapping and filename differ locally."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claude-plugins-official",
+      "repo": "anthropics/claude-plugins-official",
+      "branch": "main",
+      "license": {
+        "spdx_id": "Apache-2.0",
+        "class": "Apache-2.0"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": "a86e34672c44fa1fb1ae2b2c4143abcf26612ace",
+          "upstreamPaths": [
+            "plugins/claude-md-management/skills/claude-md-improver/SKILL.md",
+            "plugins/claude-md-management/skills/claude-md-improver/references/quality-criteria.md",
+            "plugins/claude-md-management/skills/claude-md-improver/references/templates.md"
+          ],
+          "localPaths": [
+            "skills/public/engineering/repository-setup/SKILL.md",
+            "skills/public/engineering/repository-setup/references"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/repository-setup/references/claude-md-source.json",
+            "form": "full"
+          },
+          "ownerSkill": "repository-setup",
+          "notes": [
+            "Local runtime helpers are original jstack code."
+          ]
+        },
+        {
+          "mode": "link",
+          "pin": "aecd4c852f10b466245f18383fa6aad8c0b10d57",
+          "upstreamPaths": [
+            "plugins/claude-md-management/LICENSE"
+          ],
+          "localPaths": [
+            "skills/public/engineering/repository-setup/references/claude-md-source.json"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/repository-setup/references/claude-md-source.json",
+            "form": "full"
+          },
+          "ownerSkill": "repository-setup",
+          "notes": [
+            "The license file commit differs from the imported skill commit."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "journey-qa",
+      "repo": "ysys143/journey-qa",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "ec4c16d7f20a2a476731b34ba818745f9b6fd734",
+          "upstreamPaths": [
+            "."
+          ],
+          "localPaths": [
+            "skills/public/workflow/journey-qa/repos/journey-qa"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/journey-qa/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "journey-qa",
+          "notes": [
+            "Excluded evals/results when imported."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cc-session-sync",
+      "repo": "ysys143/cc-session-sync",
+      "branch": "main",
+      "license": {
+        "spdx_id": null,
+        "class": "not recorded"
+      },
+      "lastReviewed": null,
+      "state": "pin-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": null,
+          "upstreamPaths": [
+            "."
+          ],
+          "localPaths": [
+            "skills/public/operations/session-memory/bin"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "session-memory",
+          "notes": [
+            "No repository pin is recorded. Set a baseline during the first review and propose a provenance update."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pptx-design-styles",
+      "repo": "corazzon/pptx-design-styles",
+      "branch": "main",
+      "license": {
+        "spdx_id": null,
+        "class": "MIT asserted in prose; no LICENSE file"
+      },
+      "lastReviewed": null,
+      "state": "pin-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [
+            "references/styles.md",
+            "README.md",
+            "README_ko.md"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/slides/references/styles.md"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "slides",
+          "notes": [
+            "The upstream declared MIT in prose but has no LICENSE file. Set a baseline during the first review."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claude-dashboard",
+      "repo": "uppinote20/claude-dashboard",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": "2026-10-04T15:27:37.483Z",
+      "state": "absorb",
+      "reviews": [
+        {
+          "date": "2026-10-04T15:27:37.483Z",
+          "scope": [
+            "."
+          ],
+          "verdict": "absorb",
+          "note": "v1.32.0 -> v1.34.0: burnRate/tokenSpeed/session fixes, incremental transcript parsing, model version, promptCache widgets. Local changes 1-8 reapplied; prompt-cache emoji replaced with text. Executable diff reviewed by the user before build. Also fixed the Node test budget gate for vendored Vitest files.",
+          "pr": "https://github.com/ysys143/jstack/pull/151"
+        }
+      ],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "f0937fefdde558afedad2522bc8573897164bd16",
+          "upstreamPaths": [
+            "."
+          ],
+          "localPaths": [
+            "skills/public/operations/dashboard",
+            "hosts/claude/commands/dashboard-setup.md",
+            "hosts/claude/hooks/ensure-statusline.mjs"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/operations/dashboard/NOTICE",
+            "form": "short7"
+          },
+          "ownerSkill": "dashboard",
+          "notes": [
+            "Three local changes and several exclusions are enumerated in NOTICE."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "node-sqlite3",
+      "repo": "TryGhost/node-sqlite3",
+      "branch": "master",
+      "license": {
+        "spdx_id": "BSD-3-Clause",
+        "class": "BSD-3-Clause"
+      },
+      "lastReviewed": null,
+      "state": "watch-release",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "watch-release",
+          "pin": "ba4ba07f792304c1554f6c5bd70dcb399d0a82d3",
+          "tag": "v5.1.7",
+          "upstreamPaths": [
+            "src"
+          ],
+          "localPaths": [
+            "packaging/native-dependencies.json",
+            "packaging/vendor/sqlite3",
+            "runtime/sqlite.ts",
+            "runtime/sqlite-native.ts"
+          ],
+          "pinRecordedIn": {
+            "file": "packaging/native-dependencies.json",
+            "form": "version"
+          },
+          "ownerSkill": "runtime",
+          "notes": [
+            "Repository is archived; monitor release and archive status only."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fluent-korean",
+      "repo": "snflkd/fluent-korean",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "pin-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [
+            "plugins/fluent-korean/output-styles"
+          ],
+          "localPaths": [
+            "hosts/claude/output-styles/fluent-korean.md",
+            "hosts/claude/output-styles/fluent-korean-not-coding.md",
+            "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "humanize",
+          "notes": [
+            "No commit pin is recorded. Establish one in the first review and propose a provenance update."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kordoc",
+      "repo": "chrisryugj/kordoc",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "pin-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [
+            "docs/gaejosik-munche.md",
+            "docs/gongmunseo-reference.md",
+            "src/hwpx/munche-lint.ts"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/hwpx-document/references/kordoc-public-doc.md",
+            "skills/public/artifacts/humanize/references/register-axis.md"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "hwpx-document",
+          "notes": [
+            "No commit pin is recorded. Set the baseline and propose a provenance update before adapting further."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slopslap",
+      "repo": "vibedesignlab/slopslap",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "pin-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [
+            "docs/readme-visual-asset-plan.md"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/image-generation/references/prompts.md"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "image-generation",
+          "notes": [
+            "Only the slot structure was adapted. Set a baseline in the first review."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "benelog-gist",
+      "repo": null,
+      "branch": null,
+      "license": {
+        "spdx_id": null,
+        "class": "not recorded"
+      },
+      "lastReviewed": null,
+      "state": "source-location-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [],
+          "localPaths": [
+            "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "humanize",
+          "notes": [
+            "A gist URL exists in a legacy compatibility source, but no source URL is recorded for this port. Confirm it during the first review."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "noslop-ko",
+      "repo": null,
+      "branch": null,
+      "license": {
+        "spdx_id": null,
+        "class": "not recorded"
+      },
+      "lastReviewed": null,
+      "state": "source-location-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [],
+          "localPaths": [
+            "skills/public/artifacts/humanize/references/register-invariants.md",
+            "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "humanize",
+          "notes": [
+            "The local provenance names noslop-ko but not its repository URL or version; identify them before a new adaptation."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hyperresearch",
+      "repo": null,
+      "branch": null,
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "watch-release",
+          "pin": null,
+          "tag": "0.10.0",
+          "upstreamPaths": [],
+          "localPaths": [
+            "skills/public/research/research/NOTICE",
+            "skills/public/research/research/wrapper_contract.json",
+            "skills/public/research/research/references"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/research/research/NOTICE",
+            "form": "version"
+          },
+          "ownerSkill": "research",
+          "notes": [
+            "A Python distribution, not a recorded GitHub source. Version is observed from package metadata in the local notice."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "corca-ai-claude-plugins",
+      "repo": "corca-ai/claude-plugins",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": "2026-10-04T15:27:38.177Z",
+      "state": "replace-candidate",
+      "reviews": [
+        {
+          "date": "2026-10-04T15:27:38.177Z",
+          "scope": [
+            "plugins"
+          ],
+          "verdict": "replace-candidate",
+          "note": "Upstream archived; no pin recorded. skill-creator references/skill.md links blob/main while calling it pinned. Options: pin the link to 08983e0a998f97e33d28a0299cd8e655543b63ef in a docs change, or drop the reference.",
+          "pr": null
+        }
+      ],
+      "imports": [
+        {
+          "mode": "watch-release",
+          "pin": null,
+          "upstreamPaths": [
+            "plugins"
+          ],
+          "localPaths": [
+            "skills/public/operations/google-workspace/references/report-judgment.md",
+            "skills/public/operations/google-workspace/references/report-troubleshooting.md"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "google-workspace",
+          "notes": [
+            "Repository is archived. The local docs record short commit ids adb6b55 and ac25a57, but GitHub's current repository history did not resolve either id; preserve as watch-only until provenance is recovered."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "im-not-ai",
+      "repo": "epoko77-ai/im-not-ai",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "82137e858763dadb99561f194c5c00465735017b",
+          "tag": "v2.3.0",
+          "recordedVersion": "v2.3",
+          "upstreamPaths": [
+            ".claude/skills/humanize-korean/references/ai-tell-taxonomy.md",
+            ".claude/skills/humanize-korean/references/empirical-validation.md",
+            ".claude/skills/humanize-korean/references/metrics_v2.py",
+            "scripts/verify_gates.py"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md",
+            "skills/public/artifacts/humanize/references/empirical-validation.md",
+            "skills/public/artifacts/humanize/references/pipeline-general.md",
+            "skills/public/artifacts/humanize/scripts"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md",
+            "form": "version"
+          },
+          "ownerSkill": "humanize",
+          "notes": [
+            "The local record says v2.3; GitHub tag v2.3.0 resolves to this full commit SHA."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cc-thinking-skills",
+      "repo": "tjboudreaux/cc-thinking-skills",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": "7b8fece345dfaa11773be7152ccd194589cb5437",
+          "upstreamPaths": [
+            "skills/thinking-scientific-method/SKILL.md"
+          ],
+          "localPaths": [
+            "skills/public/workflow/verify/references/local-feedback.md"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/verify/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "verify",
+          "notes": [
+            "The mapped local file appears when Part A is integrated."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "7b8fece345dfaa11773be7152ccd194589cb5437",
+          "upstreamPaths": [
+            "skills/thinking-kepner-tregoe/SKILL.md"
+          ],
+          "localPaths": [
+            "skills/public/workflow/verify/references/local-feedback.md"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/verify/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "verify",
+          "notes": [
+            "The mapped local file appears when Part A is integrated."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "7b8fece345dfaa11773be7152ccd194589cb5437",
+          "upstreamPaths": [
+            "skills/thinking-pre-mortem/SKILL.md"
+          ],
+          "localPaths": [
+            "skills/public/workflow/plan/references/pre-mortem.md"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/plan/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "plan",
+          "notes": [
+            "The mapped local file appears when Part A is integrated."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "7b8fece345dfaa11773be7152ccd194589cb5437",
+          "upstreamPaths": [
+            "AGENTS.md"
+          ],
+          "localPaths": [
+            "skills/public/engineering/skill-creator/references/skill-writing-guide.md"
+          ],
+          "pinRecordedIn": {
+            "file": ".agents/skills/upstream-patrol/upstreams.json",
+            "form": "full"
+          },
+          "ownerSkill": "skill-creator",
+          "notes": [
+            "The source attribution and mapped local file appear when Part A is integrated; this index records the full pin because the product guide has no provenance notice."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "owasp-cheat-sheet-series",
+      "repo": "OWASP/CheatSheetSeries",
+      "branch": "master",
+      "license": {
+        "spdx_id": "CC-BY-SA-4.0",
+        "class": "CC BY-SA 4.0"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "link",
+          "pin": "6b6a66bae11c9e001c3576bcc3de55cc0dc5e449",
+          "upstreamPaths": [
+            "cheatsheets"
+          ],
+          "localPaths": [
+            "skills/public/workflow/review/references/owasp-cheatsheet-map.md"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/review/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "review",
+          "notes": [
+            "Only sheet titles and official URLs are mapped; read relevant current published pages during review. The mapped file appears when Part A is integrated."
+          ]
+        }
+      ]
+    }
+  ],
+  "exclusions": [
+    {
+      "id": "humanize-self-source",
+      "repo": null,
+      "reason": "Self-authored jstack source, not an external upstream."
+    },
+    {
+      "id": "agent-maintenance-local-source",
+      "repo": null,
+      "reason": "User-owned local source supplied for adaptation; no external repository."
+    },
+    {
+      "id": "legacy-harness-compatibility-copy",
+      "repo": "revfactory/harness",
+      "reason": "Frozen compatibility distribution, not a maintained product import."
+    },
+    {
+      "id": "spotify-portal-ai-plugins",
+      "repo": "spotify/portal-ai-plugins",
+      "reason": "Inspiration only; no imported source."
+    },
+    {
+      "id": "d2",
+      "repo": "terrastruct/d2",
+      "reason": "Diagram tooling excluded; no imported source."
+    },
+    {
+      "id": "plantuml",
+      "repo": "plantuml/plantuml",
+      "reason": "Diagram tooling excluded; no imported source."
+    },
+    {
+      "id": "diagrams",
+      "repo": "mingrammer/diagrams",
+      "reason": "Diagram tooling excluded; no imported source."
+    },
+    {
+      "id": "marp-cli",
+      "repo": "marp-team/marp-cli",
+      "reason": "The local guide is original and invokes the user's optional CLI; the upstream tool or documentation is not bundled."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: cleanup-axes-recall
+description: Can it produce the plugin-defined ten quality axes and the closed Axis 8 list?
+runs: 5
+tags: [discriminating, cleanup, ablation-discriminating]

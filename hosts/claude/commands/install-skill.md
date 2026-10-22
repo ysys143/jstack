@@ -1,0 +1,76 @@
+---
+description: Install a marketplace skill as a personal skill
+argument-hint: "<namespace-or-name> [--force]"
+---
+
+# /install-skill — install what search found
+
+## Why this differs from /skills
+
+`/skills` only reads, and marketplace search only looks. This command
+**writes**: the user named a specific skill and asked for it installed, so it
+installs without a further confirmation step. Report the target path so the
+write is visible, not silent.
+
+## Procedure
+
+1. Pass the one namespace the user gave, plus `--force` only after the user
+   agreed to replace an existing skill. If the arguments hold anything else
+   (several words, another option), stop and ask which skill is meant.
+   Resolve the namespace or name against the marketplace search API, then
+   download and install it:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/install_skill.js" $ARGUMENTS
+```
+
+2. The script prints what it found (name, namespace, author), the skill's
+   frontmatter keys, and the **target home** (`$CLAUDE_CONFIG_DIR` if set, else
+   `~/.claude`) before it writes the skill; it creates that directory when it
+   is missing. Show the namespace, the author and the home to the user as part
+   of the result, not only the final "Installed" line.
+3. Handle its exit status:
+   - `0`: installed. Report the skill name, the namespace and author the script
+     printed, the written path (`<home>/skills/<name>/SKILL.md`), and that a
+     restart activates it. If the script printed a Warning that the skill
+     declares `allowed-tools` or `hooks`, say so in plain words and tell the user
+     to read the file before using the skill.
+   - `1`: report the printed reason (not found, no download URL, a download
+     address that is not https from a named host, malformed API response, a
+     failed/empty download, a link or name collision on the way to the folder,
+     or an existing same-named skill with different content) and suggest
+     `/skills` or a narrower search term. For an existing skill, show its path
+     and ask before re-running with `--force`.
+
+## Why a personal skill directory, not a plugin registration
+
+The legacy `/skill-search:install-skill` registered a fake
+`skill-search-installed` marketplace entry in the plugin registry and in
+`settings.json`. That marketplace was never added to `known_marketplaces.json`,
+so Claude Code did not load it as a real plugin (observed on Claude Code
+2.1.278 when this command was ported). A skill directory under the Claude home
+is what Claude Code auto-discovers, and it needs no registry write at all.
+
+## Boundaries
+
+**Do not fabricate a marketplace or plugin-cache entry** to make the
+installation resemble a normal plugin; it will not load, and a fabricated
+`known_marketplaces.json` row risks corrupting real marketplace state.
+Re-running for the same namespace with identical content is idempotent and
+changes nothing. **A same-named skill with different content is refused**: it
+may have come from somewhere else, so the script exits 1 and only `--force`,
+passed after the user agrees, replaces it.
+
+A namespace with a `/` is matched exactly. Do not retry with the bare name to
+get past "Skill not found": that would install another author's skill of the
+same name. Do not fetch a refused download yourself and write the file by hand.
+The address check works on names: a name that DNS resolves to a private address
+is not caught, and https certificate validation is the remaining guard.
+
+The installed text is third-party and jstack does not review it. Name the author
+so the user can read the file before relying on it.
+
+## Related
+
+Find the namespace or name first with the marketplace search described in
+`/skills`'s "Outside this plugin" section.

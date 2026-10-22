@@ -1,0 +1,50 @@
+# blob:d52c05bec7a345084f190875bec1563a505c68cf
+# Daily Scrum sheet: row and tab rules (work-data SSOT)
+**This document defines how to verify work data.** Store the actual person and
+column settings in `~/.jstack/profiles/<name>/reporting.json`. Numbers below are
+de-identified failure examples, not the current team size or real cell addresses.
+## Never Calculate the Target
+**Never calculate a row number or tab name.** Sheet structure changes by month
+and whenever the team roster changes. Both failures below have occurred.
+| Calculation | Failure |
+|---|---|
+| Derive a tab name from the weekday of the month's first day | **Disagrees with the actual tab.** For 2026-08-27, it calculated fifth-week tab `August week 5` but the sheet used the fourth week, `August week 4` |
+| Assume four rows per day | **Spacing changes with team size**, as shown below |
+## Row spacing depends on headcount
+`update_daily_scrum.sh` and its `row_for_weekday()` assume **four rows per day**.
+| Structure | Mon | Tue | Wed | Thu | Fri |
+|---|---|---|---|---|---|
+| Script assumption, four-row spacing | 8 | 12 | 16 | 20 | 24 |
+| **Example five-person layout, five-row spacing** | **8** | **13** | **18** | **23** | **28** |
+**The script assumption may differ from the actual layout.** A changed team size
+changes the spacing. Verify the real month, tab, and person's row on every run;
+never use these examples as addresses.
+## Correct procedure
+1. **Read tab names through the API.** Choose from
+`sheets[].properties.title` in a `spreadsheets get` response.
+2. **Find the target row by reading it.** Read all of columns B (date) and C
+(name), collect rows whose C value is the intended person, and compare dates
+in B.
+```bash
+gws sheets spreadsheets values get \
+--params '{"spreadsheetId":"<ID>","range":"'"'"'<tab>'"'"'!B1:C40"}'
+```
+3. **If the actual row differs from the script assumption, do not use the script;
+write the verified cell directly.**
+## Pre-write safety check (mandatory)
+**Immediately before every write, read the name cell again in column C and confirm that it contains
+the intended person's name. Stop immediately if it differs.**
+Without this check, the command can silently overwrite another person's cell. Row numbers
+can drift through either failure above, and a quiet successful write to the
+wrong row is the worst outcome.
+## Sheet ID
+Use `sheetNamePattern` from local `reporting.json` and `scrumFolderId` from
+`workspace.json` to find candidates for the current month. Treat sheet IDs in
+the old `reports/gdrive.env` as **stale** because they are not refreshed
+automatically. If the user supplies a URL, verify the target and access through
+the selected account. Ask when multiple candidates exist, and never persist a
+row number.
+Folder and Drive IDs are authoritative and canonical in
+`~/.jstack/profiles/<name>/workspace.json`. `gdrive-ids.md` defines fields and
+discovery. Do not copy real IDs or names here. Reconfirm the actual account from
+the task-pinned profile before writing.

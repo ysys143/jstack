@@ -1,0 +1,443 @@
+# blob:cb6c05a508641692e8a040e0d324cfe986ac9b35
+# Agent Architecture
+Comprehensive guide to Claude Code agents: when to use them, how to structure them, and orchestration patterns.
+---
+## Table of Contents
+1. [Agent vs Skill Decision Matrix](#agent-vs-skill-decision-matrix)
+2. [Agent Instruction Structure](#agent-instruction-structure)
+3. [Agent Orchestration Patterns](#agent-orchestration-patterns)
+4. [Agent Communication](#agent-communication)
+5. [Complete Examples](#complete-examples)
+---
+## Agent vs Skill Decision Matrix
+### What Are Agents?
+**Agents** are specialized AI instances with:
+- Focused domain expertise (defined in `agents/<name>.md`)
+- Restricted tool access (security via allowed-tools)
+- Specific responsibilities and workflow
+- Read-only by default (unless write tools explicitly allowed)
+### What Are Skills?
+**Skills** are user-invocable commands with:
+- User-facing workflows (defined in `skills/<name>.md`)
+- Full tool access (by default)
+- Interactive guidance and questioning
+- Orchestration capabilities
+---
+### When to Use Each
+| Use Case | Use Agent | Use Skill |
+|----------|-----------|-----------|
+| **Specialized Analysis** | YES - Create analyzer agent | No |
+| **User-Driven Workflow** | No | YES - Create skill |
+| **Background Processing** | YES - Agent runs async | No |
+| **Multi-Turn Investigation** | YES - Agent has context | No (or skill that spawns agents) |
+| **User Interaction** | No (agents are non-interactive) | YES |
+| **Code Generation** | Depends on scope | YES for user-facing |
+| **Orchestration** | No (orchestrate FROM skill/command) | YES |
+---
+### Decision Examples
+| Goal | Solution | Why |
+|------|----------|-----|
+| Analyze conversation logs for learnings | **Agent** (`learning-extractor.md`) | Specialized read-only analysis |
+| Create git commit with conventions | **Skill** (`commit.md`) | User workflow with interaction |
+| Extract API endpoints from codebase | **Agent** (`endpoint-extractor.md`) | Focused extraction task |
+| Generate new plugin from docs | **Skill** (`from-docs.md`) | User-driven, multi-step workflow |
+| Validate plugin structure | **Agent** (`validator-agent.md`) | Read-only validation |
+| Orchestrate 5 analysis agents | **Skill/Command** (`wrap.md`) | Orchestration requires full tools |
+---
+## Agent Instruction Structure
+### File Location
+`agents/<agent-name>.md`
+### Frontmatter Format
+```markdown
+---
+name: agent-name
+description: One-line purpose of this agent
+model: sonnet
+allowedTools:
+- Read
+- Glob
+- Grep
+---
+```
+### Frontmatter Fields Reference
+| Field | Required | Description | Example |
+|-------|----------|-------------|---------|
+| `name` | Yes | Agent identifier (lowercase-with-dashes) | `learning-extractor` |
+| `description` | Yes | One-line purpose | `Extract learnings from session` |
+| `model` | No | Model tier (haiku/sonnet/opus) | `sonnet` (default) |
+| `allowedTools` | No | Tool allowlist (security) | `[Read, Glob, Grep]` |
+---
+### Model Selection Guide
+| Model | Speed | Cost | When to Use |
+|-------|-------|------|-------------|
+| `haiku` | Fastest | Lowest | Simple extraction, basic analysis, file reading |
+| `sonnet` | Medium | Medium | Standard analysis, complex extraction, reasoning |
+| `opus` | Slowest | Highest | Complex reasoning, architectural decisions, critique |
+**Default**: `sonnet` (best balance)
+---
+### Allowed Tools Guide
+**Common Tool Combinations**:
+| Agent Type | Allowed Tools | Why |
+|------------|---------------|-----|
+| **Read-Only Analyzer** | `[Read, Glob, Grep]` | Safe analysis, no modifications |
+| **Data Extractor** | `[Read, Glob, Grep, WebFetch]` | Extract from local + remote |
+| **Code Generator** | `[Read, Glob, Grep, Edit, Write]` | Needs write access |
+| **Test Runner** | `[Read, Bash]` | Run tests, read results |
+| **Validator** | `[Read, Glob, Grep, Bash]` | Check quality, run linters |
+**Security Best Practice**: Use **minimal tool set** needed. Don't grant `Edit/Write` unless required.
+---
+### Body Structure
+After frontmatter, define agent instructions:
+```markdown
+# Agent Name
+## Core Responsibilities
+1. Primary responsibility
+2. Secondary responsibility
+3. Tertiary responsibility
+## Process
+1. Step 1: What to do first
+2. Step 2: What to do next
+3. Step 3: Final step
+## Output Format
+Describe expected output structure.
+## Quality Standards
+- Criterion 1
+- Criterion 2
+## Examples
+### Example 1: Typical Case
+Input: ...
+Output: ...
+### Example 2: Edge Case
+Input: ...
+Output: ...
+```
+---
+### Complete Agent Template
+```markdown
+---
+name: example-analyzer
+description: Analyze X for Y patterns
+model: sonnet
+allowedTools:
+- Read
+- Glob
+- Grep
+---
+# Example Analyzer Agent
+You are a specialized agent responsible for analyzing X to identify Y patterns.
+## Core Responsibilities
+1. **Primary**: Scan all X files in the codebase
+2. **Secondary**: Identify Y patterns using heuristics
+3. **Tertiary**: Summarize findings with actionable recommendations
+## Process
+1. **Discovery**: Use Glob to find all X files (`**/*.x`)
+2. **Analysis**: For each file, use Read to extract Y patterns
+3. **Synthesis**: Aggregate findings into structured report
+4. **Recommendations**: Provide 3-5 actionable next steps
+## Output Format
+Return results as markdown:
+```
+# Analysis Results
+## Summary
+- Total X files scanned: N
+- Y patterns found: M
+## Findings
+### Finding 1: [Pattern Name]
+- **Location**: file.x:line
+- **Description**: ...
+- **Impact**: High/Medium/Low
+## Recommendations
+1. [Action 1]
+2. [Action 2]
+```
+## Quality Standards
+- Scan 100% of matching files (no shortcuts)
+- Include file:line references for all findings
+- Rank findings by impact (High > Medium > Low)
+- Provide at least 3 recommendations
+## Examples
+### Example 1: Typical Case
+**Input**: Analyze TypeScript files for unused imports
+**Output**:
+```
+# Analysis Results
+## Summary
+- Total TypeScript files scanned: 42
+- Unused imports found: 8
+## Findings
+### Finding 1: Unused React Import
+- **Location**: src/components/Button.tsx:1
+- **Description**: `import React from 'react'` is unused (React 17+ JSX transform)
+- **Impact**: Low
+...
+```
+### Example 2: No Findings
+**Input**: Analyze Python files for security issues
+**Output**:
+```
+# Analysis Results
+## Summary
+- Total Python files scanned: 15
+- Security issues found: 0
+No security issues detected. Codebase follows best practices.
+```
+```
+---
+## Agent Orchestration Patterns
+### 1. Sequential Pattern
+**Use Case**: Agents depend on previous outputs.
+**Example**: PRD generation
+```
+1. requirements-agent analyzes user needs
+2. design-agent creates architecture (uses requirements output)
+3. validation-agent checks feasibility (uses design output)
+```
+**Implementation** (in skill/command):
+```markdown
+1. Spawn requirements-agent
+2. Wait for results
+3. Spawn design-agent with requirements as input
+4. Wait for results
+5. Spawn validation-agent with design as input
+6. Synthesize final PRD
+```
+---
+### 2. Parallel Pattern
+**Use Case**: Independent analyses that don't depend on each other.
+**Example**: Multi-perspective code review
+```
+1. security-agent checks vulnerabilities
+2. performance-agent checks optimization opportunities
+3. maintainability-agent checks code quality
+(All run simultaneously)
+```
+**Implementation** (in skill/command):
+```markdown
+1. Spawn security-agent (background)
+2. Spawn performance-agent (background)
+3. Spawn maintainability-agent (background)
+4. Wait for all agents to complete
+5. Synthesize combined report
+```
+**Performance Benefit**: 3x faster than sequential.
+---
+### 3. Iterative Pattern
+**Use Case**: Refine results through multiple passes.
+**Example**: Document refinement
+```
+1. writer-agent creates draft
+2. critic-agent reviews draft
+3. writer-agent revises based on feedback
+4. Repeat until quality threshold met
+```
+**Implementation** (in skill/command):
+```markdown
+1. Spawn writer-agent
+2. Spawn critic-agent with draft
+3. If critic says "APPROVED" -> done
+4. Else: spawn writer-agent with feedback, goto step 2
+```
+---
+### 4. Consensus Pattern
+**Use Case**: Multiple agents vote/agree on decision.
+**Example**: Architecture decision (ralplan pattern)
+```
+1. planner-agent proposes plan
+2. architect-agent analyzes feasibility
+3. critic-agent reviews quality
+4. If consensus (2/3 approve) -> done
+5. Else: incorporate feedback, goto step 1
+```
+**Implementation** (in skill/command):
+```markdown
+1. Spawn planner-agent
+2. Spawn architect-agent with plan
+3. Spawn critic-agent with plan
+4. Aggregate votes:
+- 3/3 approve -> DONE
+- 2/3 approve -> ACCEPT WITH CONCERNS
+- 0-1/3 approve -> REVISE AND RETRY
+```
+---
+### 5. Hierarchical Pattern
+**Use Case**: Coordinator agent delegates to specialist agents.
+**Example**: Codebase documentation (deepinit pattern)
+```
+1. coordinator-agent scans project structure
+2. coordinator delegates:
+- frontend-agent for UI components
+- backend-agent for API routes
+- database-agent for schema
+3. coordinator synthesizes into AGENTS.md
+```
+**Implementation** (in skill/command):
+```markdown
+1. Spawn coordinator-agent
+2. Coordinator determines structure
+3. Coordinator spawns specialists (parallel)
+4. Coordinator aggregates outputs
+5. Generate final documentation
+```
+---
+## Agent Communication
+### Passing Data Between Agents
+**Option 1: Via Orchestrator** (Recommended)
+```markdown
+1. Agent 1 returns JSON output
+2. Orchestrator (skill/command) parses JSON
+3. Orchestrator passes relevant data to Agent 2
+```
+**Pros**: Clear data flow, easy to debug
+**Cons**: More orchestrator logic
+---
+**Option 2: Via Shared Files**
+```markdown
+1. Agent 1 writes output to .tmp/agent1-output.json
+2. Agent 2 reads from .tmp/agent1-output.json
+```
+**Pros**: Agents fully decoupled
+**Cons**: File I/O overhead, cleanup required
+---
+**Option 3: Via Prompt Context** (Best for short data)
+```markdown
+1. Agent 1 returns summary text
+2. Orchestrator includes summary in Agent 2's prompt
+```
+**Pros**: Simplest, no parsing
+**Cons**: Limited data size (context window)
+---
+### Output Contracts
+Define clear output formats for agents:
+**JSON Output** (for structured data):
+```json
+{
+"status": "success",
+"findings": [...],
+"recommendations": [...]
+}
+```
+**Markdown Output** (for reports):
+```markdown
+# Analysis Results
+## Summary
+...
+```
+**Exit Code** (for pass/fail):
+- Exit 0: Success
+- Exit 1: Failure
+---
+## Complete Examples
+### Example 1: log-prompt-context Plugin (Parallel Analysis)
+**Goal**: Extract wisdom from conversation logs using 5 specialized agents.
+**Structure**:
+```
+log-prompt-context/
+├── commands/
+│ └── wrap.md # Orchestrator command
+└── agents/
+├── doc-updater.md # Analyze doc update needs
+├── automation-scout.md # Detect automation opportunities
+├── learning-extractor.md # Extract learnings
+├── followup-suggester.md # Suggest next tasks
+└── duplicate-checker.md # Phase 2 validation
+```
+**Orchestration** (in `wrap.md`):
+```markdown
+# Phase 1: Parallel Analysis (4 agents)
+1. Spawn doc-updater (background)
+2. Spawn automation-scout (background)
+3. Spawn learning-extractor (background)
+4. Spawn followup-suggester (background)
+5. Wait for all agents to complete
+# Phase 2: Validation (1 agent)
+6. Aggregate Phase 1 results
+7. Spawn duplicate-checker with aggregated results
+8. Output final wisdom document
+```
+**Agent Example** (`agents/sag-learning-extractor.md`):
+```markdown
+---
+name: sag-learning-extractor
+description: Extract learnings from session
+model: sonnet
+allowedTools:
+- Read
+- Grep
+---
+# Learning Extractor Agent
+Extract technical learnings, mistakes, and discoveries from conversation logs.
+## Core Responsibilities
+1. Read conversation transcript
+2. Identify learnings (technical insights, mistakes, new discoveries)
+3. Summarize in TIL (Today I Learned) format
+## Process
+1. Read transcript from .claude/conversations/*.jsonl
+2. Grep for patterns: errors, fixes, "learned", "discovered"
+3. Extract context for each learning
+4. Format as markdown list
+## Output Format
+```markdown
+# Learnings
+## Technical Insights
+- [Insight 1]
+- [Insight 2]
+## Mistakes Made
+- [Mistake 1]: What went wrong and how fixed
+- [Mistake 2]: ...
+## New Discoveries
+- [Discovery 1]
+```
+## Quality Standards
+- Include at least 3 learnings (or state "none found")
+- Provide context for each learning
+- Group by category (insights, mistakes, discoveries)
+```
+---
+### Example 2: Hypothetical Plugin (Sequential Analysis)
+**Goal**: Generate API documentation from codebase.
+**Structure**:
+```
+api-docs-generator/
+├── commands/
+│ └── generate.md
+└── agents/
+├── endpoint-extractor.md # Step 1: Find endpoints
+├── schema-analyzer.md # Step 2: Analyze request/response
+└── example-generator.md # Step 3: Generate examples
+```
+**Orchestration** (in `generate.md`):
+```markdown
+# Sequential Workflow
+1. Spawn endpoint-extractor
+- Input: Codebase path
+- Output: List of API endpoints
+2. Spawn schema-analyzer
+- Input: Endpoints from step 1
+- Output: Request/response schemas
+3. Spawn example-generator
+- Input: Schemas from step 2
+- Output: Usage examples
+4. Synthesize into API documentation markdown
+```
+---
+## Best Practices
+### DO:
+- Keep agents **highly focused** (one clear responsibility)
+- Use **minimal tool allowlist** (security)
+- Define **clear output formats** (JSON or markdown)
+- Provide **examples** in agent instructions
+- Use **parallel** agents when possible (performance)
+### DON'T:
+- Create "kitchen sink" agents with too many responsibilities
+- Grant `Edit/Write` tools unless necessary
+- Make agents interactive (use skills for user interaction)
+- Forget to handle edge cases (no results, errors)
+- Skip quality standards section
+---
+## Next Steps
+1. Use `/plugin-generator:add-agent` to create agents with templates
+2. Reference this guide when defining agent responsibilities
+3. Test agents manually before orchestrating
+4. Monitor agent performance and adjust model tier if needed
+---
+**Last Updated**: v0.3.0 (2025-02)

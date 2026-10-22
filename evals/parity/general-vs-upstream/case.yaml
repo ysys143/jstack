@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: general-vs-upstream-parity
+description: Does the consolidated humanize skill preserve general-mode behavior relative to upstream?
+runs: 5
+tags: [parity, humanize]

@@ -1,0 +1,89 @@
+# Provenance of adapted material
+
+## fast-tests (hunkim)
+
+Parts of this skill are adapted from the `fast-tests` skill of
+"AI is fast. Your tests are slow." by Sung Kim.
+
+| Item | Value |
+|---|---|
+| Source | <https://github.com/hunkim/ai-is-fast-your-tests-are-slow> |
+| Version | commit `9b076d08ffb5e6dd1e652b67984d533a6251810b` |
+| License | MIT (reproduced below) |
+| Adapted here | `references/validation-cost.md` (slow test suite procedure), `references/test-waits.md`, `references/test-parallelism.md`, `references/test-selection.md`, `references/flaky-tests.md`, `references/test-evidence.md`, the flaky-test and compact-output paragraphs of `references/local-feedback.md`, `scripts/test_profile.ts`, `scripts/test_smells.ts` |
+
+## Local changes
+
+- The fast-tests material is reorganized under jstack's owning skills and
+  rewritten. No file from the fast-tests source is copied verbatim.
+- Local runs follow jstack's affected-check scope; the required gate runs the
+  complete suite. The upstream rule to run the complete suite before and after
+  every change is not adopted.
+- Figures are attributed to their primary sources and marked as not reproduced
+  by jstack.
+- `scripts/test_profile.js` and `scripts/test_smells.js` are TypeScript ports of
+  `profile_tests.py` and `scan_test_smells.py`. CPU time comes from bash's
+  `time` keyword instead of `os.wait4`, and is reported as unmeasured without
+  bash. The profiler accepts `--waiting-ratio` and `--waiting-min-seconds`;
+  the scanner skips lines marked `test-smells: allow` with a reason.
+
+## License
+
+MIT License
+
+Copyright (c) 2026 Sung Kim
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## cc-thinking-skills (tjboudreaux)
+
+The `## Form and check a hypothesis` section of `references/local-feedback.md`
+adapts material from `tjboudreaux/cc-thinking-skills` at commit
+`7b8fece345dfaa11773be7152ccd194589cb5437`, specifically these upstream paths:
+[thinking-scientific-method](https://github.com/tjboudreaux/cc-thinking-skills/blob/7b8fece345dfaa11773be7152ccd194589cb5437/skills/thinking-scientific-method/SKILL.md),
+[thinking-kepner-tregoe](https://github.com/tjboudreaux/cc-thinking-skills/blob/7b8fece345dfaa11773be7152ccd194589cb5437/skills/thinking-kepner-tregoe/SKILL.md), and
+[thinking-five-whys-plus](https://github.com/tjboudreaux/cc-thinking-skills/blob/7b8fece345dfaa11773be7152ccd194589cb5437/skills/thinking-five-whys-plus/SKILL.md).
+The section is rewritten in jstack's terms; several sentences follow upstream
+closely.
+
+Upstream reports a provisional +4.0pp fault-localization delta for an earlier scientific-method body (sha256 9a7a94d3…) against an active placebo; not elevated (AUDIT.md §5.1). The pinned body (fc0440ed…) was not measured upstream. kepner-tregoe −1.8pp no-lift, five-whys-plus +1.5pp not significant. All upstream skills are manual-only. jstack has not measured this adaptation.
+
+### License
+
+MIT License
+
+Copyright (c) 2025 TJ Boudreaux
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

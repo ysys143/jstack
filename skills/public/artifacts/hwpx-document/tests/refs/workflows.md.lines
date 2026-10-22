@@ -1,0 +1,34 @@
+# blob:34cf49de84908751b49cf0a7c689cec73786fc24
+# Workflows
+## Single File
+Before conversion, inspect the reference and resolve uncertain style mappings:
+```powershell
+python "$Skill\scripts\analyze_template.py" "reference.hwpx"
+```
+If heading, body, list, caption, or table rules are ambiguous, ask the user using `references/style-intake.md`.
+```powershell
+$Skill = "<skill directory>"
+$env:PYTHONUTF8 = "1"
+python "$Skill\scripts\md_to_hwpx.py" "source.md" "output.hwpx" --reference "reference.hwpx" --title "문서 제목" --roman-to-arabic --preserve-heading-numbers --validate --semantic-validate
+```
+After validation, return the generated `.hwpx` and mark `HITL: ready-for-review`. Use the user's visual feedback from Hancom or the target viewer to regenerate or patch the file.
+## Batch Files
+Use one worker per output file. Each worker owns only its assigned output path. Do not let workers edit the shared converter while batch generation is in progress.
+For a simple local batch:
+```powershell
+python scripts\batch_convert.py source-dir output-dir --reference reference.hwpx --roman-to-arabic --preserve-heading-numbers --validate --semantic-validate
+```
+After the batch completes, return the generated files and mark `HITL: ready-for-review`. Iterate on any files the user flags during visual review.
+Recommended worker prompt fields:
+- Input Markdown path
+- Output HWPX path
+- Reference HWPX path
+- Title
+- Required options: `--roman-to-arabic --preserve-heading-numbers --validate --semantic-validate`
+- HITL state: `ready-for-review`, `reviewed-needs-revision`, `revised-ready-for-review`, `accepted-by-user`, or `not-run`
+## Reference Analysis
+```powershell
+python scripts\analyze_template.py reference.hwpx
+```
+Use the output to identify named styles, paragraph properties, character properties, border fills, page margins, and table widths.
+Do not force the default style names on a different standard. If the reference does not clearly show how `2.1`, `2.1.1`, `2.1.1.1`, body text, lists, or tables should map, ask for those rules before generating or clearly label the first output as an inferred draft.

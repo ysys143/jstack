@@ -1,0 +1,34 @@
+# blob:bbe26d21ccaee1565b5c5f2d4cf2d50332f5ed65
+# Framing — what to send, what to withhold
+## The split
+| Send | Withhold |
+| --- | --- |
+| The artefact itself | Your assessment of it |
+| Constraints the reviewer cannot discover | Why you think it satisfies them |
+| What has already been tried and failed | Which option you prefer |
+| How the result will be used | The reasoning that led you here |
+The rule behind the table: send what is **inaccessible** to the reviewer,
+withhold what is **inferable** by it. Your conclusion is inferable — that is the
+thing being tested — and supplying it replaces the test with a review of your
+argument.
+## Phrasings that make refutation the default
+| Instead of | Ask |
+| --- | --- |
+| "Any issues?" | "Name the input that makes this produce a wrong result" |
+| "Does this handle X?" | "Show the case where X is mishandled, or state that none exists" |
+| "Thoughts?" | "Argue the strongest case against this, then say whether it survives" |
+| "Is the approach sound?" | "What would have to be true for this approach to be the wrong one?" |
+Each right-hand form has the same property: a reviewer that finds nothing has to
+say so explicitly. "No issues" is a claim; silence is not.
+## Asking for the refutation to be checkable
+Request a concrete failure — an input, a sequence, a state — rather than a
+category. "This may have a race condition" cannot be acted on or dismissed; "two
+callers reaching line 40 with the lock released" can be run.
+When a reviewer can only name a category, that is still worth having, but record
+it as unverified rather than as a finding. The two decay differently: a finding
+gets fixed, a category gets forgotten.
+## When the reviewer is another model
+It will produce a fluent answer whether or not it has grounds for one, so ask
+for the evidence with the verdict — the line, the input, the run. A verdict
+without evidence is not weaker evidence; it is a different kind of object, and
+treating it as a weak finding is how unfounded objections get half-fixed.

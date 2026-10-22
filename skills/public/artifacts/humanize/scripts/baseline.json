@@ -1,0 +1,102 @@
+{
+  "version": "v1.6-2026-05-06",
+  "source": "KatFish (Park et al., 470 human vs 1,624 LLM texts; 771 essays, 945 poems, 378 abstracts) + LREAD human-reading experiment",
+  "notes": "metric-engineer imports this baseline unchanged for z-score calculation. Unpublished cells are null. When supplementing with a user corpus, append ',user-corpus-{date}' to source.",
+  "genres": {
+    "essay": {
+      "comma_inclusion_rate": {"human": 26.31, "ai": 61.03, "ratio": 2.32, "unit": "percent"},
+      "comma_usage_rate": {"human": 1.13, "ai": 2.56, "ratio": 2.27, "unit": "per_sentence"},
+      "comma_relative_position": {"human": 0.10, "ai": 0.20, "ratio": 2.00, "unit": "normalized_0to1"},
+      "comma_segment_length": {"human": 4.35, "ai": 8.56, "ratio": 1.97, "unit": "eojeol_per_segment"},
+      "comma_pos_diversity": {"human": 24.38, "ai": 59.39, "ratio": 2.44, "unit": "pos_count"},
+      "ending_comma_rate": {"human": 4.10, "ai": 19.83, "ratio": 4.84, "unit": "percent"}
+    },
+    "poetry": {
+      "comma_inclusion_rate": {"human": 27.01, "ai": 42.90, "ratio": 1.59, "unit": "percent"},
+      "comma_usage_rate": {"human": 2.61, "ai": 4.84, "ratio": 1.85, "unit": "per_sentence"},
+      "comma_relative_position": {"human": 0.18, "ai": 0.27, "ratio": 1.50, "unit": "normalized_0to1"},
+      "comma_segment_length": null,
+      "comma_pos_diversity": {"human": 23.13, "ai": 23.86, "ratio": 1.03, "unit": "pos_count", "note": "Weak discrimination in poetry; requires a genre guard"},
+      "ending_comma_rate": {"human": 4.68, "ai": 15.57, "ratio": 3.33, "unit": "percent"}
+    },
+    "abstract": {
+      "comma_inclusion_rate": {"human": 47.48, "ai": 65.21, "ratio": 1.37, "unit": "percent"},
+      "comma_usage_rate": {"human": 1.73, "ai": 2.40, "ratio": 1.39, "unit": "per_sentence"},
+      "comma_relative_position": {"human": 0.15, "ai": 0.24, "ratio": 1.60, "unit": "normalized_0to1", "note": "Estimate from report body; detailed cell unpublished"},
+      "comma_segment_length": null,
+      "comma_pos_diversity": null,
+      "ending_comma_rate": {"human": 13.27, "ai": 28.01, "ratio": 2.11, "unit": "percent"}
+    },
+    "news": null,
+    "qa": null,
+    "blog": null
+  },
+  "global_average": {
+    "comma_inclusion_rate": {"human": 33.60, "ai": 56.38, "ratio": 1.68, "unit": "percent"},
+    "comma_usage_rate": {"human": 1.82, "ai": 3.27, "ratio": 1.79, "unit": "per_sentence"},
+    "comma_relative_position": {"human": 0.14, "ai": 0.24, "ratio": 1.65, "unit": "normalized_0to1"},
+    "comma_segment_length": {"human": 5.13, "ai": 7.41, "ratio": 1.45, "unit": "eojeol_per_segment"},
+    "comma_pos_diversity": {"human": 30.12, "ai": 48.40, "ratio": 1.61, "unit": "pos_count"}
+  },
+  "z_score_thresholds": {
+    "high_risk": 1.0,
+    "comments": "The report's detection-algorithm section adds weight at z>1.0. Compare document measurements with the genre baseline and add weight to metrics whose z-score exceeds 1.0. Supplement news/qa/blog with a user corpus. Recommend a genre=='poetry' guard because comma_pos_diversity weakly separates poetry."
+  },
+  "lexicons": {
+    "conclusion_pivot": [
+      "결론적으로",
+      "따라서",
+      "이를 통해",
+      "그러므로"
+    ],
+    "safe_balance": [
+      "양쪽 모두",
+      "두 가지 모두",
+      "장점도 있지만",
+      "신중하게",
+      "균형"
+    ],
+    "hanja_nominalizers": [
+      "성",
+      "적",
+      "화"
+    ],
+    "lexicon_thresholds": {
+      "conclusion_pivot": {"per_doc_count": 3, "severity": "S1", "merges_into": "D-1"},
+      "safe_balance": {"per_doc_count": 4, "severity": "S2", "new_code": "G-3"},
+      "hanja_nominalizers": {"per_doc_density": 12, "severity": "S2", "merges_into": "F-4", "unit": "occurrences_per_doc"}
+    }
+  },
+  "lread_calibration": {
+    "human_intuition_acc": 0.60,
+    "human_intuition_p_value": 0.362,
+    "human_intuition_chance_diff": "no statistical difference",
+    "rubric_acc": 0.90,
+    "rubric_fisher_p": 0.015,
+    "rubric_cohens_h": 0.73,
+    "ai_essay_false_negative_drop": {
+      "before": 0.500,
+      "after": 0.083,
+      "fisher_p": 0.003
+    },
+    "zero_shot_llm_majority_acc": 0.9667,
+    "comments": "Phase 1 intuition at 60% does not differ statistically from chance (p=.362); general readers struggle to identify AI Korean. Providing the Phase 2 rubric (commas, connective endings, concluding/balance vocabulary, aligned with our taxonomy) raises accuracy to 90%. The v1.6 detector directly incorporates LREAD rubric metrics; reaching 90% human-reading accuracy is its first KPI."
+  },
+  "v1_6_promotion_targets": {
+    "promote": [
+      {"cand_id": "cand-v16-001", "new_code": "C-11", "name": "ending_comma_rate", "severity": "S1", "primary_metric": "ending_comma_rate"},
+      {"cand_id": "cand-v16-002", "new_code": "C-12", "name": "comma_inclusion_rate", "severity": "S2", "primary_metric": "comma_inclusion_rate"},
+      {"cand_id": "cand-v16-003", "new_code": "E-5", "name": "comma_segment_length", "severity": "S2", "primary_metric": "comma_segment_length"},
+      {"cand_id": "cand-v16-004", "new_code": "E-6", "name": "comma_pos_diversity", "severity": "S2", "primary_metric": "comma_pos_diversity", "genre_guard": ["poetry"]},
+      {"cand_id": "cand-v16-007", "new_code": "G-3", "name": "safe_balance_lexicon", "severity": "S2", "primary_metric": "safe_balance"}
+    ],
+    "merge": [
+      {"cand_id": "cand-v16-006", "into": ["D-1", "H-1", "A-2"], "patch": "Formally cite four lexicon entries and thresholds"},
+      {"cand_id": "cand-v16-008", "into": ["F-4"], "patch": "Specify three hanja_nominalizers and an enhanced S2 threshold above 12 occurrences per document"}
+    ],
+    "hold": [
+      {"cand_id": "cand-v16-005", "name": "spacing_regularness", "reason": "Quantitative cells unpublished in the report body. Revisit in v1.7 after obtaining a user-corpus baseline. Detection-only signal; no rewriting prescription (do not deliberately introduce spelling errors)."},
+      {"cand_id": "cand-v16-009", "name": "persona_register_mismatch", "reason": "Conflicts with v1.5 monolith fast and absence of author-context injection. Revisit in v1.7+ once an opt-in design operating only as a metadata booster is defined."}
+    ]
+  }
+}

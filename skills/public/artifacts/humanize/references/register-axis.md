@@ -1,0 +1,109 @@
+# Register axis: the primary decision axis
+
+This axis resolves opposite verdicts on identical strings. The deciding variable
+is the paragraph's register. A proposal can contain fragment-style summaries,
+prose methodology, and captions without sentence endings. The three-genre router
+in `SKILL.md` Phase 0 cannot express paragraph-level switching, so genre becomes
+the secondary axis.
+
+This is a port of kordoc's existing `usesGaejosikMunche` preset gate.
+
+## 1. Three registers
+
+| Register | Surface form | Ending | Typical location |
+|---|---|---|---|
+| 개조식-무어미 | Initial item marker (□ ○ - ⇒) | Nominal form or `-임/함/됨` | Summaries, implementation plans, expected effects |
+| 서술-합쇼체 | Paragraph prose | `~합니다` or `~한다` | Methodology, background, argument |
+| 캡션-무어미 | Noun phrase after `[표 1]` or `[그림 1]` | No sentence ending | Table and figure titles |
+
+## 2. Classifiers
+
+Apply these in order to each paragraph. Stop at the first match.
+
+1. A single line beginning with `[표 N]`, `[그림 N]`, or `<표 N>` is **캡션-무어미**.
+2. An initial item marker (□ ○ - ⇒ · 1) 2) 3), etc.) without a sentence ending
+   indicates **개조식-무어미**.
+3. A proposing organization as subject and a delivery commitment as predicate
+   indicates **서술-합쇼체** (the procurement/commitment dual register, D-7).
+4. Otherwise default to **서술-합쇼체**, where the most rules apply.
+
+Only classifier 3 is a substantive rule; the others rely on surface forms. If
+automatic register classification falls below 90% accuracy on a paragraph sample,
+this axis is impractical. That indicates tagging costs exceed genre-routing
+costs, not that the axis is wrong. Measure the cost before adding classifiers.
+
+## 3. `적용_서법:` field convention
+
+Every rule has one `- 적용_서법:` line containing a comma-separated subset of the
+three register names. An absent field does not mean all registers apply:
+**missing means unresolved**. Defer unresolved rules in 개조식-무어미 and
+캡션-무어미. Different verdicts on identical text in different registers are expected.
+
+## 4. Five conflicts and their resolution
+
+These are opposite verdicts from three upstream sources (kordoc, fluent-korean,
+noslop-ko) and our taxonomy. The register axis resolves them.
+
+| Case | String | One verdict | Other verdict | Resolution |
+|---|---|---|---|---|
+| 1 | `~다` declarative ending | DA_ENDING = error | 3.3 assumes `~다` by default | Error only in 개조식-무어미 |
+| 2 | Predominantly nominal endings | Required at every level | E-2 removes them | Remove only in 서술-합쇼체 |
+| 3 | `1) 2) 3)` list blocks | Statutory level-3 hierarchy markers | 2.12 flags 2 or more blocks | Hierarchy markers in 개조식-무어미 |
+| 4 | Body bold | 2.11 flags 3 or more uses | M-1 makes missing caption bold S1 | Bold is normative in 캡션-무어미 |
+| 5 | `A가 아니라 B` | RHETORIC_CONTRAST = error | 1.1 permits one occurrence | Permit one only in 서술-합쇼체 |
+
+### Case 1: `~다` declarative ending
+
+- Conflict: kordoc `munche-lint.ts` treats `DA_ENDING` as an error; our 3.3 assumes `~다` by default.
+- 적용_서법: 개조식-무어미
+- 판정자: Count `~다` as a defect only on an item-marked line that requires a nominal ending.
+
+### Case 2: Predominantly nominal endings
+
+- Conflict: kordoc requires nominal endings at every level; our E-2 treats them as telegraphic style and restores predicates.
+- 적용_서법: 서술-합쇼체
+- 판정자: Exclude list items and header rows. Diagnose telegraphic style only when at least half the sentences in prose paragraphs end in noun phrases.
+
+### Case 3: `1) 2) 3)` list blocks
+
+- Conflict: kordoc treats these as statutory level-3 markers; our 2.12 flags 2 or more blocks.
+- 적용_서법: 개조식-무어미
+- 판정자: Statutory markers indicate hierarchy. Do not count them as list blocks when indentation aligns with the parent marker.
+
+### Case 4: Body bold
+
+- Conflict: our 2.11 flags 3 or more bold uses in a paragraph; M-1 grades missing caption bold as S1.
+- 적용_서법: 캡션-무어미
+- 판정자: Exclude captions from bold counts because bold is normative there. Apply the threshold of 3 only to prose paragraphs.
+
+### Case 5: `A가 아니라 B`
+
+- Conflict: kordoc reports `RHETORIC_CONTRAST` as an error, with 0 measured occurrences; our 1.1 permits one.
+- 적용_서법: 서술-합쇼체
+- 판정자: Do not count the contrast in 개조식-무어미 or 캡션-무어미, where it is rare. Apply the one-occurrence allowance only to prose.
+
+## 5. Eleven automatic exemptions
+
+These rules incorrectly flagged normal registers in procurement, academic, and
+official documents because the validation corpus contained only opinion and
+essay prose, as the C-1 footnote acknowledges. Automatically exempt them in
+개조식-무어미 and 캡션-무어미:
+
+`A-5` · `A-6` · `A-10` · `A-11` · `C-1` · `C-9` · `D-3` · `F-4` · `G-1` · `I-4` · `I-5`
+
+Exemption does not delete the rules. They still fire in 서술-합쇼체 paragraphs.
+
+## 6. Genre's role
+
+Genre (procurement / proposal / general / english) selects only which pipeline
+to load. It does not decide paragraph verdicts. Disabling rules by genre would
+also disable them on prose paragraphs in the same document; that is why the
+genre-gate approach was rejected.
+
+## 7. Contract
+
+`tests/test_register_axis.js` checks this document. Each of the five cases must
+contain both `적용_서법:` and `판정자:`; any omission produces a nonzero exit.
+
+See `references/code-space.md` for namespaces and `references/gaejosik.md` for
+fragment-style thresholds.

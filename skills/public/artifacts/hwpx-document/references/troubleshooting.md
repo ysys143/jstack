@@ -1,0 +1,140 @@
+# Troubleshooting
+
+## `validate_hwpx.py` passes but Hancom layout looks wrong
+
+- Open the reference and generated file side by side.
+- Check page body width and table width.
+- Check whether stale `hp:linesegarray` exists in replaced content.
+- Re-run conversion with `--semantic-validate`.
+
+## `.hwp` reference conversion fails
+
+- `.hwp` references require Windows, Hancom Office, and `pywin32`.
+- Prefer asking the user to save the reference as `.hwpx` manually.
+- Use `--reference-cache-dir` if the source folder is read-only.
+
+## Korean paths print incorrectly
+
+Use UTF-8 mode:
+
+```powershell
+$env:PYTHONUTF8 = "1"
+```
+
+## A generated file references missing styles
+
+- Run `validate_hwpx.py --semantic`.
+- Inspect the reference with `analyze_template.py`.
+- If the reference lacks the default proposal names, do not assume the old standard is correct. Use `style-intake.md` to ask which reference styles or visual rules should map to body text, headings, lists, captions, and tables.
+
+---
+
+**The following symptom/remedy pairs come from actual failures in this repository.**
+They extend the original four sections above, ordered from highest cost: files that
+cannot open first, visual discrepancies later.
+
+## Hancom shows a repair dialog: "파일이 손상되었습니다"
+
+The most common cause is **using attributes that do not belong on `hp:secPr`**.
+`pageWidth`, `pageHeight`, and `leftMargin` are not secPr attributes. Hancom treats
+the whole secPr as unreadable rather than ignoring unknown attributes.
+
+- See `references/xml-structure.md` §2 for canonical structure and a real example.
+- Margin attributes are `left`, `right`, `top`, and `bottom`, on `hp:margin`
+  inside `hp:pagePr`.
+
+A second cause is the **`mimetype` entry**: it must be uncompressed (`ZIP_STORED`)
+and **first** in the ZIP. Rewriting tools often break this invariant; using
+`scripts/hwpx_zip.py` `rewrite()` preserves it.
+
+```powershell
+python "$Skill\scripts\validate_hwpx.py" "output.hwpx" --semantic
+```
+
+## The file opens without any warning but every page is blank
+
+**The absence of a warning makes this easy to miss even in human review.** It occurs
+in files built by an LLM directly authoring XML.
+
+Check two signals together:
+
+- `Preview/PrvText.txt` contains only two or three characters, much less than a populated document.
+- There are **zero** `hp:linesegarray` elements.
+
+Hancom caches line layout in `linesegarray`, normally creating it for each paragraph
+when saving. Zero means **Hancom has never saved the file**. That is not itself a
+defect, but both signals together suggest the body may actually be empty.
+
+```powershell
+python "$Skill\scripts\text_extract.py" "output.hwpx"
+```
+
+Extracted body text indicates a rendering problem; no text indicates absent content.
+
+**Preserve this diagnostic signal where possible.** The reference-rewrite path in
+`scripts/rekian_xml.py` removes stale caches. Removing **all** caches makes zero
+`linesegarray` entries ambiguous between missing content and our own cleanup.
+`clear_linesegarrays()` therefore supports **modified-paragraph-only** scope.
+Calling `rewrite_redraftable_paragraphs(..., linesegarray_scope="modified")`
+preserves caches in untouched paragraphs. The default still removes all caches.
+
+## Every character has a box drawn around it
+
+The `.hwp`-to-`.hwpx` converter has linked `hh:charPr/@borderFillIDRef` to a bordered
+`hh:borderFill`. XML remains consistent, so the validator passes.
+
+```powershell
+python "$Skill\scripts\fix_borders.py" "output.hwpx" --check
+python "$Skill\scripts\fix_borders.py" "output.hwpx" --fix
+```
+
+## The file thumbnail shows the client's original document
+
+Reusing a reference template inherits `Preview/PrvImage.png`. The body contains the
+new proposal, but the file explorer shows the client's document **before the file
+is opened**. Author fields `creator` and `lastsaveby` in `Contents/content.hpf`
+remain too.
+
+```powershell
+python "$Skill\scripts\sanitize_template.py" "output.hwpx" --check
+python "$Skill\scripts\sanitize_template.py" "output.hwpx" --fix
+```
+
+## Styles look right in the style pane but wrong on the page
+
+`hp:p` holds both `styleIDRef` and `paraPrIDRef`; **the direct paragraph property
+reference overrides the style's reference**. Thus "개요 2" can display in the style
+panel while body formatting appears on the page. See `references/hangul-practice.md` §3.
+
+## A multi-page table loses its header row after the first page
+
+`hp:tbl/@repeatHeader` is `"0"`; use `"1"` paired with `pageBreak="CELL"`.
+With `pageBreak="TABLE"`, the table does not split and has no header to repeat.
+Instead, it moves wholesale to the next page, leaving whitespace before it.
+See `references/hangul-practice.md` §1.
+
+## Page count differs between machines
+
+**This is not a defect.** Hamchorom ships with Hancom Office and is absent from files
+using `isEmbedded="0"`. Machines without Hancom substitute another font. Different
+character widths move line breaks and change page counts.
+
+**Assess maximum-page requirements only on a machine with Hancom installed.**
+Adjusting length using other counts can make the submitted file violate the limit.
+See `references/hangul-practice.md` §6.
+
+## The generated file crashes Hancom when scrolling to an image
+
+A required `hp:pic` child is missing, causing a crash without dialog or log.
+Common omissions are the four vertices under `hp:imgRect`, `hp:imgClip`, `hp:imgDim`,
+and the three matrices under `hp:renderingInfo`. See `references/xml-structure.md` §3
+for the complete list.
+
+An image shown as an **empty rectangle** instead indicates registration trouble:
+`hc:img/@binaryItemIDRef` takes the `Contents/content.hpf` manifest **ID**, not a file path.
+
+## Where each symptom is routed
+
+`references/render-checklist.md` §5 collects destinations and distinguishes
+**machine-detectable conditions from human-only observations**. Its purpose is to
+avoid wasting time treating unrepairable environment differences as defects.

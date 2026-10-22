@@ -1,0 +1,30 @@
+# /tidy — lock behavior, then use one axis per pass
+
+## Establish the baseline
+
+1. Is the worktree clean (`git status --short`)?
+2. **Have you directly observed the tests passing now?** An expectation of passing
+   is not a verified baseline.
+3. If tests are missing, write the narrowest one first.
+
+If any condition cannot be met, **say so and stop**. Unverified cleanup replaces
+known disorder with unknown disorder.
+
+## Scope
+
+Default to the current changes (`git diff`). Broaden scope through arguments;
+scope is an argument, not a separate command.
+
+## Passes
+
+Use the canonical axes in the `cleanup` skill. Run one axis per pass and rerun
+tests after every pass, **not just once at the end**, so the breaking pass can be
+identified.
+
+Remove swallowed exceptions (axis 6) **before** deduplication (axis 5). Promoting
+a defect into a shared path spreads it to all callers.
+
+## Boundaries
+
+Do not change behavior. A required behavior change is separate work in a separate
+commit. Deleting tests to make them green is not cleanup.

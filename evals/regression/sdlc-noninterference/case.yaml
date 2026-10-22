@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: sdlc-noninterference
+description: Does a generic build request avoid implicitly joining SDLC?
+runs: 5
+tags: [regression, sdlc]

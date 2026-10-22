@@ -1,0 +1,147 @@
+---
+name: research
+description: "Source-backed deep research with verified citations. Triggers: 심층 조사, 출처 검증."
+---
+
+# Research — deep research for procurement
+
+## This skill is self-contained
+
+The **pipeline, checkers, and source lens are all included**. No external tool is
+required for the self-contained path.
+
+| Path | Role | Requirements | When |
+|---|---|---|---|
+| **자립** | `기본` | None | `상시` |
+| **hyperresearch** | `선택` | `uv tool install hyperresearch` | `조건:` A broad sweep of 55-80 sources is needed |
+
+## Phase 0: check tools (optional path only)
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/research/scripts/ensure_research.js
+```
+
+- exit 1: **only the self-contained path is available; this is the normal default**.
+- exit 0: hyperresearch is also available for a broad sweep.
+- exit 2: Node.js is absent, so the checkers cannot run.
+
+## Phase 0.5: fix the question
+
+**Write the query as one sentence before starting.** Changing it during research
+can invalidate earlier collection.
+
+For procurement, **obtain the requirements list first**: a file organizing RFP
+items into IDs such as `REQ-001`. This is input to the Phase 4 check.
+
+```
+REQ-001  사용자 인증은 SSO 를 지원한다
+REQ-002  감사 로그를 1년 보관한다
+```
+
+## Phase 1: source lens — Korean primary sources first
+
+Load `references/kr-sources.md`.
+
+**Obtain notice or project IDs first.** Avoid aimless keyword searches.
+**Start with available OpenAPIs**: DART, KCI, KOSIS, and legislation.
+나라장터, 조달청, and 온비드 have **no automated lookup path here**; a person retrieves them.
+
+Do not invent unavailable paths. Disclose blocked access.
+
+## Phase 2: breadth, then depth
+
+1. **Breadth:** split the query into 3-6 subquestions and collect sources for each,
+   using different institutional, topical, and temporal perspectives.
+2. **Record contradictions:** when sources disagree, **preserve the disagreement**.
+   Choosing one is a judgment that requires an explicit evidential basis.
+3. **Depth:** investigate at most **two** decision-critical points; this caps cost.
+
+## Phase 3: write
+
+- Write only under `deliverables/`.
+- Include the report protocol headings `## 요약` and `## 출처`.
+- Use numbered citations such as `[1]`. Source entries need **identifiers such as
+  URLs, DOIs, or notice IDs**.
+- Internal markers such as `[[note-id]]` must not remain in final deliverables.
+- Limit CJK paragraphs to **800 characters** (English: 1500). The provenance and
+  rationale of these limits are in `references/tier-profile.md`.
+
+## Phase 4: two mechanically enforced checks
+
+### Verify every citation
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/research/scripts/cite_check.js \
+  deliverables/report.md --pairs pairs.jsonl
+```
+
+The checker detects `MISSING` citations absent from the source list, `UNUSED`
+source entries, `UNRESOLVED` entries without identifiers, and `MALFORMED` reports
+without a sources section.
+
+**Do not sample.** Upstream `sample_rate=0.6` checks only one of every two pairs
+because `round(1/0.6)=2`. One citation can disqualify a procurement submission;
+checking an unknown half cannot establish reliability of the rest. See
+`references/cite-check.md` for the rationale.
+
+A person or LLM must read **every** sentence/source pair emitted by `--pairs`.
+Whether a source actually supports a sentence is beyond mechanical checking.
+
+### Map requirements to responses
+
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/research/scripts/coverage_matrix.js \
+  --req rfp.txt --report deliverables/report.md --pairs cov.jsonl
+```
+
+The checker detects `MISSING` requirements, `THIN` responses, and `ORPHAN` IDs
+absent from the list. **A person assesses substantive fulfillment**; `--pairs`
+exports every pair for that review too.
+
+## Phase 5: expand with hyperresearch (optional)
+
+Use the upstream pipeline for a sweep of 55-80 sources.
+
+```
+hyperresearch --version || echo "uv tool install hyperresearch"
+cp ${JSTACK_PLUGIN_ROOT}/skills/research/wrapper_contract.json research/
+```
+
+`wrapper_contract.json` enables **three required axes**: step 1 coverage-matrix,
+step 12 instruction-critic, and step 14.5 cite-check. It disables the most
+expensive axis, triple-draft.
+
+**`references/tier-profile.md` defines the selected axes and their rationale**
+as the `jstack-lite` profile. Its table is canonical; `wrapper_contract.json`
+implements it. `tests/run_tests.js` detects disagreement.
+
+**Do not change tier.** Upstream step 1 classifies `light`/`full` and prohibits
+overrides. Yet `light` skips **all** step 12 critics, including instruction-critic,
+the most valuable procurement axis. Select **steps** instead of changing tier.
+
+Keep all four critics with **different models**: instruction-critic and cite-check
+use `opus`; the other three use `sonnet`. Four all-`opus` reviews can share the
+same structural blind spots, repeating the same trial four times instead of
+providing four independent trials.
+
+**Recognize the evidence limits.** Upstream states "Telemetry: none. profile tuning is vibes"; its first-place benchmark claim comes from an n=9 pilot with a
+0.77-point lead over second place. Upstream does not know which stages create
+value. Select axes with demonstrated value for our use, rather than counting stages.
+
+Even with upstream, **rerun our own Phase 4 checks**: upstream cite-check examines
+only half the pairs by default.
+
+## Boundaries
+
+| Task | Owner |
+|---|---|
+| Scientific domain tools and databases | `science` skill |
+| Style rewriting | `humanize` skill |
+| Spelling and length measurement | `proof` skill |
+
+## Explicit limitations
+
+- **Checkers validate structure.** A person or LLM must assess whether sources
+  support sentences and responses fulfill requirements. Scripts export every pair.
+- 나라장터, 조달청, and 온비드 have **no automated lookup path here**; a person retrieves them.
+- Use hyperresearch only when its CLI exists. The self-contained path works without it.

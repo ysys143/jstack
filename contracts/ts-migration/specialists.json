@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "scope": "Optional external Python tools are separate from the Node >=20 core. Resolution is not OS execution or independent acceptance.",
+  "features": [
+    {
+      "id": "deck",
+      "classification": "optional-specialist",
+      "python": "3.10",
+      "directDependencies": [
+        "python-pptx",
+        "Pillow",
+        "fpdf2",
+        "PyMuPDF"
+      ],
+      "sources": [
+        "skills/deck/scripts/assemble.py",
+        "skills/deck/scripts/pdf2pptx.py"
+      ],
+      "input": "contracts/ts-migration/specialists/deck.in",
+      "lock": "contracts/ts-migration/specialists/deck.lock.txt",
+      "importCheck": "import pptx, PIL, fpdf, fitz",
+      "targetPlatforms": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "resolutionStatus": "resolved",
+      "executionStatus": "not_run",
+      "acceptanceStatus": "not_accepted",
+      "optionalComposition": {
+        "upscaling": "Use the deck-image environment and combined lock; --skip-upscale does not need image credentials."
+      }
+    },
+    {
+      "id": "image",
+      "classification": "optional-specialist",
+      "python": "3.10",
+      "directDependencies": [
+        "requests",
+        "Pillow",
+        "python-dotenv"
+      ],
+      "sources": [
+        "skills/image/scripts/nanobanana.py"
+      ],
+      "input": "contracts/ts-migration/specialists/image.in",
+      "lock": "contracts/ts-migration/specialists/image.lock.txt",
+      "importCheck": "import requests, PIL, dotenv",
+      "targetPlatforms": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "resolutionStatus": "resolved",
+      "executionStatus": "not_run",
+      "acceptanceStatus": "not_accepted",
+      "configuration": [
+        "GEMINI_API_KEY; billed remote API invocation requires explicit task authorization",
+        "No network authentication test is implied by import checks"
+      ]
+    },
+    {
+      "id": "hwpx",
+      "classification": "optional-specialist",
+      "python": "3.10",
+      "directDependencies": [
+        "lxml"
+      ],
+      "sources": [
+        "skills/hwpx/scripts/build_hwpx.py",
+        "skills/hwpx/scripts/validate_hwpx.py",
+        "skills/hwpx/scripts/md_to_hwpx.py"
+      ],
+      "input": "contracts/ts-migration/specialists/hwpx.in",
+      "lock": "contracts/ts-migration/specialists/hwpx.lock.txt",
+      "importCheck": "import lxml.etree",
+      "targetPlatforms": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "resolutionStatus": "resolved",
+      "executionStatus": "not_run",
+      "acceptanceStatus": "not_accepted"
+    },
+    {
+      "id": "hwpx-windows",
+      "classification": "optional-specialist",
+      "python": "3.10",
+      "directDependencies": [
+        "lxml",
+        "pywin32"
+      ],
+      "sources": [
+        "skills/hwpx/scripts/md_to_hwpx.py"
+      ],
+      "input": "contracts/ts-migration/specialists/hwpx-windows.in",
+      "lock": "contracts/ts-migration/specialists/hwpx-windows.lock.txt",
+      "importCheck": "import lxml.etree, win32com.client",
+      "targetPlatforms": [
+        "windows"
+      ],
+      "resolutionStatus": "resolved",
+      "executionStatus": "not_run",
+      "acceptanceStatus": "not_accepted",
+      "configuration": [
+        "Licensed Hancom Office and working HWP COM registration; native Windows only, not WSL"
+      ]
+    },
+    {
+      "id": "diagram-fonts",
+      "classification": "optional-specialist",
+      "python": "3.10",
+      "directDependencies": [
+        "fonttools[woff]",
+        "brotli"
+      ],
+      "sources": [
+        "skills/diagram/scripts/subset_fonts.py"
+      ],
+      "input": "contracts/ts-migration/specialists/diagram-fonts.in",
+      "lock": "contracts/ts-migration/specialists/diagram-fonts.lock.txt",
+      "importCheck": "import fontTools.subset, brotli",
+      "targetPlatforms": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "resolutionStatus": "resolved",
+      "executionStatus": "not_run",
+      "acceptanceStatus": "not_accepted",
+      "configuration": [
+        "An explicitly selected font file whose license permits subsetting and embedding"
+      ]
+    },
+    {
+      "id": "deck-image",
+      "classification": "optional-specialist-composition",
+      "python": "3.10",
+      "directDependencies": [
+        "python-pptx",
+        "Pillow",
+        "fpdf2",
+        "PyMuPDF",
+        "requests",
+        "Pillow",
+        "python-dotenv"
+      ],
+      "sources": [
+        "skills/deck/scripts/assemble.py",
+        "skills/deck/scripts/pdf2pptx.py",
+        "skills/image/scripts/nanobanana.py"
+      ],
+      "input": "contracts/ts-migration/specialists/deck-image.in",
+      "lock": "contracts/ts-migration/specialists/deck-image.lock.txt",
+      "importCheck": "import pptx, PIL, fpdf, fitz, requests, dotenv",
+      "targetPlatforms": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "resolutionStatus": "resolved",
+      "executionStatus": "not_run",
+      "acceptanceStatus": "not_accepted"
+    }
+  ],
+  "upstreamScience": {
+    "classification": "upstream-per-skill",
+    "sourceManifests": [
+      "skills/science/repos/academic/pyproject.toml",
+      "skills/science/repos/academic/requirements-dev.txt",
+      "skills/science/repos/academic/requirements-pdf-content-classifier.txt",
+      "skills/science/repos/gdm/skills/alphagenome_single_variant_analysis/pyproject.toml",
+      "skills/science/repos/kdense/pyproject.toml",
+      "skills/science/repos/kdense/skills/opentrons-integration/requirements-flex.txt",
+      "skills/science/repos/kdense/skills/opentrons-integration/requirements-ot2.txt"
+    ],
+    "installationPolicy": "Use the selected skill SKILL.md and its dependency manifest in a separate uv environment. Do not install the entire catalog. Preserve upstream Python/GPU/service requirements.",
+    "knownPythonFloors": {
+      "skills/science/repos/kdense/pyproject.toml": ">=3.13 (upstream repository tooling, not every skill)",
+      "skills/science/repos/gdm/skills/alphagenome_single_variant_analysis/pyproject.toml": ">=3.10"
+    },
+    "executionStatus": "not_run",
+    "acceptanceStatus": "not_accepted"
+  },
+  "ownedMigrationDependencies": [
+    {
+      "distribution": "PyYAML",
+      "classification": "owned-core-migration-not-specialist",
+      "sources": [
+        "skills/verify/scripts/preflight.py",
+        "skills/plan/scripts/contract_lint.py",
+        "skills/author/scripts/check_package_surface.py",
+        "skills/prune/scripts/prune.py",
+        "skills/science/scripts/rebuild-index.py"
+      ],
+      "policy": "Port the owning checker to TS; do not make PyYAML a permanent core requirement."
+    }
+  ],
+  "sourceDiscrepancies": [
+    {
+      "source": "skills/image/requirements.txt",
+      "finding": "Added the missing requests declaration. Retained existing google-genai for compatibility; the dedicated image lock includes the actual nanobanana.py imports requests, Pillow and python-dotenv.",
+      "status": "corrected"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "issueExclusions": [
+    {
+      "number": 139,
+      "reason": "Asks for publishing @ysys143/jstack to the npm registry; a release decision that belongs to a person.",
+      "date": "2026-10-08"
+    }
+  ],
+  "rules": [
+    {
+      "id": "no-publishing-issues",
+      "scope": "issues",
+      "rule": "Exclude issues whose resolution is publishing to a package registry such as npm, creating a tag or release, or changing repository or organization settings.",
+      "reason": "Outward-facing and hard to reverse; the owner decides these.",
+      "date": "2026-10-08"
+    }
+  ]
+}

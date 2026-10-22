@@ -1,0 +1,24 @@
+# blob:00caa595d2cb0e93f72f2d1340e3ad8900beade0
+---
+description: "Close the session: record done, unfinished and next steps"
+---
+# /wrap — record unfinished work first
+## Sequence
+1. **Record unfinished work first.** Commits and diffs already record completed
+work; remaining work otherwise has no record.
+2. Inspect remaining worktree changes and **decide** whether to commit or discard.
+Ambiguous leftovers prevent the next session from distinguishing intent.
+3. Store only what the next session needs, following the `recall` skill.
+**Do not store what the repository already tells you.**
+4. Do not store progress status. It becomes stale within a day and remains searchable
+for months.
+## What to retain
+| Retain | Do not retain |
+|---|---|
+| Rejected approaches and their reasons | What was implemented |
+| External constraints | Which files changed |
+| The next likely blocking point | Current work in progress |
+## Report
+Separate completed, unfinished, and deliberately omitted work. Without the third
+category, the next reader may mistake a scope decision for an omission and review
+it again.

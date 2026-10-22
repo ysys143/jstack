@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: deck-design-slop-recall
+description: Can it produce the plugin-defined four penalty sections and four cause-tag values?
+runs: 5
+tags: [discriminating, deck, ablation-discriminating]

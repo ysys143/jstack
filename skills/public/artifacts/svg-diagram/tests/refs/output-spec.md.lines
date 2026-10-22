@@ -1,0 +1,180 @@
+# blob:b7ee30112fef821c919bdd80543ee9a8d9569ab7
+# Output specification: three dials, presets, type ramps, and Korean fonts
+Source: `up:diagram-design` `references/output-spec.md` §2 Size, §3 Detail,
+§4 Audience, and Non-Latin labels (MIT). The upstream §1 Format dial was not
+imported; see Local adaptations below.
+## Three dials: set them before drafting
+Export scaling in `export.md` is downstream of this decision. Size is already
+settled at drafting time; export chooses only the multiplier.
+| Dial | Values | Controls |
+|---|---|---|
+| **Size** | One of the nine presets below | `viewBox`, type ramp, safe area |
+| **Density** | `faithful` / `balanced` / `simplified` | Node and edge count limits |
+| **Audience** | `engineer` / `mixed` / `executive` | **Wording**, not counts |
+## Size presets (§2)
+| Preset | viewBox | Ratio | PNG @2 | Ramp | Use |
+|---|---|---|---|---|---|
+| `doc-inline` (default) | `0 0 960 600` | 8:5 | 1920×1200 | standard | Body-width diagram |
+| `doc-wide` | `0 0 1280 720` | 16:9 | 2560×1440 | standard | Full-width document or wiki |
+| `slide-16x9` | `0 0 1280 720` | 16:9 | 2560×1440 | presentation | Presentation slide |
+| `slide-4x3` | `0 0 1024 768` | 4:3 | 2048×1536 | presentation | Legacy deck template |
+| `social-og` | `0 0 1200 632` | ~1.9:1 | 2400×1264 | presentation | Link preview |
+| `social-square` | `0 0 1080 1080` | 1:1 | 2160×2160 | presentation | Feed post |
+| `print-a4-landscape` | `0 0 1120 792` | ~1.41:1 | @3 → 3360×2376 | print | **A4 landscape: procurement default** |
+| `print-letter-landscape` | `0 0 1056 816` | ~1.29:1 | @3 → 3168×2448 | print | US Letter landscape |
+| `fit` | Derived from content | Any | @2 | standard | Vector handoff without a fixed frame |
+### Deriving `fit`
+Round the content bounding box **up to a multiple of four**, then add fixed padding:
+40px on all sides, plus 60px at the bottom or **180px on the right** for the legend
+(see Legend placement). **Do not let content touch the viewBox edges.**
+## Type ramps by size class
+As canvases grow, node names tend to become relatively smaller. Increase the ramp
+with the preset so projected slides remain readable from the back row.
+| Role | standard | presentation | print |
+|---|---|---|---|
+| Title (Instrument Serif) | 28 | 40 | 32 |
+| Node name (Geist 600) | 12 | 16 | 12 |
+| Sublabel (Geist Mono) | 9 | 12 | 9 |
+| Arrow label (Geist Mono) | 8 | 12 | 8 |
+| Eyebrow or tag (Geist Mono) | 8 | 8 | 8 |
+| Minimum node-box height | 48 | 64 | 48 |
+| Minimum node spacing | 24 | 40 | 24 |
+The presentation ramp **requires fewer nodes**: 16px names inside 64px boxes consume
+the canvas. If a `slide-16x9` layout does not fit, the size dial is exposing excessive
+density. **Lower density by one level instead of shrinking type.**
+## Safe area
+- **All presets**: 40px outer margins. Reserve legend space exclusively for the legend.
+- **`social-og`**: leave 64px on all sides because link-card cropping varies by platform.
+- **`slide-*`**: reserve the bottom 80px if the deck template has a footer bar. Ask if unknown.
+### Legend placement: bottom strip or right-hand box
+**[Local change]** Upstream fixes legends to a **60px bottom strip**. In procurement,
+this can make them unreadable. Fitting 20+ nodes in half an A4 page shrinks the diagram
+to 60–70% of HWP body width, turning 8px horizontal legend text into **4pt**. The
+same effective-pt formula applies here (`scripts/check_effective_size.js --hwp-fraction`).
+| Layout | Reserved area | When |
+|---|---|---|
+| Bottom strip | Bottom **60px**, with no other content | ≤4 legend items and a full-page-width diagram |
+| **Right-hand box** | Rightmost **180px**, with no other content | ≥5 items or placement at ≤70% of body width |
+The right-hand box **stacks items vertically**, avoiding horizontal compression.
+Either layout must meet the effective-pt floor in `check_effective_size.js`.
+Legend text is not exempt.
+## Density (§3): the count dial
+| Level | Nodes | Edges | Sublabels | Preserved content |
+|---|---|---|---|---|
+| `faithful` | **≤24**, zones required | **≤32** | All ports, protocols, versions | Every original component; merge only exact duplicates |
+| `balanced` (default) | **≤12** | **≤16** | Technical sublabels on ≤4 nodes | Components carrying the story; collapse leaf clusters |
+| `simplified` | **≤7** | **≤9** | None | Capabilities and their order; omit infrastructure |
+`balanced` and `simplified` fit the standard complexity budget. **`faithful`
+intentionally exceeds it**, subject to four conditions:
+1. **Zones are mandatory.** Above nine nodes, every node belongs to a labeled zone:
+2–4 zones, solid borders, `paper-2` fill, and an upper-left monospace uppercase
+zone label. An unzoned 20-node diagram is a wiring diagram, not an overview.
+2. **Connector rules remain unchanged.** Even with 24 nodes, §6 rules 1–5 still apply.
+If overlap-free routing is impossible, the actual ceiling has been exceeded; split it.
+3. **Above 24 nodes, provide an overview plus zone details**: an overview treating
+zones as nodes under `balanced` grammar, then one detail per zone
+(`<base>-overview.html`, `<base>-<zone>.html`). **[Local change]** Upstream treated
+splitting as a **single-canvas prohibition**. Procurement cannot always do that;
+see Procurement complexity budget below.
+4. **[Local change]** Upstream fixes two accent colors here. Replace that constraint
+with the **grayscale legibility dimension** below.
+## Standard complexity budget: upstream web-diagram values
+| Dimension | Limit |
+|---|---|
+| Nodes | 9 |
+| Arrows | 12 |
+| Accent-colored elements | 2 |
+**Do not apply this table unchanged to our main categories.** The next table is canonical.
+## Procurement complexity budget
+Our three main categories exceed upstream's standard budget by **2–5 times**.
+In proposals with fixed page allocations, splitting on that limit can **exceed page
+limits or omit requirements and lose points**. Exceeding it is not itself a defect.
+| Category | Nodes | What determines the count |
+|---|---:|---|
+| Procurement system architecture | **20–40** | RFP requirements; one requirement often corresponds to one node |
+| Project organization chart | **15–25** | Proposed organization roster, tied one-to-one to staffing plans and not arbitrarily mergeable |
+| WBS or schedule | **30–60** | Task decomposition; retaining only top-level tasks removes evidence of delivery capability |
+These ranges exceed the upper end of `faithful` (≤24). Keep conditions 1 and 2 above
+and use **zone partitioning**. Only condition 3's single-canvas prohibition is lifted.
+## Grayscale legibility replaces the two-accent limit
+**Remove the two-focus constraint.** Upstream's 2–5% opacity distinctions collapse
+**seven categories into two** in grayscale. Printed procurement evaluation turns that
+collapse into information loss. This shares the concern of CJK requirements 15 and 21.
+Apply one test: **do the same distinctions remain when all color is removed?** If not,
+add shape, line weight, border, or label **redundantly with color**. Do not count focal points.
+## Korean font contract: the core requirement
+**Geist has zero CJK coverage.** For Korean, Japanese, or Chinese labels, extend the
+font family only on the relevant `<text>` elements. Do not replace the entire skin.
+```svg
+<text font-family="'Geist', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif">인증 서비스</text>
+<text font-family="'Geist', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif">認証サービス</text>
+```
+**The Japanese stack (Hiragino/Yu Gothic) lacks Korean glyphs.** Reusing it for Korean
+can corrupt every label. This was the most consequential omission across the four
+absorbed sources: Korean procurement diagrams are the primary use case.
+Monospace sublabels: Korean uses `'Geist Mono', 'Noto Sans Mono CJK KR', monospace`;
+Japanese uses `'Geist Mono', 'Noto Sans Mono CJK JP', monospace`.
+### Width budget
+**One full-width character equals 1em.** Do not add a percentage to average Latin
+width. Combining marks count as zero width.
+**Do not apply that coefficient to the entire string: use mixed-script weights.**
+Full-width 1em, whitespace 0.25em, Latin 0.55em in `scripts/measure_label.js`, and
+Latin 0.6em in `scripts/verify-text-width.js`. Applying the full-width coefficient
+to a mixed string makes masks 20–25% too wide, potentially violating rule 6
+(`cjk-contract.md`, item 19). **The enforcing constants live in the scripts, and
+this prose follows them.** Divergence fails cross-checks in `tests/run_tests.js`.
+### Minimum size
+**Use 12px names for CJK**, not 8px sublabels. Korean becomes illegible below 10px.
+**[Local strengthening]** Upstream treats 12px as a preference and supplies only
+the below-10px illegibility threshold. `taste-gate.md` promotes **at least 12px to
+a pass/fail criterion** because procurement diagrams are evaluated in print.
+**12px is only a `viewBox`-unit floor, not a physical size.** In
+`print-a4-landscape`, it yields 9.0pt, already below the practical Korean grayscale
+laser-print floor. The final criterion is **10pt effective size at final placement
+width**, enforced by `scripts/check_effective_size.js`. Measure both floors and
+report their failures separately. Passing 12px does not establish an effective-pt pass.
+### After translation
+**Rerun geometry validators after translating labels.** Actual width depends on
+fallback fonts, so labels can overflow even when the declared contract is followed.
+### Width-budget enforcement and coverage
+**`scripts/verify-text-width.js` performs the check.** Upstream assigns the 1em
+budget to `verify-treemap.py`, but only `verify-geometry.js` was vendored, so a local
+validator owns this check. It estimates advances as
+`ASCII 0.6em + full-width 1.0em + letter-spacing(n−1 gap)`, respects `text-anchor`,
+and compares left/right extents with container boundaries, allowing 4px slack.
+**Coverage and exclusions are central to this contract.** Only **labels whose anchors
+fall inside a rectangle** are measured, using the **smallest** containing rectangle
+(label mask or node box). Exclusions and caveats:
+- **Uncontained text**: legends, titles, and lane headers. Across four assets,
+**32 of 128** `<text>` elements are in this category.
+- `<tspan>` children, `textLength`, and `rotate`/`scale`/`matrix` transforms use
+typesetting or coordinate systems outside this model. They emit
+`text/out-of-scope` warnings instead of silently disappearing.
+- **The coefficients are provisional.** Actual advances have not been measured
+with Apple SD Gothic Neo or Noto Sans KR, so small Korean overruns can be missed.
+The validator always prints **`measured N of M label(s)`** to distinguish zero
+findings from zero measurements. The four assets measure **96 of 128**. The remaining
+32 labels and the exclusions above still require **human** review through `taste-gate.md`.
+## Local adaptations from upstream
+| Item | Upstream | Local treatment | Reason |
+|---|---|---|---|
+| Format dial | Four values: `html`/`svg`/`png`/`html+png`; **direct SVG authoring prohibited** | Not imported | Detailed below |
+| Audience values | `engineer`/`mixed`/`executive` | Preserved | Restored to upstream values after review 12 |
+| CJK 12px | Preference | **Pass/fail criterion** | Procurement diagrams are evaluated in print |
+| Procurement context | None | Grayscale printing and no abbreviated institution names | Local use case |
+### Why the Format dial was not imported, and the cost
+Upstream **makes HTML canonical and prohibits direct SVG authoring**, explaining
+that HTML is the source of truth and the only artifact targeted by its taste gate.
+The HTML-to-render-to-PNG pipeline was not imported. Copying only its prohibition
+would leave no output path, so **direct SVG authoring is allowed**.
+The historical taste gate was written for HTML artifacts. The current v2.6.22
+integration supplies templates and `self_check.py`, which accepts standalone SVG
+and enforces its accessibility contract too. See `upstream-integration.md`. SVG is
+still the default; HTML is an explicitly requested deliverable. Automated layout and
+browser rendering have not been added by importing those files.
+## Local procurement context
+- **Assume grayscale printing.** Procurement evaluation often uses printouts.
+Low-saturation contrast disappears; combine color with shape or labels.
+- **Do not abbreviate institution names or requirement IDs.** If their length breaks
+the layout, repair the layout.
+- Consider `print-a4-landscape` first: it is the standard page for proposal appendices.

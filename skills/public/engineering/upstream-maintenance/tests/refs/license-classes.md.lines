@@ -1,0 +1,36 @@
+# blob:91a73849bb3e48be9e86437a73a0e3a1170c05fb
+# Licence classes — what each one permits here
+## The classes
+| Class | May be vendored | Obligation carried into this repository |
+| --- | --- | --- |
+| Permissive with notice | Yes | The full licence text and the copyright line travel with the copy |
+| Weak copyleft | Yes, file-level | Modifications to the covered files stay under the same licence |
+| Strong copyleft | Only with a deliberate decision | The obligation can reach the whole distributed work |
+| Non-commercial | Only if this repository is not used commercially | The restriction is on use, so it does not stop at import |
+| Proprietary or vendor-internal | No | Extraction, retention outside the vendor's service, and derivative works are all forbidden |
+| No licence file | **Yes, by default** | Record the absence at the copy. Escalate only if the work is large or expressive rather than functional |
+## The name is not the licence
+Record the **full text**, not the identifier. A file that says only "MIT" is not
+a licence notice: the notice is the text plus the copyright line, and permissive
+licences require both to be reproduced. A project may also carry a modified
+variant under a familiar name.
+## The class is measured, not recognised
+"I know this project, it is permissive" is a recollection. Open the licence file
+in the version you are importing and read it. Projects relicense, and
+sub-directories carry their own terms more often than expected — a permissive
+repository can contain a non-commercial dataset.
+## Non-commercial is not a mild version of permissive
+It restricts *use*, not distribution, so the obligation follows every downstream
+user of this repository rather than ending at the import. Importing it silently
+converts every commercial user into a violator. Vendor it only with the
+restriction recorded at the copy, so the next reader meets it before the code.
+## When the class cannot be established
+Import it and record the state. "Unlicensed" and "licence not found yet"
+are different states — say which one you are in and what you checked, because
+the second one is worth another look and the first is not.
+**What the record buys** is that the decision is visible. A copy with no note
+reads to the next person as "someone checked", and they will not check again.
+A copy with `licence: none, checked <date>, functional utility, 62 lines` can be
+revisited in one minute when it matters.
+The classes that still stop the import are the ones whose obligations land on
+our users, not on us — strong copyleft, non-commercial, vendor-internal.

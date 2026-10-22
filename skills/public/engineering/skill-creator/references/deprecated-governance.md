@@ -1,0 +1,66 @@
+# Deprecated Governance and Its Failure Modes
+
+Read this before creating a skill. The original governance documents were removed; this file retains only decisions and reasons that prevent the same mistakes.
+
+## Limits of a Negative Corpus
+
+Preserve rejected material only when a later cycle consumes it as gate input and can prove that the same anti-pattern remains absent. Without a next-cycle consumer, an archive becomes a graveyard.
+
+The upstream rule says to archive rejected output where the next cycle will see
+it, so later cycles can prove the same anti-pattern is gone. Applying that rule
+to an artifact with no next cycle creates a graveyard instead of a useful
+corpus. This list qualifies because every new skill-authoring cycle must pass
+through it. Do not extend the rule to unrelated outputs.
+
+Earlier governance imported the upstream rule without its application boundary
+and created the exact form that the source rule prohibited. This section records
+that correction.
+
+## Three Safeguards Against a Graveyard
+
+Three safeguards must accompany any negative corpus; without them it is a
+graveyard by definition:
+
+1. The archive is not distributed: it is gitignored and never shipped.
+2. Nothing inside it is canonical.
+3. It has a retirement lifecycle: processed material moves to `completed/`.
+
+Raw retired documents live in a noncanonical, undistributed archive under
+`archive/`, subject to those safeguards.
+This file is a decision list, not that archive: it contains only judgments and
+reasons. Moving the original documents here would break all three safeguards.
+
+## Remove Residue by Default
+
+For ordinary documentation, apply the rule **"what changed -> what is true
+now"**: describe what is true now rather than carrying the history of each
+change. Remove stale deltas, scaffolding residue, and retired information unless
+the artifact is explicitly a changelog. Keep deprecation judgments here and
+current instructions free of historical debris.
+
+The two rules work together: collect deprecation judgments in this file, and
+remove historical residue from current instructions. Mixing them makes every
+document carry its own history.
+
+## Seven Retired Artifacts
+
+| # | Artifact | Why it was wrong |
+|---:|---|---|
+| 1 | `plugin-generator/references/anthropic-skills-guide/` (10 files) | This frozen copy of an external guide did not identify itself as a snapshot and silently became stale. Replace copies with pinned upstream pointers. |
+| 2 | `generate.md` command | It renamed work already provided by the built-in skill creator, duplicating listing cost and user choice. |
+| 3 | `design.md` command | It exposed another stage of the same invocation as a separate name. Stages are implementation detail. |
+| 4 | `from-codebase.md` command | It had 0 invocations and turned one input kind into a command name. Inputs should be arguments; otherwise each new input buys another layer-zero name. |
+| 5 | `from-docs.md` command | It repeated the same input-as-command mistake. The three `from-*` siblings divided one body among three names. |
+| 6 | `from-session.md` command | It repeated the same mistake, and none of the three specified what to do when the other two were absent. |
+| 7 | `sync-guide.md` command | It existed only to update the removed frozen copy. A tool cannot outlive the artifact it exclusively serves. Track upstream drift in CI. |
+
+Items 1 and 7 copied an upstream authority; items 2 through 6 split arguments
+into new names. Avoiding those two patterns prevents all seven from returning.
+
+## Other Files Removed in the Same Cleanup
+
+Three hook-template files and two other template files removed in the same
+cleanup are excluded from this list because they generated invalid artifacts
+rather than setting organization policy. In particular, they kept generating
+hooks with the nonexistent `toolMatcherRegex` field. Current hook schema lives
+in `hook.md` and `references/templates/`.

@@ -1,0 +1,121 @@
+# blob:9639882d6a1689519ec27c6533400bd0253acc85
+# Bridge — probe, report, hand back
+## Build the shared cross-runtime package
+For the current jstack source checkout, use `node dist/packaging/build.js build
+--source SOURCE_ROOT --output NEW_DIRECTORY`. This single package contains two
+native manifests, reviewed host entries, and a complete shared `payload/` tree.
+`node dist/packaging/build.js check PACKAGE` verifies its declared file membership,
+content receipt, public names, and private-data boundary. Build output must be
+new; source and user-home settings are not modified. Both host entries set
+JSTACK_PLUGIN_ROOT to the installed payload. Check actual host discovery and run
+from the installed cache with source access denied before reporting portability.
+The `scripts/export.js` path below is retained only for legacy migration and
+regression comparison. Do not use it as the new default or apply its outer-root
+assumptions to the dual-host package. Rebuild from the source checkout, never
+edit generated entries or silently rewrite one host's tools into another's.
+## Three states, not two
+"Installed or not" is the wrong shape. Most tools are partly there: the binary
+exists but a runtime is missing, or the CLI is present but not authenticated.
+Collapsing that into a boolean turns a fixable gap into an unexplained failure
+halfway through the work.
+Every probe script in this plugin exits with one of three codes:
+| Exit | Meaning | What the caller does |
+| --- | --- | --- |
+| 0 | Fully available | Proceed |
+| 1 | Partially available | Proceed on the reduced path, and say which capability is gone |
+| 2 | Blocked | Stop, and print install guidance |
+Code 1 is the one that earns the convention. Without it every partial
+environment either pretends to work or refuses to start, and both hide the same
+information: exactly which capability is missing.
+## Never install on the user's behalf
+Print the command; do not run it. Installing changes a machine the user
+maintains, in a way this session did not scope and cannot undo cleanly. Package
+managers pull dependencies, write outside the project, and sometimes require
+elevation — none of that is inside "help me with this task".
+The output on exit 2 is the install command, in full, ready to paste. Guidance
+that says "install X" without the command is not guidance.
+## Probe at the point of use, not at startup
+Checking everything up front makes every session pay for tools that session
+will not touch, and the check goes stale the moment the environment changes.
+Probe when the capability is about to be used, so the result is current and the
+cost falls on the path that needs it.
+## Degrade by naming what is lost
+A reduced path is legitimate. A reduced path that does not say it is reduced is
+a silent downgrade, and the user reads the output as if the full tool ran.
+Say which capability is gone and what that means for the result — not "running
+in limited mode", which names nothing. `references/probe-recipes.md` holds the
+probe shapes and the phrasing for each state, and `scripts/probe.js` is the
+implementation those recipes describe — run it rather than re-deriving a probe.
+## Do not wrap what the tool already does
+A bridge is a probe plus a call. When it starts reformatting arguments,
+reordering flags, or re-implementing a subcommand, it has become a second
+interface to maintain — and it will drift from the first one on the tool's next
+release. The `upstream` skill covers where that line sits.
+Pass the user's arguments through. If the tool's own error message is the
+clearest thing available, show it rather than replacing it with a friendlier one
+that says less.
+## Installing this plugin's skills into another agent
+For native Codex plugin delivery, use the shared package above:
+`node dist/packaging/build.js build` produces both hosts, and
+`node dist/packaging/release.js --source . --output NEW_DIRECTORY` creates a
+checked local marketplace for both. The build selects the reviewed Codex bodies
+under `hosts/codex/skills/` when the host semantics differ and keeps the plugin's
+runtime dependencies together, without registering a marketplace remotely or
+changing the user's installed skills. `node dist/packaging/build.js check PACKAGE`
+detects payload drift; this local receipt proves byte consistency, not publisher
+authenticity. `scripts/export.js` stays a legacy migration utility only.
+Exercise the built package after moving it and without the source checkout.
+In each outer entry, relative `scripts/` and `references/` paths resolve under
+`<outer-root>/payload/skills/<skill-name>/`; use `JSTACK_PLUGIN_ROOT` for the
+plugin-level payload root.
+Absolute build paths are not portable. Claude commands, agents and automatic
+hook registration are excluded from Codex delivery; native skills and explicit
+verification commands supply the supported execution path. The flat-skill installer below remains a migration utility.
+`scripts/install.js` links or copies this marketplace's skills into another
+agent's skill folder, and `scripts/rules.json` holds the mechanical notation
+substitutions it applies on the way. Four of its rules are the ones that get
+re-broken, and each of them fails silently.
+**The marketplace root is found by marker, not by path arithmetic.** Counting
+directories upward bakes the script's own depth into its behaviour, so moving
+the script one level makes it scan a different tree. The scan then comes back
+empty, every entry in the lockfile looks like a source that vanished, and the
+installer deletes the installed skills while reporting success. It walks upward
+for `.claude-plugin/marketplace.json` instead, and refuses to reclaim anything
+when an empty scan meets a non-empty lockfile.
+**The installer excludes itself by skill directory, not by plugin name.**
+Otherwise it would install itself into the target as one more skill.
+**`${JSTACK_PLUGIN_ROOT}` does not survive a symlink.** The other agent never
+sets that variable, so a skill that reaches its own scripts through the token
+must be rewritten with the absolute plugin root rather than linked. Linked, the
+skill arrives whole and every path inside it is dead.
+**Classification covers the runtime tree, not only `SKILL.md`.** A clean root
+can still send the reader to a Claude-only reference or run a script whose path
+was never rewritten. The installer scans every non-test UTF-8 reference and
+script. Mechanical notation changes are applied to each affected copied file;
+a semantic blocker anywhere in that runtime tree blocks the skill until the
+installed path is safe.
+**A destination name has one source and ownership must be proved.** Codex skills
+share one flat namespace. If two plugins provide the same skill name, neither
+may overwrite the other. Before replacing or reclaiming any existing directory
+or symlink, the installer matches the lock record to the link target or the
+generated-file header. A user-owned link is preserved even when its basename
+matches a marketplace skill.
+**Substitution is for notation, never for a quoted literal.** A document that
+names a forbidden string is stating a rule about that exact string. Rewriting it
+forbids something that does not exist and leaves the real string unforbidden,
+and the checker that ships beside the document keeps enforcing the original — so
+the two disagree with nobody being told.
+## Task routing and completion
+For authorized delegation, use the common routing contract in
+[Runtime routing](../../runtime/ROUTING.md). Run `jst route plan --request FILE`,
+then `jst route run --decision FILE` to reserve one attempt. A native decision
+is executed through the current session tools; it is not a CLI substitution.
+Record independently checked artifacts with `jst route record`. If `jstack` is not
+found, follow [jst command on PATH](../../runtime/CLI-PATH.md). Retain explicit
+user model choices, permission boundaries, exclusive files, and host fork limits.
+Only a verification failure permits one model transition; environment failures
+do not justify stronger models. Small tasks stay with the coordinator.
+## Boundary
+Writing the skill that uses the bridge is the `author` skill; deciding whether
+to vendor the tool instead of depending on it is the `upstream` skill. This
+skill covers the probe and the handoff.

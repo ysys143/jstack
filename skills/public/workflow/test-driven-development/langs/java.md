@@ -1,0 +1,312 @@
+# TDD Guide: Java
+
+## Framework
+
+- **JUnit 5** (JUnit Jupiter) — Current standard (2017 release, Spring Boot / Quarkus defaults)
+- **Mockito 4+** — mock/stub/spy (`@ExtendWith(MockitoExtension.class)` usage)
+- **AssertJ** — Fluent assertion API (included in Spring Boot starter)
+- Spring Boot: `@WebMvcTest`, `@DataJpaTest`, `@SpringBootTest`
+
+Dependency (Gradle):
+```groovy
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.mockito:mockito-core:5.4.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.4.0'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+test { useJUnitPlatform() }
+```
+
+## JUnit 5's Core TDD Features
+
+Improvements important for TDD compared to JUnit 4:
+- `@DisplayName`: Make tests living specifications
+- `@Nested`: Express Given/When/Then structure with nested classes
+- `assertThrows()`: Return exception objects $\rightarrow$ verification of message content possible (RED stage precision)
+- `@ExtendWith`: Single extension point (`@RunWith` + `@Rule` replacement)
+- `@ParameterizedTest`: First-class parameterization (unlike JUnit 4's `@Parameterized`)
+- Test works without method access modifiers (`public` unnecessary)
+
+JUnit 5 Migration: Execute JUnit 4 tests directly with the vintage engine $\rightarrow$ gradual transition possible.
+
+## Mockito: @Mock vs @InjectMocks vs @Spy
+
+| Annotation | Target | Actual Code Execution | Usage Time |
+|---|---|---|---|
+| `@Mock` | Complete mock | No (returns null/0/false) | Replacing dependencies not to be tested |
+| `@Spy` | Real object wrapping | Yes (executes actual if not stubbed) | Overriding only some methods |
+| `@InjectMocks` | Actual instance of the test subject (SUT) | Yes | Creating a test class with Mock injected |
+
+**`@InjectMocks` Warning:** If injection fails (no matching generator/setter), the field remains null and Mockito sees nothing — silent failure. **Constructor injection method is recommended for production code.**
+
+Mockito Team Official Statement: "Mockito is not a DI framework. It is not designed for handling complex injection networks."
+
+**Strict mode always enabled:**
+```java
+@ExtendWith(MockitoExtension.class)  // enables STRICT_STUBS by default
+// Catches unnecessary stubs and argument mismatches with UnnecessaryStubbingException
+```
+
+## AAA Pattern
+
+```java
+@ExtendWith(MockitoExtension.class)
+class CheckoutServiceTest {
+
+    @Mock
+    private PaymentGateway mockPg;
+
+    @InjectMocks
+    private CheckoutService service;
+
+    @Test
+    @DisplayName("returns a 10% discount when a valid coupon is applied")
+    void should_return_discounted_price_when_valid_coupon_applied() {
+        // Arrange
+        Order order = new Order(10000);
+        when(mockPg.charge(9000)).thenReturn(ChargeResult.ok());
+
+        // Act
+        CheckoutResult result = service.checkout(order, "SALE10");
+
+        // Assert
+        assertThat(result.getFinalAmount()).isEqualTo(9000);
+        verify(mockPg).charge(9000);
+    }
+}
+```
+
+## AssertJ Recommended
+
+| Framework | Strength | Weakness |
+|------------|------|------|
+| JUnit assertions | No dependencies | Weak error messages, no chaining |
+| Hamcrest | Composite matchers | Generic confusion, misleading error messages |
+| **AssertJ** | Fluent API, IDE autocompletion, clear failure messages | Additional dependency (included in Spring Boot) |
+
+Why AssertJ is important in TDD: Failure messages clearly show actual vs expected $\rightarrow$ Faster RED$\rightarrow$GREEN cycle.
+
+```java
+// AssertJ chaining
+assertThat(result)
+    .isNotNull()
+    .extracting(CheckoutResult::getFinalAmount)
+    .isEqualTo(9000);
+
+assertThat(list)
+    .hasSize(3)
+    .contains("apple", "banana")
+    .doesNotContain("grape");
+
+// Exception verification
+assertThatThrownBy(() -> service.checkout(order, "EXPIRED"))
+    .isInstanceOf(ExpiredCouponException.class)
+    .hasMessageContaining("expired");
+```
+
+Spring MVC test's `jsonPath(..., is(...))`: Using Hamcrest matchers is unavoidable.
+
+## Mock / Stub / Verify
+
+```java
+// Stub a return value
+when(mockRepo.findById(1L)).thenReturn(Optional.of(user));
+when(mockPg.charge(anyInt())).thenReturn(ChargeResult.ok());
+
+// Raise an exception
+when(mockPg.charge(anyInt())).thenThrow(new TimeoutException("network down"));
+
+// void method
+doThrow(new IllegalStateException()).when(mockPg).refund(any());
+
+// Verify calls
+verify(mockPg).charge(9000);
+verify(mockPg, times(1)).charge(anyInt());
+verify(mockPg, never()).refund(any());
+
+// ArgumentCaptor
+ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+verify(mockPg).charge(captor.capture());
+assertThat(captor.getValue()).isEqualTo(9000);
+```
+
+## File Structure
+
+**Pattern A — Naming Convention (Simple):**
+```
+src/test/java/com/example/
+    CheckoutServiceTest.java     # unit tests (Maven Surefire)
+    CheckoutServiceIT.java       # integration tests (Maven Failsafe)
+```
+
+**Pattern B — Source Set Separation (Gradle Recommended):**
+```
+src/
+    main/java/
+    test/java/              # unit tests
+    integrationTest/java/   # integration tests (separate Gradle task)
+```
+Gradle officially supports `sourceSets { integrationTest { ... } }`.
+
+## Spring Boot Test Slice
+
+| Annotation | Target | In-memory DB | Usage |
+|------------|-----------|-------------|--------|
+| `@WebMvcTest` | Web layer only (Controller, Filter) | None | Controller logic, request mapping, validation |
+| `@DataJpaTest` | JPA layer (Entity, Repository) | H2 default | Repository queries, entity mapping |
+| `@SpringBootTest` | Entire ApplicationContext | Configurable | E2E integration tests |
+
+**Context Caching Warning:** Load new context when using `@MockBean`, `@SpyBean`, `@DirtiesContext` to destroy cache.
+Group tests with the same settings to maximize cache hits (Recommended by Zalando Engineering).
+
+**Rules:**
+- Service Unit Tests: Pure JUnit + Mockito (no Spring context)
+- Controller Tests: `@WebMvcTest` + `@MockBean` (Service)
+- Repository Tests: `@DataJpaTest`
+- Overall Flow: `@SpringBootTest` + `@ActiveProfiles("test")`
+
+## Parameterized Test Source Selection
+
+```
+One parameter with simple values?
+  → @ValueSource / @EnumSource
+
+Several parameters with a small fixed dataset?
+  → @CsvSource (Java 15+ text blocks recommended)
+
+Large or externalized dataset?
+  → @CsvFileSource (resources/*.csv)
+
+Complex objects or reusable data?
+  → @MethodSource (a static method returning Stream<Arguments>)
+```
+
+```java
+@ParameterizedTest(name = "[{index}] amount={0}, coupon={1} -> {2}")
+@MethodSource("checkoutCases")
+void should_handle_checkout_cases(int amount, String coupon, Integer expected) {
+    Order order = new Order(amount);
+    if (expected == null) {
+        assertThatThrownBy(() -> service.checkout(order, coupon))
+            .isInstanceOf(IllegalArgumentException.class);
+    } else {
+        assertThat(service.checkout(order, coupon).getFinalAmount()).isEqualTo(expected);
+    }
+}
+
+static Stream<Arguments> checkoutCases() {
+    return Stream.of(
+        Arguments.of(10000, "SALE10",  9000),
+        Arguments.of(10000, "EXPIRED", null),
+        Arguments.of(4900,  "MIN5000", null)
+    );
+}
+```
+
+`name = "..."` If not present, only `[1]` and `[2]` are shown in the CI log — must be specified.
+
+## JaCoCo Coverage
+
+Coverage Counter (Precision Order):
+1. **Instruction** (Bytecode): Not affected by format, optimal for CI enforcement
+2. **Branch**: Branch tracking in if/switch, most important for business logic
+3. **Line**: Report readability, standard CI metric
+4. **Method / Class**: For detecting unused code
+
+```xml
+<!-- Maven JaCoCo configuration -->
+<rule>
+  <element>BUNDLE</element>
+  <limits>
+    <limit>
+      <counter>INSTRUCTION</counter>
+      <value>COVEREDRATIO</value>
+      <minimum>0.70</minimum>
+    </limit>
+    <limit>
+      <counter>BRANCH</counter>
+      <value>COVEREDRATIO</value>
+      <minimum>0.70</minimum>
+    </limit>
+  </limits>
+</rule>
+```
+
+Standard Exclusions (`<excludes>` setting):
+- DTOs / POJOs (`**/dto/**`, `**/model/**`)
+- Setting classes (`**/config/**`)
+- Generated code (`**/generated/**`)
+- Application entry points (`*Application.java`)
+
+The overall average including DTO inflates coverage — apply separate rules to service/domain packages.
+
+## diff coverage — gate only for new code
+
+The BUNDLE rule (INSTRUCTION·BRANCH 0.70) is the **floor of the entire repository**, not the gate for this change. They answer different questions—the floor is "what level this codebase is at," and the gate is "whether this change came without testing." Combining them with a single threshold makes the legacy a hostage. Since one PR in module 0.43 cannot create 0.70, the team can turn off the rule or increase `<excludes>`, and at that moment, the gate disappears.
+
+So, leave the floor as is, and handle **diff coverage** separately. The JaCoCo XML report is per line (`<line nr="..." mi="..." ci="...">`) and becomes the input for the diff gate.
+
+Requires Node.js 20+.
+
+```bash
+git fetch origin main
+
+mvn -q test jacoco:report          # target/site/jacoco/jacoco.xml
+# With Gradle, the jacocoTestReport task must set xml.required = true
+
+pip install diff-cover
+diff-cover target/site/jacoco/jacoco.xml \
+    --compare-branch=origin/main --fail-under=90
+
+# Checker path for CI environments that cannot install diff-cover
+node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
+    --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \
+    --coverage target/site/jacoco/jacoco.xml --fail-under 90
+```
+
+**In multi-module, the reports must be combined.** If you separately re-run `jacoco.xml` for each module, the line in module B covered by the test in module A is marked as uncovered — pass one report gathered by `jacoco:report-aggregate` to the gate.
+
+Two judging rules —
+
+- **If there are no executable new lines, it passes.** If a PR only changes DTO field additions, comments, or `pom.xml` and drops it to 0%, the gate is soon ignored.
+- **It is measured by LINE, not INSTRUCTION.** Since diff is a set of lines, there is no correspondence with byte code units. The floor rule handles precision, and the gate looks at lines.
+
+## Execution Command
+
+```bash
+./gradlew test
+./gradlew test --tests "*.CheckoutServiceTest"
+./gradlew test jacocoTestReport
+# build/reports/jacoco/test/html/index.html
+
+mvn test
+mvn test -Dtest=CheckoutServiceTest
+mvn verify  # includes Failsafe integration tests
+```
+
+## Anti-pattern
+
+```java
+// [X] use PowerMock
+// Bytecode manipulation conflicts with modern JVMs and signals a design problem.
+// Use Mockito 3.4+ mockStatic() with a try-with-resources scope.
+
+// [X] overuse @SpringBootTest
+// Every @MockBean combination creates a new context and slows CI.
+// Use only the required slice (@WebMvcTest or @DataJpaTest).
+
+// [X] @MockBean inside @SpringBootTest
+// Destroys the context cache (an anti-pattern documented by Filip Procházka)
+
+// [X] disable strict stubbing
+// MockitoAnnotations.openMocks(this) does not enable STRICT_STUBS automatically.
+// Use @ExtendWith(MockitoExtension.class).
+
+// [X] ice-cream cone (inverted test pyramid)
+// E2E > integration > unit produces slow, unstable CI.
+// Keep many unit tests, some integration tests, and few E2E tests.
+
+// [X] disable @DataJpaTest transactions without cleanup
+// NOT_SUPPORTED propagation requires cleanup equivalent to t.Cleanup().
+```

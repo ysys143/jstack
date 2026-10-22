@@ -1,0 +1,126 @@
+# blob:b40b3544b965cbe54fb63cd5c822515f6b8c70a7
+# Recall — write what the repository cannot say
+For task requests and corrections, follow the shared [request continuity protocol](../../runtime/TASKS.md) once per session.
+## The test for writing something down
+**Would the repository already tell me this?** If yes, do not write it. Code
+structure, past fixes, commit history, and the conventions file are already
+durable, and a copy of them is a second source that goes stale on its own
+schedule.
+| Worth persisting | Already in the repo |
+| --- | --- |
+| Why a rejected approach was rejected, when the code shows no trace | What the code does |
+| A constraint that came from outside the codebase — a person, a contract, an outage | The commit that fixed a bug |
+| A preference the user stated once and expects to hold | Which files exist and how they are laid out |
+| A resource that lives elsewhere — a dashboard, a ticket, an account | Anything the conventions file already states |
+The first row is the one worth the effort. Reasons evaporate; outcomes do not.
+## One fact per record, with its reason
+A record holding three facts cannot be corrected — updating one means rewriting
+the others, so it drifts as a whole or not at all. Write one, and link to the
+neighbours rather than restating them.
+Write the **reason** into the record, not only the conclusion. "Use the Python
+path, not Node" is unfollowable when the reader hits a case it does not cover;
+"…because the Node build has no CJK grapheme handling" is.
+Convert relative dates. "Last week" is wrong on every later read; the date is
+right forever.
+## A memory is evidence about the past, not the present
+What was written was true when it was written. If a record names a file, a flag,
+or a command, **check it still exists before recommending it** — the check costs
+a moment and its absence costs a confident wrong answer.
+This is the whole risk of recall: a stale record is more dangerous than no
+record, because it arrives with the authority of something already decided.
+Signals that a record needs re-checking before use are in
+`references/staleness.md`, together with what to do when it turns out wrong.
+## Prefer correcting over appending
+When something recorded turns out wrong, fix or delete that record. Appending a
+correction next to it leaves two records that disagree, and the next reader has
+no way to tell which one won — a contradiction is worse than either statement
+alone.
+Deleting a record that is no longer true is not losing information. Keeping a
+false one is.
+## Do not record progress
+Task state belongs where the task lives, not in durable memory. A record saying
+"currently refactoring the parser" is false within a day and stays retrievable
+for months, which is the exact shape that makes memory untrustworthy.
+## Recovering interrupted work from live state
+Conversation memory may help locate an interrupted task, but it cannot settle
+the task's current state. First resolve the current working directory,
+repository root, and exact ref. Then read the live status, diff, task artifact,
+and the newest relevant test or build evidence before writing a recovery brief.
+Never recover from conversation memory alone.
+If `.jstack/tasks/<task-id>/task.json` exists, resume through the repository
+record instead of rebuilding state from a prior completion message:
+```bash
+node "${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/workflow.js" resume <task-id>
+node "${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/workflow.js" status <task-id>
+```
+`resume` checks repository identity, live HEAD and Git status, then re-hashes
+the recorded cursor and evidence. Changed or missing recovery evidence stops the
+resume. A successful resume still sets fresh verification required; it does not
+restore a previous `complete` word. `status` rechecks the immutable contract,
+latest receipt, requirement files, and review evidence against live bytes.
+| Conversation says | Live evidence | Recovery result |
+|---|---|---|
+| Work is complete | Dirty diff or failing check | Incomplete; report the live state and the conflict |
+| Work is incomplete | Clean candidate and fresh passing evidence | Re-verify, then it may be marked complete |
+| Any claim | No supporting file, commit, or artifact | Unknown; do not repeat the claim |
+The live state wins when it conflicts with the conversation. Every recovered
+claim must point to a file, commit, artifact, or fresh command result. If the
+evidence is missing, label the claim unknown and leave it out of the handoff.
+## Explicit native session migration
+For a requested project-path or profile migration, read
+`references/session-migration.md` and use `scripts/migrate_sessions.js`.
+Choose the data format with `--host claude` or `--host codex`, independently of
+which harness is executing this skill. Migration is an explicit mode: ordinary
+memory searches and interrupted-task recovery must not modify native session storage.
+Use explicit source and destination profiles, plan before applying, and retain the
+receipt for verification or rollback. Do not continue into memory export setup.
+## Finding what a past session said
+Memory records are one source; the sessions themselves are another, and they are
+neither the repository nor a record somebody chose to write. They exist only if
+the export pipeline is installed, and they are answered from **two stores**:
+| What is being asked | Store | How |
+| --- | --- | --- |
+| The last N sessions, today, yesterday | SQLite index | `sessions` table ordered by `session_datetime` |
+| Everything touching one project | SQLite index | same table filtered by `project` |
+| A keyword, an error string, a decision | Markdown corpus | content search over the exported sessions |
+| One session end to end | Markdown corpus | read the export named by its session id |
+The rule is one line: **time and metadata go to the index, content goes to the
+corpus.** Asking the index for content finds nothing — it stores a 100-character
+summary, not the transcript. Asking the corpus for "the last five" ranks by
+relevance and quietly answers a different question.
+Both stores sit under one variable, and it is the only path this skill knows:
+```bash
+SESSIONS="${CLAUDE_SESSIONS_PATH:-$HOME/Documents/Obsidian/claude-code-sessions}"
+sqlite3 "$SESSIONS/.metadata.db" \
+"SELECT session_datetime, project, session_id, summary FROM sessions
+WHERE session_datetime <> '' ORDER BY session_datetime DESC LIMIT 5;"
+```
+`$SESSIONS/sessions/<session-id>.md` is the export; `$SESSIONS/.metadata.db` is
+the index. Never hardcode either — a second profile moves both.
+## The pipeline that fills those stores
+`bin/` holds the producer: a Rust binary that walks the session logs, converts
+each to markdown, and upserts the index. It is not a search tool — it runs at
+`SessionEnd`, and nothing it has not seen is findable.
+Three things must be true before any query above returns rows, and they are
+installed by the plugin's `/setup-recall`, not by this skill: the binary is
+**built**, it is wired to the `SessionEnd` hook, and content search is pointed
+at `$SESSIONS/sessions`. The producer resolves the session log directory from
+the active profile: a nonempty `CLAUDE_CONFIG_DIR` gets `/projects` appended,
+otherwise it uses `~/.claude/projects`. The output vault remains controlled by
+`CLAUDE_SESSIONS_PATH`. The binary is built from source, so a machine without a
+toolchain has an index that never advances.
+**An empty result is not evidence that the work never happened.** Check that the
+index exists and when it last advanced before reporting nothing found — the
+answer "the pipeline is not installed here" and the answer "you never did that"
+look identical from the query side, and only one of them is usually true. This
+is the same failure as a stale record: absence arriving with the authority of a
+settled fact.
+## Boundary
+Recording an architecture decision so the codebase carries it is the `decide`
+skill — that is a document in the repository, not a memory. This skill covers
+what persists outside it.
+## Profile maintenance boundary
+The `agent-maintenance` skill handles profile selection, plugin ghost cleanup and
+project-migration target selection. Recall retains its explicit migration entry and
+shared engine for compatibility. For combined maintenance requests use that skill's
+branch contract; ordinary historical searches here do not mutate native storage.

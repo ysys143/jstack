@@ -1,0 +1,73 @@
+# blob:2a3e4553b0bbcac7d91e7e342c5ec292bff51daa
+# Tier profile — `jstack-lite`
+## Do not use upstream tier as the default
+Upstream step 1 classifies queries as `light`, `full`, or `dissertation` and
+**prohibits overriding that classification**. The issue is what `light` discards.
+**Light skips every step 12 critic, including instruction-critic.** This is the
+most valuable procurement axis. Only two pipeline axes check whether responses
+cover all RFP requirements: step 1 coverage-matrix and step 12 instruction-critic.
+Light disables one entirely.
+The earlier plan still made `lite` the **default** (plan lines 1108 and 1245).
+**Discard that default.** This document defines `jstack-lite` instead.
+## `jstack-lite` definition
+| Axis | Upstream `light` | `jstack-lite` | Rationale |
+|---|---|---|---|
+| step 1 coverage-matrix | Optional | **Required** | Creates half of the requirements-to-response mapping |
+| step 12 instruction-critic | Skipped | **Retained** · `opus` | The other half, precisely what light discards |
+| step 12 dialectic-critic | Skipped | **Retained** · `sonnet` | One of four RACE dimensions; disabling it leaves that dimension unchecked |
+| step 12 depth-critic | Skipped | **Retained** · `sonnet` | Same rationale |
+| step 12 width-critic | Skipped | **Retained** · `sonnet` | Same rationale |
+| step 14.5 cite-check | `sample_rate=0.6` | **1.0** | Effective coverage rises from 50% to 100%; see `references/cite-check.md` |
+| step 10 source_target | 15-25 | **20-50** | Lower bound required by draft-orchestrator |
+| step 16 paragraph length | 800 CJK / 1500 EN | **Inherited unchanged** | CJK is the only script family with actual upstream usage data |
+| step 10 triple-draft | Enabled | **Disabled** | Triple cost is justified by stylistic consistency, not quality |
+**The third column is the contract.** If `wrapper_contract.json` disagrees, the
+specification is wrong; `tests/run_tests.js` detects that disagreement.
+## Retain all four critics but use different models
+The four step 12 critics map one-to-one to the four RACE dimensions. These are
+orthogonal axes: disabling three leaves three dimensions unchecked, as `light` does.
+Upstream runs all four with `model: opus`. This repeats the same trial four times
+rather than providing four independent trials. **Structural blind spots shared
+by an all-opus panel can pass all four reviews.**
+| Reviewer | Model | Why this tier |
+|---|---|---|
+| instruction-critic | `opus` | A missing requirement can directly disqualify a submission |
+| cite-check (step 14.5) | `opus` | One citation can disqualify a submission |
+| dialectic-critic | `sonnet` | The purpose is **diversity of perspective**, not accuracy |
+| depth-critic | `sonnet` | Same rationale |
+| width-critic | `sonnet` | Same rationale |
+The upstream dividing line for what light disables came from the **scoring
+rubric**, not evidence of truth. Axes with no rubric weight were cut first;
+no measurement shows they contribute less value.
+## source_target is 20-50
+Step 10 draft-orchestrator assumes **20-50** `must_read_note_ids`.
+**Light's source_target of 15-25 falls below the draft-orchestrator contract of
+20-50.** `HANDOFF.md:438` explicitly identifies this mismatch.
+`jstack-lite` raises the target to 20-50. Otherwise drafting violates its own
+prerequisite, surfacing only as **weakly evidenced paragraphs** that do not reveal
+the cause to a reader.
+## Inherit the CJK length table
+Upstream `core/profiles.py:144`, `char_targets_no_word_boundary`, gives the rationale:
+"tuned for CJK, the only such script family this project has real usage data for".
+| Axis | Measurement | `jstack-lite` value |
+|---|---|---|
+| Paragraph length (CJK) | One paragraph of Korean, Chinese, or Japanese output | **800 characters** |
+| Paragraph length (English) | One paragraph of English output | **1500 characters** |
+| Length unit | Count characters rather than whitespace-delimited words | `char_targets_no_word_boundary` |
+**Our use is exactly CJK, yet this was absent from the inheritance list.** Retain
+this actual upstream tuning for our script family. Applying English limits to
+Korean output would make paragraphs almost twice as long.
+## Strength of evidence
+Upstream itself states in `docs/roadmap-2.0/phase-5-verification.md:17`:
+"Telemetry: none... profile tuning is vibes". **Upstream does not know which
+stages create value.**
+Choose **axes with established value for our use**, not the **number of stages**.
+The upstream more-stages-is-better claim compared scores for two different
+queries, not an ablation. Its first-place benchmark claim is an n=9 pilot with
+a 0.77-point lead over second place.
+## Implementation: no prompt edits
+Use only `wrapper_contract.json`. **Do not set a `tier` key**: overriding the
+upstream prohibition requires a code fork and recurring update costs. Select
+a set of steps, not a tier.
+Even when using upstream, **rerun our own Phase 4 checks**. This profile selects
+upstream execution; our checkers independently measure output compliance.

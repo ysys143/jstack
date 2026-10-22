@@ -1,0 +1,58 @@
+# blob:ab6b99491aa889bc61e80c10f44e31bbc09c00b8
+# Tiers — the split test and the worked cases
+## The split test
+Before splitting work across several cheaper calls, ask: **can each piece be
+checked without the others?**
+| Split | Checkable separately | Verdict |
+| --- | --- | --- |
+| Forty files, same mechanical edit | Yes, per file | Split, cheap tier |
+| One design with four constraints that interact | No | Do not split, expensive tier |
+| A survey of ten sources, then one synthesis | The survey yes, the synthesis no | Split the survey, keep the synthesis whole |
+| A refactor plus the tests that lock it | No — the tests encode the intent | Keep together |
+The third row is the common shape and the one people get half right: they split
+the gathering, and then let the same cheap fan-out write the conclusion too.
+## Worked cases
+| Case | Tier | Why not the neighbouring tier |
+| --- | --- | --- |
+| Rename a symbol across a repository | Cheap | Nothing here is ambiguous; a middle tier buys a slower identical answer |
+| Add a validation branch with a test | Middle | Cheap loses the surrounding conventions; expensive is not paying for anything the test does not already catch |
+| Choose a concurrency strategy | Expensive | The failure mode appears under load, months later, where no test looks |
+| Read a stack trace and name the failing call | Cheap | The evidence is in front of it |
+| Decide whether an exception should propagate | Expensive | The answer depends on invariants no local test states |
+## When to re-measure instead of assuming
+Any statement of the form "tier X cannot do Y" is a measurement with a date on
+it. If it decides something that matters, run the task both ways once and keep
+the result with the date. Two runs is cheaper than a year of routing everything
+to the expensive tier because of one bad afternoon.
+The inverse also holds: a cheap tier that succeeded once on a hard task is not
+evidence that it does so reliably. One success is not a rate.
+## Escalating after a failed check
+Retrying on a stronger tier when a cheap tier fails a check is a cost bet, not
+a free fallback. Several failed cheap attempts can cost more than one expensive
+attempt that passes. Before setting the routing policy, run a pilot sample and
+record attempts and tokens per accepted result for each tier; route by that,
+not by the price of one call.
+Escalation needs a check that decides correctness on its own. Keep the cheap
+tier for high-volume mechanical work that such a check fully decides. Keep the
+expensive tier for transformations the check cannot fully decide, and for the
+adversarial review that judges them. Where no check decides, a cheap pass is not
+evidence, so escalating "on failure" never triggers on the cases that matter.
+## Reasoning effort within a model family
+Use these as starting roles only after delegation is justified and authorized:
+| Role | Effort when supported | Assignment |
+| --- | --- | --- |
+| Scout | low | A narrow read-only lookup with a concrete answer and stop condition |
+| Worker | medium | Scoped implementation and its affected checks under one file owner |
+| Smart worker | high | Ambiguous design, difficult implementation, or a consequential boundary |
+Keep the inherited model family unless the user or task requires another model.
+Effort and model identity are separate choices; a lower effort does not silently
+switch providers or models. Inspect the session's actual supported settings and
+context-fork restrictions before setting overrides. If an override is unavailable,
+retain the permitted setting and report that limitation. These roles do not
+authorize spawning agents, raising concurrency, or using a stronger effort by default.
+Reserve exceptional depth such as ultra for consequential ambiguity where its
+additional cost is justified. Do not make parallelism or maximum reasoning a
+standing requirement for every task. A small change can stay with the coordinator.
+Record task type, effort, context mode, observed quality and available timing/cost
+before changing defaults; one successful run is not evidence of broad superiority.
+Source: [Eric Provencher, Practical multi-agent orchestration in Codex, 2026-07-25](https://x.com/pvncher/status/2080707291603407077). The article's Sol/Terra examples are historical defaults, not current availability or universal Astra policy.

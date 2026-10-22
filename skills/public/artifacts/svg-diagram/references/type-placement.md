@@ -1,0 +1,105 @@
+# Type-specific placement grammar: what goes where
+
+Source: `up:archify` `SKILL.md`, "Type router" and "Authoring invariants", plus
+`references/authoring-contract.md` §Mode placement (MIT).
+
+**Choose the type first.** Even with the same nodes, changing the type changes the
+placement rules completely. A left-to-right spine and a lane layout describe
+different diagrams. Set size, density, and audience dials afterward.
+
+## Type router
+
+| Type | When to use it |
+|---|---|
+| `architecture` | What connects to what: components, ownership, boundaries |
+| `workflow` | Who does what and in what order: responsibility and progress |
+| `sequence` | What participants exchange: messages in time order |
+| `dataflow` | Where data travels and how it changes: transformation and storage |
+| `lifecycle` | States of a single entity: stages and transitions |
+
+**When behavior matters, choose the semantic pattern before the visual type**
+(first type-fit rule in `taste-gate.md`). This document answers only the next
+question: where to place elements within the chosen type.
+
+## architecture
+
+- Build **one left-to-right spine**, with **short vertical branches**. Two spines
+  leave readers uncertain which to read first.
+- Use **6–12** primary nodes. With fewer, a table is preferable; with more, lower
+  density to `simplified` or split into two diagrams in `explanatory` context.
+  In `procurement`, the canonical budget in `output-spec.md` overrides this count:
+  keep required nodes and partition into zones within the actual page allowance.
+- Draw boundary boxes only for **actual ownership, trust, process, or deployment
+  boundaries**. **Boundaries do not replace relationships**: grouping nodes in a box
+  does not explain their connections without arrows.
+- Place external actors outside the system boundary **only when factually correct**.
+  Moving them outside to fill whitespace conveys false information.
+- Use a grid by default; free coordinates are an exception. Broken alignment tends
+  to introduce diagonal connectors (`connector-rules.md`, rule 1).
+
+## workflow
+
+- **Lanes represent responsibility or stages; columns represent progress.** Do not
+  encode the same thing on both axes.
+- **Keep the happy path monotonic.** If the normal path moves left or upward even
+  once, readers cannot follow it as a sequence.
+- **Route retries and exception returns outside the main lane corridor.** Overlaying
+  them on the normal path makes exceptions look like the primary flow.
+- Decisions consume columns. When branches rejoin, align their merge column so the
+  join is legible without a label.
+
+## sequence
+
+- **Order participants by conversational role**: the initiator goes on the left;
+  final stores or external systems go on the right. Do not sort alphabetically or
+  by importance.
+- **Messages own vertical order.** Do not express time through participant placement.
+  There is one time axis, and it is vertical.
+- Use `return`, `async`, and `security` variants **only when semantically justified**.
+  Decorative dashed lines cannot be distinguished from rule 5's dashed-line exception.
+- **This is the only type exempt from automatic attachment fanning (≥12px).** Messages
+  on a lifeline must align at the same x coordinate. Fanning would break that alignment.
+
+## dataflow
+
+- **Stages represent transformation or storage responsibility; rows represent parallel
+  streams.** A box that merely passes data through is not a stage and should face the
+  deletion test.
+- **Label only data contracts, classifications, and boundary crossings**: formats
+  such as JSON/CSV, sensitivity levels, and trust-boundary crossings.
+- **Do not label the obvious.** Labels such as "data" and "transfer" repeat what the
+  arrow already says and add noise.
+- Place backward flows, such as feedback or reprocessing, on a separate lower row.
+
+## lifecycle
+
+- Main stages use **at most five slots on one rail**. The event/terminal band below
+  uses **at most three slots**. These two counts define the lifecycle complexity budget.
+- **Recoverable failures must have actual transitions back to active states.** A
+  failure state with no outgoing arrow is terminal.
+- **A card or note saying "retry" is not topology.** Adjacent prose does not create
+  a transition; readers look for an outgoing arrow in the diagram.
+- Mark terminal states explicitly. Otherwise readers cannot tell an intentional
+  lack of outgoing transitions from an omission.
+
+## Local adaptations
+
+Upstream expresses these rules through `columns 0..4` for main stages,
+`columns 0..2` for event/terminal bands, `type: "failure"`, and `meta.quality_profile`.
+These are archify **JSON schema and renderer fields**. We author SVG directly, so
+**those fields do not exist**. Coordinate indices were translated into placement
+rules of five rail slots and three band slots; field names remain only as provenance
+in this section.
+
+Copying the fields literally would prescribe a nonexistent schema and encourage
+the model to invent `type: "failure"`. Adapting them is a condition of importing the rules.
+
+## Limitations
+
+**None of this document's rules is machine-checked.** `verify-geometry.js` checks
+only label-mask collisions, and `verify-connectors.js` checks diagonals; neither
+reads placement grammar. A single spine, monotonic happy path, and outgoing
+failure-state transitions are **declared but unenforced**.
+
+Upstream enforces them through its `validate`/`deliver` pipeline, which was not
+imported. A person applies the type-fit gate in `taste-gate.md`.

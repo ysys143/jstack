@@ -1,0 +1,47 @@
+# NOTICE — science
+
+## Imported content
+
+Imported upstream `up:science-research` **in full** (see
+`NOTICE.md at the package root` for its path), excluding only three `.git`
+directories (38M, 2681 files).
+
+The content of **all three repositories belongs to other authors**. The upstream
+skill added the router (`SKILL.md`), index (`references/`), and regeneration
+scripts (`scripts/`). Our additions were this NOTICE and contract tests (`tests/`).
+
+| Tag | Repository | Skill count | Pinned commit | License |
+|---|---|---|---|---|
+| `kdense` | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | 159 | `36d8f13` (2026-08-24) | **MIT** |
+| `gdm` | [google-deepmind/science-skills](https://github.com/google-deepmind/science-skills) | 38 | `0b42509` (2026-07-07) | **Apache-2.0** |
+| `academic` | [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) | 4 | `9469fc4` (2026-08-27) | **CC BY-NC 4.0** |
+
+The complete original license texts remain in their repositories:
+`repos/kdense/LICENSE.md`, `repos/gdm/LICENSE`, and `repos/academic/LICENSE`.
+
+Four `kdense` children, `docx`, `pdf`, `pptx` and `xlsx`, are not included. Each
+carried its own `LICENSE.txt` (© 2025 Anthropic, PBC, all rights reserved) that
+forbids redistribution, which overrides the repository's MIT license for those
+directories. Office documents are handled by `office-documents`; the kdense count
+above is the 159 remaining children.
+
+## academic has a noncommercial condition: read before use
+
+`repos/academic` uses **CC BY-NC 4.0**. It is Cheng-I Wu's personal project, as
+its `NOTICE.md` states.
+
+**NC prohibits commercial use.** This condition and attribution remain in force
+after public packaging. Using the four `academic` skills **directly for commercial
+outputs** may fall outside the license. Assess this before using them for paid work,
+such as procurement proposals. `tests/run_tests.py` checks that this notice remains.
+
+`kdense` (MIT) and `gdm` (Apache-2.0) do not have that restriction.
+
+## Why vendor the content instead of retaining pointers
+
+The routing table points to 201 skills. Pointers would require upstream files on
+every user's machine. Team members installing the plugin do not have those files.
+
+The cost is 38M of additional repository content and **manual tracking of upstream updates**. Upstream used `git pull` followed by `rebuild-index.py`; the import no
+longer supports that path. The `scripts/` directory is preserved, so clone upstream
+again and run the scripts when needed.

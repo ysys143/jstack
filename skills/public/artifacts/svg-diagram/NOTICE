@@ -1,0 +1,156 @@
+# NOTICE — diagram
+
+## v2.6.22 reference and import update (2026-09-14)
+
+- Source: https://github.com/cathrynlavery/diagram-design, commit
+  `8d8b2993ee2256ee7dfc0eeb3b5713aba3b60792`, version `2.6.22`.
+- License class: MIT, read from this commit's `LICENSE`; the unchanged license is
+  `repos/diagram-design/LICENSE` (Copyright 2025 Cathryn Lavery).
+- `UPSTREAM.v2.6.22.json` maps each upstream source-relative path to the identical
+  local path under `repos/diagram-design/`, with SHA-256 measured from the fetched
+  original before copying. No file in that snapshot is locally adapted.
+- Scope: the complete inner skill's references, templates/examples, three parsers,
+  and self-check; selected root regression scripts, import commands/prompts, and
+  fixtures preserve their upstream relative paths. Root commands/prompts are test
+  fixtures, not registered jstack commands. No second public skill is installed.
+- Local integration lives in `references/upstream-integration.md`,
+  `references/type-catalog.md`, and this skill's entry and owning suite. It preserves
+  SVG defaults, procurement requirement coverage, effective print size, font delivery,
+  PNG repair, and local geometry checks. It overrides upstream's mandatory onboarding,
+  shared installed-style mutations, HTML-only output, and unconditional deletion bias.
+- Optional import/self-check execution requires Python 3.10+ standard library only;
+  core SVG authoring and Node validators retain their existing runtime. Tests execute
+  with `-S` so optional browser packages cannot turn a parser regression into a browser
+  session. The Python tests do not establish rendered visual quality.
+- Old v2.6.7-derived files and their manifest remain historical regression fixtures;
+  the version below describes that earlier layer, not the current library.
+
+## Imported content
+
+This skill **absorbs rules and numerical thresholds** from `up:diagram-design` and
+**vendors two validator-related files**. See `NOTICE.md at the package root` for
+source paths and measurements.
+
+| Item | Upstream location | Local location |
+|---|---|---|
+| Six connector rules | `skills/diagram-design/SKILL.md` §6 Mandatory connector rules | `references/connector-rules.md` |
+| Taste Gate | `skills/diagram-design/SKILL.md` §9 Pre-Output Checklist | `references/taste-gate.md`: **18 of 37 items** plus three local Korean-text items; omissions are listed at the bottom |
+| Rule 0 prerequisite | `skills/diagram-design/SKILL.md:263`, "Draw arrows before boxes" | Rule 0 in `references/connector-rules.md` |
+| Orthogonality check (H-1) | `up:archify` `scripts/check-render-output.mjs`, orthogonal_arrows and `collectArrows`/`diagonalStraightSegments` | `check()` in `scripts/verify-connectors.js`: TypeScript port of the Python rewrite excluding only explicit paired-sentinel spans. **Not `verify-geometry.js`**, whose upstream Python source is preserved separately |
+| Overlap, ambiguous corridors, and crossings (H-2) | `up:archify` `shared/geometry.mjs`: `collectAmbiguousCorridors`(:480), `collinearAxisOverlap`(:955), `properSegmentIntersection`(:976) | `check_corridors()`/`check_crossings()` in `scripts/verify-connectors.py`: one-to-one port. **The upstream sibling exemption for shared `from`/`to` was not ported**: local SVG lacks those identifiers and rule 3 has no exemption, making **our checks stricter**. Escape hatch: `--no-crossings` |
+| Five-type placement grammar | `up:archify` `SKILL.md`, Type router and Authoring invariants, plus `references/authoring-contract.md` §Mode placement | `references/type-placement.md`: coordinate fields (`columns 0..4`, `type: "failure"`) **translated into placement rules** |
+| Label-width formula (H-3) | `up:archify` `renderers/shared/utils.mjs` `textUnits()` (sha256 `20124265300eb286…`), `renderers/shared/text-fit.mjs` `nodeTextFit` (sha256 `35b6ef2c64d88c1e…`), `references/authoring-contract.md` (sha256 `5b160cb4d5687ed7…`) | `scripts/verify-text-width.py`: Python rewrite |
+| Delivery visual-review contract | `up:archify` `SKILL.md` §Delivery and `references/delivery-contract.md`: four `visual_review` statuses, prohibition on hidden overflow, repair order | Visual-review section in `references/taste-gate.md`: **document contract only**. The 825-line upstream `visual-check` (Node and Chrome DevTools pipe) was not imported. No enforcement; status is self-reported. Invoked by `SKILL.md` Phase 5 |
+| Size, density, and audience thresholds | `references/output-spec.md` §2, §3, §4: nine presets, type ramps, density limits | `references/output-spec.md` |
+| CJK font contract | `references/output-spec.md`, Non-Latin labels | `references/output-spec.md` |
+| Export scaling | `references/export.md` | `references/export.md` |
+| Geometry validator | `scripts/verify-geometry.py` (168 lines) | `scripts/verify-geometry.js` (TypeScript port; unchanged source in `assets/upstream/verify-geometry.py.txt`) |
+| Validator tests | `scripts/test-verify-geometry.py` (138 lines) | `scripts/test-verify-geometry.js` (TypeScript port; adapted source in `assets/upstream/test-verify-geometry.py.txt`) |
+
+## Why the validator was vendored
+
+Upstream conditions use of the validator on **"From a repository checkout"** in both
+the six rules and taste gate (`SKILL.md:289` and `:482`). **Marketplace installations
+therefore lack the validator.** The skill's `scripts/` contains only
+`drawio_extract.py`, `mermaid_extract.py`, and `self_check.py`; the validator lives
+only in the repository-root `scripts/`.
+
+Copying six rules alone would leave **checklist recitation without a validator**.
+We imported it under MIT and **included its test file** so deterioration would remain detectable.
+
+## Example-asset integrity
+
+The four example assets are derivatives with two exact paired-sentinel comment lines:
+`<!-- verify-connectors:legend:BEGIN -->` and `<!-- verify-connectors:legend:END -->`.
+Machine-readable `# sentinel-stripped-sha256 <sha256> <path>` records in
+`UPSTREAM.sha256` hash the bytes after removing only those two **complete lines**.
+`tests/run_tests.py` requires exactly one case-sensitive BEGIN and END line in each
+asset, then compares the hash preserving every other byte with that record.
+
+For `example-architecture.html`, `example-dp-integration.html`, and
+`example-sequence-oauth.html`, the stripped hashes equal the original upstream hashes.
+For `example-swimlane.html`, the stripped hash covers the current geometry-modified
+derivative. Its original upstream hash and the reason for the orthogonal L-path
+change enforcing the diagonal prohibition remain separately recorded in the manifest.
+
+`UPSTREAM.sha256` is not a normalized-hash list: ordinary entries represent only
+**imports whose raw bytes match upstream**. The four derivative examples are not
+ordinary entries. The sole current raw-byte entry is `assets/upstream/verify-geometry.py.txt`.
+`tests/run_tests.py` separately pins connector counts in the four derivatives.
+
+## License
+
+Upstream `diagram-design` uses **MIT**. The full text is in `LICENSE.upstream`.
+
+    Copyright (c) Cathryn Lavery
+    https://github.com/cathrynlavery/diagram-design
+
+Local additions, including procurement context for Korean fonts, routing boundaries,
+and contract tests, follow this repository's license.
+
+## Upstream version
+
+Imported **v2.6.7** (`.claude-plugin/plugin.json`) at clone commit `ac490fd`, after
+confirming the one-version advance from the ledger's v2.6.6. Upstream changes can
+make `references/` thresholds diverge; `tests/run_tests.py` **pins those thresholds**
+to expose divergence.
+
+## up:archify (imported 2026-08-30)
+
+- Source: https://github.com/tt-a1i/archify — MIT.
+- Dual copyright: 2026 tt-a1i (Archify) and 2025 Cocoon AI, original author of
+  "architecture-diagram-generator". Full text: `LICENSE.archify`.
+- Clone commit: `0853a805003514776bef3593ecca091409828902` (2026-08-29).
+  Hashes are recorded in `UPSTREAM.sha256`.
+- **Four areas were imported: orthogonality checks; overlap/corridor/crossing checks;
+  five-type placement grammar (documentation, unenforced); and visual-review contracts
+  (documentation, unenforced).** Visual review moved to the delivery section in
+  `references/taste-gate.md`. The upstream `visual-check` runtime was not imported:
+  this implementation uses Python and adds no Node dependency. Status is self-reported.
+  Placement grammar moved to `references/type-placement.md` and **has no validator**;
+  upstream's `validate`/`deliver` pipeline was not imported. This is disclosed in
+  `SKILL.md` Limitations and at the bottom of that reference. Upstream has a 16,200-line
+  Node runtime versus this 2,139-line lightweight skill, so wholesale adoption would
+  replace the skill rather than absorb selected behavior. Renderers, viewer runtime,
+  delivery pipeline, brand marks, and i18n were not imported. Upstream i18n specifies
+  `SUPPORTED_LOCALES = ['en','zh-CN']` without Korean, which the local font contract covers.
+- Rewritten in Python. Upstream identifies arrows with custom classes such as
+  `a-default`; local SVG lacks them, so `marker-end` determines membership. Only valid,
+  non-nested pairs of the case-sensitive markers
+  `<!-- verify-connectors:legend:BEGIN -->` and `<!-- verify-connectors:legend:END -->`
+  exclude legend sample lines. Generic `Legend` comments have no machine meaning;
+  orphan, reversed, or nested markers fail closed with `input/legend-markup`.
+- **The label-width formula (H-3, 2026-08-31) is also a rewrite.** `textUnits()` preserves
+  the FULLWIDTH ranges and variation-selector rules, but **the width formula deliberately
+  diverges**. Enforcing upstream's approximate mask width of 6.5px × ASCII units + 13px
+  produced false positives for local 7–8px labels: eight of 11 masks in
+  `example-architecture.html`. The implementation instead uses a font-size-scaled
+  model: ASCII 0.6em, full-width 1em, 4px slack. The upstream empirical formula remains
+  only in documentation and diagnostic `evidence`. Full-width weighting uses 1.0em
+  from local `output-spec.md`, not upstream's converted 1.2em.
+- **The three source files above have recorded sha256 values but are not entries in
+  `UPSTREAM.sha256`.** That manifest contracts byte-identical imports, currently only
+  `assets/upstream/verify-geometry.py.txt`. Those three hashes record *provenance* for Python rewrites;
+  the upstream files themselves are absent and cannot be bound as local byte contracts.
+- **The diagnostic schema from `shared/diagnostics.mjs` is also imported** (2026-08-31).
+  Envelope fields for `verify-connectors.py --json` follow upstream
+  `normalizedDiagnostic` / `rendererFailure`: `schemaVersion`, `ok`, `source`, and
+  `diagnostics[]{code,severity,message,subject,evidence,supportedFixes}`.
+  **There are two intentional divergences.**
+  (a) Upstream `supportedFixes` is a string array; the local schema uses an **object array**
+  so machines can read the five repair stages' order and `requiresEvidence` for deletion.
+  **Ordered repair stages are themselves a local addition, absent upstream.** Feeding
+  the local envelope directly to upstream tools will therefore break them.
+  (b) Upstream enables JSON with `ARCHIFY_DIAGNOSTIC_FORMAT=json` for renderer subprocesses.
+  The local tool is a human-invoked CLI and uses `--json` instead.
+
+## Node runtime migration
+
+Executable geometry, connector, width, label, scale, effective-size, PNG, and
+viewer-URL checks are TypeScript sources emitted as JavaScript for Node >=20.
+The 168-line upstream validator and 142-line adapted test remain non-executable
+provenance text under `assets/upstream/`. Their original bytes and line counts
+remain independently measured; the JavaScript validator is tested directly with
+all original fixtures and an injected empty-verdict mutation. No byte-identical
+claim applies to the TypeScript ports. Existing upstream MIT notices remain in
+`LICENSE.upstream` and `LICENSE.archify`.

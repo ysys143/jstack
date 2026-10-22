@@ -1,0 +1,13 @@
+/** Draw.io compressed URL payloads. The URL itself contains the complete diagram. */
+import * as path from 'node:path';
+import {deflateRawSync,inflateRawSync} from 'node:zlib';
+import {isMain,read_text,utf8,diagnostic} from '../../../../../runtime/diagram/common.js';
+export const VIEWER='https://viewer.diagrams.net/#R',SAFE="-_.!~*'()";
+export const encode=(xml:string)=>deflateRawSync(Buffer.from(encodeURIComponent(xml)),{level:9}).toString('base64');
+// urllib.unquote tolerates malformed escapes and replaces invalid UTF-8 sequences.
+function unquote(value:string):string{return value.replace(/(?:%[0-9a-fA-F]{2})+/g,run=>Buffer.from(run.replaceAll('%',''),'hex').toString('utf8'));}
+export function decode(payload:string):string{const cleaned=payload.replace(/[^A-Za-z0-9+/=]/g,'');if(cleaned.replace(/=+$/,'').length%4===1||cleaned.length%4!==0)throw new Error('invalid base64 padding');return unquote(utf8(inflateRawSync(Buffer.from(cleaned,'base64'))));}
+export const viewer_url=(xml:string)=>VIEWER+encodeURIComponent(encode(xml));
+export function payload_of(url:string):string{let fragment=url.includes('#')?url.slice(url.indexOf('#')+1):url;if(fragment.startsWith('R'))fragment=fragment.slice(1);return unquote(fragment);}
+export function main(argv:string[]):number{let source:string|undefined,dec=false,json=false;for(const arg of argv){if(arg==='--decode')dec=true;else if(arg==='--json')json=true;else if(source===undefined&&!arg.startsWith('--'))source=arg;else return 2;}if(source===undefined)return 2;if(dec){try{console.log(decode(payload_of(source)));return 0;}catch(error){const message=`cannot decode the draw.io payload - ${(error as Error).name}: ${(error as Error).message}`;if(json)console.log(JSON.stringify({schemaVersion:1,ok:false,source:'encode-drawio-url',diagnostics:[diagnostic('input/decode',message)]},null,2));else console.error(message);return 1;}}let xml:string;try{xml=read_text(source);}catch(error){console.error(`${source}: cannot read - ${(error as Error).name}: ${(error as Error).message}`);return 1;}const url=viewer_url(xml),ok=decode(payload_of(url))===xml;if(json)console.log(JSON.stringify({schemaVersion:1,ok,source:'encode-drawio-url',summary:{xmlBytes:Buffer.byteLength(xml),urlChars:url.length,roundTrip:ok},url,diagnostics:ok?[]:[diagnostic('encode/round-trip',`${path.basename(source)}: the encoded payload does not decode back to the source XML - do not hand this link out`,{file:path.basename(source)})]},null,2));else if(ok)console.log(url);else console.error(`${path.basename(source)}: round-trip failed - do not hand this link out`);return ok?0:1;}
+if(isMain(import.meta.url))process.exitCode=main(process.argv.slice(2));

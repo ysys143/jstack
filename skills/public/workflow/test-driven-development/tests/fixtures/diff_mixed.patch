@@ -1,0 +1,12 @@
+diff --git a/src/mix.py b/src/mix.py
+index 1111111..2222222 100644
+--- a/src/mix.py
++++ b/src/mix.py
+@@ -8,5 +8,6 @@ def f():
+     a = 1
+-    b = 2
++    b = 3
++    c = 4
+     d = 5
+     e = 6
+     g = 7

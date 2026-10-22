@@ -1,0 +1,686 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "journey-qa/scenario.schema.json",
+  "title": "journey-qa scenario",
+  "description": "A journey written declaratively: personas, steps with expected state, shot list with view state, assertions, human gates. Produced by codify, executed by run. validate.py enforces this schema plus cross-references (roster ids, step ids, shot ids).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "roster",
+    "determinism",
+    "personas",
+    "steps"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "product": {
+      "type": "string"
+    },
+    "adapter": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "adapters/<name>, or null for a product-agnostic example."
+    },
+    "roster": {
+      "type": "string",
+      "description": "Path to roster.json, relative to this scenario file."
+    },
+    "selectors": {
+      "type": "string",
+      "description": "Path to the adapter selector map (JSON), relative to this file. A locator written as @<name> or @<name>(<arg>) resolves through the map's 'selectors' object; {arg} in the mapped value is replaced by <arg>. Keeps product selectors out of the runner."
+    },
+    "determinism": {
+      "type": "object",
+      "required": [
+        "seed",
+        "time_anchor",
+        "viewport",
+        "locale",
+        "timezone"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "seed": {
+          "type": "integer"
+        },
+        "time_anchor": {
+          "type": "string",
+          "description": "ISO 8601 with offset. 'now' for generated data and the browser clock."
+        },
+        "viewport": {
+          "type": "object",
+          "required": [
+            "width",
+            "height",
+            "device_scale_factor"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 320
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 320
+            },
+            "device_scale_factor": {
+              "type": "number",
+              "minimum": 1
+            }
+          }
+        },
+        "locale": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "color_scheme": {
+          "enum": [
+            "light",
+            "dark"
+          ]
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "instances": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "purpose",
+              "base_url"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "base_url": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "clean_room_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Commands whose empty output proves no product traces exist before install."
+        }
+      }
+    },
+    "personas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "ref",
+          "as"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string",
+            "description": "roster people[].id"
+          },
+          "as": {
+            "type": "string",
+            "description": "Role in this journey (admin, invitee, viewer...)."
+          }
+        }
+      }
+    },
+    "secrets": {
+      "type": "object",
+      "description": "Declares the secrets that terminal driver steps use: name -> {class}. class test: a throwaway value (a fictitious persona's password, a one-time token of a disposable instance); a driver may enter it, and it may appear in a tmux literal key. class real: a real credential; no driver enters it, a human gate does. Browser steps may use secrets without a declaration.",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "class"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "class": {
+            "enum": [
+              "test",
+              "real"
+            ]
+          }
+        }
+      }
+    },
+    "setup": {
+      "type": "array",
+      "description": "Preparation that is NOT under test. Done via API or CLI, never by driving the UI.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "via",
+          "run"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "via": {
+            "enum": [
+              "api",
+              "cli",
+              "sql"
+            ]
+          },
+          "run": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "human_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "before_step",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "before_step": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "real-login",
+              "waiver",
+              "image-approval",
+              "publish",
+              "prod-access",
+              "other"
+            ]
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "persona",
+          "surface",
+          "action"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "persona": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "surface": {
+            "enum": [
+              "browser",
+              "terminal",
+              "api"
+            ]
+          },
+          "action": {
+            "enum": [
+              "goto",
+              "click",
+              "fill",
+              "select",
+              "press",
+              "wait",
+              "run",
+              "request"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "description": "URL path (goto), locator (click/fill/select/press/wait)."
+          },
+          "value": {
+            "type": "string",
+            "description": "Fill/select value or key. May use {{persona.<id>.<field>}} or {{secret.<name>}}."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "method": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "body": {}
+            }
+          },
+          "docs_ref": {
+            "type": "string",
+            "description": "Where the public docs tell the user to do this (file#anchor). Missing = docs defect candidate."
+          },
+          "expect": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "url_pattern": {
+                "type": "string"
+              },
+              "visible": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "hidden": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "text": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "status": {
+                "type": "integer"
+              }
+            }
+          },
+          "secrets": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "to_run_denylist": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Locators whose text is a one-off secret. Appended to the run denylist BEFORE any capture of this screen."
+              },
+              "invalidate_after": {
+                "type": "string",
+                "description": "Step id after which the secret must be proven dead."
+              },
+              "capture_as": {
+                "type": [
+                  "string",
+                  "object"
+                ],
+                "pattern": "^[A-Za-z0-9_-]+$",
+                "required": [
+                  "name",
+                  "pattern"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]+$"
+                  },
+                  "pattern": {
+                    "type": "string",
+                    "description": "Regular expression with one capture group, applied to the normalized output."
+                  }
+                },
+                "description": "Browser steps: a name (string) for the text of the first to_run_denylist locator. Terminal steps: {name, pattern}, the first capture group of the pattern on the step's output becomes the secret, kept in the run secrets dir and the run denylist before any transcript is written. Either way later steps use it as {{secret.<name>}}."
+              }
+            }
+          },
+          "driver": {
+            "enum": [
+              "exec",
+              "pty",
+              "tmux"
+            ],
+            "description": "terminal steps only; default exec. exec: a command without interaction. pty: a short interactive program with known prompts. tmux: a long-lived interactive session used as a person uses it (docs/terminal.md)."
+          },
+          "cmd": {
+            "type": "string",
+            "description": "exec and pty: the command, exactly as the public docs give it. It runs as ONE argument of the adapter's wrapper when the adapter has one."
+          },
+          "expect_exit": {
+            "type": "integer",
+            "description": "exec and pty: expected exit code (default 0). tmux: checked only when given and the program exits."
+          },
+          "stdout_contains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "exec and pty: texts that must appear in the normalized, redacted output."
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Ceiling, never a wait. exec: the whole command. pty: each prompt and the whole step. tmux: the whole step."
+          },
+          "dialog": {
+            "type": "array",
+            "minItems": 1,
+            "description": "pty: ordered prompt -> answer pairs. An answer is sent only after wait_for matches the output seen so far.",
+            "items": {
+              "type": "object",
+              "required": [
+                "wait_for",
+                "send"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "wait_for": {
+                  "type": "string",
+                  "description": "Regular expression."
+                },
+                "send": {
+                  "type": "string",
+                  "description": "Literal text, {{persona.<id>.<field>}}, or exactly {{secret.<name>}} when secret is true."
+                },
+                "secret": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "launch": {
+            "type": "string",
+            "description": "tmux: the command started in the pane."
+          },
+          "size": {
+            "type": "string",
+            "pattern": "^[0-9]{2,3}x[0-9]{2,3}$",
+            "description": "tmux: window size COLSxROWS (default 220x50)."
+          },
+          "keys": {
+            "type": "array",
+            "description": "tmux: ordered keys. {literal: text} is typed; {key: NamedKey} is a named key (Down, Enter, Escape, C-c); {paste_buffer: <secret name>} pastes a secret through a tmux buffer (never typed); {wait_for: regex} polls the screen between keys.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "literal": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string"
+                },
+                "paste_buffer": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                "secret": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "description": "Alias of paste_buffer."
+                },
+                "wait_for": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "done_when": {
+            "type": "string",
+            "description": "tmux: screen regex that ends the session step. Required: a tmux session has no end signal."
+          },
+          "verify": {
+            "type": "array",
+            "description": "tmux: checks on durable state; the verdict comes from these, not from the screen.",
+            "items": {
+              "type": "object",
+              "required": [
+                "kind"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "file",
+                    "api",
+                    "sql"
+                  ]
+                },
+                "path": {
+                  "type": "string"
+                },
+                "exists": {
+                  "type": "boolean"
+                },
+                "contains": {
+                  "type": "string"
+                },
+                "equals": {
+                  "type": "string"
+                },
+                "matches": {
+                  "type": "string"
+                },
+                "remote": {
+                  "type": "boolean"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "integer"
+                },
+                "query": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "verify_note": {
+            "type": "string",
+            "description": "tmux: why verify is empty. Required when it is."
+          },
+          "cleanup": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "tmux: commands that revert state the step created; they run on every path, also after a failure."
+          },
+          "reconnect": {
+            "type": "boolean",
+            "description": "terminal: restart the adapter's wrapper session before this step (hooks.reconnect), for session caches that keep stale state such as group membership."
+          },
+          "shot": {
+            "type": "string",
+            "description": "shots[].id captured after this step's expectations hold."
+          }
+        }
+      }
+    },
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "file",
+          "wait_for"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string",
+            "pattern": "^[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*(\\.light|\\.dark)?\\.png$"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "view_state": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "filters": {
+                "type": "object"
+              },
+              "scroll": {
+                "description": "'top', or {selector}, or {y}."
+              },
+              "expand": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "theme": {
+                "enum": [
+                  "light",
+                  "dark"
+                ]
+              }
+            }
+          },
+          "wait_for": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "no_truncate": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Locators that must satisfy scrollWidth <= clientWidth."
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "light",
+                "dark"
+              ]
+            }
+          },
+          "docs_target": {
+            "type": "string"
+          },
+          "terminal_from": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Step id, or step ids in order, whose redacted transcripts are concatenated and rendered instead of a browser capture."
+          }
+        }
+      }
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "check"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "ui",
+              "api",
+              "sql",
+              "file"
+            ]
+          },
+          "check": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dir": {
+          "type": "string"
+        },
+        "max_diff_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "approved_by": {
+          "type": "string"
+        },
+        "approved_at": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

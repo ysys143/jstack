@@ -1,0 +1,80 @@
+# Commit messages — upstream source (reference)
+
+Source: `plugins/session-and-git/skills/commit-message-convention/SKILL.md`
+(commit `539406b`) — inherited with frontmatter removed.
+
+This reference preserves the upstream tables, rules, and examples. The 50-character
+title limit and 72-character body wrap match the values measured by
+`scripts/check_commit.js`; see "Alignment" in `SKILL.md`. The same script checks
+the forbidden phrases (`Generated with Claude Code`, `Co-Authored-By: Claude`).
+
+**The forbidden-phrase rule under `## Constraints` remains verbatim upstream
+text.** This repository applies the same ban, including to trailers a harness
+adds on its own. The decision and rationale are in "Commits" in `SKILL.md`. This file preserves upstream, so the text below is not
+changed.
+
+## Constraints (CRITICAL)
+- NEVER include phrases like `Generated with Claude Code` or `Co-Authored-By: Claude` in commit messages
+
+## Format
+```
+<type>(<scope>): <description>
+
+<body>
+
+[footer]
+```
+- `(<scope>)` is optional - use when specifying affected area
+
+## Types
+
+| Type | Description |
+|------|-------------|
+| feat | Add new feature |
+| fix | Fix a bug |
+| refactor | Improve code structure without changing functionality |
+| test | Add or update tests |
+| docs | Update documentation |
+| chore | Non-code changes (build, package management, etc.) |
+| style | Code formatting, style changes |
+| remove | Remove unused code or files |
+| perf | Performance improvements |
+
+## Title Rules
+- Maximum 50 characters
+- End with an action verb (add, modify, change, remove, etc.)
+- No period at the end
+
+## Body Rules
+- Separate from title with a blank line
+- First paragraph: WHY (explain the problem or motivation)
+- Second paragraph: HOW (describe the solution approach)
+- Wrap at 72 characters per line
+
+## Examples
+
+```
+feat: add loginUser to UserService to handle user login
+```
+
+```
+fix: fix NullPointerException in UserController.registerUser
+```
+
+```
+refactor: improve readability of AuthService.generateToken
+```
+
+## Full Example with Body
+
+```
+feat: add animation when adding items to the cart
+
+Users could not easily tell whether clicking the button added the item.
+Implement an animation that moves the product toward the cart icon as visual feedback.
+
+- Implement the FlyToCart component
+- Keep the existing Toast notification but shorten its display to one second
+
+Resolves: #105
+```

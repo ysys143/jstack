@@ -1,0 +1,108 @@
+name: Windows launcher
+
+# Claude Code runs its Bash tool in Git Bash on Windows: the plugin's POSIX
+# payload/bin/jst must run there, and the SessionStart hook's CLAUDE_ENV_FILE
+# line must put it on PATH. The Codex link hook must be a silent no-op. Pull
+# requests otherwise run only the Linux lane in validate.yml, so this small
+# job runs when the launcher, the hooks or their packaging changes.
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'hosts/claude/bin/**'
+      - 'hosts/claude/hooks/jst-path*'
+      - 'hosts/claude/hooks/claude-hooks.json'
+      - 'hosts/claude/hooks/hooks.json'
+      - 'hosts/codex/hooks/**'
+      - 'packaging/build.ts'
+      - 'packaging/build.test.ts'
+      - 'packaging/package-files.json'
+      - 'cli/launcher*'
+      - 'runtime/CLI-PATH.md'
+      - '.github/workflows/windows-launcher.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'hosts/claude/bin/**'
+      - 'hosts/claude/hooks/jst-path*'
+      - 'hosts/claude/hooks/claude-hooks.json'
+      - 'hosts/claude/hooks/hooks.json'
+      - 'hosts/codex/hooks/**'
+      - 'packaging/build.ts'
+      - 'packaging/build.test.ts'
+      - 'packaging/package-files.json'
+      - 'cli/launcher*'
+      - 'runtime/CLI-PATH.md'
+      - '.github/workflows/windows-launcher.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  launcher:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      # The source keeps upstream aliases as Git symlinks, which the package build
+      # verifies; Windows checks them out as text files unless symlinks are enabled.
+      - run: git config --global core.symlinks true
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.0.0'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: Launcher in Git Bash, the Claude PATH hook, and the Codex hook through cmd.exe
+        run: node --test dist/cli/launcher.test.js dist/hosts/claude/hooks/jst-path.test.js dist/hosts/codex/hooks/link-jst.test.js
+      - name: Package launcher check without execute bits
+        shell: bash
+        run: |
+          node --test --test-reporter=tap --test-name-pattern="payload launcher|shipped module" dist/packaging/build.test.js | tee "$RUNNER_TEMP/build-tests.tap"
+          passed="$(sed -n 's/^# pass //p' "$RUNNER_TEMP/build-tests.tap")"
+          test "${passed:-0}" -ge 2
+      - name: Build and check a package in a path with a space
+        shell: bash
+        run: |
+          pkg="$RUNNER_TEMP/jstack package"
+          node dist/packaging/build.js build --source . --output "$pkg" > "$RUNNER_TEMP/jstack-build.json"
+          node dist/packaging/build.js check "$pkg" > "$RUNNER_TEMP/jstack-check.json"
+          test ! -e "$pkg/bin"
+      - name: Run the packaged launcher from Git Bash
+        shell: bash
+        run: |
+          pkg="$RUNNER_TEMP/jstack package"
+          unix="$(cygpath -u "$pkg")"
+          expected="$(node -p "require('./packaging/product.json').version")"
+          test "$(bash "$pkg/payload/bin/jst" --version)" = "$expected"
+          test "$(bash "$unix/payload/bin/jst" --version)" = "$expected"
+          test "$("$unix/payload/bin/jst" --version)" = "$expected"
+          test "$(PATH="$unix/payload/bin:$PATH" jst --version)" = "$expected"
+          status=0
+          PATH="$unix/payload/bin:$PATH" jst definitely-not-a-command 2> /dev/null || status=$?
+          test "$status" -eq 2
+      - name: Put jstack on PATH through the Claude env-file hook in Git Bash
+        shell: bash
+        run: |
+          pkg="$RUNNER_TEMP/jstack package"
+          env_file="$RUNNER_TEMP/session env.sh"
+          expected="$(node -p "require('./packaging/product.json').version")"
+          command="$(node -p 'require(process.argv[1]).hooks.SessionStart[0].hooks[0].command' "$pkg/hooks/claude-hooks.json")"
+          echo "$command"
+          for run in 1 2; do CLAUDE_ENV_FILE="$env_file" CLAUDE_PLUGIN_ROOT="$pkg" bash -c "$command"; done
+          cat "$env_file"
+          test "$(grep -c '^export PATH=' "$env_file")" -eq 1
+          test "$(bash -c '. "$1" && jst --version' _ "$env_file")" = "$expected"
+      - name: Run the packaged Codex hook as Codex does on Windows
+        shell: bash
+        run: |
+          node -e '
+            const { spawnSync } = require("node:child_process"), fs = require("node:fs"), path = require("node:path");
+            const pkg = path.resolve(process.argv[1]), home = fs.mkdtempSync(path.join(process.env.RUNNER_TEMP, "hook home "));
+            const definition = JSON.parse(fs.readFileSync(path.join(pkg, "hooks", "codex-hooks.json"), "utf8"));
+            const command = ["PLUGIN_ROOT", "CLAUDE_PLUGIN_ROOT"].reduce((text, key) => text.replaceAll("${" + key + "}", pkg), definition.hooks.SessionStart[0].hooks[0].command);
+            const run = spawnSync(command, { shell: true, encoding: "utf8", env: { ...process.env, HOME: home, USERPROFILE: home, PLUGIN_ROOT: pkg, CLAUDE_PLUGIN_ROOT: pkg } });
+            console.log(JSON.stringify({ command, status: run.status, stdout: run.stdout, stderr: run.stderr }));
+            if (run.status !== 0 || run.stdout || run.stderr || fs.existsSync(path.join(home, ".local"))) process.exit(1);
+          ' "$RUNNER_TEMP/jstack package"

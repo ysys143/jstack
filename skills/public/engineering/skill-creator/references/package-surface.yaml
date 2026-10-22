@@ -1,0 +1,143 @@
+# Package-surface membership authority: what belongs to this plugin.
+#
+# A check counter asks whether checks exist. This file declares the surface itself.
+# The executor prevents the declaration from drifting from the tree:
+#
+#     node scripts/check_package_surface.js
+#
+# Three rules: one unclassified file fails; one pattern covering at least half the
+# surface fails so `**` cannot make classification vacuous; and a dead glob fails.
+#
+# First match wins in declaration order, so put narrow categories first.
+
+version: 1
+
+policy:
+  unclassified: fail
+  max_share_per_pattern: 0.5
+
+ignore:
+  - "**/__pycache__/**"
+  # Harness runtime state left by sessions using a skill directory as cwd.
+  - "**/.omc/**"
+  - "**/.ruff_cache/**"
+  - "**/*.pyc"
+  - "**/.DS_Store"
+  - "**/.suite-body-deleted"
+
+categories:
+  # This declaration covers the runtime payload. The outer dual-host artifact
+  # is checked by packaging/build.js against its explicit file membership.
+  command-line:
+    - "cli/**"
+    # The CLI launcher the Claude env-file hook puts on PATH and the Codex hook links to.
+    - "bin/jst"
+  native-dependencies:
+    - "native/**"
+  shared-runtime:
+    - "runtime/**"
+  packaging:
+    - "packaging/**"
+  output-style:
+    - "output-styles/**"
+  skill-assets:
+    - "skills/*/assets/**"
+    - "skills/*/templates/**"
+    - "skills/*/hooks/**"
+    - "skills/*/agents/**"
+    - "skills/*/dist/**"
+    - "skills/*/locales/**"
+    - "skills/*/*.json"
+    - "skills/*/*.txt"
+    - "skills/*/LICENSE*"
+    - "skills/*/outcomes.jsonl"
+  vendored-science:
+    - "skills/science/repos/academic/**"
+    - "skills/science/repos/gdm/**"
+    - "skills/science/repos/kdense/*"
+    - "skills/science/repos/kdense/skills/*/SKILL.md"
+    - "skills/science/repos/kdense/skills/*/references/**"
+    - "skills/science/repos/kdense/skills/*/scripts/**"
+    - "skills/science/repos/kdense/skills/*/assets/**"
+    - "skills/science/repos/kdense/skills/*/templates/**"
+    - "skills/science/repos/kdense/skills/*/examples/**"
+    - "skills/science/repos/kdense/skills/*/*"
+  vendored-diagram:
+    - "skills/diagram/repos/diagram-design/**"
+  vendored-journey-qa:
+    - "skills/journey-qa/repos/journey-qa/**"
+  scheduler:
+    - "skills/dashboard/vitest.config.ts"
+
+  # Contract declarations belong to the tree rather than one skill.
+  contract:
+    - "contracts/*.yaml"
+    - "contracts/contract-suite-dependencies.json"
+    - "contracts/skill-catalog.*"
+    - "contracts/sdlc.md"
+    - "contracts/ts-migration/**"
+
+  # Frozen contract answers; never edit them manually.
+  frozen:
+    - "tests/refs/**"
+    - "skills/*/tests/refs/**"
+    - "skills/*/bin/UPSTREAM.sha256"
+    # Vendored manifests may live at a skill root as well as under bin/.
+    - "skills/*/UPSTREAM.sha256"
+
+  # Contract suites and fixtures execute but are not product deliverables.
+  test:
+    - "tests/*"
+    - "tests/fixtures/**"
+    - "skills/_suite_lib*"
+    - "skills/*/scripts/tests/**"
+    - "evals/**"
+    # Suite fixtures and frozen files belong to the verification surface regardless of format.
+    - "skills/*/tests/**"
+
+  # L1: judgment loaded when a skill is invoked.
+  skill-doc:
+    - "skills/*/SKILL.md"
+    # Codex-specific entry points are also L1 documents read directly by the harness.
+    - "skills/*/SKILL.codex.md"
+    # NOTICE records vendored provenance and local changes; it is an L1 document.
+    - "skills/*/NOTICE"
+
+  # L2: tables, classifications, and long rules loaded only when SKILL.md points to them.
+  reference:
+    - "skills/*/references/**"
+    - "skills/*/langs/**"
+    # Vendored one-rule-per-file collections are L2 even when upstream calls the directory rules/.
+    - "skills/*/rules/**"
+
+  # L3: deterministic executables rather than read instructions.
+  script:
+    - "scripts/**"
+    - "skills/*/scripts/**"
+    - "skills/*/bin/**"
+
+  # Hooks run on events and are the only blocking layer.
+  hook:
+    - "hooks/**"
+
+  # Fixed procedures invoked by name.
+  command:
+    - "commands/*.md"
+
+  # Components with a separate context window.
+  agent:
+    - "agents/*.md"
+
+  # Harness declarations for names, versions, and registered components.
+  manifest:
+    - "package.json"
+    - ".claude-plugin/plugin.json"
+    - "CHANGELOG.md"
+    - "CAPABILITIES.md"
+    - "NOTICE.md"
+    - "LICENSE"
+    # Plugin-root documents belong to no individual skill.
+    - "AGENTS.md"
+    # User guide required by the host structure. Its first addition correctly failed
+    # as unclassified until this explicit membership was reviewed.
+    - "README.md"

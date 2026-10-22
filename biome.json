@@ -1,0 +1,35 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.mjs",
+      "**/*.cjs",
+      "**/*.ts",
+      "**/*.tsx",
+      "!skills/public/workflow/journey-qa/repos"
+    ]
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "linter": {
+    "rules": {
+      "preset": "none",
+      "correctness": {
+        "noUnreachable": "error"
+      },
+      "suspicious": {
+        "noDebugger": "error",
+        "noGlobalAssign": "error",
+        "noSparseArray": "error"
+      }
+    }
+  }
+}

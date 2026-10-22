@@ -1,0 +1,106 @@
+# Example Flow
+
+This is the preferred interaction pattern for converting Markdown or text into HWPX using a reference standard.
+
+## 1. User Request
+
+User provides:
+
+- `reference.hwpx` or `reference.hwp`: the standard/style file.
+- `draft.md` or `draft.txt`: the source content.
+- Desired output path, such as `proposal.hwpx`.
+
+Example user wording:
+
+> Convert this Markdown manuscript to HWPX using the style of this reference file.
+
+## 2. Agent Intake
+
+Confirm only the essentials if they are missing:
+
+- Source file path.
+- Reference file path.
+- Output file path.
+- Document title, if not obvious.
+
+Do not ask a long checklist up front. First inspect the reference.
+
+## 3. Reference Analysis
+
+Run:
+
+```powershell
+$Skill = "<skill directory>"
+$env:PYTHONUTF8 = "1"
+python "$Skill\scripts\analyze_template.py" "reference.hwpx"
+```
+
+Infer:
+
+- Heading mapping for `2.`, `2.1`, `2.1.1`, `2.1.1.1`.
+- Body paragraph style, font, size, spacing, and indent.
+- Local ordered list mapping, such as `1. text` to `(1) text` or another style.
+- Bullet/list behavior.
+- Table header/body/caption style, width, border, fill, and spacing.
+- Page setup from `secPr` and `colPr`.
+
+## 4. Ask Only For Ambiguity
+
+If the reference does not clearly show a rule, ask a short grouped question.
+
+Example:
+
+> The reference does not clearly define level `2.1.1.1` or table body styles. Which font, size, and paragraph style should `2.1.1.1` use, and which styles should table headers, bodies, and captions follow? If unknown, I will draft using the closest reference styles.
+
+If the user says to proceed, create an inferred draft and mention the uncertain assumptions.
+
+## 5. Convert
+
+Run:
+
+```powershell
+python "$Skill\scripts\md_to_hwpx.py" `
+  "draft.md" `
+  "proposal.hwpx" `
+  --reference "reference.hwpx" `
+  --title "문서 제목" `
+  --roman-to-arabic `
+  --preserve-heading-numbers `
+  --validate `
+  --semantic-validate
+```
+
+For `.hwp` references, let the converter create a cached `.hwpx` reference through the Windows COM path, or ask the user to save the reference as `.hwpx` if COM is unavailable.
+
+## 6. Return Draft
+
+Respond with:
+
+- Output `.hwpx` path.
+- Validation result.
+- Important inferred style assumptions.
+- `HITL: ready-for-review`.
+
+Example:
+
+> Created: `proposal.hwpx`
+> Validation: structural + semantic passed
+> Style assumptions: `2.1.1.1` uses the closest lower-level reference heading style; table bodies map to the `표 내용` style family.
+> `HITL: ready-for-review`
+
+## 7. HITL Revision Loop
+
+User opens the file in Hancom and gives visual feedback.
+
+Example feedback:
+
+> The table is too wide, and `2.1.1.1` looks like body text. Fit the table within the margins and set `2.1.1.1` to 10pt bold.
+
+Agent response pattern:
+
+1. Adjust converter logic or patch XML for the specific issue.
+2. Regenerate or patch the HWPX.
+3. Run `validate_hwpx.py --semantic`.
+4. Return the revised output path and `HITL: revised-ready-for-review`.
+
+Repeat until the user says the visual result is acceptable. Then report `HITL: accepted-by-user`.

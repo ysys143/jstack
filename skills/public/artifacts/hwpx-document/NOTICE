@@ -1,0 +1,10 @@
+# NOTICE — hwpx-document
+
+This skill started from the `hwpx-skill` plugin (Markdown to HWPX conversion and
+validation) by stevechoi0222. Its
+conversion and validation scripts keep that plugin's structure, and 26 files are
+unchanged from it.
+
+`references/kordoc-public-doc.md` adapts public-document rules from
+[chrisryugj/kordoc](https://github.com/chrisryugj/kordoc) (MIT); the license text is
+`LICENSE.kordoc`.

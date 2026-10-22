@@ -1,0 +1,30 @@
+---
+description: Summarize what changed and why, readably
+---
+
+# /log — explain the changes
+
+## Output
+
+`git log --oneline` already exists. This command produces **a summary readers can
+follow**.
+
+1. Define the range: base to HEAD, or the interval supplied by the user.
+2. **Group commits by topic.** Chronological order is work order, not comprehension
+   order.
+3. Add **why** to each group. If messages omit the reason, read the diff; if the
+   reason still cannot be established, say so.
+4. Put changes that affect behavior first.
+
+## Content
+
+| Include | Exclude |
+|---|---|
+| Behavior changes | Every formatting or typo commit |
+| Decisions that are difficult to reverse | Lists of commit hashes |
+| Remaining risks | A prose restatement of the diff |
+
+## Accuracy
+
+Use **"reason unknown"** for commits whose motivation cannot be established.
+Inventing a plausible explanation creates a false source for later decisions.

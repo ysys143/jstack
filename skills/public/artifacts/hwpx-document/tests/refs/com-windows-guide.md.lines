@@ -1,0 +1,29 @@
+# blob:66c061dee19b0fd952ded1a5f46e7871b77b7894
+# Windows Hancom COM Guide
+Use COM only when the reference input is `.hwp` or when Hancom must perform a visual-fidelity operation that XML-only generation cannot safely reproduce.
+Required environment:
+- Windows
+- Hancom Office / HWP installed
+- `pywin32`
+Core initialization pattern:
+```python
+import win32com.client as win32
+hwp = win32.gencache.EnsureDispatch("HWPFrame.HwpObject")
+hwp.RegisterModule("FilePathCheckDLL", "SecurityModule")
+try:
+hwp.XHwpWindows.Item(0).Visible = False
+except Exception:
+pass
+```
+For reference conversion, prefer:
+```python
+hwp.Open(str(reference_hwp))
+hwp.SaveAs(str(converted_hwpx), "HWPX", "")
+```
+Guardrails:
+- Do not write converted references beside read-only source files; use a cache directory.
+- Always call `Quit()` in a `finally` block.
+- Treat COM-generated HWPX as an intermediate; still run `validate_hwpx.py --semantic`.
+- Do not reuse older `hwp-com-writer` XML rezip helpers unless they preserve `mimetype` as the first stored ZIP entry.
+- Do not insert raw unescaped text into XML. Use an XML parser or escape text.
+- Use namespace-agnostic XML matching if post-processing COM-created HWPX.

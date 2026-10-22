@@ -1,0 +1,289 @@
+# blob:8367040687c8d0f1db601d04991600a40642cf70
+# Generator Command Template
+Template for commands that generate files/code from templates.
+## Purpose
+Generator commands create files by applying templates with variable substitution.
+## Template
+```markdown
+# {Command Name}
+Generate {what} from template.
+## Usage
+/plugin-name:command-name [args]
+## Arguments
+- `{arg1}`: {Description} (required)
+- `{arg2}`: {Description} (optional, default: {default})
+## Instructions
+You are a generator command for {purpose}.
+### Step 1: Parse Arguments
+Extract and validate arguments:
+```
+Arguments received:
+- {arg1}: {value}
+- {arg2}: {value or default}
+[Validation]
+- {arg1}: {validation rule} [OK|FAIL]
+- {arg2}: {validation rule} [OK|FAIL]
+```
+If validation fails:
+```
+[FAIL] Invalid arguments
+Issue: {what's wrong}
+Example: /plugin-name:command-name {valid example}
+```
+### Step 2: Check Prerequisites
+Verify required structure exists:
+```
+[Checking prerequisites...]
+- Plugin root: {path} [OK|FAIL]
+- Target directory: {path} [OK|FAIL]
+- Template available: [OK|FAIL]
+- Dependencies: [OK|FAIL]
+```
+If prerequisites missing:
+```
+[FAIL] Prerequisites not met
+Missing: {what's missing}
+Action: {how to fix}
+```
+### Step 3: Load Template
+Load the appropriate template:
+```
+[INFO] Loading template: {template name}
+Template type: {type}
+Variables: {list of placeholders}
+```
+### Step 4: Apply Transformations
+Replace template variables:
+| Variable | Value |
+|----------|-------|
+| `{var1}` | {value} |
+| `{var2}` | {value} |
+| `{var3}` | {value} |
+Apply transformations:
+- {var1} -> {transformation} -> {result}
+- {var2} -> {transformation} -> {result}
+### Step 5: Generate Files
+Create output files:
+```
+[INFO] Generating files...
+Creating: {file1}
+[OK] Written: {line count} lines
+Creating: {file2}
+[OK] Written: {line count} lines
+```
+### Step 6: Post-Generation
+After generating:
+1. **Format** output files
+2. **Validate** generated content
+3. **Update** indexes/registries
+4. **Set** file permissions
+```
+[INFO] Post-generation tasks...
+[OK] Formatted with {formatter}
+[OK] Validation passed
+[OK] Updated {index file}
+[OK] Set executable: {script file}
+```
+### Step 7: Report Results
+Summarize what was created:
+```
+[OK] Generation complete!
+## Created Files
+{file1}
+Purpose: {description}
+Location: {absolute path}
+{file2}
+Purpose: {description}
+Location: {absolute path}
+## Next Steps
+1. {Action 1}
+2. {Action 2}
+## Related Commands
+- /plugin-name:{command} - {Purpose}
+```
+## Template Variables
+### Standard Variables
+All templates support:
+- `{name}`: Component name
+- `{description}`: Component description
+- `{author}`: Author name
+- `{date}`: Current date (YYYY-MM-DD)
+- `{version}`: Version number
+### Custom Variables
+Add domain-specific variables:
+- `{trigger}`: For hooks
+- `{agent_role}`: For agents
+- `{command_type}`: For commands
+### Variable Transforms
+Apply transforms to variables:
+- `{name|kebab}`: Convert to kebab-case
+- `{name|snake}`: Convert to snake_case
+- `{name|pascal}`: Convert to PascalCase
+- `{name|upper}`: Convert to UPPERCASE
+## Validation Rules
+### Argument Validation
+```
+Rule: name_format
+Pattern: ^[a-z][a-z0-9-]*$
+Message: Use kebab-case (lowercase with hyphens)
+Example: my-component-name
+```
+### Conflict Detection
+```
+[Checking for conflicts...]
+Existing files:
+- {file1}: [EXISTS] -> [Backup and overwrite? Y/N]
+- {file2}: [OK] No conflict
+```
+### Dependency Validation
+```
+Required dependencies:
+- {dep1}: [OK] Found
+- {dep2}: [FAIL] Not found
+Install: {command to install}
+```
+## Templates
+### File Template Format
+```
+{comment_start}
+{name|title} - {description}
+Generated: {date}
+Author: {author}
+{comment_end}
+{file_content}
+```
+### Example: Script Template
+```bash
+#!/usr/bin/env bash
+#
+# {name} - {description}
+#
+# Generated: {date}
+# Author: {author}
+set -euo pipefail
+main() {
+# TODO: Implement {name}
+echo "Running {name}..."
+}
+main "$@"
+```
+### Example: Agent Template
+```markdown
+# {name|title} Agent
+You are {agent_role}.
+## Purpose
+{description}
+## Instructions
+{agent_instructions}
+```
+## Error Handling
+### Invalid Arguments
+```
+[FAIL] Invalid argument: {arg}
+Received: {value}
+Expected: {format}
+Example: {valid example}
+```
+### Generation Failure
+```
+[FAIL] Generation failed at step {N}
+Step: {step name}
+Error: {error message}
+Cleanup: {what was rolled back}
+```
+### Template Not Found
+```
+[FAIL] Template not found
+Looking for: {template path}
+Available templates:
+- {template1}
+- {template2}
+Action: Check template name
+```
+## Configuration
+### Template Location
+```
+{plugin}/references/templates/{template-name}/
+```
+### Template Registry
+```json
+{
+"templates": {
+"{template-id}": {
+"path": "templates/{name}",
+"type": "{file|directory}",
+"variables": ["{var1}", "{var2}"]
+}
+}
+}
+```
+## Examples
+### Example 1: Generate Hook
+```
+/plugin-name:add-hook "validate_pr" "pre_commit" "Validate PR labels"
+[INFO] Generating hook: validate_pr
+Arguments:
+- Name: validate_pr
+- Trigger: pre_commit
+- Description: Validate PR labels
+[OK] Created:
+- hooks/hooks.json (updated)
+- hooks/validate_pr.py
+Next: Implement validation logic in hooks/validate_pr.py
+```
+### Example 2: Generate Agent
+```
+/plugin-name:add-agent "analyzer" "Analyze plugin structure"
+[INFO] Generating agent: analyzer
+[OK] Created:
+- agents/analyzer-agent.md
+Next: Customize agent instructions
+```
+These examples use the actual schema: hook configuration and scripts live under
+`hooks/`, while each agent is one Markdown file under `agents/`. A generator
+that writes hooks or agents under `.claude-plugin/` creates unread files.
+## Quality Checklist
+Before completing:
+- [ ] Arguments validated
+- [ ] Prerequisites checked
+- [ ] Template loaded
+- [ ] Variables replaced
+- [ ] Files generated
+- [ ] Content validated
+- [ ] Post-processing done
+- [ ] Permissions set
+- [ ] Results reported
+## Related Templates
+- [wizard-command-template.md](./wizard-command-template.md) - Interactive commands
+- [orchestrator-command-template.md](./orchestrator-command-template.md) - Multi-step workflows
+## References
+- [Command Architecture](../organizational-guides/command-architecture.md)
+```
+## Customization
+### 1. Define What You Generate
+- Single file or multiple files?
+- From template or programmatic?
+- Simple substitution or complex logic?
+### 2. Define Arguments
+- What must user provide?
+- What has defaults?
+- What's optional?
+### 3. Create Templates
+- Design template structure
+- Identify variables
+- Add comments/docs
+- Test with sample values
+### 4. Add Validation
+- Argument format rules
+- Naming conventions
+- Conflict detection
+- Dependency checks
+## Implementation Tips
+1. **Validate early**: Check args before loading templates
+2. **Backup existing**: Never overwrite without warning
+3. **Atomic operations**: All files or none (rollback on failure)
+4. **Show diffs**: For overwrites, show what changed
+5. **Verify output**: Validate generated files
+## References
+- [Command Architecture](../organizational-guides/command-architecture.md)
+- [Organizational Governance](../organizational-guides/organizational-governance.md)

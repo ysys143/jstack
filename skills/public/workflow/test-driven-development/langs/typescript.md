@@ -1,0 +1,299 @@
+# TDD Guide: TypeScript
+
+## Framework Selection
+
+| Project | Recommendation | Reason |
+|----------|------|------|
+| Vite based (React, Vue, etc.) | **Vitest** | Native TS, configuration sharing, fastest speed |
+| NestJS / Node backend | **Vitest** or **Jest+@swc/jest** | Both are valid; increasing adoption of Vitest |
+| React Native | **Jest** (Required) | RN mandates it |
+| Stable existing Jest suite | **Maintain Jest** | Migration cost > benefit |
+
+Performance Comparison (Same Test Suite):
+- `@swc/jest`: ~2ms avg (fastest cold run)
+- `Vitest`: ~5ms avg (esbuild based, tsc 100x fast)
+- `ts-jest`: ~10ms avg (actual tsc execution — including type checking)
+
+**ts-jest vs @swc/jest differences:**
+- ts-jest: actual type checking via tsc → slower but detects type errors during testing
+- @swc/jest / Vitest: only performs type stripping → separate execution of `tsc --noEmit` is required in CI
+
+Angular 21 adopted Vitest as its default test runner (State of JS 2024).
+
+## Type-safe Mock Pattern
+
+Using `as any` is the leading anti-pattern: the compiler cannot catch interface changes.
+
+**A. `vi.mocked()` / `jest.mocked()` — Mocking the module (recommended)**
+```typescript
+import { fetchUser } from '@/services/api'
+vi.mock('@/services/api')
+
+const mockedFetch = vi.mocked(fetchUser)  // fully typed as MockedFunction<typeof fetchUser>
+mockedFetch.mockResolvedValue({ id: 1, name: 'Alice' })
+```
+
+**B. `fromPartial` — Partial Object Mock (`@total-typescript/shoehorn`)**
+```typescript
+import { fromPartial } from '@total-typescript/shoehorn'
+getConfig.mockReturnValue(fromPartial({ user: { isAdmin: true } }))
+// Provide only what is needed; TypeScript verifies the shape
+```
+
+**C. Factory Pattern — Reusable Type Fixture**
+```typescript
+function makeUser(overrides: Partial<User> = {}): User {
+  return { id: 1, name: 'Test', role: 'user', email: 'test@test.com', ...overrides }
+}
+// In a test: const user = makeUser({ role: 'admin' })
+```
+
+**D. `jest-mock-extended` — Entire interface mock (Jest only)**
+```typescript
+import { mock } from 'jest-mock-extended'
+const repo = mock<UserRepository>()  // all methods mocked automatically and fully typed
+repo.findById.mockResolvedValue(null)
+```
+
+**`vi.spyOn` vs `vi.mock` selection:**
+- `vi.spyOn`: Narrow range interception, type safety, recoverability — Recommended
+- `vi.mock`: Entire module replacement — Risk of "semi-real, semi-mock" objects where only parts are mocked
+
+## File Structure
+
+`.spec.ts` vs `.test.ts`:
+- `.spec.ts`: Unit/Component Testing (NestJS/Angular basic conventions)
+- `.test.ts`: Integration/E2E Testing
+Both are equally valid — enforce via lint after team convention standardization
+
+Deployment Strategy:
+
+| Method | Pattern | Advantage |
+|------|------|------|
+| Co-location | `src/user/user.service.spec.ts` | Easy to find, refactoring together |
+| Separate `__tests__/` | `src/__tests__/user.service.spec.ts` | Clean src tree |
+| Dedicated `test/` | `test/unit/`, `test/e2e/` | Clear separation by test type |
+
+NestJS CLI is co-located `.spec.ts` default creation — follow if there is no strong reason.
+
+## tsconfig 3File Structure (Recommended)
+
+```json
+// tsconfig.json (base — shared strict settings)
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "moduleResolution": "bundler"
+  }
+}
+```
+
+```json
+// tsconfig.build.json (production — excludes test files)
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["**/*.spec.ts", "**/*.test.ts", "test/**"]
+}
+```
+
+```json
+// tsconfig.test.json (tests only)
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src/**/*", "test/**/*"]
+}
+```
+
+Common Pitfalls:
+- `rootDir` Mismatch: If there is a `test/` folder in the `rootDir: "src"` setting, tsc error → `rootDir: "."` setting in test config
+- `moduleResolution: "node"` → ESM path alias broken → use `"bundler"`
+- `@types/jest` or `vitest/globals` missing → no type in the editor for `describe`/`it`
+
+## Coverage
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',            // precision matches Istanbul in Vitest 3.2+
+      include: ['src/**/*.ts'],  // required; omitting it includes every file
+      exclude: ['src/**/*.spec.ts', 'src/**/*.d.ts', 'src/main.ts'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 70,
+        statements: 80
+      }
+    }
+  }
+})
+```
+
+V8 vs Istanbul:
+- V8: Fast; Equivalent precision to Istanbul via AST-based remapping in Vitest 3.2
+- Istanbul: Supports all JS runtimes; Full support for `/* istanbul ignore */`
+- Direct numerical comparison between the two providers is meaningless (V8 tends to report higher values)
+
+**Separate execution of `tsc --noEmit` is required in CI:**
+Vitest/SWC do not perform type checking $\rightarrow$ tests pass even with type errors.
+```bash
+# package.json scripts
+"type-check": "tsc --noEmit",
+"test:ci": "npm run type-check && vitest run --coverage"
+```
+
+## diff coverage — gate only for new code
+
+`thresholds` is the **floor of the entire repository**, and the floor holds the legacy hostage.
+Since one PR in the repository currently 42% cannot create 80%, the team will reduce the numbers, and the lowered numbers will not go back up. The area that requires a gate is **the line newly added by this change**.
+
+As with `tsc --noEmit`, run it as a **separate step** in CI — creating the coverage report and judging by that report are different things.
+
+Requires Node.js 20+.
+
+```bash
+git fetch origin main
+
+npx vitest run --coverage --coverage.reporter=lcov   # coverage/lcov.info
+# With Jest and ts-jest: npx jest --coverage --coverageReporters=lcov
+
+pip install diff-cover
+diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=90
+
+node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
+    --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \
+    --coverage coverage/lcov.info --fail-under 90
+```
+
+`package.json` scripts:
+```json
+"test:ci": "npm run type-check && vitest run --coverage --coverage.reporter=lcov",
+"gate:diff": "diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=90"
+```
+
+**`.d.ts` and type-only files are excluded from diff.** Since there are no executable lines in the type declaration, coverage is recorded as 0, and a PR that only modifies the interface fails the gate. If it is already in `exclude`, the diff gate will also use the same list—if the two lists diverge, the pass/fail status differs for each tool.
+
+**If there are no executable new lines, it passes.** If this is violated, the gate is ignored in one week.
+
+## NestJS Pattern
+
+```typescript
+import { Test } from '@nestjs/testing'
+
+describe('UserService', () => {
+  let service: UserService
+  let repo: jest.Mocked<UserRepository>
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        UserService,
+        {
+          provide: UserRepository,
+          useValue: {            // use useValue, not useClass, to avoid real construction
+            findOne: jest.fn(),
+            save: jest.fn(),
+          } as jest.Mocked<UserRepository>,
+        },
+      ],
+    }).compile()
+
+    service = module.get(UserService)
+    repo = module.get(UserRepository)
+  })
+
+  afterEach(() => jest.clearAllMocks())
+
+  afterAll(async () => {
+    await app?.close()  // prevent memory leaks
+  })
+
+  it('throws NotFoundException when user not found', async () => {
+    repo.findOne.mockResolvedValue(null)
+    await expect(service.getUser(999)).rejects.toThrow(NotFoundException)
+  })
+})
+```
+
+Key NestJS rules:
+- Interface types do not exist at runtime; inject them with `@Inject(TOKEN)`.
+- Provide mocks with `useValue`, not `@MockBean`.
+- Unit tests never use a real database.
+- Put E2E tests in a separate `test/` directory with the `.e2e-spec.ts` suffix
+  (the NestJS CLI convention).
+
+## AAA Pattern
+
+```typescript
+it('applies 10% discount when SALE10 coupon used', async () => {
+  // Arrange
+  const order: Order = { amount: 10000 }
+  mockPg.charge.mockResolvedValue({ status: 'ok' })
+
+  // Act
+  const result = await service.checkout(order, 'SALE10')
+
+  // Assert
+  expect(result.finalAmount).toBe(9000)
+  expect(mockPg.charge).toHaveBeenCalledWith(9000)
+})
+```
+
+## Data-Driven Testing
+
+```typescript
+it.each<[number, string, number | null]>([
+  [10000, 'SALE10', 9000],
+  [10000, 'EXPIRED', null],
+  [4900,  'MIN5000', null],
+])('checkout(%i, %s) -> %s', async (amount, coupon, expected) => {
+  if (expected === null) {
+    await expect(service.checkout({ amount }, coupon)).rejects.toThrow()
+  } else {
+    const result = await service.checkout({ amount }, coupon)
+    expect(result.finalAmount).toBe(expected)
+  }
+})
+```
+
+## Execution Command
+
+```bash
+# Vitest
+npx vitest run              # CI
+npx vitest                  # watch
+npx vitest run --coverage
+
+# Jest
+npx jest --passWithNoTests
+npx jest --watch
+npx jest --coverage
+
+# Type checking (required separately)
+npx tsc --noEmit
+```
+
+## Anti-pattern
+
+```typescript
+// [X] bypass mock typing with as any
+const mock = {} as any  // disables compiler checks when the interface changes
+
+// [X] test runtime behavior already guaranteed by the type system
+expect(typeof result).toBe('string')  // TypeScript already guarantees this
+
+// [X] indiscriminately mock an entire module with vi.mock
+// This creates a confusing mixture of real and mocked members.
+// Prefer narrow interception with vi.spyOn.
+
+// [X] CI without tsc --noEmit
+// esbuild and SWC do not type-check, so type errors can pass.
+
+// [X] coverage include is unset
+// Every file, including node_modules, is counted.
+```

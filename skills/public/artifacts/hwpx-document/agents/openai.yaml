@@ -1,0 +1,4 @@
+interface:
+  display_name: Proposal HWPX
+  short_description: Convert Korean proposal Markdown to HWPX from a reference standard.
+  default_prompt: Analyze the provided reference HWPX/HWP style, ask for any missing heading/body/list/table mapping rules, convert the Markdown to HWPX, then validate the output structurally and semantically.

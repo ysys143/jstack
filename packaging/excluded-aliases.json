@@ -1,0 +1,22 @@
+[
+  {
+    "source": "skills/public/research/scientific-tools/repos/academic/skills/academic-paper",
+    "canonical": "skills/public/research/scientific-tools/repos/academic/academic-paper",
+    "reason": "Upstream discovery alias duplicates a canonical skill. jstack catalog references the canonical directory; preserve that content once and retain the source symlink only in the contributor checkout."
+  },
+  {
+    "source": "skills/public/research/scientific-tools/repos/academic/skills/academic-paper-reviewer",
+    "canonical": "skills/public/research/scientific-tools/repos/academic/academic-paper-reviewer",
+    "reason": "Upstream discovery alias duplicates a canonical skill. jstack catalog references the canonical directory; preserve that content once and retain the source symlink only in the contributor checkout."
+  },
+  {
+    "source": "skills/public/research/scientific-tools/repos/academic/skills/academic-pipeline",
+    "canonical": "skills/public/research/scientific-tools/repos/academic/academic-pipeline",
+    "reason": "Upstream discovery alias duplicates a canonical skill. jstack catalog references the canonical directory; preserve that content once and retain the source symlink only in the contributor checkout."
+  },
+  {
+    "source": "skills/public/research/scientific-tools/repos/academic/skills/deep-research",
+    "canonical": "skills/public/research/scientific-tools/repos/academic/deep-research",
+    "reason": "Upstream discovery alias duplicates a canonical skill. jstack catalog references the canonical directory; preserve that content once and retain the source symlink only in the contributor checkout."
+  }
+]

@@ -1,0 +1,108 @@
+# Flaky tests
+
+A flaky test passes and fails on the same code. Flakes waste reruns, block
+parallelism, and teach people and agents to ignore red. An agent has no memory
+that a test is "always flaky", so keep flake status machine-readable. Numbers and
+sources: [test evidence](test-evidence.md).
+
+## Root causes, most common first
+
+| Cause | Typical shape | Fix |
+|---|---|---|
+| Asynchronous waits | A fixed sleep enforces ordering; a promise or callback is not awaited | Condition waits and fake timers ([test waits](test-waits.md)) |
+| Concurrency | A race or atomicity violation, almost always between two threads on in-memory objects | Deterministic scheduling; await all work; no shared mutable state |
+| Order dependence and shared state | Static or global state, or an external resource (file, port, database); usually one polluting test | The isolation checklist in [test parallelism](test-parallelism.md); reset globals |
+| Resources and environment | Fails only in CI, only under load, or in co-failure clusters caused by the network | Timeouts sized for a loaded machine; no more workers than cores; hermetic setup |
+| Time, randomness, tight assertions, unordered collections, floats | Midnight, month end, time zone, or DST; an unseeded generator; an exact range or duration; hash iteration order | Pin the clock and time zone; seed and print; tolerant comparison; sort before comparing |
+
+Most flaky tests are flaky from the day they are written, so the cheapest place
+to catch them is the change that adds them. Flakiness also grows with test size
+(binary size, memory, emulators, browsers); push checks down to the lowest level
+that catches the bug.
+
+## Detect
+
+**1. Stress new and changed tests before merge.** This catches most flakes.
+
+    for i in $(seq 20); do npx jest --randomize --seed $RANDOM path/to/new.test.ts || break; done
+    for i in $(seq 20); do npx vitest run --sequence.shuffle path/to/new.test.ts || break; done
+    node --test --test-randomize path/to/new.test.js      # replay with --test-random-seed=<n>
+    go test -run 'TestNew' -count=50 -shuffle=on -race ./pkg/...
+    for i in $(seq 20); do pytest -p randomly --randomly-seed=$i tests/test_new.py || break; done
+    bazel test //pkg:new_test --runs_per_test=50 --runs_per_test_detects_flakes
+
+Or run `node scripts/test_profile.js --cmd "<run one file>" --repeat 20 FILES`;
+differing outcomes are reported as FLAKY. Jest has no repeat flag, so loop. For
+Java, iDFlakies finds order-dependent tests and NonDex
+(`mvn edu.illinois:nondex-maven-plugin:2.2.1:nondex -Dtest=NewTest`, or
+`./gradlew nondexTest`) shuffles results the specification leaves unordered, such
+as HashMap iteration. Run the loops once with more workers than cores, or under a
+CPU quota, to expose resource-affected tests. Periodically run each test twice in
+the same process to find tests whose outcome depends on having run before.
+
+**2. Random order in every CI run, with the seed printed**, so a failure can be
+replayed and bisected to the polluting test: `jest --randomize --showSeed`,
+`rspec --order rand` (replay with `--seed`), `go test -shuffle=on` (replay with
+`-shuffle=N`), `pytest-randomly` (on once installed; it also reseeds `random`,
+Faker, and NumPy before each test), `vitest --sequence.shuffle`. Most
+order-dependent failures involve one other test, so pairwise bisection finds the
+polluter quickly (iDFlakies and iFixFlakies for Java, iPFlakies for Python).
+Running every test once with a shifted clock exposes time assumptions.
+
+**3. Triage without rerunning.**
+
+- A failing test that executed none of the changed code is probably flaky.
+- Match the failure message against known flaky signatures.
+- Cluster tests that fail together; a shared cause, often the network, explains
+  a whole cluster.
+
+Detecting flakiness by reruns alone is expensive: high confidence needs on the
+order of a hundred or more reruns. Use runtime evidence (seed, order, logs,
+co-failures), not repetition alone.
+
+## Retries record flakiness
+
+A retry is a diagnosis, never a silent pass. Record a pass after retry as
+**flaky**, cap the retry budget, and report the compute it costs.
+
+| Runner | Retry that records flakiness |
+|---|---|
+| Maven Surefire | `-Dsurefire.rerunFailingTestsCount=2` prints "Flakes: N" and writes `<flakyFailure>`; `failOnFlakeCount` fails the build above a limit |
+| Gradle | test-retry plugin `retry { maxRetries; maxFailures; failOnPassedAfterRetry }`; build scans mark fail-then-pass as flaky |
+| Playwright | `--retries=3` labels each test passed, flaky, or failed and discards the worker after a failure |
+| Bazel | `flaky = True` (up to three attempts) or `--flaky_test_attempts`; fail-then-pass is reported as FLAKY |
+| pytest | `pytest-rerunfailures --reruns 2 --only-rerun <InfraError>` (not compatible with `--looponfail`) |
+| Mocha | `--retries n` is off by default; `--forbid-only` is on under CI in recent versions |
+
+A three-way retry separates causes: rerun in the same process (races,
+randomness), with a shifted clock (time assumptions), and in a fresh process or
+host (order and shared state).
+
+## Quarantine
+
+- Score each test over a window, such as the last 50 runs. Above a threshold,
+  **stop running it on the blocking path**, not only its result, and open a
+  ticket for its owner automatically.
+- Quarantine means **not blocking**, never deleted. Keep running the test off the
+  critical path and restore it after N consecutive passes or a healthy period; a
+  meaningful share of flaky tests turn out to be real bugs.
+- Keep the quarantine list machine-readable (a file in the repository) so agents
+  can read it before interpreting failures.
+- Critical tests are never quarantined; fix them first.
+- Mechanisms: Jest and Vitest `test.skip` with a ticket link; pytest
+  `@pytest.mark.xfail(strict=False, reason=TICKET)`; JUnit `@Disabled`; Go
+  `t.Skip`; RSpec `skip`; Bazel `flaky = True` or a tag excluded from blocking
+  runs.
+- Make flake rates visible per test (a table or timeline); visibility alone lowers
+  them.
+
+## Handle a flaky failure
+
+- Read the quarantine list before interpreting failures.
+- On a failure unrelated to the change, rerun that one test once. If it flips,
+  report it as flaky with the evidence (seed, order, output) and continue; do not
+  loop the whole suite. A consistent failure is investigated or reported.
+- Never fix flakiness by adding sleeps, longer timeouts, retries, or forced exits.
+  Models classify flakiness poorly from test code alone and repair known causes
+  better with runtime evidence; give them the seed, order, logs, and co-failures.
+- Stress an agent-written test (step 1) before accepting it.

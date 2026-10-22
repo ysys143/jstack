@@ -1,0 +1,435 @@
+{
+  "schemaVersion": 1,
+  "categories": [
+    "workflow",
+    "engineering",
+    "artifacts",
+    "research",
+    "operations"
+  ],
+  "entries": [
+    {
+      "owner": "agent-maintenance",
+      "name": "agent-maintenance",
+      "visibility": "public",
+      "category": "operations",
+      "aliases": [],
+      "purpose": "Maintain host profiles, plugin entries, project names, and both Claude and Codex sessions."
+    },
+    {
+      "owner": "audit",
+      "name": "review",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [
+        "audit"
+      ],
+      "purpose": "Find defects and contract violations in existing work."
+    },
+    {
+      "owner": "author",
+      "name": "skill-creator",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "author",
+        "skill-authoring"
+      ],
+      "purpose": "Author and maintain skills, commands, agents, and their behavior contracts.",
+      "nativeAliases": [
+        "author"
+      ]
+    },
+    {
+      "owner": "bridge",
+      "name": "runtime-adaptation",
+      "visibility": "support",
+      "aliases": [
+        "bridge"
+      ],
+      "usedBy": [
+        "consult",
+        "image",
+        "research"
+      ],
+      "when": "When a needed capability crosses runtime boundaries; probe tools and translate host dialects."
+    },
+    {
+      "owner": "cleanup",
+      "name": "refactor",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "cleanup"
+      ],
+      "purpose": "Improve implementation structure while preserving behavior."
+    },
+    {
+      "owner": "consult",
+      "name": "second-opinion",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [
+        "consult"
+      ],
+      "purpose": "Obtain an independent challenge with evidence and bounded delegation."
+    },
+    {
+      "owner": "dashboard",
+      "name": "dashboard",
+      "visibility": "public",
+      "category": "operations",
+      "aliases": [
+        "usage-status"
+      ],
+      "purpose": "Inspect and configure host usage and status displays."
+    },
+    {
+      "owner": "decide",
+      "name": "record-decision",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [
+        "decide"
+      ],
+      "purpose": "Compare alternatives and preserve a reasoned decision."
+    },
+    {
+      "owner": "deck",
+      "name": "slides",
+      "visibility": "public",
+      "category": "artifacts",
+      "aliases": [
+        "deck"
+      ],
+      "purpose": "Design and render slide presentations, including design packs."
+    },
+    {
+      "owner": "delegate",
+      "name": "task-delegation",
+      "visibility": "support",
+      "aliases": [
+        "delegate"
+      ],
+      "usedBy": [
+        "plan",
+        "consult",
+        "tdd"
+      ],
+      "when": "When authorized work has a bounded independent subtask and delegation is appropriate."
+    },
+    {
+      "owner": "diagram",
+      "name": "svg-diagram",
+      "visibility": "public",
+      "category": "artifacts",
+      "aliases": [
+        "diagram"
+      ],
+      "purpose": "Create structured SVG diagrams with geometry validation; raster generation belongs to image-generation."
+    },
+    {
+      "owner": "emoji",
+      "name": "emoji-policy",
+      "visibility": "support",
+      "aliases": [
+        "emoji"
+      ],
+      "usedBy": [
+        "author",
+        "humanize"
+      ],
+      "when": "When checking applicable output or organization emoji rules."
+    },
+    {
+      "owner": "gitrules",
+      "name": "git-conventions",
+      "visibility": "support",
+      "aliases": [
+        "gitrules"
+      ],
+      "usedBy": [
+        "setup",
+        "tdd",
+        "verify",
+        "upstream"
+      ],
+      "when": "When preparing branches, commits, or pull requests; retain existing host commands."
+    },
+    {
+      "owner": "host-audit",
+      "name": "host-audit",
+      "visibility": "support",
+      "aliases": [],
+      "usedBy": [
+        "agent-maintenance"
+      ],
+      "when": "When installing or updating jstack, or when the user asks to check their host setup: skills, MCP servers, subagents, the description listing budget, or compatibility with jstack."
+    },
+    {
+      "owner": "help",
+      "name": "catalog-help",
+      "visibility": "support",
+      "aliases": [
+        "help"
+      ],
+      "usedBy": [
+        "author",
+        "setup"
+      ],
+      "when": "When explaining the catalog or resolving a previous skill name."
+    },
+    {
+      "owner": "humanize",
+      "name": "humanize",
+      "visibility": "public",
+      "category": "artifacts",
+      "aliases": [],
+      "purpose": "Revise writing while preserving meaning; includes technical clarity and narrative research reports under humanize."
+    },
+    {
+      "owner": "hwpx",
+      "name": "hwpx-document",
+      "visibility": "public",
+      "category": "artifacts",
+      "aliases": [
+        "hwpx"
+      ],
+      "purpose": "Create and validate HWPX documents."
+    },
+    {
+      "owner": "image",
+      "name": "image-generation",
+      "visibility": "public",
+      "category": "artifacts",
+      "aliases": [
+        "image"
+      ],
+      "purpose": "Generate and edit raster images; structured SVG diagrams belong to svg-diagram."
+    },
+    {
+      "owner": "models",
+      "name": "model-selection",
+      "visibility": "support",
+      "aliases": [
+        "models"
+      ],
+      "usedBy": [
+        "plan",
+        "consult",
+        "tdd"
+      ],
+      "when": "When selecting a model for an authorized task; use observed capability, availability, latency, and cost."
+    },
+    {
+      "owner": "office",
+      "name": "office-documents",
+      "visibility": "public",
+      "category": "artifacts",
+      "aliases": [
+        "office"
+      ],
+      "purpose": "Create, edit, and inspect DOCX, XLSX, and PPTX files; slide design belongs to slides."
+    },
+    {
+      "owner": "plan",
+      "name": "plan",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [],
+      "purpose": "Turn a request into an executable specification and acceptance evidence."
+    },
+    {
+      "owner": "proof",
+      "name": "korean-proofread",
+      "visibility": "public",
+      "category": "artifacts",
+      "aliases": [
+        "proof"
+      ],
+      "purpose": "Check Korean spelling, language constraints, and character counts."
+    },
+    {
+      "owner": "prune",
+      "name": "remove-capability",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "prune"
+      ],
+      "purpose": "Remove obsolete plugin capabilities after preserving useful behavior and checking references."
+    },
+    {
+      "owner": "react",
+      "name": "react-performance",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "react"
+      ],
+      "purpose": "Diagnose and improve React performance."
+    },
+    {
+      "owner": "recall",
+      "name": "session-memory",
+      "visibility": "public",
+      "category": "operations",
+      "aliases": [
+        "recall"
+      ],
+      "purpose": "Recall relevant session history and maintain searchable memory."
+    },
+    {
+      "owner": "requirements-interview",
+      "name": "requirements-interview",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [
+        "grill"
+      ],
+      "purpose": "Surface the assumptions behind a request or the work in progress by evidence-first questioning, and record the answers in the spec."
+    },
+    {
+      "owner": "research",
+      "name": "research",
+      "visibility": "public",
+      "category": "research",
+      "aliases": [],
+      "purpose": "Investigate questions and build a verifiable evidence and citation trail."
+    },
+    {
+      "owner": "science",
+      "name": "scientific-tools",
+      "visibility": "public",
+      "category": "research",
+      "aliases": [
+        "science"
+      ],
+      "purpose": "Load scientific methods and tools conditionally; preserve bundled upstream guidance."
+    },
+    {
+      "owner": "secrets",
+      "name": "credential-response",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "secrets"
+      ],
+      "purpose": "Detect and respond to exposed credentials."
+    },
+    {
+      "owner": "setup",
+      "name": "repository-setup",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "setup"
+      ],
+      "purpose": "Apply project instructions and portable skill storage conventions."
+    },
+    {
+      "owner": "tdd",
+      "name": "test-driven-development",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [
+        "tdd"
+      ],
+      "purpose": "Implement thin slices with red-green-refactor; completion assessment belongs to verify."
+    },
+    {
+      "owner": "team",
+      "name": "parallel-execution",
+      "visibility": "support",
+      "aliases": [
+        "team"
+      ],
+      "usedBy": [
+        "plan",
+        "consult",
+        "tdd"
+      ],
+      "when": "When authorized independent work can run concurrently and needs reconciliation."
+    },
+    {
+      "owner": "ui",
+      "name": "web-interface",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "ui"
+      ],
+      "purpose": "Review interface behavior and accessibility, and apply web design packs."
+    },
+    {
+      "owner": "upstream",
+      "name": "upstream-maintenance",
+      "visibility": "public",
+      "category": "engineering",
+      "aliases": [
+        "upstream"
+      ],
+      "purpose": "Review and integrate upstream changes with provenance."
+    },
+    {
+      "owner": "verify",
+      "name": "verify",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [],
+      "purpose": "Assess completion against requirements and observed evidence."
+    },
+    {
+      "owner": "wrapup",
+      "name": "wrapup",
+      "visibility": "public",
+      "category": "operations",
+      "aliases": [],
+      "purpose": "Provide an optional convenience surface for explicitly requested personal period reports; any selected workflow may call the shared local work-report core directly."
+    },
+    {
+      "owner": "workspace",
+      "name": "google-workspace",
+      "visibility": "public",
+      "category": "operations",
+      "aliases": [
+        "workspace"
+      ],
+      "purpose": "Operate Google Workspace integrations with task-specific authorization."
+    },
+    {
+      "owner": "disk-manager",
+      "name": "disk-manager",
+      "visibility": "public",
+      "category": "operations",
+      "purpose": "Diagnose disk growth, track storage history, and reclaim approved space without deleting persistent data.",
+      "aliases": []
+    },
+    {
+      "owner": "issue-report",
+      "name": "issue-report",
+      "visibility": "public",
+      "category": "operations",
+      "purpose": "Record jstack malfunction candidates and submit redacted issue drafts only after the user approves each exact draft.",
+      "aliases": []
+    },
+    {
+      "owner": "journey-qa",
+      "name": "journey-qa",
+      "visibility": "public",
+      "category": "workflow",
+      "purpose": "Walk a product's install and onboarding journeys as a fictitious team in a clean environment and record defects with publishable evidence.",
+      "aliases": []
+    },
+    {
+      "owner": "sdlc",
+      "name": "sdlc",
+      "visibility": "public",
+      "category": "workflow",
+      "aliases": [],
+      "purpose": "Clarify and deliver one explicitly selected software change through scoped release.",
+      "invocation": "explicit"
+    }
+  ],
+  "sourceLayout": "hierarchical"
+}

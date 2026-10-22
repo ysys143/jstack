@@ -1,0 +1,93 @@
+# Google Drive work configuration: local profiles are canonical
+
+## Never store real IDs in public documentation
+
+Actual Drive, report-folder, and Scrum-folder IDs and the report subject's real
+name are the installer's work data. The public plugin does not contain them.
+Canonical values live in `~/.jstack/profiles/<name>/workspace.json` and
+`reporting.json`; this document defines only field meanings and discovery.
+Never copy real IDs into tests or evaluation examples.
+
+Use the init procedure in `runtime/ONBOARDING.md` to inspect candidates through
+the selected account and save only required values. Users without organization
+settings retain general development and document features. Missing settings stop
+only the affected Drive or Scrum function and show remediation guidance.
+
+## Fields in workspace.json
+
+| Field | Meaning | Verification |
+|---|---|---|
+| `schemaVersion` | Supported configuration format, currently 1 | Common loader schema check |
+| `configDir` | Absolute path to the selected gws account configuration | Existing account directory selected by the user |
+| `account` | Account identifier observed through the Drive API | User data from `drive about get` |
+| `driveId` | Selected work shared drive | Confirm drive-name and ID candidates |
+| `reportFolderId` | Destination folder for uploaded reports | Compare intended use with folder candidates |
+| `scrumFolderId` | Folder searched for monthly Scrum sheets | Inspect sheets below the selected folder |
+| `checkedAt` | Time of the last discovery | Confirmation time in discover output |
+| `source` | Provenance of the value | Short note such as metadata discovery |
+| `revision` | Local saved revision | Managed by the storage module; never increment manually |
+
+Authentication tokens, passwords, and OAuth client secrets are not profile
+fields. Leave them in the existing tool credential store; never copy them into a
+local profile or report. Do not let an environment token for another account
+bypass the selected configuration directory.
+
+## Select a profile for the task
+
+```bash
+node "${JSTACK_PLUGIN_ROOT}/runtime/profiles.js" load --profile "<selected-profile>"
+```
+
+Without `--profile`, the loader reads the default from `~/.jstack/config.json`. If a
+named profile is missing, never fall back to the default. At task start, pin the
+loaded profile and revision as a private task snapshot. Another session changing
+the default must not affect work in progress. Before a remote write, run
+`verify-account --snapshot <snapshot>` and stop if the observed account differs.
+
+Do not overwrite manual settings merely because discovery finds a new account or
+folder candidate. On concurrent change, the loader reports a revision conflict;
+reread and merge only the selected change. Diagnose permission, schema, and
+transaction failures with doctor and recover explicitly through setup. There is
+no fallback to an old ID found in documentation.
+
+## Monthly Daily Scrum sheet ID
+
+Do not store a monthly sheet ID as permanent configuration. `reporting.json`
+contains `subjectName`, `sheetNamePattern`, and the date, name, and goal column
+names. Find the current month's sheet under `scrumFolderId`. Ask the user if the
+sheet name lacks a month or several candidates match. An ID that worked last
+month is not evidence for this month.
+
+`reports/gdrive.env` is a legacy representation from an older work repository.
+When migrating it, verify provenance and current access and do not delete the
+source without authorization. New runs do not treat it as canonical. If the user
+supplies a URL, validate it as the current candidate and check access through the
+profile account.
+
+The procedure for reading tabs and date/name columns to locate the real row is in
+`scrum-cells.md`. Never calculate tab names from the month's first weekday or
+assume weekday row spacing. Immediately before writing, reread the name column
+and stop if it differs. Report upload likewise reads the selected folder ID from
+the snapshot and occurs only after draft approval.
+
+## Scripts That Are Not Bundled, and Their Replacements
+
+The three scripts named by old upstream documentation are not included. Never
+assume they are installed or invent executable paths.
+
+| Unprovided script | Current procedure |
+|---|---|
+| `find_monthly_sheet.sh` | Use `gws drive files list` with the selected account to list current-month sheet candidates under the folder |
+| `upload_gdrive.sh` | On an explicit upload request, run `gws drive files create` with the snapshot's `reportFolderId` |
+| `update_daily_scrum.sh` | Follow `scrum-cells.md`: read the actual tab and row, then verify the target immediately before writing |
+
+Pass the snapshot's `configDir` to every `gws` command through
+`GOOGLE_WORKSPACE_CLI_CONFIG_DIR`. Shared-drive queries include API parameters
+such as `supportsAllDrives`. If access is denied, report the failure and never
+automatically switch accounts or folders.
+
+The collection tools actually provided are `scripts/collect_git.js` and
+`scripts/collect_by_mtime.js`. Keep local collection separate from ownership of
+remote work configuration. Scope any transfer of collected records to an
+external model or email in the automation procedure; it is not part of init's
+read-only discovery.

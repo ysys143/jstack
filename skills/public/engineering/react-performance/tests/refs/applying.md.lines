@@ -1,0 +1,25 @@
+# blob:fab479e4063793c2a51bf0f917c38710356e61d2
+# Applying the rules
+`SKILL.md` determines which prefixes to read. This document describes what to do after reading them. All 78 rules are verbatim Vercel sources (`NOTICE`); this procedure is local.
+## Sequence: inventory, fix, measure again
+1. **Narrow the scope.** Accept a file or path. Ask when none is given; applying 78 rules to an entire tree creates noise instead of a review.
+2. **Read by prefix.** When the task names a domain, read only that prefix. Otherwise begin with the two CRITICAL groups, `async-` and `bundle-`.
+3. **Compare the incorrect/correct pair with the code.** The pair carries the rule's value. Applying a summary turns a rule into an impression.
+4. **Fix one axis at a time**, following the `cleanup` skill contract.
+5. **Measure again.**
+## Measure numerical claims
+`2-10x improvement` beside `impact: CRITICAL` is a measurable claim. Repeating it in a report would cite someone else's sentence rather than our measurement.
+| Situation | What to report |
+|---|---|
+| Measurement was possible and performed | Before/after values from this code, not the rule's generic number |
+| Measurement was possible but omitted | `unmeasured`; do not borrow the rule's number |
+| Measurement was impossible on this path | Explain why, such as a waterfall that runs once at build time |
+**A waterfall that runs once at build time is not CRITICAL.** The grade describes a common case; evaluate the actual code path.
+## Do not reduce findings by deleting the subject
+Deleting code is the cheapest way to satisfy a rule, but it evades the review. Use the same contract established for `diagram` connector validation: **when findings decrease, check whether the evaluated population also decreased.** If a justified redesign truly reduced the population, record the evidence.
+## Do not count non-applicable rules as failures
+**When the project does not use Next.js, its ten rules are out of scope.** They are not incorrect. `SKILL.md`, `NOTICE`, and the contract suite reconcile this list with the files. Conversely, the 14 `js-` rules apply without React.
+State the population in the report, for example: "68 of 78 rules applied; 10 out of scope because Next.js is not used." Without a denominator, ten violations and ten non-applicable rules look identical.
+## When priorities conflict
+`architecture-` (HIGH) and `rerender-` (MEDIUM) may suggest different changes to the same code. Structure takes priority because render optimization follows structural decisions; reversing that order can discard optimized code.
+Apply `js-` (LOW-MEDIUM) last. Higher-priority changes often eliminate those findings.

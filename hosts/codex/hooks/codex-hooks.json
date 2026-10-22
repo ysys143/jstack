@@ -1,0 +1,8 @@
+{
+  "description": "Links ~/.local/bin/jst to this plugin's CLI launcher at payload/bin/jst, because Codex offers a hook no way to add a PATH entry for later commands.",
+  "hooks": {
+    "SessionStart": [
+      {"matcher": "startup|resume", "hooks": [{"type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/link-jst.js\"", "timeout": 10}]}
+    ]
+  }
+}

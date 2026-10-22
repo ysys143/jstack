@@ -1,0 +1,126 @@
+# blob:5bf6d3eef00f0d8175a1377ec91cad0e598fa98d
+# Consensus plan — independent review and author revision
+jstack adaptation of [OMC Ralplan at 5281b19](https://github.com/Yeachan-Heo/oh-my-claudecode/blob/5281b19e0d64f8e6dc6767f2130299a88af2dc71/skills/ralplan/SKILL.md),
+with [the original MIT notice](consensus-LICENSE.txt). Read this entire recipe
+when `consensus-plan` or jstack `plan --consensus` is explicitly selected, by the
+user's request or by a workflow the user started. Ordinary planning does not
+require a panel. Exact OMC `ralplan` or `oh-my-claudecode:plan` remains an
+upstream provider request, including its mandatory terminal/handoff behavior.
+If that provider or a required independent assessor is unavailable, return that
+status; never relabel one author's roleplay as independent consensus.
+A single independent attempt to refute a proposal or result, with no revision
+loop, is a `second-opinion` request. This recipe uses the same reviewer
+separation (each assessor sees the same artifact and no other assessor's
+output) and adds fixed alternatives, author-only synthesis and a finite
+re-review loop. Like a `second-opinion` verdict, its consensus is evidence, not
+permission to execute.
+## Freeze the question, alternatives and budget
+The planner identifies scope, caller, repository/source revision, constraints
+and requested planning artifact. Standalone and external calls create no global
+jstack task and do not take over the caller's coordinator. This recipe may write
+requested plan/proposal artifacts but cannot authorize implementation, commits,
+publication or execution delegation.
+Before reviews, record three to five design principles, the three most important
+decision drivers and at least two substantive viable alternatives with bounded
+advantages and disadvantages. If constraints eliminate an alternative, show its
+actual invalidation evidence; do not disguise superficial variations as options.
+A plan with no fair comparison is not review-ready. For high-risk or explicitly
+deliberate work, include three concrete failure scenarios and the required unit,
+integration, end-to-end and observability validation (or justified inapplicability).
+At selection fix finite limits: at most five total review rounds and at most two
+invalid rounds by default. The caller may select stricter or different finite
+limits before execution; record the departure from upstream's five iterations.
+One total round includes the initial pair of assessments or one pair of complete
+re-assessments; the initial review consumes round one. Upstream says five loop
+iterations without making initial-review inclusion explicit. jstack deliberately
+uses this stricter total-round definition rather than asserting equal budgets.
+Also record any elapsed-time/token budget available and an explicit convergence
+criterion: both required independent assessments complete on the same unchanged
+revision, the criteria assessor approves, and the author has addressed every
+blocking antithesis with evidence. The invalid-round count is part of the total,
+not additional free retries. No restart, correction or resume resets these counters.
+Write or retain one immutable plan snapshot with a revision and SHA-256 digest.
+The coordinator computes the digest over the exact UTF-8 file bytes delivered
+to both assessors, including any wrapper text and line endings. Record that byte
+boundary in a separate receipt; do not embed a self-referential authoritative
+digest in the plan. An author's inline digest is not the validation authority.
+If it conflicts with the receipt, preserve the discrepancy and resolve which
+bytes will be reviewed before dispatch. The criteria/context receipt likewise
+identifies the exact supplied inputs rather than a prose claim of equivalence.
+Freeze the criteria and context supplied to assessors with it. Record actual
+host/provider/session or execution identities for planner and each assessor,
+requested and observed model/effort when available, exact input digest, allowed
+tools and output artifacts. Distinct role names, prose claims or equal prompts
+alone do not prove independent actors or private context. If host evidence cannot
+establish separate executions and absence of peer context, return unverified.
+Do not infer independence from matching digests while peer output is exposed in
+shared files, inherited chat or imported instructions.
+## Review one unchanged revision
+Before the first dispatch, verify that two separate read-only assessor executions
+are actually available and can receive isolated inputs. If no such execution
+path exists, return unavailable with the best current proposal; consume no round
+and do not narrate or simulate completed reviews. If executions exist but their
+identity or isolation cannot be evidenced, return unverified before dispatch.
+Only actual dispatch begins a round; once begun, interrupted or invalid work
+remains charged to the original finite budget.
+1. Dispatch the structural assessor with the frozen plan and criteria, without
+any other assessor's response. It returns the strongest steelman objection,
+at least one genuine trade-off, potential synthesis, blockers and evidence.
+The assessor is read-only and cannot change the plan.
+2. Await that result, then dispatch a separate criteria assessor with the same
+original plan/context snapshot, never the first response. It evaluates
+principle-option consistency, fair alternatives, mitigations, testable
+acceptance and concrete verification; deliberate mode also checks the
+failure scenarios and expanded validation. It returns APPROVE, ITERATE or
+REJECT with reasons. Await it individually. This jstack pilot preserves the
+upstream sequential ordering; a parallel variant is not claimed equivalent.
+3. The planner alone collects and synthesizes both completed results. Preserve
+disagreements, counterevidence and provenance rather than averaging verdicts
+or treating a majority as truth. Missing reviews are unavailable/partial,
+not approval. A council bridge returning one successful response does not
+satisfy this two-assessor requirement.
+Check the plan/context digest before and after each review and check actual
+execution identities and peer-isolation evidence. A plan changed mid-round,
+different digest, leaked peer output, reused author actor or unverified context
+invalidates the whole round. Preserve the invalid outputs as evidence, discard
+their verdicts, charge both the total and invalid budgets and retry only within
+the original remaining limits. Reaching the invalid limit returns partial or
+unavailable with its cause; it cannot certify consensus.
+## Author revision and full re-review
+For ITERATE, REJECT or an unresolved substantive objection, the planner writes
+an explicit disposition per finding, revises the complete plan and creates a
+new immutable revision/digest. Both assessors review that entire revised plan,
+not only changed fragments. Do not mix an older approval with a newer plan.
+The author cannot edit assessor verdicts, suppress dissent or manufacture an
+approval. Keep the best coherent proposal and unresolved objections available
+throughout the loop, so a stop never loses the useful result.
+## Termination, cancellation and continuation
+At convergence return the reviewed proposal, selected scope/revision/digest,
+alternatives and criteria, decision/drivers/consequences/follow-ups, actual
+assessment receipts, finding dispositions, remaining dissent and the next
+consumer. Review consensus is not human acceptance or permission to execute.
+Default output remains pending approval where human acceptance is required;
+reuse valid existing scope/revision-bound authorization without redundant asking.
+A separate selected executor receives any already-authorized next work; this
+planning recipe stops and does not implement it itself.
+At budget exhaustion, max rounds, unavailable assessor or user stop, return the
+best plan plus unresolved disagreement and exact pending/unavailable/cancelled
+status. Do not force consensus or continue endlessly. Cancellation takes
+precedence over completing a round. Preserve pending processes and uncertain
+external effects; report cleanup failures rather than pretending they ended.
+For compaction, resume or caller handoff retain the frozen recipe/budgets and
+consumed counters, plan and source digests, actor/input receipts, acceptance
+source, completed/invalid rounds, unreviewed findings and processes/effects.
+Recheck source and input identity plus isolation capability before resuming.
+Missing records leave consensus unverified; a stale completion signal or prior
+assistant summary cannot substitute for the actual round evidence. A changed
+scope needs explicit new scope accounting, not a covert budget reset.
+## Differences from upstream
+The alternatives, steelman, independent sequential criteria review, planner-only
+synthesis and whole-plan re-review are preserved. jstack adds explicit isolation
+verification, invalid-round budgets and bounded interruption/external return.
+The total-round limit counts the initial assessment pair; it is not a claim that
+upstream's ambiguously described iteration count has identical semantics.
+OMC's global keyword gate, company-context lookup and automatic Team/Ralph
+handoff are not imported. Exact-provider nested execution additionally needs
+artifact and mandatory-next/terminal closure; an artifact alone does not prove it.

@@ -1,0 +1,24 @@
+# Shared deck dependencies, merging the legacy md-to-presentation and
+# pdf-to-presentation lists so users need not choose between them.
+#
+#   pip install -r requirements.txt
+#
+# The skill does not install these on the user's behalf. Missing dependencies
+# produce exit 2 with this filename instead of requiring traceback diagnosis.
+
+# scripts/assemble.py and scripts/pdf2pptx.py: PPTX assembly
+python-pptx
+
+# Both scripts: image dimensions and encoding
+pillow
+
+# PDF output for image slides; marp handles text-manuscript PDFs
+fpdf2
+
+# scripts/pdf2pptx.py: extract embedded images from PDF pages
+pymupdf
+
+# image skill's nanobanana.py, invoked for pdf2pptx.py upscaling.
+# Not needed with --skip-upscale.
+requests
+python-dotenv

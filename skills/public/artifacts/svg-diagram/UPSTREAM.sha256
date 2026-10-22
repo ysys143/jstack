@@ -1,0 +1,30 @@
+# SHA-256 of unchanged imports — up:diagram-design @ ac490fd (v2.6.7, MIT)
+#
+# Entries include only imports whose raw bytes match upstream exactly.
+# Padding can falsify line counts but not hashes. Review 12 replaced a validator
+# with a no-op stub and padded it to 168 lines; that escape motivated this file.
+#
+# assets/upstream/test-verify-geometry.py.txt is excluded because its ASSET_DIR line was adapted to
+# our layout. Mutation tests verify that file's integrity (tests/run_tests.py).
+6034b2d1073a3661f0a29578e0a97f4ebe4f1b7c9829b847a1d03be0df3fc99e  assets/upstream/verify-geometry.py.txt
+
+# Machine-readable derived-asset format: sentinel-stripped-sha256 <sha256> <path>.
+# Tests remove exactly the two complete paired-sentinel comment lines from each
+# asset before checking this hash. Any changed byte outside those markers fails.
+# sentinel-stripped-sha256 03716fdb0a4ad641c30a5267b14a4c573d699f0f31ab3d8a0ba4e2b74ad56177 assets/example-architecture.html
+# sentinel-stripped-sha256 929b6aaefa9a362d4cd18fb1801a57f28d32aa8dd78ba577375a11926ee2cc94 assets/example-dp-integration.html
+# sentinel-stripped-sha256 700ff6d8a06aa0b04b67520e4def6388f1a334c1a63d9df9edc5f697eeee4a40 assets/example-sequence-oauth.html
+# sentinel-stripped-sha256 ebf4c65a36553abd17f9cdc1717ad94ffe62942a5234ffdc6598e3790d86844f assets/example-swimlane.html
+
+# The first three derive from upstream with only two paired-sentinel lines added.
+# example-swimlane.html is no longer an unchanged import (2026-08-30).
+#
+# Porting up:archify's orthogonality check exposed two diagonal connectors here.
+# Upstream comments said "diagonal down-right", indicating an intentional choice.
+# Our connector-rules.md rule 1 makes diagonal connectors an automatic failure:
+# preserving upstream would ship an example that violates our own rules.
+# Models learn from examples, so the invalid example can outweigh the rule.
+#
+# To follow our rule, both connectors now use orthogonal L paths (H → Q rounding → V).
+# This changes the upstream hash. The original hash was
+# 75fc463ad3282dd0faaa4328c6b07f7e853184eeb1edcff2add8f7ed1876ab3b.

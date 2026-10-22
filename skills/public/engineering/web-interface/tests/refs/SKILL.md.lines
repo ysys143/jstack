@@ -1,0 +1,61 @@
+# blob:2e18454d6c8c98d114e502e3ece1331aab70fbb2
+# UI — review the interface, not the architecture
+## Choose a visual direction when requested
+When the user names a design-pack slug, load
+`assets/design-packs/{slug}.md` directly. When the user gives only a mood or
+asks for a design pack, read `assets/design-packs/catalog.md`, recommend at
+most three suitable packs with a reason, or select one and state it when the user
+asked for implementation. Do not enumerate all 40 packs or load every pack.
+Apply the selected pack's color, typography, layout, component, motion, and
+**do-not-use** rules. The pack defines visual requirements, not a model, runtime,
+or framework. Use the active web workflow's supported tools and verify responsive
+behavior and rendering separately. A pack never relaxes the accessibility,
+focus, form, hydration, locale, or interaction requirements below.
+The design-pack specifications are MIT-licensed original/adapted visual
+principles from <https://design-diversity.vercel.app>. They do not authorize
+copying a product's trademark or logo.
+The rules are not ours. They come from **Vercel's Web Interface Guidelines**
+(<https://github.com/vercel-labs/web-interface-guidelines>, MIT) and live
+verbatim in `references/web-interface-guidelines.md`. `NOTICE` records the
+version and what we changed.
+**What we changed is one thing: we vendored them.** Vercel's own skill fetches
+the rules over the network on every run. Ours reads a file. The cost of that
+choice — staleness — and the three reasons for it are in `NOTICE`.
+## What this reviews
+103 rules across 16 areas. The ones people forget:
+| Area | The rule that gets missed |
+| --- | --- |
+| Accessibility | icon-only buttons need `aria-label`; interactive elements need keyboard handlers |
+| Focus States | focus must be visible and must not be removed without a replacement |
+| Forms | every control needs a label; errors must be announced, not just coloured |
+| Hydration Safety | anything time- or locale-dependent differs between server and client |
+| Locale & i18n | text expands; dates, numbers and plurals are not string concatenation |
+| Anti-patterns | a flagged list — these are findings, not preferences |
+Read `references/web-interface-guidelines.md` for the full set. **Do not
+paraphrase it from memory** — the rules are specific and the file is short.
+## How to run a review
+1. Take the files or glob the user named. If none, ask — do not guess a scope.
+2. Read `references/web-interface-guidelines.md`.
+3. Check each file against every area. The anti-pattern list is a checklist,
+not a vibe.
+4. Report as `file:line` with the rule, one finding per line. Terse over
+grammatical — the guidelines say so and they are right for this output.
+## What this is not
+| Question | Skill |
+| --- | --- |
+| Is the React code fast or well-composed? | the `react` skill |
+| Does the change deserve to merge? | the `audit` skill |
+| Should I fix it, and in what order? | the `cleanup` skill |
+| Write the failing test first? | the `tdd` skill |
+`ui` answers **"does this interface behave correctly for the person using it"**
+— accessibility, input, state, locale. It says nothing about performance or
+component design. When a finding is really a composition problem, name it and
+hand it to the `react` skill; do not fix it here.
+## Limits
+- **The rules are a snapshot.** Upstream may have moved. `NOTICE` carries the
+pinned commit; `upstream` carries the refresh procedure.
+- **No machine checks this.** Every rule is applied by reading. There is no
+linter here, so a review that says "no findings" means a person or a model
+read the files — not that a tool passed.
+- **Framework-agnostic by construction, but written against web platform
+behaviour.** React Native is out of scope.

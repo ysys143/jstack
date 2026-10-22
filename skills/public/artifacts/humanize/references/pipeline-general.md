@@ -1,0 +1,254 @@
+# Pipeline: General Korean Humanization
+
+A five-agent pipeline that detects and classifies AI signatures in Korean text,
+then rewrites it into natural Korean while preserving content.
+
+**Execution mode:** hybrid: sequential pipeline with parallel team review only
+at the verification stage.
+
+## Phase 0: Check context
+
+1. Check `_workspace/` in the current working directory.
+2. Branch:
+   - No `_workspace/`, or new user input: **new run**. Generate `run_id` as `YYYY-MM-DD-NNN`.
+   - Requests such as "특정 카테고리만 다시", "2차 윤문", "윤문 강도 조정", or "이 문단만":
+     **partial rerun**. Recall only the relevant agent under the existing `run_id`.
+3. Verify that `${JSTACK_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md` loads.
+
+## Phase 1: Receive and normalize input
+
+1. Save input to `_workspace/{run_id}/01_input.txt`.
+2. Confirm the genre with the user or infer it from the first 300 characters
+   (column, report, blog, or public speech).
+3. Defaults: `min_severity: S2`, `include_document_level: true`.
+
+## Phase 2: Detect AI tells (lint → prescan → detector → reconcile)
+
+**Execution mode:** two deterministic scripts, one subagent, and one deterministic
+ gate. Code wraps the LLM detector to enforce runtime application.
+
+**2.1 lint + prescan (deterministic, before the LLM):** Run with `Bash`.
+```
+python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/prescan.js \
+  --input _workspace/{run_id}/01_input.txt \
+  --taxonomy ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md \
+  --out _workspace/{run_id}/02_candidates.json
+```
+prescan first runs `lint_taxonomy.js` to check SSOT integrity. Missing surface
+forms or duplicate IDs stop execution before candidate generation. Output:
+`02_candidates.json`, containing ANCHORED candidates, COMPUTED metrics, and a
+taxonomy hash stamp.
+
+**2.2 detector (LLM judgment):** Invoke `ai-tell-detector` with `Agent` (`model: "opus"`).
+```
+run_id: {run_id}
+input_path: _workspace/{run_id}/01_input.txt
+candidates_path: _workspace/{run_id}/02_candidates.json
+taxonomy_path: ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md
+genre_hint: {칼럼|리포트|블로그|공적|null}
+options: { min_severity, include_document_level }
+```
+Output: `_workspace/{run_id}/02_detection.json`. Account for every ANCHORED
+candidate in `findings` or `kept`.
+
+**2.3 reconcile (deterministic gate, after the LLM):** Run with `Bash`.
+```
+python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/reconcile.js \
+  --candidates _workspace/{run_id}/02_candidates.json \
+  --detection _workspace/{run_id}/02_detection.json \
+  --taxonomy ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md \
+  --input _workspace/{run_id}/01_input.txt
+```
+**Stop gate:** On nonzero exit (unaccounted candidates, hash mismatch, unsupported
+keep, or missing COMPUTED metrics), recall the detector to judge missing
+candidates, at most 2 times. If it still fails, request human intervention.
+
+**Gate:** After reconcile passes, if `detected_count == 0`, finish with
+"AI 티가 거의 없습니다. 윤문 불필요".
+
+## Phase 3: Rewrite
+
+**Execution mode:** one subagent call per iteration, at most 3 iterations.
+
+Invoke `korean-style-rewriter` with `Agent` (`model: "opus"`).
+
+Input:
+```
+run_id: {run_id}
+input_path: _workspace/{run_id}/01_input.txt
+detection_path: _workspace/{run_id}/02_detection.json
+playbook_path: ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/rewriting-playbook.md
+```
+
+Output: `_workspace/{run_id}/03_rewrite.md` and `03_rewrite_diff.json`.
+
+**Gate:** If `over_polish_warning: true`, proceed directly to Phase 4 for the
+auditor's rollback decision.
+
+## Phase 3.5: Structural convergence gate (deterministic, 0 LLM calls; added in v0.4.0)
+
+Run with `Bash` (vendored from upstream im-not-ai v2.3):
+```
+python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/verify_gates.js \
+  --before _workspace/{run_id}/01_input.txt \
+  --after _workspace/{run_id}/03_rewrite.md \
+  --genre {essay|news|blog|report}
+```
+`verify_gates.js` also runs `scripts/content_contract.js`. Identity changes in
+numbers, proper names, direct quotations, and requirement typed fields stop
+execution mechanically. Negation, strength, and polarity reversals are semantic
+flags. Without independent review, or with a `changed`/`uncertain` verdict,
+preserve the original and rewrite as `provisional`. A `verified` review binding
+hashes, propositions, and evidence spans permits promotion while retaining flags
+as informational. Pass a separate reviewer's JSON with `--review`; executor
+self-report strings are not contract inputs.
+
+Four axes plus extensions: **P0** edit rate (WARN 30% / ABORT 50%; `change_rate`
+is SSOT, rewriter self-reports are informational); **P1** lexical S1 z-convergence
+(missed targets and overcorrection); **P2** prevent complete C-8 contrast removal;
+**P2b** prevent complete L abstract-metaphor removal (local extension: WARN
+on suspected deletion of physical usage); **P3** golden checks (honorific decline,
+footnotes, quotations, and injected numbers); **P4** sentence touch rate (report only).
+
+**Stop gate:** Exit 2 (ABORT: edit rate ≥50%) prohibits adoption; roll back and
+retry Phase 3 once. On exit 1 (WARN), pass warning context to the Phase 4 team;
+the auditor prioritizes rollback review. reconcile checks candidate coverage;
+verify_gates checks convergence and preservation. Both gates are required.
+
+## Phase 4: Parallel verification (agent team)
+
+**Execution mode:** a two-member parallel team.
+
+Create `humanize-review-team` with `TeamCreate`:
+
+- Members: `content-fidelity-auditor`, `naturalness-reviewer`.
+- Assign independent evaluations with `TaskCreate`, without dependencies.
+
+Both read `_workspace/{run_id}/01_input.txt`, `03_rewrite.md`, and
+`03_rewrite_diff.json`:
+
+- **fidelity-auditor:** produce `04_fidelity_audit.json` assessing semantic equivalence.
+- **naturalness-reviewer:** produce `05_naturalness_review.json` assessing residual tells and overediting.
+
+Use `04_fidelity_audit.json` as `content_contract.js`'s `--review` input. A review
+without original/rewrite SHA256 hashes, `verified`/`changed`/`uncertain` verdicts
+for original propositions, changed ranges, and evidence spans on both sides
+remains `provisional`. A reviewer label or executor completion claim alone does
+not establish independent review.
+
+Clean up with `TeamDelete` after completion.
+
+### Phase 4 combined decision (orchestrator)
+
+| fidelity | naturalness | Decision | Follow-up |
+|----------|-------------|------|------|
+| full_pass | accept / accept_with_note | **Final approval** | Phase 5 |
+| full_pass | rewrite_round_2 | **Second rewrite** | Recall Phase 3 for target findings only |
+| full_pass | rollback_and_rewrite | **Roll back and rewrite** | Instruct the rewriter to revert the edits |
+| conditional_pass | - | **Retry only edits marked for rollback** | Recall Phase 3 for those edits |
+| fail | - | **Complete rework** | Rerun all of Phase 3 |
+
+Use `_workspace/{run_id}/03_rewrite_v2.md` and `v3.md` for the second and third versions.
+
+**At most 3 iterations.** Unresolved issues after 3 iterations require
+`hold_and_report` and human intervention.
+
+## Embedded mode: one step in another task
+
+When another task or agent uses this skill within a larger workflow (PR
+ descriptions, commit messages, document drafts), **run the loop internally and
+return only the final text**. Omit drafts, audit results, and summaries.
+
+The caller needs the edited body. Including intermediate output risks having it
+mistaken for the body and published unchanged.
+
+**Trigger:** the caller is an agent, or the request assumes immediate use, such
+as "이 문단을 다듬어서 그대로 써줘".
+
+_Upstream contract: `en-body.md`, Embedded mode. File ledger :208 required the Korean-path port._
+
+## Phase 5: Final output
+
+1. Copy the final rewrite to `_workspace/{run_id}/final.md`.
+2. Create `_workspace/{run_id}/summary.md` with:
+   - Original/rewrite lengths and edit rate.
+   - Per-category detection counts before and after.
+   - Score change (`severity_weighted_score`).
+   - Remaining findings, if any.
+   - Quality grade (A/B/C/D).
+3. Present the rewrite as the primary deliverable; everything else is supplementary.
+
+   | Condition | Output |
+   |---|---|
+   | Always | Rewritten body in a Markdown block, **first** |
+   | Grade B or lower | One line: "2차 윤문을 원하시면 말씀해주세요" |
+   | User asks for evidence | Summary table and before/after highlights |
+
+   Do not attach unsolicited evidence. A request such as "이 문단 AI 티 없애줘"
+   gets only the requested text. Reasons remain in `_workspace/summary.md` for
+   later questions.
+
+   This default changed based on measurements. While this section required a
+   summary table and 3–5 highlights, `evals/regression/humanize-general` showed a
+   negative delta across 34 runs of 4 versions: with 1/18, without 7/10. Skill
+   activation was 5/5.
+
+   Scoring just the rewritten body found equal quality in both arms. Both removed
+   the four targets (`단순히 A가 아니라 B`, `결이`, `지평`, `함으로써`) and
+   preserved `1,284건` and the period. Packaging differed: every with-skill run
+   emitted a taxonomy-ID table with 6–11 entries, versus 0 without. Response
+   lengths were 1,110–1,529 with and 472–800 without. A four-sentence paragraph
+   received a process report several times its length.
+
+   Embedded mode already required internal loops and final text only. Its
+   judgment was correct; limiting it to agent callers was too narrow. Direct
+   human requests need the same output.
+
+## Phase 6: Collect feedback (evolution loop)
+
+After delivery, ask:
+> "윤문 결과에서 개선할 부분이 있나요? 예) '이 카테고리가 과하게 고쳐졌다', '이 표현은 그대로 두는 게 낫다', '리듬이 부자연스럽다'"
+
+Handle feedback by type:
+
+- Individual edit objection: revert and rewrite that edit.
+- Category-wide objection: re-audit its findings; if needed, ask the taxonomist to adjust severity.
+- Incorrect genre inference: correct `genre_hint` and rerun from Phase 2.
+- New pattern report: escalate to the taxonomist as a taxonomy-extension candidate.
+
+## Data flow
+
+```
+01_input.txt
+    ↓ [prescan.js — deterministic]
+02_candidates.json
+    ↓ [ai-tell-detector — LLM judgment]
+02_detection.json
+    ↓ [reconcile.js — deterministic coverage gate; recall on FAIL]
+02_detection.json (verified)
+    ↓ [korean-style-rewriter]
+03_rewrite.md
+    ↓ [verify_gates.js + content_contract.js — structural/content preservation; rollback on ABORT]
+03_rewrite.md (gates passed) + 03_rewrite_diff.json
+    ↓ [parallel team]
+    ├→ [content-fidelity-auditor] → 04_fidelity_audit.json
+    └→ [naturalness-reviewer]      → 05_naturalness_review.json
+    ↓ [orchestrator decision]
+    ├→ (rework) return to Phase 3
+    └→ (approval) final.md + summary.md
+```
+
+## Agent invocation rules
+
+**Specify `model: "opus"` in every Agent call.** Pass data through numbered files
+under `_workspace/{run_id}/`.
+
+Agent definitions in the plugin's `agents/` directory: korean-ai-tell-taxonomist,
+ai-tell-detector, korean-style-rewriter, content-fidelity-auditor, naturalness-reviewer.
+
+## Constraints
+
+- **Semantic preservation is the highest invariant.** Every agent rolls back immediately upon detecting a violation.
+- **Numbers, proper names, and direct quotations are excluded from detection and rewriting.**
+- **Do not drift from the genre.**
+- **Edit rate above 30%: warn; above 50%: force a stop.**

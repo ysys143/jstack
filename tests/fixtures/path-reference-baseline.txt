@@ -1,0 +1,275 @@
+# Current unresolved reference pairs; new pairs fail validation.
+# Examples and external references are classified by the scanner.
+## jstack
+  .codex-plugin/plugin.json
+    <- skills/author/SKILL.codex.md
+  .codex-plugin/plugin.json
+    <- skills/bridge/scripts/export.py
+  .codex-plugin/plugin.json
+    <- skills/verify/references/digest-contract.md
+  .codex-plugin/plugin.json
+    <- skills/verify/scripts/package_check.py
+  .codex-plugin/plugin.json
+    <- skills/verify/scripts/package_identity.py
+  /.claude/claude-dashboard.local.json
+    <- skills/dashboard/references/reading.md
+  /external/04_fidelity_audit.json
+    <- skills/humanize/SKILL.codex.md
+  /fonts/inter.woff2
+    <- skills/react/rules/rendering-resource-hints.md
+  /payload/skills/dashboard/dist/index.js
+    <- hooks/CONTRACT.md
+  /payload/skills/dashboard/dist/index.js
+    <- skills/dashboard/scripts/statusline-shim.mjs
+  /scripts/utils.js
+    <- skills/react/rules/rendering-script-defer-async.md
+  /skills/recall/bin/Cargo.toml
+    <- commands/setup-recall.md
+  /styles/critical.css
+    <- skills/react/rules/rendering-resource-hints.md
+  Math.min/Math.max
+    <- skills/react/rules/js-min-max-loop.md
+  React/Next.js
+    <- CAPABILITIES.md
+  SESSIONS/.metadata.db
+    <- skills/recall/SKILL.codex.md
+  SESSIONS_PATH/.metadata.db
+    <- commands/setup-recall.md
+  animation-frames.js
+    <- skills/react/rules/bundle-conditional.md
+  app/api/og/route.tsx
+    <- skills/react/rules/server-hoist-static-io.md
+  bin/nanoid.cjs
+    <- skills/dashboard/package-lock.json
+  bin/vite.js
+    <- skills/dashboard/package-lock.json
+  config.json
+    <- skills/react/rules/server-hoist-static-io.md
+  deck/references/design-slop.md
+    <- evals/discriminating/deck-design-slop/graders/skill_fired.md
+  esbuild/aix-ppc64/-/aix-ppc64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/aix-ppc64/-/aix-ppc64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/android-arm/-/android-arm-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/android-arm/-/android-arm-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/android-arm64/-/android-arm64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/android-arm64/-/android-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/android-x64/-/android-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/android-x64/-/android-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/darwin-arm64/-/darwin-arm64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/darwin-arm64/-/darwin-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/darwin-x64/-/darwin-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/darwin-x64/-/darwin-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/freebsd-arm64/-/freebsd-arm64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/freebsd-arm64/-/freebsd-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/freebsd-x64/-/freebsd-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/freebsd-x64/-/freebsd-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-arm/-/linux-arm-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-arm/-/linux-arm-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-arm64/-/linux-arm64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-arm64/-/linux-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-ia32/-/linux-ia32-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-ia32/-/linux-ia32-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-loong64/-/linux-loong64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-loong64/-/linux-loong64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-mips64el/-/linux-mips64el-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-mips64el/-/linux-mips64el-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-ppc64/-/linux-ppc64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-ppc64/-/linux-ppc64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-riscv64/-/linux-riscv64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-riscv64/-/linux-riscv64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-s390x/-/linux-s390x-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-s390x/-/linux-s390x-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-x64/-/linux-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/linux-x64/-/linux-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/netbsd-arm64/-/netbsd-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/netbsd-x64/-/netbsd-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/netbsd-x64/-/netbsd-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/openbsd-arm64/-/openbsd-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/openbsd-x64/-/openbsd-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/openbsd-x64/-/openbsd-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/openharmony-arm64/-/openharmony-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/sunos-x64/-/sunos-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/sunos-x64/-/sunos-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/win32-arm64/-/win32-arm64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/win32-arm64/-/win32-arm64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/win32-ia32/-/win32-ia32-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/win32-ia32/-/win32-ia32-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/win32-x64/-/win32-x64-0.20.2.tgz
+    <- skills/dashboard/package-lock.json
+  esbuild/win32-x64/-/win32-x64-0.27.2.tgz
+    <- skills/dashboard/package-lock.json
+  fonts/Inter.ttf
+    <- skills/react/rules/server-hoist-static-io.md
+  images/logo.png
+    <- skills/react/rules/server-hoist-static-io.md
+  jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz
+    <- skills/dashboard/package-lock.json
+  payload/.claude-plugin/plugin.json
+    <- skills/bridge/scripts/export.py
+  payload/skills/dashboard/dist/check-usage.js
+    <- commands/dashboard-alias.md
+  payload/skills/dashboard/dist/index.js
+    <- hooks/ensure-statusline.mjs
+  public/fonts/Inter.ttf
+    <- skills/react/rules/server-hoist-static-io.md
+  public/images/logo.png
+    <- skills/react/rules/server-hoist-static-io.md
+  references/authoring-contract.md
+    <- skills/diagram/references/type-placement.md
+  references/delivery-contract.md
+    <- skills/diagram/references/taste-gate.md
+  references/pipeline-procurement.md
+    <- evals/regression/humanize-procurement/graders/criteria.md
+  renderers/shared/text-fit.mjs
+    <- skills/diagram/scripts/verify-text-width.py
+  renderers/shared/utils.mjs
+    <- skills/diagram/scripts/verify-text-width.py
+  reviews/cold-read.md
+    <- skills/verify/references/self-check.md
+  rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-android-arm64/-/rollup-android-arm64-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-loong64-gnu/-/rollup-linux-loong64-gnu-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-loong64-musl/-/rollup-linux-loong64-musl-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-ppc64-gnu/-/rollup-linux-ppc64-gnu-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-ppc64-musl/-/rollup-linux-ppc64-musl-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-riscv64-musl/-/rollup-linux-riscv64-musl-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-openbsd-x64/-/rollup-openbsd-x64-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-openharmony-arm64/-/rollup-openharmony-arm64-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.55.1.tgz
+    <- skills/dashboard/package-lock.json
+  scripts/check-render-output.mjs
+    <- skills/diagram/scripts/verify-connectors.py
+  scripts/commit-session.sh
+    <- hooks/CONTRACT.md
+  scripts/token_check.py
+    <- skills/dashboard/references/boundary.md
+  shared/diagnostics.mjs
+    <- skills/diagram/references/connector-rules.md
+  shared/diagnostics.mjs
+    <- skills/diagram/scripts/verify-connectors.py
+  shared/diagnostics.mjs
+    <- skills/hwpx/references/validation-rules.md
+  shared/diagnostics.mjs
+    <- skills/hwpx/scripts/validate_hwpx.py
+  shared/geometry.mjs
+    <- skills/diagram/scripts/verify-connectors.py
+  standard-schema/spec/-/spec-1.1.0.tgz
+    <- skills/dashboard/package-lock.json
+  template.html
+    <- skills/react/rules/server-hoist-static-io.md
+  templates/base/Contents/section0.xml
+    <- evals/discriminating/hwpx-format-units/graders/criteria.md
+  tests/test_hooks.py
+    <- hooks/CONTRACT.md
+  types/chai/-/chai-5.2.3.tgz
+    <- skills/dashboard/package-lock.json
+  types/deep-eql/-/deep-eql-4.0.2.tgz
+    <- skills/dashboard/package-lock.json
+  types/estree/-/estree-1.0.8.tgz
+    <- skills/dashboard/package-lock.json
+  types/node/-/node-20.19.27.tgz
+    <- skills/dashboard/package-lock.json
+  vitest/expect/-/expect-4.0.16.tgz
+    <- skills/dashboard/package-lock.json
+  vitest/mocker/-/mocker-4.0.16.tgz
+    <- skills/dashboard/package-lock.json
+  vitest/pretty-format/-/pretty-format-4.0.16.tgz
+    <- skills/dashboard/package-lock.json
+  vitest/runner/-/runner-4.0.16.tgz
+    <- skills/dashboard/package-lock.json
+  vitest/snapshot/-/snapshot-4.0.16.tgz
+    <- skills/dashboard/package-lock.json
+  vitest/spy/-/spy-4.0.16.tgz
+    <- skills/dashboard/package-lock.json
+  vitest/utils/-/utils-4.0.16.tgz
+    <- skills/dashboard/package-lock.json
+  jstack/hooks/CONTRACT.md
+    <- skills/emoji/SKILL.md
+  jstack/hooks/block_emoji.py
+    <- skills/emoji/SKILL.md

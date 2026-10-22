@@ -1,0 +1,93 @@
+# blob:cf7039a958ed2d31f5d8494d541bc4a597538485
+# Validation Rules
+Run both structural and semantic validation.
+```powershell
+python scripts\validate_hwpx.py output.hwpx --semantic
+```
+Structural checks:
+- Valid ZIP archive.
+- Required HWPX files exist.
+- `mimetype` is the first ZIP entry.
+- `mimetype` uses `ZIP_STORED`.
+- XML and HPF files are well-formed.
+Semantic checks:
+- First section paragraph contains `secPr` and `colPr`.
+- Paragraph IDs are unique.
+- `styleIDRef`, `paraPrIDRef`, `charPrIDRef`, and `borderFillIDRef` values exist in `header.xml`.
+- Table row cell widths do not exceed table width.
+- No raw Markdown table separator `|---` remains.
+- No literal `○` or `□` was inserted by the converter.
+- Table cell paragraphs use named style `표 내용` when that style exists in the reference.
+- Empty paragraphs, table anchor paragraphs, and table cell paragraphs do not use bullet/outline paragraph styles.
+- Local ordered list markers such as `1. text` and `1) text` are converted to `(1) text` unless they are real heading/outline paragraphs.
+Validation is not a substitute for HITL. After validation, return the file for visual review and report `HITL: ready-for-review` unless the user has already accepted or declined review.
+## Diagnostic contract (`--json`)
+`validate_hwpx.py --json` writes **one diagnostic envelope** to stdout instead of
+`VALID:`/`INVALID:` text lines. Exit codes remain 0 for success and 1 for errors.
+```json
+{"schemaVersion": 1, "ok": false, "source": "validate_hwpx",
+"summary": {"input": "out.hwpx", "findings": 1, "semantic": true},
+"diagnostics": [{
+"code": "reference/undefined", "severity": "error",
+"message": "undefined styleIDRef=99999 on paragraph id=1",
+"subject": {"input": "out.hwpx", "identity": "1"},
+"evidence": {"idref": "99999", "kind": "styleIDRef"},
+"supportedFixes": [ ... ]}]}
+```
+Fields match `skills/diagram`'s `verify-connectors.py --json`, following upstream
+`up:archify` `shared/diagnostics.mjs`.
+**The return types of `validate()` and `validate_semantic()` are unchanged**: both
+still return string lists, which regression tests import directly and compare with
+`[]`. Internally, `_validate_findings()` and `_semantic_findings()` create findings
+with `code`, `subject`, and `evidence`; public functions extract only `message`.
+### Code mapping is attached where the defect is detected
+Checks assign `code` directly. **Do not reparse human-readable messages.** The old
+reparsing path appended 40 characters of paragraph content to ordered-list messages,
+letting **document content choose its own diagnostic code**. Body text
+`1. undefined styleIDRef=9` changed the code to `reference/undefined`, fabricated
+`evidence.idref`, and produced a false instruction to repair a reference.
+The legacy string-only `to_diagnostics` path remains, but uses **actual prefix
+matching** (`message.startswith`) and carries only raw text instead of constructing
+structured evidence from it.
+| Check, identified by message prefix | `code` |
+|---|---|
+| `File not found:`, `Not a valid ZIP archive:`, `Unable to load header/section XML` | `input/read` |
+| `Missing required file:` | `package/missing-file` |
+| `Invalid mimetype:`, `mimetype is not the first ZIP entry`, `mimetype should use ZIP_STORED` | `package/mimetype` |
+| `Malformed XML in` | `input/xml-parse` |
+| `section0.xml has no paragraph`, `first paragraph is missing` | `document/structure` |
+| `duplicate paragraph id` | `document/duplicate-id` |
+| `undefined (style\|paraPr\|charPr\|borderFill)IDRef=` | `reference/undefined` |
+| `raw Markdown`, `literal proposal bullet marker`, `ordered list marker was not converted` | `conversion/residual-markup` |
+| `table row width … exceeds` | `layout/table-width` |
+| Named-style `표 내용` mismatch or misuse of list/outline paragraph properties | `style/mismatch` |
+| All other checks | `internal/unclassified` |
+### Five repair stages (`supportedFixes`)
+**Deletion comes last and requires evidence.** The five `action` values are shared
+with the `diagram` skill; only the domain-specific instructions differ.
+| order | action | Meaning | requiresEvidence |
+|---|---|---|---|
+| 1 | `relocate` | Point IDRef to an existing ID | false |
+| 2 | `reroute` | Use another named style or paragraph property | false |
+| 3 | `shorten` | Reduce text or table width to fit the specification | false |
+| 4 | `restructure` | Restructure paragraphs or tables | false |
+| 5 | `delete` | Last resort; record evidence before deletion | **true** |
+**Ordered repair stages are a local addition, absent upstream.** Upstream
+`supportedFixes` is a string array. Passing this object-array envelope directly to
+upstream tools will break them.
+**Do not include repair stages** for `input/*`, `package/*`, or `internal/unclassified`.
+Repairing references is not a valid instruction when the file could not be opened.
+## Limitations
+- **Codes now attach to checks, not wording.** Editing messages leaves `code` and
+`evidence` unchanged. A new check without a code falls back to
+`internal/unclassified`: **counts remain consistent while classification degrades**.
+Regression tests verify diagnostic count equals the `validate()` result count
+and paragraph content cannot control code or evidence.
+- **Legacy string-only classification in `to_diagnostics` is narrow.** Prefix matching
+cannot classify the two `style/mismatch` messages whose identifying wording occurs
+mid-sentence, so they become `internal/unclassified`. Narrow scope is preferred
+to classification controlled by document content. Actual artifact diagnostics do
+not use this legacy mapping.
+- **JSON output adds no detection capability.** It wraps the same checks.
+- `requiresEvidence: true` is only a field. No code blocks paragraph deletion without
+evidence; this remains policy rather than enforcement.

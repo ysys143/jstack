@@ -1,0 +1,97 @@
+# Testing guidance for a repository
+
+Use when setting up or repairing how people and agents run a repository's tests.
+For an agent, the suite is the feedback signal in its loop, the oracle that says
+"done", and a surface it may learn to game. Make it fast, unambiguous, and
+protected. Agents rerun tests in a large share of tasks because they do not know
+the runner or cannot read truncated output; a short, command-first section in
+AGENTS.md or CLAUDE.md prevents most of those reruns, while long context files
+add cost without improving success.
+
+## Repository setup for agents
+
+1. **One documented gate command** that CI also runs (`npm run check`,
+   `make test`, `just test`), plus how to run one file and one test. Put it at the
+   top of the testing section of AGENTS.md or CLAUDE.md.
+2. **Fast**: every iteration pays the affected tests and every change pays the
+   gate. Remove waits and parallelize before adding selection; the verify skill's
+   validation cost reference has the procedure.
+3. **Deterministic**: no sleeps, no real network, and flaky tests quarantined in a
+   machine-readable list.
+   Extract deterministic setup scripts (sign-in, seeding) instead of letting an
+   agent improvise them each time.
+4. **Compact output**: a quiet reporter by default (summary and failures only),
+   with full logs written to a file. Tool output given to an agent is truncated,
+   and truncated or ambiguous output causes reruns.
+5. **Isolated**: tests pick their own temp dirs and ports, so several agents in
+   separate worktrees can run suites at once.
+6. **Protected oracle**: CI flags diffs that delete, skip, or weaken tests; for
+   autonomous runs, consider read-only test directories or a hidden holdout suite.
+   Also flag test-specific branches in product code and long edit-and-test
+   cycles on one file.
+7. **Automatic gate**: a pre-push hook or a required CI check runs the complete
+   suite, so "done" cannot skip it.
+8. **Tests before code**: write tests from the specification or a failing bug
+   reproduction before the change, and give agents an explicit way to report that
+   a test contradicts the specification instead of editing it.
+9. **Judge tests by oracle strength**: assertions of expected behavior, diff
+   coverage, and surviving mutants, not by the presence of a test file.
+10. **Separate doer and checker**: the reviewer asks for evidence (the command and
+    its output, or a screenshot) rather than a claim of success; a fresh-context
+    reviewer or a hook that reruns the checks can play that role.
+11. **Small batches**: keep changes small enough for the available review
+    capacity, with a limit on work in progress, and use a merge queue once many
+    pull requests land per day.
+12. **Cost awareness**: CI minutes are billed per agent session and per review;
+    count them with the time saved.
+
+Record only commands that exist. Run each documented command once on a clean
+checkout before writing it down; a documented command that fails is worse than
+none.
+
+## AGENTS.md section
+
+    ## Tests
+    - Gate (CI runs it on every pull request): `npm run check` (typecheck and all tests, about 25 s, 10 workers)
+    - One file: `npx vitest run path/to/file.test.ts`; one test: add `-t "name"`
+    - While editing: `npx vitest related --run <changed files>`
+    - Quiet output by default; full log: `npm run check > /tmp/test.log 2>&1; grep -n "FAIL" /tmp/test.log`
+    - Loop: a test that fails without the change, then the change, then the affected tests; report which scope ran.
+    - Never delete, skip, or weaken a test to make it pass; if a test looks wrong, say so.
+    - No sleeps; use fake timers or wait for a condition. No fixed ports or paths (port 0, temp dirs).
+    - New or changed test files pass the budget check (time, no waiting, five repeated runs).
+    - Known flaky tests: `test/quarantine.txt`
+
+Replace every command, duration, and path with the repository's own measured
+values.
+
+## TESTING.md template
+
+    # Testing
+
+    The gate runs every test (`<gate command>`, about N s, W workers). Keep it that
+    fast: a slow test is almost always a wait, not work.
+
+    ## Running
+    | Command | What | When |
+    |---|---|---|
+    | `<gate>` | typecheck and every test | CI and before pushing |
+    | `<affected>` | only tests the change can reach | while editing |
+    | `<one file>` | one file | debugging |
+    Workers: `TEST_WORKERS` (default W; 1 runs serially for debugging).
+
+    ## Writing a test
+    - Independent: own temp dir, port 0, own database or schema; passes alone and in any order.
+    - No waiting on the clock: configurable intervals, fake timers, condition waits;
+      simulate failures with a non-retried error (such as HTTP 500), not a thrown network error.
+    - Background timers must not keep a process alive (unref, daemon threads, teardown).
+    - Assert behavior people see; add a regression test for every bug fixed.
+    - New and changed test files pass the budget check before merge.
+
+    ## When the suite gets slow
+    Profile wall time against CPU time per file. Low CPU with high wall time is
+    waiting: remove the wait first, then split the long pole, then add workers.
+
+The profiler and scanner that these files mention are
+`node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/test_profile.js` and
+`node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/test_smells.js`.

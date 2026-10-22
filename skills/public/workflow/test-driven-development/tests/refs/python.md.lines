@@ -1,0 +1,296 @@
+# blob:07dbad8cccacf6a7f6cfb11735c40affc9b8d8b6
+# TDD Guide: Python
+## Framework Selection
+**Use pytest** (JetBrains 2023 survey: used by more than 52% of Python developers; ranked first).
+Reason for choosing pytest:
+- Writing tests with only functions and native `assert` without class inheritance
+- Fixture system: Dependency injection via function parameters, scope control possible
+- Built-in `@pytest.mark.parametrize`
+- Rich plugin ecosystem (pytest-cov, pytest-mock, pytest-bdd, pytest-xdist)
+- unittest.TestCase tests are also executable (backward compatibility)
+unittest is only used in environments or legacy code where external dependencies cannot be added.
+## File Structure
+**src layout strongly recommended** (pytest official documentation: "strongly suggested"):
+```
+pyproject.toml
+src/
+mypkg/
+__init__.py
+service.py
+repository.py
+tests/
+conftest.py # project-wide fixtures
+unit/
+conftest.py # unit-test mocks and fakes
+test_service.py
+integration/
+conftest.py # real-infrastructure fixtures (DB, HTTP)
+test_service_int.py
+docs/tests/
+TEST_PLAN.md # scenario and test-case plan
+```
+Why src layout:
+- `pip install -e .` makes tests use the same import behavior as production.
+- Imports resolve to the installed package instead of the local directory.
+- This prevents `sys.path` bugs that appear only in CI.
+Filename: `test_*.py` or `*_test.py`
+Recommended function name: `test_should_<action>_when_<condition>`
+`pyproject.toml`:
+```toml
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --import-mode=importlib"
+testpaths = ["tests"]
+```
+## Three-step test design protocol
+Obtain two user approvals before generating code.
+### Phase 1: Scenario Definition [User Approval Required]
+Define the business operations of the test subject from the **user perspective**.
+Write based on user behavior and business rules, not code structure.
+Output format:
+```markdown
+## Test Scenarios
+Module: `CheckoutService`
+| Scenario ID | User action / business flow | Verification goal |
+|-------------|-------------------------------------------|-----------------------------------|
+| TS-001 | User completes payment with a valid coupon | Verify discount and PG call |
+| TS-002 | User tries to pay with an expired coupon | Verify error handling and message |
+| TS-003 | User tries to pay below the minimum amount | Verify boundary handling |
+```
+### Phase 2: Test Case Design [User Approval Required]
+Decompose each scenario into specific test cases.
+**Deriving Cases with the ZOMBIES Checklist:**
+- **Z**ero: Empty input, None, 0, empty list
+- **O**ne: Single element
+- **M**any: Multiple elements, collection
+- **B**oundaries: Boundary values (minimum, maximum, +1/-1)
+- **I**nterface: External dependency boundaries (determining mock targets)
+- **E**xceptions: Exceptions, errors, timeouts
+- **S**cenarios: Actual use cases (E2E flow)
+Save the result to `docs/tests/TEST_PLAN.md`:
+```markdown
+## Detailed Test Cases
+Target: TS-001 (apply discount coupon)
+| Case ID | ZOMBIES | Input | Mock behavior | Expected | Test function | Status |
+|---------|---------|--------------------|--------------------|--------------|-----------------------------------|------|
+| TC-001 | One | amount:10000, coupon:SALE10 | PG.charge: success | amount: 9000 | test_checkout_applies_discount | [ ] |
+| TC-002 | Exc. | amount:10000, coupon:EXPIRED | - | ValueError | test_checkout_raises_on_expired | [ ] |
+| TC-003 | Bound. | amount:4900, coupon:MIN5000 | - | ValueError | test_checkout_raises_below_min | [ ] |
+| TC-004 | Exc. | amount:10000, coupon:SALE10 | PG.charge: timeout | SystemError | test_checkout_handles_pg_timeout | [ ] |
+```
+Proceed to Phase 3 after case approval.
+### Phase 3: Write Test Code (RED)
+Write the test first based on the approved TEST_PLAN.md.
+**After scanning conftest.py:**
+- Reuse existing fixtures if they exist
+- If a new fixture is needed, add it to the conftest.py with the appropriate scope
+```python
+# tests/unit/conftest.py
+import pytest
+from unittest.mock import Mock
+from app.services import CheckoutService
+from app.gateways import PaymentGateway
+@pytest.fixture
+def mock_pg():
+return Mock(spec=PaymentGateway, autospec=True)
+@pytest.fixture
+def service(mock_pg):
+return CheckoutService(pg=mock_pg)
+```
+Similar cases are integrated into `@pytest.mark.parametrize`:
+```python
+import pytest
+from app.errors import ExpiredCouponError, BelowMinimumError
+# Follow the AAA pattern: Arrange, Act, Assert
+def test_checkout_applies_discount(service, mock_pg):
+# Arrange
+mock_pg.charge.return_value = {"status": "ok"}
+# Act
+result = service.checkout(amount=10000, coupon="SALE10")
+# Assert
+assert result.final_amount == 9000
+mock_pg.charge.assert_called_once_with(9000)
+@pytest.mark.parametrize("amount,coupon,exc_type", [
+(10000, "EXPIRED", ExpiredCouponError),
+(4900, "MIN5000", BelowMinimumError),
+])
+def test_checkout_raises_on_invalid_coupon(service, amount, coupon, exc_type):
+with pytest.raises(exc_type):
+service.checkout(amount=amount, coupon=coupon)
+def test_checkout_handles_pg_timeout(service, mock_pg):
+mock_pg.charge.side_effect = TimeoutError("network down")
+with pytest.raises(SystemError):
+service.checkout(amount=10000, coupon="SALE10")
+```
+After test execution **check for failure (RED)** → GREEN → REFACTOR.
+## AAA Pattern
+```python
+def test_should_return_discounted_price_when_coupon_applied(service, mock_pg):
+# Arrange
+mock_pg.charge.return_value = {"status": "ok"}
+# Act
+result = service.checkout(amount=10000, coupon="SALE10")
+# Assert
+assert result.final_amount == 9000
+mock_pg.charge.assert_called_once_with(9000)
+```
+## Mock Strategy
+**Dependency Injection Method Recommended (priority over patch)**:
+```python
+# FRAGILE: coupled to the import path
+@patch("src.billing.stripe.charge")
+def test_payment(mock_charge): ...
+# PREFERRED: inject the dependency through the constructor
+class PaymentService:
+def __init__(self, payment_client):
+self.client = payment_client
+def test_payment():
+fake_client = FakePaymentClient()
+service = PaymentService(fake_client)
+```
+**What to mock:**
+- External I/O: network, database, file system
+- Third-party APIs (PG, email, SMS)
+- Non-deterministic behavior (time, random numbers)
+**What not to mock:**
+- Pure functions and business logic
+- Your domain objects (if actual objects can be used)
+- Private methods (do not test)
+**Using autospec=True (prohibits bare MagicMock)**:
+```python
+# BAD: accepts methods that do not exist
+mock = MagicMock()
+# GOOD: enforce the real interface
+mock = Mock(spec=PaymentGateway, autospec=True)
+# or
+with patch("app.gateway", autospec=True) as mock_gw:
+...
+```
+**When using pytest-mock:**
+```python
+def test_with_mocker(service, mocker):
+mock_charge = mocker.patch.object(service.pg, "charge", return_value={"status": "ok"})
+result = service.checkout(10000, "SALE10")
+mock_charge.assert_called_once_with(9000)
+```
+**Fake Preference for Complex Collaborators**:
+```python
+class FakeRepository:
+def __init__(self): self._store = {}
+def save(self, entity): self._store[entity.id] = entity
+def find_by_id(self, id): return self._store.get(id)
+```
+## conftest.py best practices
+Hierarchical arrangement — fixtures only to the necessary scope:
+| scope | time of use |
+|-------|-----------|
+| `function` (default) | most fixtures; new state for each test |
+| `class` | shared within the test class |
+| `module` | shared within the file (costly setup like file loading) |
+| `session` | very expensive setup (actual DB connection) — must be immutable (read-only) |
+conftest.py is automatically applied to subdirectories tests (import unnecessary).
+Do not put 500 fixtures into one file — separate by hierarchy.
+## Data-Driven Testing
+```python
+# basic parametrize
+@pytest.mark.parametrize("input,expected", [
+("hello", 5),
+("", 0),
+("hi", 2),
+], ids=["english", "empty", "short"])
+def test_length(input, expected):
+assert len(input) == expected
+# include exception cases
+@pytest.mark.parametrize("val,exc", [
+(None, TypeError),
+(-1, ValueError),
+], ids=["none-input", "negative"])
+def test_raises(service, val, exc):
+with pytest.raises(exc):
+service.process(val)
+```
+Large datasets are externalized as CSV/JSON and loaded in conftest.py.
+Hypothesis (property-based): Use for supplementation when edge cases such as parsers, serialization, mathematical functions, etc., are important.
+## Execution Command
+```bash
+pytest # run all tests
+pytest tests/unit/ # run a directory
+pytest -k "test_checkout" # filter by name
+pytest -x # stop at the first failure
+pytest -v # verbose output
+pytest --tb=short # short traceback
+pytest -m "not slow" # filter by marker
+```
+## Coverage
+```bash
+pip install pytest-cov
+pytest --cov=src --cov-branch --cov-report=term-missing
+pytest --cov=src --cov-branch --cov-report=html # htmlcov/index.html
+pytest --cov=src --cov-branch --cov-report=xml # coverage.xml — diff-gate input
+```
+`pyproject.toml`:
+```toml
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-branch --cov-report=term-missing"
+```
+Branch coverage (`--cov-branch`) is more important than line coverage: it detects untested paths in if/else statements.
+### `--cov-fail-under=80` was discarded [Source correction]
+An earlier version put `--cov-fail-under=80` in `addopts` and cited the Google
+Testing Blog as justification. **That citation was wrong.** Google described
+three ranges, not one number: **60% "acceptable", 75% "commendable", and 90%
+"exemplary"**. The same article explicitly cautions against imposing one number
+across an organization. A team that understands the code's risk should choose
+the threshold; a language guide should not distribute one.
+The second problem is scope. Only one of this skill's 7 language guides used `--cov-fail-under`. **Leaving 6 languages ungated makes this a Python-only tax**, while applying the same value to every language repeats the unsupported justification seven times. In C, 80% line coverage is both excessive and insufficient; see `langs/c.md`.
+The original intent itself is not wrong. The diminishing marginal utility that 98%→100% improvement pointed to is still within the description of the 3 range. What was discarded is **the leap that changed that observation into a single number that makes CI red**.
+Replace the discarded absolute threshold with the following diff-coverage gate.
+## diff coverage — gate only for new code
+An absolute percentage gate **holds legacy debt hostage**. One PR cannot move a
+43% repository to 80%, so the gate gets disabled, and a disabled gate is no gate.
+Conversely, tests that visibly failed in Phase 3 should already cover every new
+line in the change. Apply the gate to the **diff**, not the repository. This
+preserves enforcement without holding existing debt hostage.
+The baseline is the merge base. Using `origin/main..HEAD` instead counts other
+people's lines when the branch is behind main.
+Requires Node.js 20+.
+```bash
+git fetch origin main
+pytest --cov=src --cov-branch --cov-report=xml # coverage.xml
+pip install diff-cover
+diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
+# Use this skill's checker when CI cannot install diff-cover
+node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
+--diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \
+--coverage coverage.xml --fail-under 90
+```
+The diff gate must use the same patterns as `[tool.coverage.report] exclude_lines`
+in `.coveragerc` or `pyproject.toml`. If the lists diverge, the same PR can pass
+`pytest` and fail the gate, causing people to stop trusting it.
+**If there are no executable new lines, it passes.** If you drop a PR that only changes comments, type hints, and `pyproject.toml` to 0%, the gate is ignored in one go. `--fail-under` only judges when there is at least one new line.
+## TEST_PLAN.md Case Status Update
+Manually update from `[ ]` to `[x]` in TEST_PLAN.md after TC completion:
+```markdown
+| TC-001 | ... | test_checkout_applies_discount | [x] |
+```
+## Anti-pattern
+```python
+# [X] mock the SUT itself (meaningless)
+mock_service = Mock(spec=CheckoutService)
+# [X] no assertion
+def test_checkout(service):
+service.checkout(10000, "SALE10") # no verification
+# [X] wrong patch target
+# If the module uses `from requests import get`:
+@patch("requests.get") # WRONG: does not patch the imported binding
+@patch("mymodule.get") # CORRECT: patch where the name is used
+# [X] bare MagicMock (no autospec)
+mock = MagicMock() # allows methods that do not exist
+# [X] session-scoped mutable fixture
+@pytest.fixture(scope="session")
+def cart():
+return [] # shared across tests, creating order dependence
+# [X] test a private method directly
+service._calculate_discount(...) # coupled to implementation details
+# [X] force dissimilar cases into one parametrize table
+# Put cases with different logic in separate test functions
+```

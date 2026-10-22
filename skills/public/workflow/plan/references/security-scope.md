@@ -1,0 +1,53 @@
+# Security-task scope contract
+
+First distinguish an ordinary security review from a request for executable
+reproduction. When the user asks only for a code review, stop after static
+analysis; do not implicitly begin execution, modification, or fix verification.
+
+## What to record in scope
+
+Record the following in the task-relative `security/scope.json`:
+
+- `schemaVersion: 1`, `taskId`, the target `target.ref`, and each actual target
+  file's `path` and `sha256`; also record `target.baseline.ref` and baseline file
+  hashes for reproducing the original state.
+- Protected `assets`, input `entryPoints`, the `attacker`, and trust `boundaries`.
+- An `assumptions` array with a `claim` and `source` for every assumption.
+- The candidate-report path `findingsPath` and execution specifications in
+  `executions`. Each execution distinguishes original from modified state with
+  `stage` and `targetState`.
+
+Distinguish assumptions inferred from code from assumptions confirmed by an
+owner or project specification. Do not record dynamic verification as successful
+when the target ref or uncommitted-file hashes do not match. Do not promote files
+outside the file list, inputs outside the task, or paths outside the working
+directory into the specification.
+
+## Threat-model questions
+
+At minimum, establish the assets, entry points, attacker's existing privileges,
+trust boundaries, and execution-environment assumptions. A small static review
+does not require a long interview or separate task, but report unanswered items
+as assumptions or unknowns. Completing discovery is not a finding that no
+vulnerability exists.
+
+When the project provides a build command, input delivery, and an oracle, put
+those commands and the normal-behavior preservation criteria in the specification.
+Do not invent a missing execution method and mark it successful. If tooling,
+isolation, or permission conditions are insufficient, preserve the static result
+and leave the execution stage `blocked`.
+
+## Link to an existing task
+
+The optional v2 contract fields have this shape:
+
+```yaml
+보안검증:
+  명세: security/scope.json
+  요구ID: [SEC-1]
+```
+
+`명세` is relative to the task directory, and `요구ID` must contain stable IDs
+from the existing `검증` entries. Ordinary v1 and v2 tasks follow the existing
+path when these fields are absent. Apply security evidence, freshness, and
+stage-specific acceptance rules only when a security specification is linked.

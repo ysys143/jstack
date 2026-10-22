@@ -1,0 +1,43 @@
+# blob:60b4dd2df600439ad9ad92b41f9010f96c966a09
+# Export: scale formula and clamp
+Source: `up:diagram-design` `references/export.md` (MIT).
+## Formula
+```
+scale = target_width / viewBox_width
+```
+For raster export, use this value as `device_scale_factor`. Default to **2** for
+crisp output, 1 for compressed assets, and 3 for print or Retina hero images.
+## The 1–4 clamp and its rationale
+| Boundary | Prohibition | Reason |
+|---|---|---|
+| **Below 1** | Do not shrink | Text becomes illegible. **Redraw** with a smaller preset |
+| **Above 4** | Do not enlarge | Upscaling a small-canvas layout distorts spacing and line weights |
+Needing to exceed the clamp indicates an **incorrect size-dial choice**, not an
+export problem. Return to the three dials in `output-spec.md`.
+## Exception: lift the upper limit for A3 or larger
+Upstream justifies the upper limit of four only with an aesthetic statement that
+the layout was designed for a smaller canvas. That limit **fails in actual A3
+foldouts used in Korean public procurement**.
+| Page | Target width at 300dpi | Scale from `print-a4-landscape` (viewBox 1120) | Verdict |
+|---|---:|---:|---|
+| A4 landscape, 297mm | 3508px | 3.13 | Within clamp |
+| A4 landscape at 4× | 4480px | 4.00 | Boundary yields 383dpi, with margin |
+| **A3 landscape, 420mm** | **4961px** | **4.43** | Clamp lowers output to **271dpi** |
+Two conditions justify lifting the limit:
+1. **A3 or larger pages**: A3 foldouts are a procurement convention; A1 boards lie
+outside this calculation's scope.
+2. **Vector delivery is unavailable**: our destination is HWP/HWPX, where SVG
+embedding is effectively blocked, forcing raster delivery. SVG-to-PDF vector
+output would be the appropriate print route; this exception assumes it is unavailable.
+After lifting the limit, **font outlining is mandatory**. Above 4×, hinted text can
+show inconsistent weight and spacing. Converting glyphs to paths removes that
+inconsistency but also removes editable text. Use outlined output **only for final
+submission** and retain the original SVG separately.
+```
+node ${JSTACK_PLUGIN_ROOT}/skills/diagram/scripts/export_scale.js \
+--viewbox-width 1120 --paper a3 --dpi 300
+```
+`scripts/export_scale.js` reports scale, clamp, exception, and effective dpi together.
+An exception prints the requirement to outline fonts while returning exit code 0.
+Passing under an exception does not waive that requirement.
+Run the JavaScript CLI checks with Node >=20.

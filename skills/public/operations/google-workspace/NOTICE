@@ -1,0 +1,5 @@
+# NOTICE — google-workspace
+
+`references/report-judgment.md` and `references/report-troubleshooting.md` adapt
+reporting judgment from [corca-ai/claude-plugins](https://github.com/corca-ai/claude-plugins)
+(MIT); the license text is `LICENSE.corca`.

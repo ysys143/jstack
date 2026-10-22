@@ -1,0 +1,32 @@
+# blob:545f1c064bfdbadfc735ac8557dd497a1de65795
+# /daily-wrapup — inspect the day before publishing
+Use the shared `runtime/work_report.js` core for the requested date. This
+command is one convenience surface for a daily report; the workflow that calls
+it remains responsible for the request and completion decision. The historical
+command name is a compatibility label; other workflows may call the same core
+directly. If no date is supplied, use the current local date and state the
+timezone in the result. A Daily Scrum row, spreadsheet column, mailbox, or Drive
+folder is an output choice; it is never the source of truth for what happened.
+## Sequence
+1. Run the local collector with `--period daily --date YYYY-MM-DD`. It reads
+Git history, changed or created files, and an explicitly configured session
+export. Do not require `gws`, a Drive account, or a shared sheet to collect.
+2. Read `evidence.jsonl` and `manifest.json`. Keep direct observations,
+interpretation, and confirmation-needed claims in separate sections.
+3. Draft the short Korean report in `report.md`, keeping evidence IDs beside
+factual bullets. A commit subject or timestamp is a trace, not proof of
+completion, approval, delivery, authorship, or organizational ownership.
+4. Show the local draft and list warnings or missing sources. “No confirmed
+record” is the correct empty result; never report “no work” merely because a
+source was absent.
+5. Publish only when the user explicitly selects a destination. For Google,
+read `jstack:google-workspace` after this step; it must discover semantic
+headers and reread the target before writing. Keep a local recovery copy if
+the adapter fails.
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/runtime/work_report.js" \
+--period daily --date "${1:-$(date +%F)}"
+```
+Do not hard-code physical spreadsheet addresses such as C or D in the core
+report. The chosen adapter maps fields such as `date`, `person`, `previousWork`,
+`nextWork`, and `blockers` to the destination it actually discovers.

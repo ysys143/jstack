@@ -1,0 +1,68 @@
+# cite-check — verify every pair ourselves
+
+## Upstream default effective coverage is 50%
+
+Upstream `core/citecheck.py`, `sample_needs_llm(pairs, sample_rate=0.6)`, calculates:
+
+```python
+keep_every = max(1, round(1 / sample_rate)) if sample_rate > 0 else 0
+```
+
+At `sample_rate=0.6`, `round(1/0.6)` = `round(1.67)` = **2**, so the LLM verifies
+**one of every two pairs**. Nominal 60% therefore means effective **50%**.
+
+For any value at least `0.5`, `round(1/x)` is 2 and gives the same result: this
+control has **two on/off levels** rather than continuously adjusting the ratio.
+
+| Input value | `keep_every` | Effective coverage |
+|---|---|---|
+| **1.0** | **1** | **100%** — our value |
+| 0.6 (upstream default) | 2 | 50% |
+| 0.5 | 2 | 50% |
+| 0.34 | 3 | 33% |
+
+## Own the checker instead of requesting a setting
+
+`scripts/cite_check.js` checks **every pair without sampling**, with or without
+upstream. Delegating verification to upstream configuration leaves users who lack
+upstream with no verification.
+
+When using the upstream pipeline, set
+`step_14_5_cite_check.sample_rate = 1.0` in `wrapper_contract.json`, but still
+**rerun our own Phase 4 checks**.
+
+**One citation can disqualify a procurement proposal.** Filtering only half the
+hallucinated citations cannot establish reliability because the unchecked half
+is unknown. Doubling cost is justified here.
+
+Also raise the upstream setting: `sample_rate` is an exposed parameter, requiring
+no fork or update conflicts. **Do not rely on that setting alone.**
+
+## Report separately to upstream
+
+The stepwise behavior of `round(1/x)` is an upstream defect: users cannot tell
+that 0.6 and 0.5 produce identical results. A local upstream-code patch would
+conflict on updates, so contribute an **upstream PR** (section 10 parallel item).
+
+Our protection does not depend on that contribution. With 1.0, the first step
+always gives `keep_every = 1` regardless of rounding rules.
+
+## What our checker can and cannot measure
+
+| Judgment | Basis | Reviewer |
+|---|---|---|
+| `MISSING`, `UNUSED`, `UNRESOLVED`, `MALFORMED` | Structural and reference integrity | **Machine** |
+| Does this source support this sentence? | Reading comprehension | **Person or LLM** |
+
+The second judgment is beyond mechanical checks. Export **every pair** through
+`--pairs`, without sampling; this is the distinction from upstream.
+
+## Tests
+
+`tests/run_tests.js` measures four things together:
+
+1. The script **actually emits** all four judgments, using fixtures.
+2. No sampling code exists: zero occurrences of `sample_rate` or `keep_every` in our script.
+3. Documented coverage matches actual behavior.
+4. When upstream is present, the formula matches its implementation. A changed
+   rounding rule would invalidate this document's rationale.

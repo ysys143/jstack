@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: sdlc-requirement-clarification
+description: Does explicit SDLC clarify material ambiguity before implementation?
+runs: 5
+tags: [regression, sdlc]

@@ -1,0 +1,42 @@
+# Boundary between dashboard and workspace
+
+Both answer availability questions. If either expands into the other's domain,
+two conflicting answers to the same question make both unreliable.
+
+## Ownership
+
+| Subject | Owner | Basis |
+|---|---|---|
+| gws OAuth token expiry and reauthentication | **workspace** | Account/authentication layer; measured by `scripts/token_check.py` |
+| Google Workspace access failures (403/permissions) | **workspace** | Same layer |
+| Claude 5-hour/7-day usage limits and cost | **dashboard** | CLI runtime layer |
+| Codex, Gemini, Antigravity, and z.ai limits | **dashboard** | Same layer |
+| Remaining context | **dashboard** | Same layer |
+| Statusline display itself | **dashboard** | |
+
+## Decision rule
+
+**Authentication expiry belongs to workspace; budget and allowance consumption belong to dashboard.**
+
+Both can conclude unavailable, but **the remedies differ**: reauthenticate for the
+former, wait or upgrade the plan for the latter. Different next actions require
+different owners.
+
+## Apparent overlap
+
+| Question | Owner | Source of confusion |
+|---|---|---|
+| "gws 가 안 돼요" | workspace | It can resemble a limit issue, but gws uses Google API quotas rather than our CLI limits |
+| "Gemini 가 안 돼요" | dashboard | Gemini **CLI** limits belong to a different account context from Google Workspace |
+| "오늘 얼마 썼어요" | dashboard | `todayCost`; workspace does not track cost |
+| "토큰이 만료됐대요" | workspace | OAuth tokens share a name with context tokens |
+
+The last row is the common confusion: **token has two meanings**. Workspace tokens
+are authentication credentials; dashboard tokens are model-input units. Identify
+which meaning applies before answering.
+
+## Reference direction
+
+Dashboard references workspace here. Do not add the reverse reference:
+**bidirectional references can leave one side silently stale when the other changes**.
+Workspace needs to understand authentication, without knowing the statusline.

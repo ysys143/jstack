@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: humanize-procurement-req-coverage
+description: Does the procurement-mode Phase 1.5 requirements-traceability gate catch an unmapped requirement?
+runs: 5
+tags: [regression, humanize, procurement]

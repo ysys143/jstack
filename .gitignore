@@ -1,0 +1,35 @@
+# Developer and session state
+.idea/
+.github/CODEOWNERS
+.cwf/
+.gjc/
+.omc/
+.omo/
+.senpi/
+__prompts/
+.claude/worktrees/
+.DS_Store
+codex-session-*
+
+# Build dependencies and caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+uv-cache/
+node_modules/
+/dist/
+/*.tgz
+.gitignore.swp
+
+# Reproducible evaluation output
+evals/results/
+
+# Local credentials
+.env
+.env.*
+
+# Preserved local validation packages
+/.jstack-artifacts/
+.agent-profile

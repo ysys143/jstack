@@ -1,0 +1,43 @@
+## 카탈로그 — 프레젠테이션 (PPT 40)
+
+- `ppt-consulting-precision-grid` — 컨설팅 정밀그리드: 12열 모듈러 그리드 위 무채색 본문과 단일 강조색의 헤어라인 보더 데이터 박스, 액션 타이틀 헤더의…  · mono/minimal-sans/strict-grid/dense/none
+- `ppt-keynote-minimal-fullbleed` — Keynote 미니멀 풀블리드: 풀블리드 사진 또는 단색 배경에 한 줄 문장만, 압도적 여백의 한 장 한 메시지 극단적 절제.  · mono/minimal-sans/full-bleed/airy/subtle
+- `ppt-editorial-magazine` — 에디토리얼 매거진: 스프레드 단위 다단 칼럼 그리드, 큰 세리프 헤드라인과 드롭캡, 잡지 활자 부속의 출판물 위계.  · mono/serif-editorial/asymmetric/balanced/none
+- `ppt-neo-brutalism` — 네오브루탈리즘: 두꺼운 검정 보더와 하드 섀도, 원색 블록의 거친 충돌, 거대 굵은 산세리프의 의도적 비대칭.  · vivid-primary/heavy-display/block-grid/dense/snappy
+- `ppt-glassmorphism` — 글래스모피즘: 컬러풀 그라디언트 배경 위 부유하는 반투명 프로스티드 글래스 패널, 하이라이트 보더의 깊이감.  · gradient/minimal-sans/centered/airy/subtle
+- `ppt-korea-policy-navy` — 한국 정책보고서 네이비: 네이비 헤더바와 굵은 한국어 고딕 타이틀, 좌측 번호 섹션, 정렬된 박스 본문의 한국 공공 보고서 정…  · dark/minimal-sans/strict-grid/balanced/none
+- `ppt-dark-tech` — 다크모드 테크: 차콜 배경에 네온 시안·바이올렛 강조와 발광 라인, 모노스페이스 라벨의 사이버틱한 테크 컨퍼런스 톤.  · dark/mono/asymmetric/balanced/snappy
+- `ppt-hand-drawn-sketch` — 핸드드로운 스케치: 손그림 테두리와 거친 펜 스트로크 화살표·말풍선, 크림색 종이 질감의 비격식 워크숍 톤.  · earth/mixed/asymmetric/balanced/playful
+- `ppt-data-infographic-heavy` — 데이터 인포그래픽 헤비: 차트·KPI 카드·아이콘 통계가 빽빽한 대시보드형 레이아웃, F자 동선의 정보 밀도가 정체성.  · vivid-primary/minimal-sans/block-grid/dense/subtle
+- `ppt-monochrome-risk` — 모노크롬 리스크: 순수 흑백 단계만, 굵은 경고 헤드라인과 두꺼운 룰 라인 구획의 의도적으로 엄숙한 리스크 보고 톤.  · mono/heavy-display/strict-grid/balanced/none
+- `ppt-memphis-retro-90s` — 90s 멤피스 레트로: 지그재그·도트·테라조 패턴과 비정형 기하 도형, 원색 충돌의 80~90s 포스트모던 무질서.  · vivid-primary/heavy-display/asymmetric/dense/playful
+- `ppt-minimal-mono-note` — 미니멀 모노 노트: 넓은 여백의 화이트 지면에 모노스페이스 폰트만, 잉크 블랙 하나의 정적인 타자기 노트 미감.  · mono/mono/centered/airy/none
+- `ppt-botanical-organic` — 보태니컬 오가닉: 베이지·테라코타·모스그린 어스 톤과 손그림 식물 일러스트, 유기적 곡선의 자연·웰니스 톤.  · earth/serif-editorial/asymmetric/airy/subtle
+- `ppt-vivid-gradient-future` — 비비드 그라디언트 퓨처: 채도 높은 다색 메시 그라디언트가 배경을 채우고 발광 곡선·추상 3D가 부유하는 미래 비전 톤.  · gradient/heavy-display/full-bleed/balanced/snappy
+- `ppt-print-first-newspaper` — 프린트-퍼스트 뉴스페이퍼: 다단 칼럼과 굵은 세리프 마스트헤드, 가는 룰 라인 구획의 뉴스프린트 신문 지면 정형.  · mono/serif-editorial/block-grid/dense/none
+- `ppt-swiss-editorial-bold` — 스위스 에디토리얼 볼드: 정밀 그리드 위에 거대한 압축 디스플레이 활자를 일러스트처럼 쓰는 의도된 혼돈의 편집 디자인.  · vivid-primary/heavy-display/strict-grid/balanced/snappy
+- `ppt-bauhaus-geometric` — 바우하우스 지오메트릭: 원·삼각형·사각형 기본 도형과 빨강·노랑·파랑 삼원색, 비대칭 균형의 기능주의 기하 구성.  · vivid-primary/heavy-display/asymmetric/balanced/none
+- `ppt-expressive-material` — 익스프레시브 머티리얼: Material 3 Expressive의 대담한 색과 가변 폰트 변주, 큰 둥근 형태와 명랑한 모션의…  · vivid-primary/mixed/block-grid/balanced/playful
+- `ppt-luxury-editorial-serif` — 럭셔리 에디토리얼 세리프: 넓은 여백의 오프화이트 지면에 가는 하이콘트라스트 디드로 세리프, 절제된 골드 한 점의 우아한 톤.  · mono/serif-editorial/centered/airy/subtle
+- `ppt-startup-pitch-colorful` — 스타트업 피치 컬러풀: 채도 높은 4~5색 팔레트와 둥근 키워드 배지, 거대 숫자 메트릭이 지배하는 데모데이 에너지.  · vivid-primary/mixed/centered/balanced/playful
+- `ppt-precision-fintech-deck` — Precision Fintech Deck: 푸른 회색 면 위 단일 인디고-바이올렛 강조색이 CTA·핵심 수치·차트를 모두 책임지는 절제된 핀테크…  · pastel/minimal-sans/asymmetric/airy/subtle
+- `ppt-engineered-dark-deck` — Engineered Dark Deck: 차콜 배경에 미세 라디얼 글로우 한 점, 중립 산세리프와 헤어라인 보더, 120~180ms 마이크로 …  · dark/minimal-sans/centered/airy/snappy
+- `ppt-warm-hospitality-deck` — Warm Hospitality Deck: 흰 캔버스에 단일 산호-레드 강조와 둥근 터미널 휴머니스트 산세리프, 풀블리드 라운드 코너 사진의 환…  · earth/minimal-sans/full-bleed/airy/playful
+- `ppt-monochrome-infrastructure-deck` — Monochrome Infrastructure Deck: 순백·순흑만으로 환원한 인프라 덱 — 산세리프+모노 혼합, 1px 헤어라인 보더, 색이 아닌 굵기 대…  · mono/mixed/strict-grid/balanced/subtle
+- `ppt-expressive-soundwave-deck` — Expressive Soundwave Deck: 다크 캔버스에 활기찬 듀오톤 그라디언트를 면적으로 깔고 초대형 와이드 디스플레이로 한 슬라이드 한 메…  · gradient/heavy-display/block-grid/balanced/playful
+- `ppt-editorial-product-deck` — Editorial Product Deck: 크림-아이보리 면에 잉크 블랙, 세리프 헤딩+산세리프 본문, 12열 엄격 그리드의 따뜻한 미니멀리즘 …  · earth/serif-editorial/strict-grid/balanced/none
+- `ppt-cinematic-keynote-deck` — Cinematic Keynote Deck: 순흑 무대 위 거대 키 비주얼 한 점과 최소 텍스트, 정연한 균형 리듬과 끝의 서머리 슬라이드를 가진…  · dark/minimal-sans/full-bleed/balanced/subtle
+- `ppt-confident-color-block-deck` — Confident Color-Block Deck: 흰 바탕에 큼직한 솔리드 컬러 블록(슬라이드당 1~2색)을 비대칭으로 깔고 화이트 헤비 산세리프를 얹…  · vivid-primary/heavy-display/asymmetric/airy/snappy
+- `ppt-strategy-navy-deck` — Strategy Navy Deck: 다층 블루 2색 시스템과 세리프 헤딩+산세리프 본문, 12열 그리드 위 액션 타이틀과 근거 모듈의 전…  · vivid-primary/mixed/strict-grid/dense/none
+- `ppt-heritage-luxury-deck` — Heritage Luxury Deck: 세피아-샴페인 톤과 골드 헤어라인, 하이콘트라스트 디돈 세리프를 중앙에 앉힌 헤리티지·럭셔리 IR 덱…  · earth/serif-editorial/centered/balanced/subtle
+- `ppt-isometric-platform-deck` — Isometric Platform Deck: 밝은 쿨그레이 캔버스 위 정사 아이소메트릭 투영의 입체 플랫폼·블록·계단 구조가 콘텐츠를 떠받치고, …  · mono/minimal-sans/centered/airy/subtle
+- `ppt-mckinsey-ghost-deck` — MBB Ghost Deck Framework: 순백 캔버스에 완결된 문장의 액션 타이틀과 슬레이트 그레이 본문, 색 대신 굵기로만 강조하는 MBB식…  · mono/minimal-sans/asymmetric/balanced/none
+- `ppt-blueprint-schematic-deck` — Blueprint Schematic Deck: 딥 인디고-블루 배경에 1px 시안 도트 그리드를 청사진처럼 노출하고, 치수 보조선·인출선·단면 해치…  · dark/mono/strict-grid/dense/none
+- `ppt-editorial-infographic-deck` — Editorial Infographic Deck: 오프화이트 지면에 큰 세리프 헤드라인과 가는 룰 라인 구획, 잉크 레드 한 점으로 데이터를 신문·잡지…  · vivid-primary/serif-editorial/block-grid/balanced/none
+- `ppt-vivid-gradient-infographic-deck` — Vivid Gradient Infographic Deck: 밝은 캔버스 위 채도 높은 듀오톤 그라디언트가 둥근 알약 노드·아이콘 칩·KPI 링을 채우는 VC 피…  · gradient/heavy-display/block-grid/balanced/playful
+- `ppt-bold-block-infographic-deck` — Bold Block Infographic Deck: 흰 바탕에 차콜·앰버·틸 3색 솔리드 컬러 블록이 노드·구간·셀이 되어 다이어그램 자체를 이루는, 보…  · vivid-primary/heavy-display/block-grid/dense/none
+- `ppt-prismatic-dark-deck` — Prismatic Dark Diagram Deck: 잉크 네이비-블랙 배경에 다이어그램 노드·라인이 시안→마젠타→앰버 프리즘 그라디언트로 발광하는 테크 …  · gradient/minimal-sans/full-bleed/balanced/snappy
+- `ppt-soft-pastel-system-deck` — Soft Pastel System Deck: 오프화이트 캔버스에 라일락·민트·피치 파스텔 3색과 부드러운 멀티 섀도, 통통한 라운드 노드·카드로 …  · pastel/minimal-sans/centered/balanced/snappy
+- `ppt-archival-index-deck` — Archival Index Deck: 종이빛 베이지 캔버스에 세리프+등폭 혼합, 도서관 카드·아카이브 대장처럼 모든 다이어그램을 번호·라벨…  · mono/mixed/strict-grid/dense/none
+- `ppt-warm-minimal-diagram-deck` — Warm Minimal Diagram Deck: 따뜻한 샌드-아이보리 캔버스에 잉크 브라운 본문과 단일 테라코타 강조, 가는 1pt 라인 다이어그램과…  · earth/minimal-sans/centered/airy/none
+

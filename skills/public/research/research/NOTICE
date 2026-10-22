@@ -1,0 +1,58 @@
+# NOTICE — research
+
+## Imported material
+
+This skill is a **thin wrapper** around upstream `up:hyperresearch`, **MIT**,
+`hyperresearch` v0.10.0. No pipeline code was imported. Upstream is a pip package
+whose `hyperresearch install --steps-only` generates 16 step skills; copying code
+would diverge from that generation path.
+
+We added four components:
+
+| Local component | Purpose |
+|---|---|
+| `wrapper_contract.json` | Profile declaring **three required axes**, in the format upstream reads |
+| `references/tier-profile.md` | **`jstack-lite` profile** defining which steps run and why |
+| `references/kr-sources.md` | **Korean primary-source lens** with sources absent upstream and evidence tiers |
+| `references/cite-check.md` | Explicit effective coverage of `sample_rate` |
+
+## Why a profile rather than tier
+
+Upstream step 1 classifies queries as `light`/`full` and **prohibits overrides**.
+Yet light skips **all** step 12 critics, including **instruction-critic**.
+
+The most valuable procurement axis is **RFP requirements-to-response mapping**.
+Only two pipeline axes provide it: **step 1 coverage-matrix** and **step 12
+instruction-critic**. Light discards precisely what we need.
+
+By contrast, the most expensive **triple-draft** is justified by stylistic
+consistency and orchestrator context saturation, not quality (upstream step 11's
+own explanation).
+
+**Select steps with `wrapper_contract.json` instead of the tier control.**
+Overriding the upstream tier prohibition would require a code fork; we do not fork.
+
+## State the evidence limits
+
+Upstream itself states in `docs/roadmap-2.0/phase-5-verification.md`: "Telemetry:
+none. **profile tuning is vibes**". Its first-place benchmark claim is an **n=9
+pilot with a 0.77-point lead over second place**, with "third party validation is
+pending". Its more-stages-is-better claim compares **two different queries**,
+not an ablation.
+
+**Upstream does not know which stages create value.** Stage count therefore does
+not justify a tier choice. Preserve named axes with established value for our use
+and cut the rest according to cost.
+
+## License
+
+`hyperresearch` v0.10.0: **MIT**, verified as `License-Expression: MIT` in dist-info
+METADATA. No code was copied; only specification files and documentation were added.
+
+## Limitations
+
+- **The upstream CLI is required.** Install with `uv tool install hyperresearch`.
+  Without it, this skill cannot do anything.
+- Upstream runs the pipeline. We control only **step selection and the source lens**.
+- Upstream step-name changes cause `wrapper_contract.json` drift.
+  `tests/run_tests.py` compares the installed upstream implementation to expose it.

@@ -1,0 +1,5 @@
+# NOTICE — image-generation
+
+`references/prompts.md` adapts prompt patterns from
+[vibedesignlab/slopslap](https://github.com/vibedesignlab/slopslap) (MIT); the license
+text is `LICENSE.slopslap`.

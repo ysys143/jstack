@@ -1,0 +1,66 @@
+# blob:3a2d0c29f4e0ec30cdcfc425a18d36bfc43352d8
+# Command
+Interactive wizard for adding commands to plugins.
+## Instructions
+### Phase 1: Context Detection
+Detect plugin (find plugin.json) or list available plugins.
+### Phase 2: Command Discovery
+Read command architecture:
+```
+Read: ${JSTACK_PLUGIN_ROOT}/references/organizational-guides/command-architecture.md
+```
+### Phase 3: Configuration
+Ask user:
+1. **Command name** (kebab-case)
+2. **Command type** (wizard|generator|orchestrator|utility)
+3. **Purpose** (one sentence; does a public skill already carry this intent?)
+4. **Arguments** (yes/no, format)
+5. **Tool permissions** (Read, Write, Bash, etc)
+6. **Workflow** (type-specific questions)
+### Phase 4: Template Selection
+Based on type, read template:
+```
+Read: ${JSTACK_PLUGIN_ROOT}/references/templates/{type}-command-template.md
+```
+### Phase 5: Generation
+Create `commands/{name}.md`:
+```markdown
+---
+description: {purpose, at most 60 columns}
+argument: {true|false}
+allowed-tools: {tools}
+---
+# /{name} — {hint}
+{Instructions based on template}
+```
+Drop the `description` line when a public skill carries the intent or the
+command only invokes a skill. Such a command is not listed to the model, so it
+costs nothing against the listing budget (about 1% of the context window), and
+its first body line, `# /{name} — {hint}`, is the text the `/` menu shows. Omit
+the key rather than leave it empty: `description:` with no value fails
+validation. `disable-model-invocation` is reserved for workflows the model must
+never start.
+### Phase 6: Integration
+- Update plugin.json keywords
+- Create supporting scripts if needed
+- Update commands README
+### Phase 7: Validation
+```bash
+!bash ${JSTACK_PLUGIN_ROOT}/scripts/validate_plugin.js .
+```
+### Phase 8: Completion
+Show summary and next steps:
+- Test command
+- Add hook/agent
+- Validate plugin
+## Quality Checks
+- [PASS] Name follows conventions
+- [PASS] YAML frontmatter valid
+- [PASS] Description at most 60 columns, or absent because a skill carries the intent
+- [PASS] Instructions complete
+- [OK] Command ready
+## References
+- [Command Architecture](../references/organizational-guides/command-architecture.md)
+- [Wizard Template](../references/templates/wizard-command-template.md)
+- [Generator Template](../references/templates/generator-command-template.md)
+- [Orchestrator Template](../references/templates/orchestrator-command-template.md)

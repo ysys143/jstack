@@ -1,0 +1,112 @@
+# Canonical merged jstack contract. Legacy *-dev/work files are migration evidence.
+version: 1
+policy:
+  require_extensions:
+    - .py
+    - .sh
+  forbid_document_require: true
+  reason: "A document requirement can pass after adding one space. Existence-only path checks have the same weakness: an empty existing file stays green."
+rules:
+  - id: contracts_change_requires_their_suite
+    when_changed:
+      - contracts/portable-contract.yaml
+      - contracts/claims.yaml
+      - contracts/change-impact.yaml
+    require_all_changed:
+      - tests/test_contracts.js
+    verify: node tests/test_contracts.js
+    message: "Contract edits must update the suite that measures them; otherwise new fields begin outside measurement."
+  - id: hooks_change_requires_hook_suite
+    when_changed:
+      - hooks/hooks.json
+      - hooks/block_emoji.js
+      - hooks/check_model_versions.js
+      - hooks/validate_uv_usage.js
+      - hooks/validate_pr_label.js
+      - hooks/ruff_check_after_edit.js
+    require_all_changed:
+      - tests/test_dev_hooks.js
+    verify: node tests/test_dev_hooks.js
+    message: "Hooks are the only layer run on every event. A PreToolUse failure skips later hooks, so one false positive can silently disable the remaining checks."
+  - id: agents_change_requires_agent_suite
+    when_changed:
+      - agents/quality-auditor.md
+      - agents/quality-executor.md
+      - agents/quality-verifier.md
+    require_all_changed:
+      - tests/test_dev_agents.js
+    verify: node tests/test_dev_agents.js
+    message: "Role separation (reviewers do not edit; executors do not judge) lives in bodies. Counts still pass after filler replacement, so all three contract axes must move together."
+  - id: suite_lib_change_requires_root_suites
+    when_changed:
+      - skills/_suite_lib.js
+    require_all_changed:
+      - tests/test_dev_agents.js
+      - tests/test_dev_commands.js
+    verify: node tests/test_dev_commands.js
+    message: "Every axis lives in this file. Weakening one check weakens every suite in both trees without another suite reporting that change."
+  - id: surface_declaration_change_requires_author_suite
+    when_changed:
+      - skills/author/references/package-surface.yaml
+    require_all_changed:
+      - skills/author/tests/run_tests.js
+      - skills/author/scripts/check_package_surface.js
+    verify: node skills/author/scripts/check_package_surface.js
+    message: "The surface declaration defines package membership. Broadening one glob can make the unclassified-file assertion always true and erase the check."
+  - id: verify_scripts_change_requires_verify_suite
+    when_changed:
+      - skills/verify/scripts/preflight.js
+      - skills/verify/scripts/package_check.js
+      - skills/verify/scripts/red_probe.js
+    require_all_changed:
+      - skills/verify/tests/run_tests.js
+    verify: node skills/verify/tests/run_tests.js
+    message: "These three tools determine completion. If they weaken, no other tool necessarily reports the weakening."
+  - id: commit_checker_change_requires_gitrules_suite
+    when_changed:
+      - skills/gitrules/scripts/check_commit.js
+    require_all_changed:
+      - skills/gitrules/tests/run_tests.js
+    verify: node skills/gitrules/tests/run_tests.js
+    message: "A more permissive commit checker leaves the convention in place while removing enforcement."
+  - id: eval_answer_keys_require_eval_suite
+    when_changed:
+      - evals
+    require_all_changed:
+      - tests/test_evals.js
+    verify: node tests/test_evals.js
+    message: "Evaluation answer keys are easy to replace silently. Adjusting keys to fit answers raises scores without improving capability."
+  - id: connector_rules_change_requires_checker
+    when_changed:
+      - skills/diagram/references/connector-rules.md
+    require_all_changed:
+      - skills/diagram/scripts/verify-connectors.js
+      - skills/diagram/tests/run_tests.js
+    verify: node skills/diagram/tests/run_tests.js
+    message: "At one point six rules were documented but only one was checked. Editing rules alone recreates that gap; rules and checker form one contract."
+  - id: hwpx_resync_preserves_our_fixes
+    when_changed:
+      - skills/hwpx/scripts/build_hwpx.py
+      - skills/hwpx/scripts/hwpx_zip.py
+    require_all_changed:
+      - skills/hwpx/tests/run_tests.js
+    verify: node skills/hwpx/tests/run_tests.js
+    message: "Resync must pass Zip-slip defenses and preview-output regressions. Upstream lacks these fixes, so overwriting would revert them each time."
+  - id: taxonomy_change_requires_lint_and_suite
+    when_changed:
+      - skills/humanize/references/ai-tell-taxonomy.md
+      - skills/humanize/references/procurement-taxonomy.md
+    require_all_changed:
+      - skills/humanize/scripts/lint_taxonomy.js
+      - skills/humanize/tests/run_tests.js
+    verify: node skills/humanize/tests/run_tests.js
+    message: "Adding categories affects detectors, rewriters, and auditors together. A taxonomy-only edit can leave all three green without recognizing the new category."
+  - id: upstream_freeze_change_requires_owner_suite
+    when_changed:
+      - skills/humanize/UPSTREAM.sha256
+      - skills/diagram/UPSTREAM.sha256
+    require_all_changed:
+      - skills/humanize/tests/run_tests.js
+      - skills/diagram/tests/run_tests.js
+    verify: node skills/diagram/tests/run_tests.js
+    message: "Editing the byte manifest means we released the freeze, not merely that upstream changed. Remeasure what the contract protected at that point."
