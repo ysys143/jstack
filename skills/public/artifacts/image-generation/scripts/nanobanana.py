@@ -9,15 +9,23 @@ from io import BytesIO
 from pathlib import Path
 
 import requests
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 from PIL import Image
-
-# Load API key: ~/.claude/.env.nanobanana first, then local .env (local overrides)
-load_dotenv(Path.home() / ".claude" / ".env.nanobanana")
-load_dotenv()
 
 MODEL = "gemini-nano-banana-2.1"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
+HOME_KEY_FILE = Path.home() / ".claude" / ".env.nanobanana"
+OUTPUT_FORMATS = {".png": "PNG", ".jpg": "JPEG", ".jpeg": "JPEG", ".webp": "WEBP"}
+
+
+def resolve_api_key() -> str | None:
+    """First key found wins: the shell environment, then ./.env, then ~/.claude/.env.nanobanana."""
+    if os.getenv("GEMINI_API_KEY"):
+        return os.environ["GEMINI_API_KEY"]
+    for path in (Path.cwd() / ".env", HOME_KEY_FILE):
+        if path.is_file() and (value := dotenv_values(path).get("GEMINI_API_KEY")):
+            return value
+    return None
 
 
 def get_mime_type(path: str) -> str:
@@ -57,9 +65,9 @@ def call_gemini(
     image_size: str | None = None,
     output: str | None = None,
 ) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = resolve_api_key()
     if not api_key:
-        sys.exit("Error: GEMINI_API_KEY not found. Set it in ~/.claude/.env.nanobanana")
+        sys.exit("Error: GEMINI_API_KEY not found in the environment, ./.env, or ~/.claude/.env.nanobanana")
 
     parts = []
 
@@ -118,8 +126,22 @@ def call_gemini(
         elif "inline_data" in part or "inlineData" in part:
             inline = part.get("inlineData") or part["inline_data"]
             img_data = base64.b64decode(inline["data"])
-            out_path = output or "output.png"
-            Path(out_path).write_bytes(img_data)
+            out_path = Path(output or "output.png")
+            # The API chooses the encoding (often JPEG), so re-encode when it differs from the extension.
+            try:
+                img = Image.open(BytesIO(img_data))
+            except OSError:
+                # Keep the billed result even when PIL cannot read it.
+                out_path.write_bytes(img_data)
+                texts.append(f"Image saved to {out_path} without conversion")
+                continue
+            fmt = OUTPUT_FORMATS[out_path.suffix.lower()]
+            if img.format == fmt:
+                out_path.write_bytes(img_data)
+            else:
+                if fmt == "JPEG" and img.mode not in ("RGB", "L"):
+                    img = img.convert("RGB")
+                img.save(out_path, format=fmt)
             texts.append(f"Image saved to {out_path}")
 
     return "\n".join(texts)
@@ -147,6 +169,12 @@ def main():
 
     if args.resolution and not args.image:
         parser.error("--resolution requires --image")
+    # Checked before the billed request, so a bad name cannot waste a generation.
+    out_path = Path(args.output or "output.png")
+    if out_path.suffix.lower() not in OUTPUT_FORMATS:
+        parser.error("--output needs a .png, .jpg, .jpeg, or .webp extension")
+    if not out_path.parent.is_dir():
+        parser.error(f"--output directory does not exist: {out_path.parent}")
 
     result = call_gemini(
         args.text,

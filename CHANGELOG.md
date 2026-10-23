@@ -29,6 +29,14 @@
 - The nanobanana path called a Gemini preview model that Google shut down on
   2026-06-25. It now calls `gemini-nano-banana-2.1` and no longer offers the `512px`
   size, which that model does not support.
+- The nanobanana script wrote the API's JPEG bytes under a `.png` name. It now
+  re-encodes the image to the format the output extension names. Before it sends the
+  billed request, it rejects extensions other than `.png`, `.jpg`, `.jpeg`, and
+  `.webp`, and a directory that does not exist.
+- The nanobanana key lookup never read the working directory's `.env` and let the
+  home file win, the reverse of what the skill said. It now takes the first key from
+  the shell environment, the working directory's `.env`, then
+  `~/.claude/.env.nanobanana`, and the probe reports the same source.
 
 ## 0.0.1 — 2026-10-22
 

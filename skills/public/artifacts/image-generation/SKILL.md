@@ -75,7 +75,7 @@ exposure broadens the scope of revocation.
 
 1. Create a key at Google AI Studio (https://aistudio.google.com/apikey). A Google
    account is required, and usage is billed to that account.
-2. Configure it using one of the following; the script reads them in this order.
+2. Configure it using one of the following.
 
 ```
 # Recommended: a home-directory file applies across projects.
@@ -89,10 +89,11 @@ chmod 600 ~/.claude/.env.nanobanana
 export GEMINI_API_KEY=YOUR_ISSUED_KEY
 ```
 
-The working directory's `.env` overrides the home configuration. The script loads
-`~/.claude/.env.nanobanana` first, then the local `.env` with override enabled
-(`scripts/nanobanana.py:16-17`). A project `.env` containing a different
-`GEMINI_API_KEY` wins. Check this first if the wrong key is selected.
+The script uses the first key it finds: the shell environment, then the working
+directory's `.env`, then `~/.claude/.env.nanobanana` (`scripts/nanobanana.py:21-28`).
+The working directory's `.env` overrides the home configuration, so a project `.env`
+containing a different `GEMINI_API_KEY` wins over the home file. A key exported in
+the shell wins over both. Check this first if the wrong key is selected.
 
 3. Never place keys in the repository. Ignore `.env` files. If a key was committed,
    removing it from history is insufficient: revoke and replace it immediately.

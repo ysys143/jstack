@@ -24,16 +24,21 @@ export function main(): number {
     const codex = command('codex');
     console.log(codex ? `codex: ${runProcess('codex', ['--version']).stdout.split(/\r?\n/)[0]}` : 'codex: 없음');
     const script = join(dirname(fileURLToPath(import.meta.url)), 'nanobanana.py'), keyFile = join(process.env.HOME ?? homedir(), '.claude', '.env.nanobanana');
+    // Same order as resolve_api_key in nanobanana.py: the environment, then ./.env, then the home file.
     let keySource = '';
     if (process.env.GEMINI_API_KEY)
         keySource = 'environment variable';
-    else if (file(keyFile)) {
-        try {
-            if (readFileSync(keyFile, 'utf8').includes('GEMINI_API_KEY'))
-                keySource = keyFile;
+    else
+        for (const candidate of [join(process.cwd(), '.env'), keyFile]) {
+            try {
+                // A non-empty value only: python-dotenv reads `=""`, `=''`, and `= # note` as empty.
+                if (file(candidate) && /^[ \t]*(?:export[ \t]+)?GEMINI_API_KEY[ \t]*=[ \t]*(?:"[^"\s]|'[^'\s]|[^\s#"'])/m.test(readFileSync(candidate, 'utf8'))) {
+                    keySource = candidate;
+                    break;
+                }
+            }
+            catch { }
         }
-        catch { }
-    }
     const nano = file(script) && !!keySource;
     if (nano)
         console.log(`nanobanana: 사용 가능 (key source: ${keySource})`);
@@ -45,7 +50,7 @@ export function main(): number {
         console.log(`  2) Configure: printf 'GEMINI_API_KEY=YOUR_ISSUED_KEY\\n' > ${keyFile} && chmod 600 ${keyFile}`);
         console.log('     Or in the shell: export GEMINI_API_KEY=YOUR_ISSUED_KEY');
         console.log('  3) Dependencies: uv pip install -r <skill>/requirements.txt (install explicitly)');
-        console.log('  Note: the working directory .env overrides home settings. Never commit keys');
+        console.log('  Note: the working directory .env overrides home settings, and the shell environment overrides both. Never commit keys');
     }
     if (codex && nano) {
         console.log('[0] 두 경로 모두 가능 — for dimensional control, propose nanobanana; each run needs approval');

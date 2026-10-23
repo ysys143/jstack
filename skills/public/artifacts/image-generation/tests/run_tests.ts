@@ -81,7 +81,7 @@ function* walk(root: string): Generator<[
     for (const dir of dirs)
         yield* walk(join(root, dir));
 }
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, realpathSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir, homedir } from 'node:os';
 import { delimiter } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -163,11 +163,11 @@ function row_diff(rows: any, canon: any): any {
     }
     return bad;
 }
-function run_probe(path: string, home: string, key?: string | null): [
+function run_probe(path: string, home: string, key?: string | null, cwd = SCRIPTS): [
     number | null,
     string
 ] { const env: NodeJS.ProcessEnv = { PATH: path, HOME: home }; if (key)
-    env.GEMINI_API_KEY = key; const r = spawnSync(process.execPath, [PROBE], { encoding: 'utf8', env }); return [r.status, r.stdout ?? '']; }
+    env.GEMINI_API_KEY = key; const r = spawnSync(process.execPath, [PROBE], { encoding: 'utf8', env, cwd }); return [r.status, r.stdout ?? '']; }
 function main(): any {
     let EXCUSED: any, G_NEEDLES: any, KEY_NEEDLES: any, LEN_NEEDLES: any, MARKED: any, NAME: any, ORDER_NEEDLES: any, PAIR: any, SKILL_LEN_NEEDLES: any, SLOT_CLAIMS: any, _: any, _excused: any, _fake: any, _skill_raw: any, _stale: any, a: any, args: any, b: any, bad3: any, bad4: any, base_slots: any, bdiff: any, body: any, bound_rows: any, c: any, c3: any, c4: any, ch: any, cli: any, cli_rows: any, cmd: any, codex: any, codex_col: any, decl: any, declared: any, doc_opts: any, dup: any, ex_bad: any, ex_pairs: any, flat_cli: any, flat_prompts: any, found: any, g: any, g_decl: any, gen_gate: any, ghost: any, ghost_owners: any, hero_rows: any, home: any, jdiff: any, join_rows: any, key: any, keys: any, lab: any, label: any, live_ran: any, m: any, m2: any, m_ssot: any, malformed: any, miss_g: any, miss_key: any, miss_len: any, miss_order: any, miss_slen: any, missing: any, missing_skills: any, n: any, n_default: any, name: any, names: any, nano: any, nano_col: any, nano_opts: any, needle: any, nm: any, nums: any, o: any, ok: any, out: any, owner: any, owner_rel: any, owners: any, pa_rows: any, padiff: any, passed: any, pat: any, path: any, prompts: any, r: any, rc: any, real: any, real_choices: any, real_flags: any, role: any, row: any, rows: any, shape_bad: any, skill: any, skill_fm: any, skills_dir: any, slot_rows: any, src: any, ssot_body: any, stale_marks: any, t: any, tag_src: any, text: any, total_slots: any, value_bad: any, w: any, want: any, want_shape: any, when: any, wrong: any;
     const fixture = mkdtempSync(join(tmpdir(), 'jstack-image-probe-'));
@@ -271,10 +271,65 @@ function main(): any {
     check("probe: every nanobanana recommendation says each run needs approval", contains(both_out, "propose nanobanana; each run needs approval") && contains(nano_only_out, "nanobanana 만 가능 — propose it; each run needs approval"));
     [_, out] = run_probe("/usr/bin:/bin", "/nonexistent");
     check("probe: no-key guidance describes availability for key holders", (contains(out, "optional for Google API key holders")));
+    // The probe must find a key where the script does: ./.env before the home file, and only non-empty values.
+    const fake_home = join(fixture, "home"), home_key = join(fake_home, ".claude", ".env.nanobanana");
+    mkdirSync(dirname(home_key), { recursive: true });
+    writeFileSync(home_key, "GEMINI_API_KEY=dummy\n");
+    const key_cases: [string, string, string | null][] = [["GEMINI_API_KEY=dummy\n", "/nonexistent", ".env"], ["GEMINI_API_KEY=dummy\n", fake_home, ".env"], ["GEMINI_API_KEY=\"\"\n", fake_home, home_key], ["export GEMINI_API_KEY=dummy\n", "/nonexistent", ".env"], ["GEMINI_API_KEY= # note\n", "/nonexistent", null]];
+    const key_bad = key_cases.flatMap(([content, home, want], i) => {
+        const dir = realpathSync(mkdtempSync(join(fixture, 'env-')));
+        writeFileSync(join(dir, ".env"), content);
+        const [rc, probe_out] = run_probe("/usr/bin:/bin", home, null, dir);
+        const ok = want === null ? equal(rc, 2) : equal(rc, 1) && contains(probe_out, "key source: " + (want === ".env" ? join(dir, ".env") : want));
+        return ok ? [] : ["case " + String(i + 1) + " exit=" + String(rc)];
+    });
+    check("probe: key sources follow the script's order and skip empty values", !truth(key_bad), Array.from(key_bad).join("; "));
+    // Every file:line citation of nanobanana.py must point at the code it describes.
+    const src_lines = src.split(/\r?\n/);
+    const cited = (doc: string, needle: string) => { const c = regexSearch("nanobanana\\.py:(\\d+)(?:-(\\d+))?", doc.slice(doc.indexOf(needle))); return c ? src_lines.slice(Number(c[1]) - 1, Number(c[2] ?? c[1])).join("\n") : ""; };
+    check("nanobanana.py citations point at the code they describe", contains(cited(skill, "The script uses the first key it finds"), "def resolve_api_key") && contains(cited(cli, "**The script exits immediately if absent**"), "sys.exit(\"Error: GEMINI_API_KEY") && contains(cited(cli, "The `MODEL` constant in"), "MODEL = "));
+    // Run the real script with stand-ins for requests, python-dotenv, and Pillow, so CI needs none of them.
+    const harness = join(fixture, "nanobanana_harness.py");
+    writeFileSync(harness, `import importlib.util, json, os, sys, types
+from pathlib import Path
+calls = []
+requests = types.ModuleType("requests"); requests.post = lambda *a, **k: calls.append(1)
+dotenv = types.ModuleType("dotenv")
+dotenv.dotenv_values = lambda path: {k.strip(): v.strip().strip("\\"'") for k, _, v in (line.partition("=") for line in Path(path).read_text().splitlines())}
+pil = types.ModuleType("PIL"); pil.Image = types.ModuleType("PIL.Image")
+sys.modules.update({"requests": requests, "dotenv": dotenv, "PIL": pil, "PIL.Image": pil.Image})
+root = Path(sys.argv[2]); home, work = root / "home", root / "work"
+(home / ".claude").mkdir(parents=True); work.mkdir()
+os.environ["HOME"] = str(home); os.environ.pop("GEMINI_API_KEY", None); os.chdir(work)
+spec = importlib.util.spec_from_file_location("nanobanana", sys.argv[1]); nb = importlib.util.module_from_spec(spec); spec.loader.exec_module(nb)
+result = {}
+(home / ".claude" / ".env.nanobanana").write_text("GEMINI_API_KEY=home\\n"); (work / ".env").write_text("GEMINI_API_KEY=cwd\\n")
+result["cwd"] = nb.resolve_api_key()
+(work / ".env").write_text("GEMINI_API_KEY=\\n"); result["empty"] = nb.resolve_api_key()
+os.environ["GEMINI_API_KEY"] = "shell"; result["shell"] = nb.resolve_api_key()
+def exit_code(argv):
+    sys.argv = ["nanobanana.py", *argv]
+    try:
+        nb.main()
+    except SystemExit as error:
+        return error.code
+    except Exception as error:
+        return type(error).__name__
+result["bad_extension"] = exit_code(["x", "-g", "-o", "out.txt"])
+result["missing_directory"] = exit_code(["x", "-g", "-o", "missing/x.png"])
+result["requests"] = len(calls)
+print(json.dumps(result))
+`);
+    const py = spawnSync("python3", ["-I", harness, NANO, mkdtempSync(join(fixture, "py-"))], { encoding: "utf8" });
+    let py_result: any = {};
+    try { py_result = JSON.parse(py.stdout.trim().split(/\r?\n/).at(-1) ?? ""); } catch { }
+    check("nanobanana.py: key order is the shell, then ./.env, then the home file", equal(py_result.cwd, "cwd") && equal(py_result.empty, "home") && equal(py_result.shell, "shell"), (py.stderr || JSON.stringify(py_result)).slice(0, 120));
+    check("nanobanana.py: a bad output name is rejected before any request", equal(py_result.bad_extension, 2) && equal(py_result.missing_directory, 2) && equal(py_result.requests, 0), JSON.stringify(py_result).slice(0, 120));
+    check("nanobanana.py: output is re-encoded to the format its extension names", contains(src, "fmt = OUTPUT_FORMATS[out_path.suffix.lower()]") && contains(src, "img.save(out_path, format=fmt)"));
     for ([label, needle] of iterable([["Key issuance URL", "aistudio.google.com/apikey"], ["Configuration path", ".env.nanobanana"], ["Environment-variable alternative", "export GEMINI_API_KEY"], ["Dependency installation", "requirements.txt"], ["Local .env override warning", ".env overrides home settings"], ["Commit prohibition", "Never commit keys"]])) {
         check(("probe guidance: " + String(label)), (contains(out, needle)));
     }
-    for ([label, needle] of iterable([["Key issuer", "aistudio.google.com/apikey"], ["Restricted permissions", "chmod 600"], ["No key sharing", "Do not share another person's key"], ["Replace exposed keys", "revoke and replace it immediately"], ["Local .env precedence warning", "overrides the home configuration"], ["Load-order evidence (file:line)", "nanobanana.py:16-17"]])) {
+    for ([label, needle] of iterable([["Key issuer", "aistudio.google.com/apikey"], ["Restricted permissions", "chmod 600"], ["No key sharing", "Do not share another person's key"], ["Replace exposed keys", "revoke and replace it immediately"], ["Local .env precedence warning", "overrides the home configuration"], ["Load-order evidence (file:line)", "(`scripts/nanobanana.py:"]])) {
         check(("SKILL.md setup: " + String(label)), (contains(skill, needle)));
     }
     KEY_NEEDLES = ["3. Never place keys in the repository.", "Ignore `.env` files.", "If a key was committed, removing it from history is insufficient", "revoke and replace it immediately", "Do not share another person's key"];
@@ -569,10 +624,10 @@ function main(): any {
         __items.push(1);
     } return __items; })().reduce((sum: number, value: any) => sum + Number(value), 0);
     for (const [file, needles] of [["NOTICE", ["vibedesignlab/slopslap"]], ["LICENSE.slopslap", ["MIT License", "Permission is hereby granted", "WITHOUT WARRANTY"]]] as [string, string[]][]) { const path = join(ROOT, file), text = existsSync(path) ? readFileSync(path, 'utf8') : ''; check(`Provenance: ${file} keeps its attribution and license terms`, needles.every(needle => text.includes(needle)), needles.filter(needle => !text.includes(needle)).join(', ')); }
-    check_contract_coverage(check, __file__, ROOT, { per_file: {"NOTICE": 1, "LICENSE.slopslap": 1,  "SKILL.md": 55, "references/cli.md": 11, "references/prompts.md": 27 }, live_ran: live_ran });
-    check_body_deletion(check, __file__, ROOT, { minimum: 90, extra_strip: ["references/cli.md", "references/prompts.md"], live_ran: live_ran });
-    check_script_contracts(check, __file__, ROOT, { scripts: { "scripts/nanobanana.py": 7, "scripts/probe_backends.js": 11 }, live_ran: live_ran });
-    check_total(check, results, 129);
+    check_contract_coverage(check, __file__, ROOT, { per_file: {"NOTICE": 1, "LICENSE.slopslap": 1,  "SKILL.md": 56, "references/cli.md": 12, "references/prompts.md": 27 }, live_ran: live_ran });
+    check_body_deletion(check, __file__, ROOT, { minimum: 91, extra_strip: ["references/cli.md", "references/prompts.md"], live_ran: live_ran });
+    check_script_contracts(check, __file__, ROOT, { scripts: { "scripts/nanobanana.py": 11, "scripts/probe_backends.js": 12 }, live_ran: live_ran });
+    check_total(check, results, 134);
     passed = (() => { const __items: any[] = []; for (const [_name, ok, _detail] of iterable(results)) {
         if (!truth(ok))
             continue;

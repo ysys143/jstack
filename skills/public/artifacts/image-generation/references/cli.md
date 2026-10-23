@@ -15,7 +15,7 @@ That README was not imported; this document is the canonical CLI reference.
 | `-g`, `--generate` | Flag | — | **Enable image generation** |
 | `-a`, `--aspect-ratio` | Option | `1:1` `16:9` `9:16` `21:9` `4:3` `3:4` | Output aspect ratio |
 | `-s`, `--size` | Option | `1K` `2K` `4K` | Output size |
-| `-o`, `--output` | Option | Path | Output file (default `output.png`) |
+| `-o`, `--output` | Option | Path | Output file (default `output.png`); its extension (`.png`, `.jpg`, `.jpeg`, `.webp`) sets the saved format |
 
 **Omitting `-g` does not generate an image.** Without this flag, the script queries
 or analyzes an input image. Check this flag first if generation returns an empty
@@ -36,12 +36,16 @@ python3 nanobanana.py "What is in this image?" -i photo.jpg
 
 ## Prerequisites
 
-- `GEMINI_API_KEY`: environment variable or `~/.claude/.env.nanobanana`.
-  **The script exits immediately if absent** (`nanobanana.py:60-62`).
+- `GEMINI_API_KEY`: the first found among the environment variable, the working
+  directory's `.env`, and `~/.claude/.env.nanobanana`.
+  **The script exits immediately if absent** (`nanobanana.py:68-70`).
+- The API chooses the image encoding, often JPEG. The script re-encodes the result to
+  the format the `-o` extension names. Before it sends the billed request, it rejects
+  any other extension and a directory that does not exist.
 - Dependencies: `google-genai`, `Pillow`, and `python-dotenv`; see `requirements.txt`.
   **The user installs these explicitly.** This skill does not install them.
 
 ## Model
 
-The `MODEL` constant in `scripts/nanobanana.py:19` is authoritative. Do not copy
+The `MODEL` constant in `scripts/nanobanana.py:15` is authoritative. Do not copy
 the model name here: two declarations drift, and model names change frequently.

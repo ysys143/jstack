@@ -23,13 +23,21 @@ fi
 # Nanobanana requires both a key and the script.
 SCRIPT="$(dirname "$0")/nanobanana.py"
 KEY_FILE="$HOME/.claude/.env.nanobanana"
+# A non-empty value only: python-dotenv reads `=""`, `=''`, and `= # note` as empty.
+KEY_LINE="^[[:blank:]]*(export[[:blank:]]+)?GEMINI_API_KEY[[:blank:]]*=[[:blank:]]*(\"[^\"[:space:]]|'[^'[:space:]]|[^[:space:]#\"'])"
 HAS_KEY=0
+# Same order as resolve_api_key in nanobanana.py: the environment, then ./.env, then the home file.
 if [ -n "${GEMINI_API_KEY:-}" ]; then
     HAS_KEY=1
     KEY_SRC="environment variable"
-elif [ -f "$KEY_FILE" ] && grep -q 'GEMINI_API_KEY' "$KEY_FILE" 2>/dev/null; then
-    HAS_KEY=1
-    KEY_SRC="$KEY_FILE"
+else
+    for CANDIDATE in "$PWD/.env" "$KEY_FILE"; do
+        if [ -f "$CANDIDATE" ] && grep -Eq "$KEY_LINE" "$CANDIDATE" 2>/dev/null; then
+            HAS_KEY=1
+            KEY_SRC="$CANDIDATE"
+            break
+        fi
+    done
 fi
 
 if [ -f "$SCRIPT" ] && [ "$HAS_KEY" -eq 1 ]; then
@@ -44,7 +52,7 @@ else
         "'GEMINI_API_KEY=YOUR_ISSUED_KEY\\n'" "$KEY_FILE" "$KEY_FILE"
     printf '     Or in the shell: export GEMINI_API_KEY=YOUR_ISSUED_KEY\n'
     printf '  3) Dependencies: uv pip install -r <skill>/requirements.txt (install explicitly)\n'
-    printf '  Note: the working directory .env overrides home settings. Never commit keys\n'
+    printf '  Note: the working directory .env overrides home settings, and the shell environment overrides both. Never commit keys\n'
 fi
 
 TOTAL=$((CODEX + NANO))
