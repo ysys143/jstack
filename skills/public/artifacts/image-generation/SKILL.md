@@ -5,12 +5,13 @@ description: "Generate or edit images; not SVG diagrams. Triggers: 이미지 생
 
 # Image — generation and editing
 
-## Two paths
+## Paths
 
 | Path | Role | Requirements | When |
 |---|---|---|---|
 | **codex** | `기본` | None; already authenticated | `상시` |
 | **nanobanana** | `선택` | Google API key (`GEMINI_API_KEY`) | `조건:` Direct argument control over aspect ratio, resolution, or input-image editing is required |
+| **openai** | `선택` | OpenAI CLI and `OPENAI_API_KEY`; each image is billed to that API organization | `조건:` The user approves the charge for a run that needs a control the codex path lacks |
 
 The role and timing columns are declarations with fixed pairings, not free-form prose.
 
@@ -24,7 +25,8 @@ with `상시`, makes the document self-contradictory and routing unreliable.
 
 Codex is the default because it needs no additional preparation. Users can use it
 as soon as the plugin is installed. Nanobanana requires each user to obtain and
-manage a Google API key, so it remains optional.
+manage a Google API key, so it remains optional. The openai path is never chosen
+automatically: every image is billed, so it runs only after the user approves that run.
 
 ## Path 1: codex (default)
 
@@ -43,6 +45,14 @@ models often mishandle Korean. Longer text can still break; visually inspect res
 
 Limitations: aspect ratio, seed, and upscaling cannot be passed as direct arguments.
 They depend on prompt interpretation, reducing control over fixed specifications.
+The built-in Codex image tool takes no quality or size argument, so tiers such as
+`xhigh` and `max` are unavailable here.
+
+With a ChatGPT sign-in, built-in generation counts toward the Codex usage limits
+instead of an API bill. Keep the prompt free of requests for a CLI, the API, or a
+model: Codex's own image skill then stays on its built-in tool, while its fallback
+CLI bills `OPENAI_API_KEY`. A codex failure is a reason to propose the openai path,
+not approval to use it.
 
 ## Path 2: nanobanana (Google API key required)
 
@@ -104,6 +114,47 @@ Choose this path for fixed aspect ratio (`-a 16:9`), resolution (`-s 2K`), editi
 an existing image (`-i`), or resizing inputs (`-r`). It provides direct control for
 fixed-size uses such as slide backgrounds.
 
+## Path 3: openai (OpenAI API, approval required)
+
+The `openai` CLI calls the OpenAI Images API. Every image is billed to the API
+organization of `OPENAI_API_KEY`; a ChatGPT or Codex subscription does not cover it.
+The CLI takes its key from `OPENAI_API_KEY` and does not use the Codex sign-in.
+
+Propose it only for a requirement the codex path cannot meet:
+
+- a quality tier such as `xhigh` or `max`, which only the newest GPT Image models offer
+- a GPT Image model chosen by name, or an exact pixel size
+- the codex path is unavailable, or its usage limit currently blocks generation
+
+Before each run, ask the user to approve it, stating:
+
+1. The requirement the codex path cannot meet.
+2. Model, quality, size, and image count.
+3. The estimated cost from the provider's current pricing page, looked up for this run, not from memory.
+
+Approval is the user's answer to that statement. A request that names this path, a
+model, or a tier is not approval, because it comes before the cost is known. A run
+is one command with the stated prompt, settings, and count, and approval covers only
+that run. A retry, another variant, or a higher tier needs a new approval. Without
+approval, stay on the codex path and disclose what it cannot control.
+
+```
+openai images generate --model <model> --quality <quality> --size <WxH> \
+  --prompt '<prompt>' --name <name> --output-dir <existing directory>
+```
+
+- Pass `--model` explicitly. When it is omitted, the CLI's default model depends on
+  whether it saves a file.
+- `openai help --all images generate` lists the current models, quality tiers, and
+  size limits. Read it there; model names change too often to copy here. Arbitrary
+  `WxH` sizes apply only to the newest models; older ones accept a few fixed sizes.
+- The CLI may parse a flag value containing `:` or braces as YAML. Its documentation
+  recommends a YAML request body for such prompts.
+- If `OPENAI_API_KEY` is absent, ask the user how to provide it. Never print the key,
+  pass it as an argument, or create a key.
+- The user installs the CLI (`brew install openai/tools/openai`); the image skill
+  does not install it. `openai --version` confirms it.
+
 ## Ownership boundaries
 
 | Target | Owner | What image must not do |
@@ -126,7 +177,11 @@ node ${JSTACK_PLUGIN_ROOT}/skills/image/scripts/probe_backends.js
 - Both available: choose by requirements; use nanobanana for dimensional control.
 - Only codex: proceed with codex; disclose that exact dimensions may be unavailable.
 - Only nanobanana: use nanobanana.
-- Neither available: stop and explain why. Do not invent a fallback.
+- Neither available: stop and explain why. The openai path may still be proposed
+  under Path 3; do not invent any other fallback.
+- The probe reports only codex and nanobanana. Never select the openai path from
+  probe results; propose it under the conditions in Path 3. When nanobanana is
+  available and meets the requirement, use it before proposing openai.
 
 ## Phase 1: prompt
 
@@ -148,7 +203,8 @@ in that reference's assembly example.
 
 ## Explicit limitations
 
-- Neither backend is bundled. Codex CLI or a Google API key is required.
+- No backend is bundled. The codex path needs the Codex CLI, nanobanana a Google API
+  key, and openai the OpenAI CLI with an API key.
 - Structured diagrams and charts belong to `diagram`; route them according to the
   ownership table because text embedded in images cannot be edited later.
 - If text must remain editable, do not rasterize it.

@@ -12,6 +12,10 @@
 - The build carries Claude Code function-hook modules from `hosts/claude/mods/` without
   compiling them. It refuses more than one module, a module that is not the entry point
   its mod declares, and modules in a hook file that Codex reads.
+- `image-generation` has an optional openai path through the OpenAI CLI for controls
+  the Codex path lacks, such as `xhigh` and `max` quality tiers or an exact size. Its
+  images are billed to the API key rather than a subscription, so each run needs the
+  user's approval of the model, quality, size, count, and an estimated cost.
 
 ### Fixed
 
