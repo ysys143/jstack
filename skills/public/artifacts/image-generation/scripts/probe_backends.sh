@@ -49,13 +49,13 @@ fi
 
 TOTAL=$((CODEX + NANO))
 if [ "$TOTAL" -eq 2 ]; then
-    printf '[0] 두 경로 모두 가능 — use nanobanana for dimensional control\n'
+    printf '[0] 두 경로 모두 가능 — for dimensional control, propose nanobanana; each run needs approval\n'
     exit 0
 elif [ "$TOTAL" -eq 1 ]; then
     if [ "$CODEX" -eq 1 ]; then
         printf '[1] codex 만 가능 — aspect ratio and resolution cannot be fixed through arguments\n'
     else
-        printf '[1] nanobanana 만 가능\n'
+        printf '[1] nanobanana 만 가능 — propose it; each run needs approval\n'
     fi
     exit 1
 fi

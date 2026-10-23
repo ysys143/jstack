@@ -17,9 +17,18 @@
   images are billed to the API key rather than a subscription, so each run needs the
   user's approval of the model, quality, size, count, and an estimated cost.
 
+### Changed
+
+- `image-generation` treats nanobanana as a paid path too: each run needs the same
+  approval as the openai path. The skill carries a dated price snapshot for all three
+  paths and checks that it names the Gemini model the script calls.
+
 ### Fixed
 
 - `CAPABILITIES.md` counts the 35 public commands it lists; it said 36.
+- The nanobanana path called a Gemini preview model that Google shut down on
+  2026-06-25. It now calls `gemini-nano-banana-2.1` and no longer offers the `512px`
+  size, which that model does not support.
 
 ## 0.0.1 — 2026-10-22
 

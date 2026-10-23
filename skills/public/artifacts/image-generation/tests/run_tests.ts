@@ -266,6 +266,9 @@ function main(): any {
         [rc, out] = run_probe(path, home, key);
         check(("probe: " + String(label) + " → exit " + String(want)), (equal(rc, want)), ("exit=" + String(rc)));
     }
+    const both_out = run_probe([NVM_BIN, "/usr/bin", "/bin"].join(delimiter), homedir(), "dummy")[1];
+    const nano_only_out = run_probe("/usr/bin:/bin", homedir(), "dummy")[1];
+    check("probe: every nanobanana recommendation says each run needs approval", contains(both_out, "propose nanobanana; each run needs approval") && contains(nano_only_out, "nanobanana 만 가능 — propose it; each run needs approval"));
     [_, out] = run_probe("/usr/bin:/bin", "/nonexistent");
     check("probe: no-key guidance describes availability for key holders", (contains(out, "optional for Google API key holders")));
     for ([label, needle] of iterable([["Key issuance URL", "aistudio.google.com/apikey"], ["Configuration path", ".env.nanobanana"], ["Environment-variable alternative", "export GEMINI_API_KEY"], ["Dependency installation", "requirements.txt"], ["Local .env override warning", ".env overrides home settings"], ["Commit prohibition", "Never commit keys"]])) {
@@ -330,6 +333,8 @@ function main(): any {
     check("SKILL.md: openai role is `선택`", equal(openai["role"], "선택"), openai["role"]);
     check("SKILL.md: openai path requires OPENAI_API_KEY and states billing", contains(openai["needs"], "OPENAI_API_KEY") && contains(openai["needs"], "billed"), openai["needs"].slice(0, 60));
     check("SKILL.md: openai path is conditioned on user approval", contains(openai["when"], "The user approves the charge for a run that needs a control the codex path lacks"), openai["when"].slice(0, 60));
+    check("SKILL.md: nanobanana path states billing", contains(nano["needs"], "billed"), nano["needs"].slice(0, 60));
+    check("SKILL.md: nanobanana path is conditioned on user approval", contains(nano["when"], "The user approves the charge for a run that needs direct control"), nano["when"].slice(0, 60));
     check("SKILL.md: codex role is `기본`", (equal(codex["role"], "기본")), codex["role"]);
     check("SKILL.md: nanobanana role is `선택`", (equal(nano["role"], "선택")), nano["role"]);
     check("SKILL.md: roles differ (both cannot be default)", (!equal(codex["role"], nano["role"])));
@@ -352,10 +357,17 @@ function main(): any {
     check("SKILL.md: optional path requires a key", pyOr((contains(nano["needs"], "GEMINI_API_KEY")), (contains(nano["needs"], "API key"))), nano["needs"].slice(0, 40));
     check("SKILL.md: paths have different prerequisites", (!equal(codex["needs"], nano["needs"])));
     check("SKILL.md: body explains why codex is default", (contains(skill, "because it needs no additional preparation")));
-    // Each image on the openai path is billed, so the approval gate and its scope must stay intact.
-    const APPROVAL_NEEDLES = ["The openai path is never chosen automatically", "a ChatGPT or Codex subscription does not cover it", "Propose it only for a requirement the codex path cannot meet", "Before each run, ask the user to approve it", "Model, quality, size, and image count.", "looked up for this run, not from memory", "Approval is the user's answer to that statement.", "A request that names this path, a model, or a tier is not approval", "A run is one command with the stated prompt, settings, and count, and approval covers only that run.", "needs a new approval", "Without approval, stay on the codex path", "A codex failure is a reason to propose the openai path, not approval to use it.", "use it before proposing openai"];
+    // Each image on a paid path is billed, so the approval gate and its scope must stay intact.
+    const APPROVAL_NEEDLES = ["The nanobanana and openai paths are never chosen automatically", "a ChatGPT or Codex subscription does not cover it", "Propose it only for a requirement the codex path cannot meet", "Before each run on either path, ask the user to approve it", "Path, model, quality, size, and image count.", "looked up for this run, not from memory", "Approval is the user's answer to that statement.", "A request that names a paid path, a model, or a tier is not approval", "A run is one command with the stated prompt, settings, and count, and approval covers only that run.", "needs a new approval", "Without approval, stay on the codex path", "A codex failure is a reason to propose a paid path, not approval to use it.", "Only nanobanana: propose it and wait for approval; without approval, stop.", "propose it before openai"];
     const miss_approval = APPROVAL_NEEDLES.filter(n => !contains(flat(skill), n));
-    check("SKILL.md: openai approval gate is not removed or widened", !truth(miss_approval), ("missing " + String(miss_approval)));
+    const path_gates = flat(skill).split("Each run needs the user's approval under \"Approval for paid paths\".").length - 1;
+    check("SKILL.md: paid-path approval gate is not removed or widened", !truth(miss_approval) && path_gates === 2, ("missing " + String(miss_approval) + "; per-path gates " + String(path_gates)));
+    // The price snapshot is checked against the model the script calls, so a model change cannot leave a stale row.
+    const snapshot = split(split(skill, "### Price snapshot", 1).at(-1)!, "\n## ", 1)[0];
+    const nano_model = regexSearch("MODEL\\s*=\\s*\"([^\"]+)\"", src);
+    check("SKILL.md: price snapshot names the model nanobanana.py calls", contains(skill, "### Price snapshot") && truth(nano_model) && contains(snapshot, "| nanobanana | `" + nano_model![1] + "` |"), (truth(nano_model) ? nano_model![1] : "MODEL absent"));
+    check("SKILL.md: price snapshot is dated and links both pricing pages", truth(regexSearch("### Price snapshot \\(checked \\d{4}-\\d{2}-\\d{2}\\)", skill)) && contains(snapshot, "https://ai.google.dev/gemini-api/docs/pricing") && contains(snapshot, "https://developers.openai.com/api/docs/pricing"));
+    check("SKILL.md: price snapshot defers to the live pricing page", contains(flat(snapshot), "Quote the live pricing page in the approval request"));
     check("SKILL.md: openai command names the model explicitly", truth(regexSearch("openai images generate --model <model>", skill)) && contains(skill, "Pass `--model` explicitly"));
     check("SKILL.md: probe results never select the openai path", contains(flat(skill), "Never select the openai path from probe results"));
     check("SKILL.md: discloses that codex cannot pass quality tiers", contains(flat(skill), "takes no quality or size argument"));
@@ -548,7 +560,7 @@ function main(): any {
     check("prompts: nanobanana column arguments exist in the implementation", (truth(truth(nano_opts)) && truth((() => { const __items: any[] = []; for (const o of iterable(nano_opts)) {
         __items.push((contains(src, o)));
     } return __items; })().every(truth))), (String(sorted(nano_opts))));
-    check_ref_contracts(check, ROOT, [["cli.md", "Argument table matches implementation", ["--aspect", "--size", "--image", "GEMINI_API_KEY"], 1502], ["prompts.md", "Slot structure and tag join remain substantive", ["Text (verbatim, large labels only)", "Empty slots are filled with defaults", "The canonical tag-value set is", "Only Hero has 12 slots"], 5423]]);
+    check_ref_contracts(check, ROOT, [["cli.md", "Argument table matches implementation", ["--aspect", "--size", "--image", "GEMINI_API_KEY"], 1497], ["prompts.md", "Slot structure and tag join remain substantive", ["Text (verbatim, large labels only)", "Empty slots are filled with defaults", "The canonical tag-value set is", "Only Hero has 12 slots"], 5423]]);
     check_skill_body(check, ROOT, { needles: ["Text embedded in a raster image cannot be edited later", "The role and timing columns are declarations with fixed pairings", "Without a key, this path\nis unavailable", "Mismatched pairs violate the contract", "Use 11 prompt slots (12 for Hero assets)"], floor: 4243 });
     check_no_constant_assertions(check, __file__);
     live_ran = (() => { const __items: any[] = []; for (const r of iterable(results)) {
@@ -557,10 +569,10 @@ function main(): any {
         __items.push(1);
     } return __items; })().reduce((sum: number, value: any) => sum + Number(value), 0);
     for (const [file, needles] of [["NOTICE", ["vibedesignlab/slopslap"]], ["LICENSE.slopslap", ["MIT License", "Permission is hereby granted", "WITHOUT WARRANTY"]]] as [string, string[]][]) { const path = join(ROOT, file), text = existsSync(path) ? readFileSync(path, 'utf8') : ''; check(`Provenance: ${file} keeps its attribution and license terms`, needles.every(needle => text.includes(needle)), needles.filter(needle => !text.includes(needle)).join(', ')); }
-    check_contract_coverage(check, __file__, ROOT, { per_file: {"NOTICE": 1, "LICENSE.slopslap": 1,  "SKILL.md": 50, "references/cli.md": 11, "references/prompts.md": 27 }, live_ran: live_ran });
-    check_body_deletion(check, __file__, ROOT, { minimum: 85, extra_strip: ["references/cli.md", "references/prompts.md"], live_ran: live_ran });
-    check_script_contracts(check, __file__, ROOT, { scripts: { "scripts/nanobanana.py": 6, "scripts/probe_backends.js": 10 }, live_ran: live_ran });
-    check_total(check, results, 123);
+    check_contract_coverage(check, __file__, ROOT, { per_file: {"NOTICE": 1, "LICENSE.slopslap": 1,  "SKILL.md": 55, "references/cli.md": 11, "references/prompts.md": 27 }, live_ran: live_ran });
+    check_body_deletion(check, __file__, ROOT, { minimum: 90, extra_strip: ["references/cli.md", "references/prompts.md"], live_ran: live_ran });
+    check_script_contracts(check, __file__, ROOT, { scripts: { "scripts/nanobanana.py": 7, "scripts/probe_backends.js": 11 }, live_ran: live_ran });
+    check_total(check, results, 129);
     passed = (() => { const __items: any[] = []; for (const [_name, ok, _detail] of iterable(results)) {
         if (!truth(ok))
             continue;

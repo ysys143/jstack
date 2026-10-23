@@ -48,11 +48,11 @@ export function main(): number {
         console.log('  Note: the working directory .env overrides home settings. Never commit keys');
     }
     if (codex && nano) {
-        console.log('[0] 두 경로 모두 가능 — use nanobanana for dimensional control');
+        console.log('[0] 두 경로 모두 가능 — for dimensional control, propose nanobanana; each run needs approval');
         return 0;
     }
     if (codex || nano) {
-        console.log(codex ? '[1] codex 만 가능 — aspect ratio and resolution cannot be fixed through arguments' : '[1] nanobanana 만 가능');
+        console.log(codex ? '[1] codex 만 가능 — aspect ratio and resolution cannot be fixed through arguments' : '[1] nanobanana 만 가능 — propose it; each run needs approval');
         return 1;
     }
     console.log('[2] 두 경로 모두 불가 — cannot generate images');

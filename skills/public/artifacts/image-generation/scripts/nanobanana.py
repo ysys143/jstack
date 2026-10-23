@@ -16,7 +16,7 @@ from PIL import Image
 load_dotenv(Path.home() / ".claude" / ".env.nanobanana")
 load_dotenv()
 
-MODEL = "gemini-3.1-flash-image-preview"
+MODEL = "gemini-nano-banana-2.1"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
 
 
@@ -134,13 +134,13 @@ def parse_resolution(value: str) -> tuple[int, int]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Nano Banana 2 API - text/image understanding & generation")
+    parser = argparse.ArgumentParser(description="Nano Banana API - text/image understanding & generation")
     parser.add_argument("text", help="Text prompt to send")
     parser.add_argument("-i", "--image", help="Path to input image file")
     parser.add_argument("-r", "--resolution", type=parse_resolution, help="Resize input image to WxH (e.g. 512x512)")
     parser.add_argument("-g", "--generate", action="store_true", help="Enable image generation mode")
     parser.add_argument("-a", "--aspect-ratio", choices=["1:1", "16:9", "9:16", "21:9", "4:3", "3:4"], help="Output aspect ratio")
-    parser.add_argument("-s", "--size", choices=["512px", "1K", "2K", "4K"], help="Output image size")
+    parser.add_argument("-s", "--size", choices=["1K", "2K", "4K"], help="Output image size")
     parser.add_argument("-o", "--output", help="Output file path (default: output.png)")
 
     args = parser.parse_args()

@@ -10,7 +10,7 @@ description: "Generate or edit images; not SVG diagrams. Triggers: 이미지 생
 | Path | Role | Requirements | When |
 |---|---|---|---|
 | **codex** | `기본` | None; already authenticated | `상시` |
-| **nanobanana** | `선택` | Google API key (`GEMINI_API_KEY`) | `조건:` Direct argument control over aspect ratio, resolution, or input-image editing is required |
+| **nanobanana** | `선택` | Google API key (`GEMINI_API_KEY`); each image is billed to that Google account | `조건:` The user approves the charge for a run that needs direct control over aspect ratio, resolution, or input-image editing |
 | **openai** | `선택` | OpenAI CLI and `OPENAI_API_KEY`; each image is billed to that API organization | `조건:` The user approves the charge for a run that needs a control the codex path lacks |
 
 The role and timing columns are declarations with fixed pairings, not free-form prose.
@@ -25,8 +25,9 @@ with `상시`, makes the document self-contradictory and routing unreliable.
 
 Codex is the default because it needs no additional preparation. Users can use it
 as soon as the plugin is installed. Nanobanana requires each user to obtain and
-manage a Google API key, so it remains optional. The openai path is never chosen
-automatically: every image is billed, so it runs only after the user approves that run.
+manage a Google API key, so it remains optional. The nanobanana and openai paths are
+never chosen automatically: each bills every image, so it runs only after the user
+approves that run (see "Approval for paid paths").
 
 ## Path 1: codex (default)
 
@@ -51,10 +52,10 @@ The built-in Codex image tool takes no quality or size argument, so tiers such a
 With a ChatGPT sign-in, built-in generation counts toward the Codex usage limits
 instead of an API bill. Keep the prompt free of requests for a CLI, the API, or a
 model: Codex's own image skill then stays on its built-in tool, while its fallback
-CLI bills `OPENAI_API_KEY`. A codex failure is a reason to propose the openai path,
-not approval to use it.
+CLI bills `OPENAI_API_KEY`. A codex failure is a reason to propose a paid path, not
+approval to use it.
 
-## Path 2: nanobanana (Google API key required)
+## Path 2: nanobanana (Google API key, approval required)
 
 This calls the Gemini image model directly through REST. Without a key, this path
 is unavailable.
@@ -112,7 +113,8 @@ source; verify which file is used.
 
 Choose this path for fixed aspect ratio (`-a 16:9`), resolution (`-s 2K`), editing
 an existing image (`-i`), or resizing inputs (`-r`). It provides direct control for
-fixed-size uses such as slide backgrounds.
+fixed-size uses such as slide backgrounds. Each run needs the user's approval under
+"Approval for paid paths".
 
 ## Path 3: openai (OpenAI API, approval required)
 
@@ -126,17 +128,7 @@ Propose it only for a requirement the codex path cannot meet:
 - a GPT Image model chosen by name, or an exact pixel size
 - the codex path is unavailable, or its usage limit currently blocks generation
 
-Before each run, ask the user to approve it, stating:
-
-1. The requirement the codex path cannot meet.
-2. Model, quality, size, and image count.
-3. The estimated cost from the provider's current pricing page, looked up for this run, not from memory.
-
-Approval is the user's answer to that statement. A request that names this path, a
-model, or a tier is not approval, because it comes before the cost is known. A run
-is one command with the stated prompt, settings, and count, and approval covers only
-that run. A retry, another variant, or a higher tier needs a new approval. Without
-approval, stay on the codex path and disclose what it cannot control.
+Each run needs the user's approval under "Approval for paid paths".
 
 ```
 openai images generate --model <model> --quality <quality> --size <WxH> \
@@ -154,6 +146,39 @@ openai images generate --model <model> --quality <quality> --size <WxH> \
   pass it as an argument, or create a key.
 - The user installs the CLI (`brew install openai/tools/openai`); the image skill
   does not install it. `openai --version` confirms it.
+
+## Approval for paid paths
+
+Nanobanana and openai bill every image to the user's own API account. Before each
+run on either path, ask the user to approve it, stating:
+
+1. The requirement the codex path cannot meet.
+2. Path, model, quality, size, and image count.
+3. The estimated cost from the provider's current pricing page, looked up for this run, not from memory.
+
+Approval is the user's answer to that statement. A request that names a paid path, a
+model, or a tier is not approval, because it comes before the cost is known. A run
+is one command with the stated prompt, settings, and count, and approval covers only
+that run. A retry, another variant, or a higher tier needs a new approval. Without
+approval, stay on the codex path and disclose what it cannot control.
+
+### Price snapshot (checked 2026-10-23)
+
+This table shows the order of magnitude only. Quote the live pricing page in the
+approval request; input text and image tokens are charged on top.
+
+| Path | Model | Price per output image |
+|---|---|---|
+| codex | Built-in Codex image tool | No API charge; uses Codex usage limits 3–5 times faster than turns without images |
+| nanobanana | `gemini-nano-banana-2.1` | $0.0336 at 1K, $0.0504 at 2K, $0.113 at 4K |
+| openai | GPT Image 2 | At 1024×1024: $0.006 low, $0.053 medium, $0.211 high |
+| openai | GPT Image 2.5 | $30 per million image output tokens; the count varies with quality and size |
+
+Pricing pages: https://ai.google.dev/gemini-api/docs/pricing and
+https://developers.openai.com/api/docs/pricing; the GPT Image 2 per-image figures come
+from https://developers.openai.com/api/docs/guides/image-generation#calculating-costs.
+When the nanobanana model changes, update its row together with `MODEL` in
+`scripts/nanobanana.py`.
 
 ## Ownership boundaries
 
@@ -174,14 +199,15 @@ distinguished from an invented destination.
 node ${JSTACK_PLUGIN_ROOT}/skills/image/scripts/probe_backends.js
 ```
 
-- Both available: choose by requirements; use nanobanana for dimensional control.
+- Both available: choose by requirements; for dimensional control, propose nanobanana
+  and wait for approval.
 - Only codex: proceed with codex; disclose that exact dimensions may be unavailable.
-- Only nanobanana: use nanobanana.
+- Only nanobanana: propose it and wait for approval; without approval, stop.
 - Neither available: stop and explain why. The openai path may still be proposed
   under Path 3; do not invent any other fallback.
 - The probe reports only codex and nanobanana. Never select the openai path from
   probe results; propose it under the conditions in Path 3. When nanobanana is
-  available and meets the requirement, use it before proposing openai.
+  available and meets the requirement, propose it before openai.
 
 ## Phase 1: prompt
 

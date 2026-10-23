@@ -14,7 +14,7 @@ That README was not imported; this document is the canonical CLI reference.
 | `-r`, `--resolution` | Option | `WxH` (e.g. `512x512`) | Resize the input image to these dimensions |
 | `-g`, `--generate` | Flag | — | **Enable image generation** |
 | `-a`, `--aspect-ratio` | Option | `1:1` `16:9` `9:16` `21:9` `4:3` `3:4` | Output aspect ratio |
-| `-s`, `--size` | Option | `512px` `1K` `2K` `4K` | Output size |
+| `-s`, `--size` | Option | `1K` `2K` `4K` | Output size |
 | `-o`, `--output` | Option | Path | Output file (default `output.png`) |
 
 **Omitting `-g` does not generate an image.** Without this flag, the script queries

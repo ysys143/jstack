@@ -1,4 +1,4 @@
-# blob:a2dab2992da7cebb66a9023beca7d2c004321e04
+# blob:715b58cb8abad9fd236c25f2dded5e3af2e3bebc
 # nanobanana CLI contract (from the implementation)
 **This table was derived directly from `add_argument` in `scripts/nanobanana.py`.**
 The upstream `README.md` examples disagreed with the implementation: they used
@@ -12,7 +12,7 @@ That README was not imported; this document is the canonical CLI reference.
 | `-r`, `--resolution` | Option | `WxH` (e.g. `512x512`) | Resize the input image to these dimensions |
 | `-g`, `--generate` | Flag | — | **Enable image generation** |
 | `-a`, `--aspect-ratio` | Option | `1:1` `16:9` `9:16` `21:9` `4:3` `3:4` | Output aspect ratio |
-| `-s`, `--size` | Option | `512px` `1K` `2K` `4K` | Output size |
+| `-s`, `--size` | Option | `1K` `2K` `4K` | Output size |
 | `-o`, `--output` | Option | Path | Output file (default `output.png`) |
 **Omitting `-g` does not generate an image.** Without this flag, the script queries
 or analyzes an input image. Check this flag first if generation returns an empty
