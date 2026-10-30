@@ -34,6 +34,17 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
    Never insert stock phrases absent from the original, such as `괄목할 만한`,
    `주목받았다`, or `의미가 크다`. Replacing vivid original language with stock
    phrasing reverses the goal.
+8. **Strip the staging, keep the claim (dodaeri port):** A structural tell (an
+   antithesis, a closing punch, an aphorism, decoration) is packaging. Remove the
+   packaging and keep the claim, information, greeting, or feeling it carried as a
+   plain sentence. Delete a whole sentence only in the deletion cases that
+   `direct.md` lists: chatbot residue (D-15), staging with no claim behind it
+   (D-2, D-8–D-10, D-12, C-14, C-15, C-17), a repetition of the sentence right
+   before it, or a deletion a genre rule names.
+9. **Keep commitment strength (dodaeri port):** Do not turn `~해야 한다` into
+   `~한다`, `~일 수 있다` into an assertion, or a hedge into a claim. Vary the
+   surface of repeated modality instead. This is immutable item 8 in
+   `register-invariants.md`.
 
 ## 1. Replacement recipes by category
 
@@ -91,6 +102,11 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
 - **C-8 negative contrast (v0.4.0; strongest measured signal):** Retain only 1 in a series of "단순히 A가 아니라 B다" and turn the rest into direct statements. "A가 아니라 B" → "B가 핵심이다" softens exclusivity while preserving meaning. Never eliminate all contrasts: removing every one from an original with 5+ triggers verify_gates P2 FAIL.
 - **C-11 commas after connective endings (v0.4.0):** Remove commas in "-고,/-지만,/-면서,". Split with periods when the sentence is too long.
 - **C-9 numeric indexing / C-10 colon headings / D-7 transformation formulas (v0.4.0):** Integrate 1 into prose and vary the rest / use a single noun phrase as the heading, preserving academic section titles / replace "X에서 Y로" with a direct statement.
+- **C-8 strawman test (dodaeri port):** Keep a contrast whose A the reader actually holds. Rewrite it when nobody holds A: "단순한 도구가 아니라 동료입니다" → "동료처럼 일을 나눠 맡습니다" (only when the source supports the content). Do not use "A라기보다 B"; it is itself a C-8 surface form.
+- **C-13 forced triplets:** Keep the items the source supports; never add a third item for rhythm.
+- **C-14 closing punch:** Delete a final sentence that only restates the paragraph ("차이는 분명합니다."). Merge staccato fragments ("변명 없이. 핑계 없이.") into one sentence with a predicate.
+- **C-15 / C-17 restated headings and self-description:** Delete "## 성능" → "성능이 중요합니다." and "아래 표는 ~를 비교한 것입니다"; start from the first informative sentence.
+- **C-16 small tables:** "| A | B |" comparisons of two or three items become one or two sentences. Never change the data.
 - **Preserve C-1, I-1, and A-2 by default (v0.4.0 recalibration):** Humans use 첫째/둘째 enumeration, "것이다" endings (fewer than 3 consecutive), and "통해" (1–2 occurrences). Unconditional removal damages text.
 
 ### D. Stock phrases (prefer deletion)
@@ -105,12 +121,21 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
 | 주목할 만하다 | (삭제) — 이미 문장이 주목하게 만드는 내용이면 불필요 |
 | 혁신적인 / 획기적인 | 대부분 삭제. 필요하면 "처음 시도한" / "이전과 다른" 같이 구체화 |
 | ~의 지평을 열다 / ~시대가 도래했다 | 삭제 후 실제 변화를 서술 |
+| 본질은 ~다 / 결국 중요한 건 ~다 (D-8) | 문단이 뒷받침하는 구체 주장으로 바꾼다 |
+| 자, 그럼 살펴볼까요? / 솔직히 말하면? (D-9) | (삭제) 바로 본론 |
+| 오해하지 마세요 / ~라고 생각하실 수도 있지만 (D-10) | 없는 반론을 지우고 주장만 남긴다 |
+| 앞으로가 더 기대됩니다 / 중요한 전환점 (D-11) | (삭제) 마지막 구체적 사실에서 끝낸다 |
+| 과제도 남아 있다 / 한계도 분명하다 (D-12) | 원문이 말하는 실제 과제를 바로 쓴다. 없으면 삭제 |
+| ~하는 이유다 / 결국 ~로 이어진다 (D-13) | 그래서 ~다 |
+| 청사진 / 적신호 / 신호탄 / 뿌리내리다 (D-14) | 계획 / 경고 / 첫 사례 / 자리 잡다 |
+| 좋은 질문입니다! / 도움이 되셨길 바랍니다 (D-15) | (삭제) 감싼 내용은 남긴다. 인사·맺음말·서명은 그대로 둔다 |
+| 전문가들은 ~라고 말합니다 (G-4) | 주장은 남기고 출처를 만들지 않는다. `[출처 확인 필요]` 표시 |
 
 ### E. Rhythm
 
 - **Input analysis:** The detector calculates mean sentence length and standard deviation.
 - **When uniformity is detected:**
-  - Add 1–2 short sentences of 10–15 characters per paragraph: "맞다. 그게 핵심이다."
+  - Join adjacent sentences so that one paragraph carries one long sentence, and keep a short sentence only where it delivers a new fact. Do not add a short restating sentence such as "그게 핵심이다."; that is a C-14 closing punch.
   - Allow 1 long sentence of 80+ characters.
 - **Vary endings:** Do not repeat one ending across 4–5 consecutive sentences. Mix "~다 / ~았다 / ~인 것" and nominal endings.
 
@@ -124,9 +149,9 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
 
 ### G. Hedging
 
-- **Three-step hedge reduction:**
-  - "~할 수 있을 것으로 보인다" → "~로 보인다" → "~일 것이다" → "~이다"
-- Where a direct claim is justified, reduce hedging by two or three steps. Retain one hedge only when the facts are uncertain.
+- **Collapse stacked hedges to one:** "~할 수 있을 것으로 보인다" → "~할 것으로 보인다" / "어느 정도 ~할 수도 있을 것으로 보입니다" → "~할 수 있습니다". Keep exactly one hedge of the source's strength.
+- **Do not assert a hedged claim.** Turn a hedge into an assertion only when the source itself supplies the evidence that settles it. For repeated "~로 보인다 / ~로 판단된다", vary the ending ("~로 본다", or a stated basis) instead of removing the hedge. Do not vary into "~인 듯하다", which G-1 also lists.
+- In medical, legal, and policy writing, the hedge is part of the meaning. Keep it and collapse only stacked hedges.
 
 ### H. Conjunctions
 
@@ -139,7 +164,9 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
 
 - Connect the ending directly instead of using "것이다".
   - "변화가 크다는 것이다" → "변화가 크다"
-- "~할 필요가 있다" → "~해야 한다" / "~할 만하다" / a concrete action instruction.
+- "~할 필요가 있다" → "~가 필요하다". Do not weaken it to "~할 만하다"; use "~해야 한다" only when the source states an obligation.
+- **I-7 focus frames:** "중요한 것은 X라는 점이다" → "X가 중요하다"; "핵심은 X다" → state X directly.
+- **I-8 administrative verbs:** Replace "확대·강화·개선·확보·마련·구축" with the action the source describes ("교육 과정 강화" → "교육 시간을 주 2회로 늘림" only when the source says so). Without a concrete action in the source, keep the verb.
 - Make "~이 필요하다" concrete with a subject and verb: "혁신이 필요하다" → "이 회사가 제품을 다시 만들어야 한다", when context permits.
 
 ### J. Decoration
@@ -196,6 +223,12 @@ Preserve these even when they resemble AI tells, because changing them changes m
 | Public speech/congratulatory address | Formal written register | Colloquial language, emoji, bullets |
 
 Infer genre from the first 100 input characters, then apply this table's boundaries.
+
+### Genre details (dodaeri port)
+
+`references/direct.md` owns the destination and genre defaults for mail, notices,
+business replies, training material, LinkedIn posts, and reports. Pipelines that
+rewrite those genres apply the same defaults.
 
 ## 5. Repeated rewriting
 
