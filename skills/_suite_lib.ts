@@ -70,7 +70,7 @@ const _DELETION_STARTED_AT=new Date().toISOString();
 function tick():number{return Number(process.hrtime.bigint())/1e6;}
 function sha256(text:string|Buffer):string{return createHash('sha256').update(text).digest('hex');}
 function hashPart(hash:ReturnType<typeof createHash>,value:string):void{hash.update(String(Buffer.byteLength(value,'utf8'))+':');hash.update(value);hash.update('\n');}
-function copySkips(skillRoot:string):Set<string>{const skips=new Set(['__pycache__','.omc','results','.git','node_modules',basename(real(tmpdir()))]);if(!['science','author','diagram','journey-qa','dag-it','statechart','create-formal-verification-skill'].includes(basename(skillRoot)))skips.add('repos');return skips;}
+function copySkips(skillRoot:string):Set<string>{const skips=new Set(['__pycache__','.omc','results','.git','node_modules',basename(real(tmpdir()))]);if(!['science','author','diagram','journey-qa','dag-it','statechart','create-formal-verification-skill','maintain-formal-verification-skill'].includes(basename(skillRoot)))skips.add('repos');return skips;}
 function shouldCopy(source:string,root:string,skips:Set<string>):boolean{return source===root||(!skips.has(basename(source))&&!source.endsWith('.pyc'));}
 function deletionInventory(root:string,skillRoot:string):DeletionInventory{
     const start=lstatSync(root);if(!start.isDirectory())return{fingerprint:'',entries:[],eligible:false,reason:'copy root is not a real directory'};

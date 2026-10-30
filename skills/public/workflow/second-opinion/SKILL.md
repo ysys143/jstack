@@ -44,6 +44,24 @@ A rejection you disagree with is also evidence: something was legible enough to
 be misread. Either the artefact is wrong or its presentation is, and both are
 worth fixing.
 
+## For code and behavior, only a reproduced finding survives
+
+When the artefact is code, a script, or a behavior claim, ask the reviewer to
+prove each finding with a run: a failing test, a repro script, or command output
+next to the output the intent requires. Then rerun each finding's command
+yourself before accepting it. A reviewer's pasted output is a claim about a run,
+not the run.
+
+A finding that does not reproduce is dropped, not downgraded. Style opinions and
+risks that matter only after a future change are dropped too. Report the count
+and the reason: "6 reported, 2 reproduced, 4 dropped (3 did not reproduce, 1
+needed a future change)". A review with no reproduced finding is a valid result,
+and the count shows what it cost to reach it. Report findings; do not apply fixes.
+
+Where nothing can be run, such as a prose argument or a design with no prototype,
+record the objection as unverified (`references/framing.md`) and do not call it a
+finding.
+
 ## Multiple reviewers are one reviewer unless they are separated
 
 Two reviewers who read each other agree by construction. If you want independent
@@ -64,38 +82,34 @@ honest answer is nothing, decide and move on.
 ## When the reviewer is an actual external CLI
 
 Everything above holds whether the reviewer is a human, a subagent, or an
-external model — but this plugin also has two concrete backends that make
-"different angles" and "no access to the others' output" literal rather than
-aspirational.
+external model. This plugin has one concrete external backend: the Codex
+read-only participant, reached through `scripts/council-bridge.js` and described
+in `references/ai-council.md`. The bridge call carries only the prompt you send,
+so the reviewer cannot read another reviewer's answer. That makes "no access to
+the others' output" literal for that call rather than aspirational.
 
-`references/gemini.md` documents the compatibility entry
-`scripts/gemini-bridge.js` for `agy`: one reviewer, one lens, no panel.
-It currently refuses inference because no reviewed read-only adapter exists.
-`references/ai-council.md` runs the Codex panel through
-`scripts/council-bridge.js`; the `agy` participant reports unsupported until a
-reviewed read-only adapter exists, so the panel has one independent reviewer. When
-a second participant runs, neither sees the other's answer while answering — that is the separation the "one reviewer unless they are
-separated" section above requires, enforced by the call shape rather than by
-instruction. `references/synthesis-guide.md` is what to do with the two raw
-answers that come back: it is the concrete form of "a verdict is evidence,
-not permission" and "do not average" for exactly this panel, spelled out as
-three rules — role is not a lens, disagreement is the deliverable a panel
-exists to produce, and a consensus computed by splitting the difference is
-the specific way this kind of tool fails.
+One Codex answer is one reviewer. A panel needs a second, independent answer: a
+native reviewer you ran from a different angle, or a second round with a different
+lens. `references/synthesis-guide.md` is what to do with two or more raw answers.
+It is the concrete form of "a verdict is evidence, not permission" and "do not
+average", spelled out as three rules —
+role is not a lens, disagreement is the deliverable a panel exists to produce,
+and a consensus computed by splitting the difference is the specific way this
+kind of tool fails.
 
-`scripts/check-cli.js` and `scripts/parse-output.js` are the two bridges'
-shared plumbing (CLI presence checks and output cleanup) — read them only if
-a bridge call is behaving unexpectedly, not as a starting point.
+`scripts/check-cli.js` and `scripts/parse-output.js` are the bridge's plumbing
+(CLI presence checks and output cleanup) — read them only if a bridge call is
+behaving unexpectedly, not as a starting point.
 
 ## Rules the bridges cannot enforce for you
 
-The bridge scripts pin what a script can pin — the sandbox, the flag set, the
-parallel-without-cross-reading shape. These five are on the caller, and each
-one has broken a production run when skipped.
+The bridge script pins what a script can pin — the sandbox and the flag set.
+These five are on the caller, and each one has broken a production run when
+skipped.
 
-**Go through the bridge.** Never invoke `agy` or `codex` directly. The bridge
-is where the sandbox pin, the flag set and the separation live; a direct call
-drops all three at once and nothing reports that it did.
+**Go through the bridge.** Never invoke `codex` directly. The bridge is where
+the sandbox pin and the flag set live; a direct call drops both at once and
+nothing reports that it did.
 
 **Keep reviewer independence explicit.** Native reviewers are permitted when the
 routing decision and current session authorize them. Do not describe the same
@@ -103,17 +117,15 @@ model in a new context as a different model. A reviewer must not inherit the
 executor's conclusions. No session-wide tool lock is imposed when a reviewer
 is unavailable; return the limitation and continue independent authorized work.
 
-**Honor model selection.** Use `--model ID` for a single backend and
-`--codex-model ID` for the Codex panel participant. A past SDK failure is not a
-permanent model prohibition. agy remains unsupported until a reviewed read-only
-adapter exists; neither model selection nor installation bypasses that boundary.
+**Honor model selection.** Use `--codex-model ID` for the Codex participant.
+Omitting it keeps the CLI default and does not establish which model answered. A
+past SDK failure is not a permanent model prohibition.
 
 **A bridge failure is reported, not improvised around.** When a bridge exits
 non-zero, hand the user its exact stderr. Do not fall back to calling a CLI
 directly, do not guess a model name, and do not answer the question yourself
 while letting it read as though an external model had. Diagnose with
-`node "${JSTACK_PLUGIN_ROOT}/skills/consult/scripts/check-cli.js" agy` and the
-same line for `codex`.
+`node "${JSTACK_PLUGIN_ROOT}/skills/consult/scripts/check-cli.js" codex`.
 
 **When no target is named, derive one before asking for one.** Run
 `git diff --name-only HEAD` and take the review candidates from what actually
@@ -123,15 +135,10 @@ send the whole repository, and do not pick a file by guess.
 
 ## Task routing and completion
 
-For authorized delegation, use the common routing contract in
-[Runtime routing](../../runtime/ROUTING.md). Run `jst route plan --request FILE`,
-then `jst route run --decision FILE` to reserve one attempt. A native decision
-is executed through the current session tools; it is not a CLI substitution.
-Record independently checked artifacts with `jst route record`. If `jstack` is not
-found, follow [jst command on PATH](../../runtime/CLI-PATH.md). Retain explicit
-user model choices, permission boundaries, exclusive files, and host fork limits.
-Only a verification failure permits one model transition; environment failures
-do not justify stronger models. Small tasks stay with the coordinator.
+For authorized delegation, follow [Runtime routing](../../runtime/ROUTING.md):
+plan with `jst route plan`, reserve one attempt with `jst route run`, execute, and
+record checked artifacts with `jst route record`. It owns model transitions and
+the rules every calling skill follows.
 
 ## Boundary
 
@@ -143,13 +150,11 @@ purpose — is the `delegate` skill; `ai-council.md`'s Codex call is pinned to
 second opinion can never quietly become that. This skill covers asking to be
 proved wrong.
 
-The bridges share literal argument transport, bounded output capture, and native
-process deadlines through `scripts/bridge-common.js`.
+The bridge uses literal argument transport, bounded output capture, and native
+process deadlines from `scripts/bridge-common.js`.
 
 ## Optional SDLC caller
 
-When an explicitly selected `sdlc` run supplies context, preserve its task/run,
-requirement revision and input hashes with the raw result and execution observation.
-Return the original verdict and unverified scope to that coordinator; do not advance
-its stage or approve a human gate. A standalone or external caller does not need
-an SDLC run or new mandatory arguments.
+When an explicitly selected `sdlc` run calls this skill, follow
+[the leaf rules in sdlc](../sdlc/SKILL.md#leaf-skills-called-by-a-run). A standalone
+call needs no run context.

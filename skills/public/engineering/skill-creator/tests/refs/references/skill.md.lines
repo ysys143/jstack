@@ -1,4 +1,4 @@
-# blob:bb01d90a0359b5edc5585e03d46ebe31e663d8fe
+# blob:181e7dcf10a44e6a62773b97365132ebdc20f7e5
 # Skill
 Add a skill to an existing plugin or create a plugin to contain it.
 ## Step 0: Determine Scope
@@ -26,8 +26,8 @@ Use a concrete scope question:
 ## Step 1: Define the Skill
 Choose a kebab-case name, a description of one sentence plus two or three trigger phrases, and concrete operating instructions.
 ## Step 1.5: Consult the Anthropic Guidance
-For design and structure guidance, consult the pinned upstream pointers recorded
-in `upstream.toml` under `corca-ai-claude-plugins`:
+For design and structure guidance, consult these documents from the upstream
+`corca-ai-claude-plugins` repository:
 | Need | Upstream document |
 |---|---|
 | Skill design and scope | `references/anthropic-skills-guide/02-planning-and-design.md` |

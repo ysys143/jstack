@@ -93,15 +93,10 @@ itself; anything else uses `${JSTACK_PLUGIN_ROOT}`.
 
 ## Task routing and completion
 
-For authorized delegation, use the common routing contract in
-[Runtime routing](../../runtime/ROUTING.md). Run `jst route plan --request FILE`,
-then `jst route run --decision FILE` to reserve one attempt. A native decision
-is executed through the current session tools; it is not a CLI substitution.
-Record independently checked artifacts with `jst route record`. If `jstack` is not
-found, follow [jst command on PATH](../../runtime/CLI-PATH.md). Retain explicit
-user model choices, permission boundaries, exclusive files, and host fork limits.
-Only a verification failure permits one model transition; environment failures
-do not justify stronger models. Small tasks stay with the coordinator.
+For authorized delegation, follow [Runtime routing](../../runtime/ROUTING.md):
+plan with `jst route plan`, reserve one attempt with `jst route run`, execute, and
+record checked artifacts with `jst route record`. It owns model transitions and
+the rules every calling skill follows.
 
 ## Boundary
 

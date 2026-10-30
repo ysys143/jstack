@@ -116,6 +116,7 @@ function main(): any {
     check("deletion: three numbered steps exist", (length(steps) >= 3), (String(length(steps)) + " steps"));
     check("deletion: step order is bound to numbers (1=revocation, 2=history, 3=notify forks)", (truth((contains(skill, "1. Rotate at the issuer"))) && truth((contains(skill, "2. Rewrite the history that contains it"))) && truth((contains(skill, "3. Ask the forge to expire cached views")))));
     check("deletion: requires proving the old value fails", (contains(skill, "confirm the old value now fails")));
+    check("deletion: force-pushing rewritten history waits for the user's confirmation", (truth((contains(skill, "push only after the user\n   confirms"))) && truth((contains(skill, "List the affected refs and the exact command")))));
     check("reference: entry instructions require reading the reference before reporting", (truth((contains(skill, "`references/secret-shapes.md`"))) && truth((contains(skill, "Read that file before reporting anything")))));
     fps = table(shapes, "## False-positive families");
     check("false positives: family table has at least four rows", (length(fps) >= 4), (String(length(fps)) + " rows"));
@@ -175,18 +176,18 @@ function main(): any {
     check("L0: exposure and API-key activation terms remain", (!truth(gone)), (truth(gone) ? ("missing triggers " + String(gone)) : "exposure and API-key triggers"));
     check_skill_body(check, ROOT, { needles: ["Rotate the credential before touching history", "If you can only do one of the two, rotate", "`.gitignore` is not a gate", "Never put the secret in the report", "Take the lower one"], floor: 2662 });
     check_ref_contracts(check, ROOT, [["secret-shapes.md", "discriminators, family tables, false positives, and revocation evidence", ["**discriminator**", "Publishing it is the point", "silence reads as", "not the rotation call returning success"], 1880]]);
-    check_contract_coverage(check, __file__, ROOT, { per_file: { "SKILL.md": 44, "references/secret-shapes.md": 12 }, live_ran: (() => { const __items: any[] = []; for (const r of iterable(results)) {
+    check_contract_coverage(check, __file__, ROOT, { per_file: { "SKILL.md": 45, "references/secret-shapes.md": 12 }, live_ran: (() => { const __items: any[] = []; for (const r of iterable(results)) {
             if (!truth((!truth(starts(r[0], ["자기검사:", "계약 커버리지:"])))))
                 continue;
             __items.push(1);
         } return __items; })().reduce((sum: number, value: any) => sum + Number(value), 0) });
-    check_body_deletion(check, __file__, ROOT, { minimum: 44, live_ran: (() => { const __items: any[] = []; for (const r of iterable(results)) {
+    check_body_deletion(check, __file__, ROOT, { minimum: 45, live_ran: (() => { const __items: any[] = []; for (const r of iterable(results)) {
             if (!truth((!truth(starts(r[0], ["자기검사:", "계약 커버리지:"])))))
                 continue;
             __items.push(1);
         } return __items; })().reduce((sum: number, value: any) => sum + Number(value), 0) });
     check_no_constant_assertions(check, __file__);
-    check_total(check, results, 71);
+    check_total(check, results, 72);
     passed = (() => { const __items: any[] = []; for (const [_name, ok, _detail] of iterable(results)) {
         if (!truth(ok))
             continue;

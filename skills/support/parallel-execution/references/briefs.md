@@ -45,6 +45,14 @@ what was checked cannot be distinguished from one that checked nothing, and the
 two are equally likely to arrive.
 
 
+Ask each worker to close with one verdict: `PASS`, `ISSUES` or `BLOCKED`, each
+backed by the command or artefact it names. A worker that can prove a defect
+reports `ISSUES` and lists every defect it can prove, not only the first; the
+first one found is rarely the only one, and a second pass costs more than a
+longer first report. `BLOCKED` says what stopped the work and what would unblock
+it. A report with no verdict is a gap, not a pass.
+
+
 ## Context, authority, and concurrency
 
 State whether the agent starts fresh or inherits a fork. A fresh brief includes
@@ -58,7 +66,8 @@ Use the session's actual concurrency budget, including the coordinator. Four was
 the cited Codex article's default, not a fixed jstack limit. Queue excess independent
 work instead of exceeding the budget. The coordinator keeps communicating with
 the user, tracks owners and blockers, integrates results, and avoids duplicate
-investigations. One writer owns a file until an explicit handoff.
+investigations. One writer owns a file until an explicit handoff. A worker that writes
+gets its own worktree or branch, so two writers never share one checkout.
 
 Implementation teammates may exchange relevant discoveries directly when native
 messaging is available. Independent reviewers do not see one another's conclusions

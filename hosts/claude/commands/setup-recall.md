@@ -144,7 +144,7 @@ new file only when none exists.
 
 Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json`. This differs from
 `~/.claude/plugins`: it is the user's global configuration, and this repository's
-`hooks/hooks.json` already updates it through `register_local.sh`. Follow the same
+`hooks/hooks.json` already updates it through `register_local.js`. Follow the same
 convention: read first, preserve existing entries, and add only missing ones.
 
 Skip the change when `hooks.SessionEnd[0].hooks` already contains this binary

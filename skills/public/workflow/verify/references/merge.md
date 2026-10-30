@@ -19,9 +19,24 @@ Gather these before anything else. Every later phase reads one of them.
 | Recent commits | `git log --oneline -20` |
 | Working tree status | `git status --short` |
 
+## Approval gate
+
+Nothing in this procedure runs until the user has asked for the merge. Before
+Phase 4 (the first write to the target branch), stop and show the user the target
+branch, the commits the squash will hide, the diff summary from Phase 2, and the
+drafted commit message. Wait for an explicit yes. A merge changes the target
+branch and a squash hides the individual commits, and neither is easy to take
+back once the branch is pulled. A green check, a finished worktree, or an earlier
+request to verify is not that yes.
+
+This gate outranks the instruction below to run every phase: stop at the gate,
+and do not run Phases 4 to 6 without the yes. If the message or the target
+changes after the yes, ask again.
+
 ## Instructions
 
-Follow these phases exactly, in order. Do NOT skip phases.
+Follow these phases in order and do not skip any. The approval gate above is not
+a phase to skip and cannot be waived by this instruction.
 
 ---
 
@@ -48,6 +63,7 @@ Follow these phases exactly, in order. Do NOT skip phases.
 4. **Read key files**: read the significantly changed files
 5. **Categorize**: feat / fix / refactor / test / docs / chore
 6. **Identify dominant conventional commit type**
+7. **Draft the commit message** (Phase 5 gives the structure) so it can be shown at the approval gate
 
 ---
 
@@ -61,6 +77,8 @@ Follow these phases exactly, in order. Do NOT skip phases.
 
 ### Phase 4: Squash merge
 
+Start only after the approval gate above has a yes.
+
 1. Checkout target in original repo: `git -C <original-repo-path> checkout <target>`
 2. Squash merge: `git -C <original-repo-path> merge --squash <worktree-branch>`
 3. If conflicts: list files, show markers, **stop and report** -- do NOT auto-resolve
@@ -71,13 +89,17 @@ Follow these phases exactly, in order. Do NOT skip phases.
 
 Structure:
 ```
-<type>: <concise summary in imperative mood, under 72 chars, no period>
+<type>: <summary line>
 
 <2-4 sentence paragraph explaining what was done and WHY.>
 
 Changes:
 - <grouped bullet points>
 ```
+
+The summary line follows the subject rule in `gitrules` (length, ending, no
+period); this file does not restate it. Commit the message the user approved at
+the gate.
 
 Trailers are not written here. `gitrules` owns the trailer set for this
 repository; copying a template into this file would give the repository two
@@ -99,7 +121,7 @@ EOF
 1. Confirm: `git -C <original-repo-path> log --oneline -3`
 2. Report: commit hash, summary, target branch
 3. Remind: worktree branch still exists; delete with `git worktree remove <path>` if done
-4. Remind: `git push` to push to remote
+4. Remind: pushing would publish the commit; do not push without the user's approval
 
 ---
 

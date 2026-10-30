@@ -43,8 +43,20 @@ this order and stop at what exists:
 evidence. If an answer changes a requirement, say so and hand the user to the
 `plan` skill to initialize a new task contract.
 
+**Run what a run can answer.** When an open item is about behaviour, timing,
+output or performance, run the smallest throwaway probe in a scratch directory and
+record the result as evidence instead of asking. Ask only about product or
+preference calls that no run can settle. The probe states its question and method
+first, stays local and reversible, installs nothing, touches no shared state and
+keeps none of its code. If it would need more than that, ask for that one decision.
+
 Before the first question, show what is already settled in at most three lines,
 each with its source.
+
+Then say in your own words what you think the user wants and what problem it
+solves, in a sentence or two, and let them correct it before any question builds
+on a misreading. It is a statement, not a question, and it does not count toward
+the limit. In a named-topic interview, restate the topic only.
 
 ## Three entry contexts
 
@@ -152,8 +164,6 @@ The spec is the state; there is no separate state file.
 
 ## Optional SDLC caller
 
-When an explicitly selected `sdlc` run supplies context, preserve its task/run,
-requirement revision and input hashes with the raw result and execution observation.
-Return the original verdict and unverified scope to that coordinator; do not advance
-its stage or approve a human gate. A standalone or external caller does not need
-an SDLC run or new mandatory arguments.
+When an explicitly selected `sdlc` run calls this skill, follow
+[the leaf rules in sdlc](../sdlc/SKILL.md#leaf-skills-called-by-a-run). A standalone
+call needs no run context.

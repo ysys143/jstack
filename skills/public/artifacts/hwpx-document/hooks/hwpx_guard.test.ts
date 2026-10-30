@@ -1,15 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { spawnSync } from 'node:child_process';
 import { zipSync, strToU8, type Zippable } from 'fflate';
 import { handle, inspect, borderedCharPr, firstZipEntry } from './hwpx_guard.js';
 const header='<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"><hh:borderFill id="1"><hh:leftBorder type="NONE"/></hh:borderFill><hh:charPr borderFillIDRef="1"/></hh:head>';
 function valid():Zippable{return {mimetype:[strToU8('application/hwp+zip'),{level:0}],'Contents/header.xml':strToU8(header),'Contents/section0.xml':strToU8('<section/>')};}
 test('HWPX guard evaluates ZIP metadata, required entries, thumbnails and border wiring',()=>{const root=mkdtempSync(join(tmpdir(),'jstack-hwpx-'));try{const cases:[string,Zippable,string|undefined][]=[['valid',valid(),undefined],['missing-section',{mimetype:[strToU8('application/hwp+zip'),{level:0}],'Contents/header.xml':strToU8(header)},'Missing required file'],['compressed',{...valid(),mimetype:[strToU8('application/hwp+zip'),{level:6}]},'ZIP_STORED'],['wrong-order',{'Contents/header.xml':strToU8(header),...valid()},'mimetype is not the first'],['preview',{...valid(),'Preview/PrvImage.png':new Uint8Array(68)},'reference thumbnail'],['border',{...valid(),'Contents/header.xml':strToU8(header.replace('type="NONE"','type="SOLID"'))},'every character'],['neutral',{...valid(),'Preview/PrvImage.png':new Uint8Array(67)},undefined]];
- for(const [name,entries,reason] of cases){const path=join(root,name+'.hwpx');writeFileSync(path,zipSync(entries));const errors=inspect(path);if(reason)assert.ok(errors.some(e=>e.includes(reason)),name);else assert.deepEqual(errors,[],name);const payload={tool_input:{file_path:path}};assert.equal(handle(payload)?.decision,reason?'block':undefined,name);if(process.env.JSTACK_ORACLE==='1'){const oracle=spawnSync('python3',[resolve('skills/hwpx/hooks/hwpx_guard.py')],{encoding:'utf8',input:JSON.stringify(payload)});assert.equal(oracle.status,0,oracle.stderr);assert.deepEqual(handle(payload)??{},oracle.stdout.trim()?JSON.parse(oracle.stdout):{},name);}}
+ for(const [name,entries,reason] of cases){const path=join(root,name+'.hwpx');writeFileSync(path,zipSync(entries));const errors=inspect(path);if(reason)assert.ok(errors.some(e=>e.includes(reason)),name);else assert.deepEqual(errors,[],name);const payload={tool_input:{file_path:path}};assert.equal(handle(payload)?.decision,reason?'block':undefined,name);}
  const broken=join(root,'broken.hwpx');writeFileSync(broken,'notzip');assert.equal(handle({tool_input:{file_path:broken}}),undefined);const fixable=join(root,'preview.hwpx');assert.equal(handle({tool_input:{command:`python sanitize_template.py ${fixable}`}}),undefined);
  }finally{rmSync(root,{recursive:true,force:true});}});
 test('HWPX XML namespace and direct-child semantics prevent false border findings',()=>{assert.equal(borderedCharPr(strToU8(header)),0);assert.equal(borderedCharPr(strToU8(header.replace('type="NONE"','type="SOLID"'))),1);assert.equal(borderedCharPr(strToU8(header.replace('hh:leftBorder','wrong:leftBorder').replace('type="NONE"','xmlns:wrong="different" type="SOLID"'))),0);assert.throws(()=>borderedCharPr(strToU8('<bad>')));assert.equal(firstZipEntry(Buffer.from(zipSync({}))),undefined);});

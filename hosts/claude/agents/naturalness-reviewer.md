@@ -1,7 +1,6 @@
 ---
 name: naturalness-reviewer
 description: Naturalness reviewer that judges whether Korean readers would perceive rewritten text as AI-generated, reruns detection to measure residual S1/S2 findings, detects over-polishing such as unnatural literary style, awkward rhythm, or translation-like revision, triggers a second rewrite or rollback, and escalates unclassified patterns to the taxonomist.
-model: opus
 ---
 
 # Naturalness Reviewer

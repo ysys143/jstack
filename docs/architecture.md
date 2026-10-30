@@ -7,7 +7,7 @@ come from `hosts/codex/skills/`.
 
 ## Build and installation
 
-`packaging/build.py` checks the explicit `packaging/package-files.json` membership
+`packaging/build.js` checks the explicit `packaging/package-files.json` membership
 and generates a common `payload/`, native `entries/claude/` and `entries/codex/`,
 and host manifests. Generated entries resolve their installed payload by relative
 path. They do not require the author's checkout. Aliased upstream directories are
@@ -26,14 +26,14 @@ the `.agents/plugins` registry and cache. `CLAUDE_CONFIG_DIR` and `CODEX_HOME`
 select alternate host profiles. Receipts track the jstack-managed marketplace source;
 host caches remain owned by their host lifecycle.
 
-`packaging/release.py` creates a checked local marketplace. Remote publication and
+`packaging/release.js` creates a checked local marketplace. Remote publication and
 installation into an existing user home are separate actions. Organization profiles
 live outside the package under `~/.jstack`.
 
 ## Verification
 
-`packaging/run_contracts.py` builds a disposable package and Git runtime snapshot.
-`scripts/run_suites.sh` discovers owning skill and root suites in that snapshot,
+`packaging/run_contracts.js` builds a disposable package and Git runtime snapshot.
+`scripts/run_suites.js` discovers owning skill and root suites in that snapshot,
 records output, and verifies measured deletion floors and shared-library behavior.
 Missing suites, missing checkers, and leaked state fail validation. Canonical-file
 checks use current package membership rather than a historical migration ledger.

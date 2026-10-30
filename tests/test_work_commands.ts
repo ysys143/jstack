@@ -33,7 +33,7 @@ function runnerFixture(failed:string|null,selected=false,missing=false):any{cons
 function main():any{
 let TABLE_RULE_OFF:any,_:any,_CHECKERS:any,_brs:any,_c:any,_d:any,_f:any,_floor:any,_has:any,_ln:any,_meta:any,_n:any,_need:any,_nested_env:any,_nosuite:any,_o:any,_p:any,_prop:any,_pt:any,_r:any,_rc:any,_sk:any,_src:any,_t:any,_target:any,_td:any,_tmp:any,_var:any,_vd:any,_why:any,all_names:any,bodies:any,body:any,cmd:any,conv:any,d:any,f:any,fm:any,ghost:any,help_skill:any,known:any,label:any,m:any,miss:any,n:any,named:any,names:any,ok:any,passed:any,path:any,r:any,r2:any,raw:any,refs:any,s:any,script:any,skills_dir:any,trap:any,want:any;
 (all_names=sorted(Array.from(readdirSync(CMD)).filter((f: any) => truth(ends(f, ".md"))).map((f: any) => (slice(f, 0, -(3))))));
-check("Inventory: the unified command count is 35", (isDeepStrictEqual(length(all_names),35)), (pyStr(all_names)));
+check("Inventory: the unified command count is 36", (isDeepStrictEqual(length(all_names),36)), (pyStr(all_names)));
 (names=sorted(WANT));
 for (let want of WANT) {
 check(("Inventory: /" + pyStr(want) + " is present"), ((contains(all_names, want))));

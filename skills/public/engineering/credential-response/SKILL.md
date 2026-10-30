@@ -40,7 +40,10 @@ copies your force-push never reaches.
 So the removal is a three-part job, and the first part is not optional:
 
 1. Rotate at the issuer, and confirm the old value now fails.
-2. Rewrite the history that contains it, then force-push every affected ref.
+2. Rewrite the history that contains it. Force-pushing the rewritten refs
+   replaces history other people have already pulled, and the remote cannot undo
+   it. List the affected refs and the exact command, and push only after the user
+   confirms; a protected branch is named in that confirmation.
 3. Ask the forge to expire cached views, and tell the fork owners.
 
 ## What counts as a secret

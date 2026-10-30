@@ -21,6 +21,9 @@ const rules: [string, string, RegExp][] = [
   ['Evidence: reads status, diff stat and recent commits', evidence, /`git status --short`, `git diff --stat`[\s\S]*`git log --oneline -20`/],
   ['Evidence: the task contract is never edited', evidence, /Never edit `contract\.yaml`/],
   ['Evidence: shows what is settled before asking', evidence, /show what is already settled in at most three lines/],
+  ['Evidence: a behaviour, timing, output or performance question is settled by a throwaway probe, not asked', evidence, /Run what a run can answer[\s\S]*smallest throwaway probe in a scratch directory[\s\S]*Ask only about product or\s+preference calls that no run can settle/],
+  ['Evidence: the probe is local and reversible and keeps none of its code', evidence, /stays local and reversible, installs nothing, touches no shared state and\s+keeps none of its code/],
+  ['Evidence: restates the goal in its own words before the first question, outside the limit', evidence, /say in your own words what you think the user wants and what problem it\s+solves[\s\S]*does not count toward\s+the limit/],
   ['Contexts: no spec yet', skill, /\| \*\*No spec yet\*\* \|/],
   ['Contexts: mid-implementation', skill, /\| \*\*Mid-implementation\*\* \|/],
   ['Contexts: a named topic', skill, /\| \*\*Named topic\*\* \|/],
@@ -69,10 +72,10 @@ check('Boundary: every named skill exists', missing.length === 0, missing.join('
 
 check_ref_contracts(check, ROOT, [['grill-mode.md', 'grill mode: find assumptions, challenge, record an outcome', ['## Find the assumptions', 'in order of cost if wrong', 'What breaks this?', '| held |', '| changed |', '| dropped |', 'Do not edit code here', 'until the user says stop'], 1700]]);
 check_skill_body(check, ROOT, { needles: ['Read the evidence before asking anything', 'One question per turn', 'Do not compute or display a numeric ambiguity score', 'The spec is the state'], floor: 5000 });
-check_contract_coverage(check, SUITE_FILE, ROOT, { per_file: { 'SKILL.md': 52, 'references/grill-mode.md': 3 } });
-check_body_deletion(check, SUITE_FILE, ROOT, { minimum: 52 });
+check_contract_coverage(check, SUITE_FILE, ROOT, { per_file: { 'SKILL.md': 55, 'references/grill-mode.md': 3 } });
+check_body_deletion(check, SUITE_FILE, ROOT, { minimum: 55 });
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 68);
+check_total(check, results, 71);
 const passed = results.filter(([, ok]) => ok).length;
 console.log(`\n${passed}/${results.length} 통과`);
 process.exitCode = passed === results.length ? 0 : 1;

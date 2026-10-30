@@ -17,12 +17,12 @@ function regexSplit(pattern:string,text:string):string[]{let flags='';pattern=pa
 function compare(a:any,b:any,op:string):boolean{if(a instanceof Set&&b instanceof Set){const sub=[...a].every(v=>b.has(v)),sup=[...b].every(v=>a.has(v));return op==='<='?sub:op==='>='?sup:op==='<'?sub&&a.size<b.size:sup&&a.size>b.size;}return op==='<='?a<=b:op==='>='?a>=b:op==='<'?a<b:a>b;}
 
 const SLICE_SHAPE_FLOOR=3520;
-const SKILL_FLOOR=55;
+const SKILL_FLOOR=59;
 const SLICE_SHAPE_CONTRACTS=7;
 const BRAINSTORMING_CONTRACTS=16;
 const CONSENSUS_CONTRACTS=16;
 const SCRIPT_FLOOR=43;
-const TOTAL=158;
+const TOTAL=162;
 function pyStr(value:any):string{return typeof value==='string'?value:repr(value);}
 function subprocessRun(argv:string[],options:any={}):any{const {capture_output,text,...native}=options;const result=runProcess(argv[0],argv.slice(1),native);return {...result,returncode:result.status};}
 function fileHandle(path:string,mode:string){if(mode==='w')writeFileSync(path,'');return{write:(text:string)=>mode==='a'||mode==='w'?appendFileSync(path,text):(()=>{throw Error('File is not writable');})(),read:()=>readFileSync(path,'utf8')};}
@@ -37,8 +37,15 @@ check("Criteria: explains why this gives the document value", ((value:any)=>trut
 check("Stop: requires stopping when about to start coding", ((contains(skill, "Stop when the urge is to start coding"))));
 check("Stop: distinguishes seeming clear from being clear", ((value:any)=>truth(value)?value:((contains(skill, "that is clear"))))(((contains(skill, "looks clear and one\nthat is clear")))));
 check("Stop: prohibits proceeding with ambiguity", ((contains(skill, "Do not proceed while ambiguous"))));
-check("Stop: requires recording assumptions in the spec", ((value:any)=>truth(value)?value:((contains(skill, "state the"))))(((contains(skill, "state the\nassumption")))));
+check("Stop: an answer that cannot be obtained is reported as a blocker, not filled with an assumption", (()=>{const flat=skill.replace(/\s+/g," ");return flat.includes("report it as a blocker: name the question, what it blocks and who can answer it")&&flat.includes("Do not fill the gap with an assumption and move on")&&flat.includes("A small reversible choice that nothing else depends on is the one exception");})());
 check("Stop: requires returning when a question cannot be answered", ((value:any)=>truth(value)?((contains(skill, "bakes that assumption into the code"))):value)(((contains(skill, "that you cannot answer")))));
+{
+const flat=skill.replace(/\s+/g," "),migration=read(join(ROOT,"references","migration-verification.md")).replace(/\s+/g," ");
+check("Probe: a question a run can answer is settled by a throwaway probe, and only product or preference calls are asked", flat.includes("**Run a question that a run can answer.**")&&flat.includes("run the smallest throwaway probe in a scratch directory and report the result")&&flat.includes("Ask only about product or preference calls no run can settle")&&flat.includes("installs nothing, touches no shared state, and its code is never kept"));
+check("Gate: reversible local steps proceed and are reported; only hard-to-undo or outward steps stop", flat.includes("**What stops and what does not.**")&&flat.includes("hard to undo or leaves this machine (push, PR, publish, delete, install, paid API, long-running service)")&&flat.includes("report what you did and what is still open in the same reply"));
+check("Shape: non-trivial work sketches types and signatures from the caller's usage before code, and redesigns instead of bolting on", flat.includes("### Sketch the shape before the code")&&flat.includes("Write the caller's usage first, then derive types, signatures and module boundaries")&&flat.includes("redesign as if it had been there from the start")&&flat.includes("the sketch is wrong: redraw it instead of patching"));
+check("Migration: a migration plan declares allowed breakage and per-phase checks, with no compatibility copies", flat.includes("declares where breakage is allowed and what each phase must pass, and does not plan compatibility copies")&&["## Plan the breakage, not a bridge","**Where breakage is allowed.**","**What each phase must still pass.**","**Full verification at the last phase.**","**A commit is the rollback.**","**A forced bridge names its removal.**","A bridge with no removal step is not accepted"].every(needle=>migration.includes(needle)));
+}
 (phases=findall("(?m)^## Phase (\\d)", skill));
 check("Order: three phases occur in order", (isDeepStrictEqual(phases,["1", "2", "3"])), (pyStr(phases)));
 for (let [n, what] of [["1", "grill"], ["2", "spec"], ["3", "zoom-out"]]) {
@@ -219,7 +226,7 @@ check("Slice: discriminating conclusion contains no inserted negation", ((value:
 check_skill_body(check, ROOT, {needles: ["In verifiable sentences", "Do not proceed while ambiguous", "Stop when the urge is to start coding", "If it is more than needed, cut it"], floor: 4514});
 (META=["자기검사:", "계약 커버리지:", "스크립트 계약:"]);
 (live_ran=(Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), META)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
-check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": SKILL_FLOOR, "references/slice-shape.md": SLICE_SHAPE_CONTRACTS, "references/security-scope.md": 3, "references/pre-mortem.md": 3, "references/migration-verification.md": 3, "references/brainstorming.md": BRAINSTORMING_CONTRACTS, "references/consensus-plan.md": CONSENSUS_CONTRACTS, "NOTICE": 3, "scripts/contract_lint.js": SCRIPT_FLOOR}, live_ran: live_ran});
+check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": SKILL_FLOOR, "references/slice-shape.md": SLICE_SHAPE_CONTRACTS, "references/security-scope.md": 3, "references/pre-mortem.md": 3, "references/migration-verification.md": 4, "references/brainstorming.md": BRAINSTORMING_CONTRACTS, "references/consensus-plan.md": CONSENSUS_CONTRACTS, "NOTICE": 3, "scripts/contract_lint.js": SCRIPT_FLOOR}, live_ran: live_ran});
 check_body_deletion(check, SUITE_FILE, ROOT, {minimum: SKILL_FLOOR, live_ran: live_ran});
 check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/contract_lint.js": SCRIPT_FLOOR}, live_ran: live_ran});
 check_no_constant_assertions(check, SUITE_FILE);

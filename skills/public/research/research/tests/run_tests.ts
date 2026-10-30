@@ -153,6 +153,8 @@ check("tier: triple-draft remains disabled (triple cost)", (truth((((opt["step_1
 up=runProcess('hyperresearch',['--version'],{timeout:10000}).status===0;
 if(up){const lib=join(homedir(),'.local/share/uv/tools/hyperresearch/lib');const hits=existsSync(lib)?readdirSync(lib).filter(name=>name.startsWith('python')).map(name=>join(lib,name,'site-packages/hyperresearch/core/citecheck.py')).filter(existsSync):[];const src=hits.length?read(hits[0]):'';check('자기검사: upstream formula matches our document (round(1/x))',src.includes('round(1 / sample_rate)'),'Update cite-check.md if upstream changes its rounding rule');}
 check("Provenance: NOTICE identifies MIT and the version", (truth((contains(notice, "MIT"))) && truth((contains(notice, "v0.10.0")))));
+check("grades: SKILL.md heading and description agree on general source-backed research", contains(skill_all, "# Research — source-backed deep research with verified citations") && !contains(skill_all, "deep research for procurement") && contains(skill_all, "### Map requirements to responses (procurement proposals)"));
+check("grades: four evidence grades and the because rule", ["**Quoted**", "**Converging evidence**", "**Inferred**", "**Unknown**"].every(g => contains(skill_all, g)) && contains(skill_all, "Use \"because\", \"the reason is\", or \"이유는\" only for Quoted and Converging claims.") && contains(skill_all, "An empty search is a\nfinding"));
 check_skill_body(check, ROOT, {needles: ["| **자립** | `기본` |", "checking an unknown half cannot establish reliability of the rest", "profile tuning is vibes", "나라장터", "deliverables/", "cite_check.js", "coverage_matrix.js", "references/tier-profile.md"], floor: 4076});
 check_ref_contracts(check, ROOT, [["kr-sources.md", "Korean primary-source tiers and access rules", ["나라장터", "DART", "KCI", "grep 0", "notice or project IDs", "Research for Korean procurement proposals must consult 나라장터", "Do not replace higher-tier evidence with lower-tier material; disclose any\nsubstitution", "Do not cite figures without a reference date"], 2919], ["tier-profile.md", "jstack-lite profile and rationale for restored axes", ["Light skips every step 12 critic, including instruction-critic", "Structural blind spots shared\nby an all-opus panel can pass all four reviews", "Light's source_target of 15-25 falls below the draft-orchestrator contract of\n20-50", "Our use is exactly CJK, yet this was absent from the inheritance list", "char_targets_no_word_boundary", "must_read_note_ids", "HANDOFF.md:438"], 3641], ["cite-check.md", "Full verification and upstream stepwise behavior", ["round(1 / sample_rate)", "two on/off levels", "every pair", "Machine"], 2086]]);
 (_tp=read(join(ROOT, "references", "tier-profile.md")));
@@ -164,11 +166,11 @@ check("Tier: sentence directs citation of higher-tier evidence", (contains(_kr2,
 (_OFF=["자기검사:", "계약 커버리지:", "스크립트 계약:"]);
 // All three deletion axes count the same final live population; no later judgments create slack.
 const live_ran=results.filter(([name])=>!_OFF.some((prefix:string)=>name.startsWith(prefix))).length;
-check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 20, "NOTICE": 1, "wrapper_contract.json": 14, "references/kr-sources.md": 19, "references/cite-check.md": 3, "references/tier-profile.md": 23}, live_ran});
-check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 20, live_ran});
+check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 22, "NOTICE": 1, "wrapper_contract.json": 14, "references/kr-sources.md": 19, "references/cite-check.md": 3, "references/tier-profile.md": 23}, live_ran});
+check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 22, live_ran});
 check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/cite_check.js": 6, "scripts/ensure_research.js": 3, "scripts/coverage_matrix.js": 4}, live_ran, extra_skip: ["스크립트 계약:"]});
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 108 + Number(up));
+check_total(check, results, 110 + Number(up));
 removeTree(tmp, {ignore_errors: true});
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any[]) => truth(ok)).map(([_name, ok, _detail]: any[]) => 1)).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + repr(passed) + "/" + repr(length(results)) + " 통과"));

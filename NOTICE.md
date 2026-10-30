@@ -23,7 +23,7 @@ local path.
 | [ysys143/journey-qa](https://github.com/ysys143/journey-qa) | MIT | `8004bae` | `skills/public/workflow/journey-qa/repos/journey-qa` |
 | [ysys143/just-dag-it](https://github.com/ysys143/just-dag-it) | MIT | `1dfc962` | `skills/public/engineering/dag-it/repos/just-dag-it` |
 | [dagster-io/skills](https://github.com/dagster-io/skills), inside just-dag-it | Apache-2.0 | `ed0248b` | `skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert` |
-| [cursor/plugins](https://github.com/cursor/plugins) (pstack, Lauren Tan) | MIT | `4dd1d05` | `skills/public/engineering/statechart/repos/pstack`, `skills/public/engineering/create-formal-verification-skill/repos/pstack` |
+| [cursor/plugins](https://github.com/cursor/plugins) (pstack, Lauren Tan) | MIT | `4dd1d05` | `skills/public/engineering/statechart/repos/pstack`, `skills/public/engineering/create-formal-verification-skill/repos/pstack`, `skills/public/engineering/maintain-formal-verification-skill/repos/pstack`; adapted into `benchmark-checklist`, `typescript-best-practices`, `how`, `create-verification-skill` and `maintain-verification-skill` |
 | [ysys143/cc-session-sync](https://github.com/ysys143/cc-session-sync) | The jstack author's own project | — | `skills/public/operations/session-memory/bin` |
 | [corazzon/pptx-design-styles](https://github.com/corazzon/pptx-design-styles) | MIT, declared in its README; no license file | — | `skills/public/artifacts/slides/references/styles.md` |
 | [uppinote20/claude-dashboard](https://github.com/uppinote20/claude-dashboard) | MIT | `f0937fe` | `skills/public/operations/dashboard` and its command and hook |

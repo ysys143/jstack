@@ -147,8 +147,11 @@ Use this input only when image paths already exist. The keys below are all that
 ### Dependencies
 
 ```
-pip install -r ${JSTACK_PLUGIN_ROOT}/skills/deck/requirements.txt
+uv pip install -r ${JSTACK_PLUGIN_ROOT}/skills/deck/requirements.txt
 ```
+
+The `uv pip` command needs a virtual environment: run `uv venv` first when the
+project has no `.venv`. Bare `pip` is blocked by the bundled uv hook.
 
 One `requirements.txt` contains everything required by both scripts. **Do not
 install dependencies on the user's behalf.** If they are missing, the script

@@ -1,4 +1,4 @@
-# blob:14f80c2beb1361311a61472b7cf6dc1475f22681
+# blob:7fd00a16ca23713d445e99438efd922d8107a82f
 # Deck — presentation design and production
 ## Phase 0: choose the backend — one question decides
 > **Is the deliverable itself an editable `.pptx` file?**
@@ -103,8 +103,10 @@ Use this input only when image paths already exist. The keys below are all that
 | `speaker_notes` | Slide | Speaker notes |
 ### Dependencies
 ```
-pip install -r ${JSTACK_PLUGIN_ROOT}/skills/deck/requirements.txt
+uv pip install -r ${JSTACK_PLUGIN_ROOT}/skills/deck/requirements.txt
 ```
+The `uv pip` command needs a virtual environment: run `uv venv` first when the
+project has no `.venv`. Bare `pip` is blocked by the bundled uv hook.
 One `requirements.txt` contains everything required by both scripts. **Do not
 install dependencies on the user's behalf.** If they are missing, the script
 stops with **exit 2 and installation guidance** instead of forcing the user to

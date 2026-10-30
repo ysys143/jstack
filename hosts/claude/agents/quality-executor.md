@@ -17,7 +17,8 @@ disorder with unknown disorder.
 
 ## Passes
 
-One axis per pass. Remove swallowed exceptions **before** deduplication: promoting
+A call covers the auditor's findings for one axis; the caller starts the next axis
+after the tests are green. One axis per pass. Remove swallowed exceptions **before** deduplication: promoting
 a defect into a shared path spreads it to all callers.
 
 Rerun tests after each pass, not just at the end; otherwise the breaking pass is

@@ -1,6 +1,6 @@
 # Security Verification Contract
 
-Security verification extends the existing task workflow. It reuses the task contract, receipt, and target binding instead of creating another runner or state authority. `security_contract.py` evaluates the specification and observations; `workflow.js` owns execution and receipts.
+Security verification extends the existing task workflow. It reuses the task contract, receipt, and target binding instead of creating another runner or state authority. `security_contract.js` evaluates the specification and observations; `workflow.js` owns execution and receipts.
 
 ## Specification and Results
 

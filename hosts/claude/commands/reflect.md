@@ -1,0 +1,81 @@
+# /reflect — turn the session into reviewed, routed changes
+
+Review the latest session of this workspace and decide, finding by finding, what
+is worth carrying forward. Nothing is edited until the user approves that row.
+
+## 1. Gate the session
+
+Stop with one line when the session is trivial: no edits, no commands beyond
+reading, and no correction from the user. A review of a session where nothing
+went wrong produces findings that were never there. Say what you checked.
+
+## 2. Find the transcript
+
+Read only this workspace's latest session. The transcript folder is
+`${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/<slug>/`, where `<slug>` is the
+workspace path with every non-alphanumeric character replaced by `-`. Take the
+newest top-level `.jsonl` file there and confirm its recorded `cwd` is this
+workspace. Do not open another project's folder: its sessions describe a different
+codebase, and a finding drawn from one would be applied here. If no transcript is
+found, say so and stop.
+
+## 3. Review in parallel
+
+In **one message**, start these five agents on the same transcript path. Each
+brief gives the absolute transcript path, the workspace root, and the instruction
+to return `none` when it has nothing, since a silent agent looks like a failed one.
+
+- `sag-learning-extractor`: corrected diagnoses and mismatches, each with its
+  reproduction path.
+- `sag-automation-scout`: repeated procedures and whether the decision matched
+  each time.
+- `sag-doc-updater`: facts the next reader cannot infer from code, with the file
+  and section.
+- `sag-tooling-gap-finder`: context the user supplied that an available tool or
+  skill could have fetched, with the owning skill.
+- `sag-unverified-claims-finder`: self-reported verifications and second-order
+  effects the fix missed.
+
+Then run `sag-duplicate-checker` once on all five outputs, with the repository
+path. It rejects what already exists, with the path it inspected, and creates
+nothing new. It runs after the others because its input is their output.
+
+## 4. Route what remains
+
+A report is a claim: before routing a finding, confirm the evidence it cites
+exists in the transcript. Keep a finding only if it would still be true in a
+month, would change a future decision, and names a mechanism rather than one
+incident. Drop details that drift, such as counts, versions, and line numbers.
+
+- **An existing skill:** route to it only when the transcript shows that skill was
+  invoked in the session. Otherwise the skill was not the cause: propose a change
+  to its description, or reject the finding as skill-not-used. Tooling-gap
+  findings are about a skill that did not run, so they go to the description.
+- **A document:** send `sag-doc-updater` findings to the file and section it
+  named.
+- **A check can enforce it:** if a test could fail on the problem, move the
+  finding to Backlog. Prose in a skill is read when the model chooses to; a test
+  runs every time.
+
+## 5. Present the table
+
+Show three groups and nothing else first.
+
+| Group | Each row carries |
+|---|---|
+| Accepted | The finding, its source agent, the destination file and section, the transcript evidence, and the exact edit |
+| Rejected | The finding and the reason, with the inspected location for duplicates |
+| Backlog | The finding, why a test or a larger change fits it better, and a draft of the issue text |
+
+If every group is empty, say there is nothing to carry forward and stop.
+
+## 6. Apply with approval
+
+Ask about each Accepted row separately; approval of one row is not approval of
+the next. Apply an approved row as a local edit to the named file and nothing
+more. Do not commit, push, or open anything. After the last row, show
+`git diff --stat` for the files touched, so the user can review the whole change
+at once.
+
+Filing a Backlog item in an issue tracker leaves the machine, so it needs its own
+approval per item. Without it, leave the draft text in the table.

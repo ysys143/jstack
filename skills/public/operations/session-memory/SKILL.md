@@ -136,6 +136,25 @@ sqlite3 "$SESSIONS/.metadata.db" \
 `$SESSIONS/sessions/<session-id>.md` is the export; `$SESSIONS/.metadata.db` is
 the index. Never hardcode either — a second profile moves both.
 
+### Search the current workspace by default
+
+Search only the sessions of the workspace you are working in: filter the index
+by the `project` value that matches the current repository, and point the corpus
+search at that workspace's exports. Sessions of other projects hold other
+people's decisions and other repositories' facts, and an answer that mixes them
+sounds right while describing the wrong codebase. Read another project's
+sessions only when the user asks for them, and name the projects you read.
+
+### Report what you searched, then what you found
+
+A recall answer opens with its scope: the workspace, the time range, and how
+many sessions matched. Then it lists each hit with its date, session id, and one
+status tag taken from the repository, not from the session's own account of
+itself: `[merged #N]`, `[open #N]`, `[abandoned]`, or `[unknown]` when no branch
+or pull request can be checked. A session that says "done" is a claim; the tag
+is what the repository says now. When nothing matched, the opening line still
+states the scope, so "nothing in this workspace" is not read as "nothing ever".
+
 ## The pipeline that fills those stores
 
 `bin/` holds the producer: a Rust binary that walks the session logs, converts

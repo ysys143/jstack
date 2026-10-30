@@ -12,7 +12,11 @@ known disorder with unknown disorder.
 
 ## Scope
 
-Default to the current changes (`git diff`). Broaden scope through arguments;
+Default to the files changed since the merge base
+(`git diff --name-only "$(git merge-base origin/main HEAD)"..HEAD`, with the
+repository's own base branch if it is not `origin/main`). The worktree is clean at
+this point, so a bare `git diff` would be empty. If this range is empty too, do not
+widen on your own: ask for an explicit scope. Broaden scope through arguments;
 scope is an argument, not a separate command.
 
 ## Passes
@@ -23,6 +27,19 @@ identified.
 
 Remove swallowed exceptions (axis 6) **before** deduplication (axis 5). Promoting
 a defect into a shared path spreads it to all callers.
+
+## Who runs what
+
+1. **Audit first, read-only.** The `quality-auditor` agent judges the scope and
+   returns findings by axis. Nothing is edited before it has returned.
+2. **Fix one axis per pass.** The `quality-executor` agent takes the findings of a
+   single axis, fixes only those, and re-runs the tests before the next axis starts.
+3. **Verify last.** The `quality-verifier` agent receives the diff and the original
+   target, not the executor's reasoning, runs the proving command and reads its
+   output.
+
+Without agents, do the three roles yourself in this order and say that the
+verification was not independent. The `cleanup` skill holds the rules for each.
 
 ## Boundaries
 

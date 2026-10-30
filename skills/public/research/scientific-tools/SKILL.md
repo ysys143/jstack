@@ -19,7 +19,11 @@ and medical databases, simulations, and experimental design.
 1. Choose **one** domain file from the routing table that matches the request.
 2. Read `references/<file>` to identify candidate skills.
 3. Read SKILL.md at the selected skill's `path` and **follow its instructions exactly.**
-4. If the domain is unclear, browse the full catalog in `references/_index.json`.
+4. If the domain is unclear, grep `references/_kdense-catalog.md` for the request's
+   key terms (a tool, database, method, or organism). Do not read it whole: it is
+   about 108 KB. A hit names a skill; read `repos/kdense/skills/<name>/SKILL.md`
+   (step 3). With no hit, report that the router has no match instead of guessing
+   a domain.
 
 Open only one domain file at a time. Do not preload several files.
 

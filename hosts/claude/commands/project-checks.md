@@ -47,4 +47,6 @@ checks at its documented boundaries; it does not select a formatter or authorize
 creating `pyproject.toml`. If a checker or project manifest is missing, describe
 the gap and ask separately before changing project files. A `without-setup`
 decision keeps persistent jstack project checks inactive; the user can still request
-a one-off check.
+a one-off check. An undecided project is also inactive: the hooks run no project
+checks and do not ask, so a decision is recorded only when the user runs this
+command.

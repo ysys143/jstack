@@ -1,0 +1,33 @@
+# blob:6b2151f505b8a3f19c9bbb915c7267b0d4f82550
+# Explorer brief
+Fill this in for each reader in step 2 of `SKILL.md`. A reader starts without your
+conversation, so the brief has to carry everything it needs. Several readers work
+at once on different slices; each one goes deep on its own angle and does not try
+to cover the whole subsystem.
+## What the brief states
+| Field | Content | What goes wrong without it |
+|---|---|---|
+| Question | The user's question in their words | The reader answers a neighboring question |
+| Angle | One slice of the subsystem, named by files, a flow, or a layer | Readers overlap and all describe the same entry point |
+| Out of scope | The other readers' angles, and anything not to open | Time goes into slices someone else owns |
+| Already known | What you read yourself or the user said | The reader rediscovers it, sometimes differently |
+| Mode | Read-only: never edit, create, or delete a file | A "helpful" fix changes the tree you are explaining |
+| Return shape | The sections below | You cannot merge reports of different shapes |
+## What the reader returns
+- **Components found:** the key types, services, and abstractions, each with its
+file path and one sentence on what it does.
+- **Flow:** the execution step by step. For each step, the function that runs,
+its file, what it does, what it calls next, and the data passed along.
+- **Files read:** every file opened, so the explanation can cite them.
+- **Boundaries:** where this slice meets the rest of the code, with its inputs and
+outputs.
+- **Non-obvious things:** surprises, history, and anything that looks as if it
+should work one way and works another.
+- **Open questions:** whatever the reader could not trace or understand. A gap
+reported honestly beats a guess that reads smoothly.
+- **Verdict:** `PASS` when the angle is fully traced, `ISSUES` when something
+contradicts or surprised it (listed), `BLOCKED` when it could not read what it
+needed (say what).
+## What you do with it
+Check that each report cites files. Read one or two cited locations yourself
+before you rely on a claim. A report with no files read is a claim, not a finding.

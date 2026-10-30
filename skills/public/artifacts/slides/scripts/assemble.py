@@ -58,8 +58,8 @@ def _need(mod: str):
         pkg = DEPS.get(mod, mod)
         print(
             f"Error: '{pkg}' is missing; this step cannot continue.\n"
-            f"  Install: pip install -r requirements.txt   (deck skill directory)\n"
-            f"  Or: pip install {pkg}\n"
+            f"  Install: uv pip install -r requirements.txt   (deck skill directory)\n"
+            f"  Or: uv pip install {pkg}\n"
             f"  requirements.txt lists all dependencies required by this script.",
             file=sys.stderr,
         )

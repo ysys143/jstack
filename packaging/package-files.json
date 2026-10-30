@@ -94,6 +94,14 @@
       "target": "agents/sag-learning-extractor.md"
     },
     {
+      "source": "hosts/claude/agents/sag-tooling-gap-finder.md",
+      "target": "agents/sag-tooling-gap-finder.md"
+    },
+    {
+      "source": "hosts/claude/agents/sag-unverified-claims-finder.md",
+      "target": "agents/sag-unverified-claims-finder.md"
+    },
+    {
       "source": "hosts/claude/bin/jst",
       "target": "bin/jst"
     },
@@ -244,6 +252,10 @@
     {
       "source": "hosts/claude/commands/project-checks.md",
       "target": "commands/project-checks.md"
+    },
+    {
+      "source": "hosts/claude/commands/reflect.md",
+      "target": "commands/reflect.md"
     },
     {
       "source": "hosts/claude/commands/report.md",
@@ -678,32 +690,16 @@
       "target": "hooks/block_ai_attribution.ts"
     },
     {
-      "source": "hosts/claude/hooks/block_emoji.py",
-      "target": "hooks/block_emoji.py"
-    },
-    {
       "source": "hosts/claude/hooks/block_emoji.ts",
       "target": "hooks/block_emoji.ts"
-    },
-    {
-      "source": "hosts/claude/hooks/check_marketplace_versions.py",
-      "target": "hooks/check_marketplace_versions.py"
     },
     {
       "source": "hosts/claude/hooks/check_marketplace_versions.ts",
       "target": "hooks/check_marketplace_versions.ts"
     },
     {
-      "source": "hosts/claude/hooks/check_model_versions.py",
-      "target": "hooks/check_model_versions.py"
-    },
-    {
       "source": "hosts/claude/hooks/check_model_versions.ts",
       "target": "hooks/check_model_versions.ts"
-    },
-    {
-      "source": "hosts/claude/hooks/check_readme_version.py",
-      "target": "hooks/check_readme_version.py"
     },
     {
       "source": "hosts/claude/hooks/check_readme_version.ts",
@@ -716,10 +712,6 @@
     {
       "source": "hosts/codex/hooks/codex-hooks.json",
       "target": "hooks/codex-hooks.json"
-    },
-    {
-      "source": "hosts/claude/hooks/commit-session.sh",
-      "target": "hooks/commit-session.sh"
     },
     {
       "source": "hosts/claude/hooks/commit-session.ts",
@@ -786,10 +778,6 @@
       "target": "hooks/link-jst.ts"
     },
     {
-      "source": "hosts/claude/hooks/load-recent-changes.sh",
-      "target": "hooks/load-recent-changes.sh"
-    },
-    {
       "source": "hosts/claude/hooks/load-recent-changes.ts",
       "target": "hooks/load-recent-changes.ts"
     },
@@ -806,20 +794,8 @@
       "target": "hooks/model-versions-bash.test.ts"
     },
     {
-      "source": "hosts/claude/hooks/model-versions-twins.test.ts",
-      "target": "hooks/model-versions-twins.test.ts"
-    },
-    {
-      "source": "hosts/claude/hooks/ruff_check_after_edit.py",
-      "target": "hooks/ruff_check_after_edit.py"
-    },
-    {
       "source": "hosts/claude/hooks/ruff_check_after_edit.ts",
       "target": "hooks/ruff_check_after_edit.ts"
-    },
-    {
-      "source": "hosts/claude/hooks/ruff_check_before_commit.py",
-      "target": "hooks/ruff_check_before_commit.py"
     },
     {
       "source": "hosts/claude/hooks/ruff_check_before_commit.ts",
@@ -834,24 +810,12 @@
       "target": "hooks/secret-guard.ts"
     },
     {
-      "source": "hosts/claude/hooks/validate_before_publish.sh",
-      "target": "hooks/validate_before_publish.sh"
-    },
-    {
       "source": "hosts/claude/hooks/validate_before_publish.ts",
       "target": "hooks/validate_before_publish.ts"
     },
     {
-      "source": "hosts/claude/hooks/validate_pr_label.py",
-      "target": "hooks/validate_pr_label.py"
-    },
-    {
       "source": "hosts/claude/hooks/validate_pr_label.ts",
       "target": "hooks/validate_pr_label.ts"
-    },
-    {
-      "source": "hosts/claude/hooks/validate_uv_usage.py",
-      "target": "hooks/validate_uv_usage.py"
     },
     {
       "source": "hosts/claude/hooks/validate_uv_usage.ts",
@@ -918,10 +882,6 @@
       "target": "packaging/AGENTS.package.md"
     },
     {
-      "source": "packaging/build.py",
-      "target": "packaging/build.py"
-    },
-    {
       "source": "packaging/build.test.ts",
       "target": "packaging/build.test.ts"
     },
@@ -932,10 +892,6 @@
     {
       "source": "packaging/catalog.test.ts",
       "target": "packaging/catalog.test.ts"
-    },
-    {
-      "source": "packaging/check_public.py",
-      "target": "packaging/check_public.py"
     },
     {
       "source": "packaging/check_public.test.ts",
@@ -950,16 +906,8 @@
       "target": "packaging/excluded-aliases.json"
     },
     {
-      "source": "packaging/freeze_refs.py",
-      "target": "packaging/freeze_refs.py"
-    },
-    {
       "source": "packaging/freeze_refs.ts",
       "target": "packaging/freeze_refs.ts"
-    },
-    {
-      "source": "packaging/host_probe.py",
-      "target": "packaging/host_probe.py"
     },
     {
       "source": "packaging/host_probe.ts",
@@ -972,10 +920,6 @@
     {
       "source": "packaging/interactive_probe.ts",
       "target": "packaging/interactive_probe.ts"
-    },
-    {
-      "source": "packaging/lifecycle_probe.py",
-      "target": "packaging/lifecycle_probe.py"
     },
     {
       "source": "packaging/lifecycle_probe.ts",
@@ -998,16 +942,8 @@
       "target": "packaging/product.json"
     },
     {
-      "source": "packaging/release.py",
-      "target": "packaging/release.py"
-    },
-    {
       "source": "packaging/release.ts",
       "target": "packaging/release.ts"
-    },
-    {
-      "source": "packaging/run_contracts.py",
-      "target": "packaging/run_contracts.py"
     },
     {
       "source": "packaging/run_contracts.test.ts",
@@ -1130,10 +1066,6 @@
       "target": "runtime/profile-example.json"
     },
     {
-      "source": "runtime/profiles.py",
-      "target": "runtime/profiles.py"
-    },
-    {
       "source": "runtime/profiles.test.ts",
       "target": "runtime/profiles.test.ts"
     },
@@ -1242,10 +1174,6 @@
       "target": "runtime/skill_catalog.ts"
     },
     {
-      "source": "runtime/skill_store.py",
-      "target": "runtime/skill_store.py"
-    },
-    {
       "source": "runtime/skill_store.test.ts",
       "target": "runtime/skill_store.test.ts"
     },
@@ -1294,24 +1222,12 @@
       "target": "runtime/workflow_state.ts"
     },
     {
-      "source": "scripts/check_attribution.py",
-      "target": "scripts/check_attribution.py"
-    },
-    {
       "source": "scripts/check_attribution.ts",
       "target": "scripts/check_attribution.ts"
     },
     {
-      "source": "scripts/check_cost.py",
-      "target": "scripts/check_cost.py"
-    },
-    {
       "source": "scripts/check_cost.ts",
       "target": "scripts/check_cost.ts"
-    },
-    {
-      "source": "scripts/check_floor_parity.py",
-      "target": "scripts/check_floor_parity.py"
     },
     {
       "source": "scripts/check_floor_parity.test.ts",
@@ -1322,10 +1238,6 @@
       "target": "scripts/check_floor_parity.ts"
     },
     {
-      "source": "scripts/check_hook_order.py",
-      "target": "scripts/check_hook_order.py"
-    },
-    {
       "source": "scripts/check_hook_order.ts",
       "target": "scripts/check_hook_order.ts"
     },
@@ -1334,40 +1246,20 @@
       "target": "scripts/check_jev_reachability.ts"
     },
     {
-      "source": "scripts/check_paths_regression.py",
-      "target": "scripts/check_paths_regression.py"
-    },
-    {
       "source": "scripts/check_paths_regression.ts",
       "target": "scripts/check_paths_regression.ts"
-    },
-    {
-      "source": "scripts/check_plugin_paths.py",
-      "target": "scripts/check_plugin_paths.py"
     },
     {
       "source": "scripts/check_plugin_paths.ts",
       "target": "scripts/check_plugin_paths.ts"
     },
     {
-      "source": "scripts/check_spec_refs.py",
-      "target": "scripts/check_spec_refs.py"
-    },
-    {
       "source": "scripts/check_spec_refs.ts",
       "target": "scripts/check_spec_refs.ts"
     },
     {
-      "source": "scripts/check_suite_lib_behaviour.py",
-      "target": "scripts/check_suite_lib_behaviour.py"
-    },
-    {
       "source": "scripts/check_suite_lib_behaviour.ts",
       "target": "scripts/check_suite_lib_behaviour.ts"
-    },
-    {
-      "source": "scripts/check_suite_lib_parity.py",
-      "target": "scripts/check_suite_lib_parity.py"
     },
     {
       "source": "scripts/check_suite_lib_parity.ts",
@@ -1376,10 +1268,6 @@
     {
       "source": "scripts/codecontrol.test.ts",
       "target": "scripts/codecontrol.test.ts"
-    },
-    {
-      "source": "scripts/content_contract.py",
-      "target": "scripts/content_contract.py"
     },
     {
       "source": "scripts/content_contract.test.ts",
@@ -1394,32 +1282,16 @@
       "target": "scripts/diagnostics.test.ts"
     },
     {
-      "source": "scripts/doctor-dev.sh",
-      "target": "scripts/doctor-dev.sh"
-    },
-    {
       "source": "scripts/doctor-dev.ts",
       "target": "scripts/doctor-dev.ts"
-    },
-    {
-      "source": "scripts/doctor-work.sh",
-      "target": "scripts/doctor-work.sh"
     },
     {
       "source": "scripts/doctor-work.ts",
       "target": "scripts/doctor-work.ts"
     },
     {
-      "source": "scripts/doctor.sh",
-      "target": "scripts/doctor.sh"
-    },
-    {
       "source": "scripts/doctor.ts",
       "target": "scripts/doctor.ts"
-    },
-    {
-      "source": "scripts/eval_tags.py",
-      "target": "scripts/eval_tags.py"
     },
     {
       "source": "scripts/eval_tags.ts",
@@ -1428,10 +1300,6 @@
     {
       "source": "scripts/fixture_cleanup.test.ts",
       "target": "scripts/fixture_cleanup.test.ts"
-    },
-    {
-      "source": "scripts/inspect.sh",
-      "target": "scripts/inspect.sh"
     },
     {
       "source": "scripts/inspect.ts",
@@ -1444,10 +1312,6 @@
     {
       "source": "scripts/install_skill.ts",
       "target": "scripts/install_skill.ts"
-    },
-    {
-      "source": "scripts/models_database.py",
-      "target": "scripts/models_database.py"
     },
     {
       "source": "scripts/models_database.ts",
@@ -1478,20 +1342,12 @@
       "target": "scripts/run-node-tests.mjs"
     },
     {
-      "source": "scripts/run_suites.sh",
-      "target": "scripts/run_suites.sh"
-    },
-    {
       "source": "scripts/run_suites.test.ts",
       "target": "scripts/run_suites.test.ts"
     },
     {
       "source": "scripts/run_suites.ts",
       "target": "scripts/run_suites.ts"
-    },
-    {
-      "source": "scripts/search_api.sh",
-      "target": "scripts/search_api.sh"
     },
     {
       "source": "scripts/search_api.test.ts",
@@ -1526,24 +1382,12 @@
       "target": "scripts/test_budget.ts"
     },
     {
-      "source": "scripts/update_helper.py",
-      "target": "scripts/update_helper.py"
-    },
-    {
       "source": "scripts/update_helper.ts",
       "target": "scripts/update_helper.ts"
     },
     {
-      "source": "scripts/validate.sh",
-      "target": "scripts/validate.sh"
-    },
-    {
       "source": "scripts/validate.ts",
       "target": "scripts/validate.ts"
-    },
-    {
-      "source": "skills/_suite_lib.py",
-      "target": "skills/_suite_lib.py"
     },
     {
       "source": "skills/_suite_lib.test.ts",
@@ -1650,16 +1494,8 @@
       "target": "skills/audit/tests/refs/security-exceptions.md.lines"
     },
     {
-      "source": "skills/public/workflow/review/tests/run_tests.py",
-      "target": "skills/audit/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/workflow/review/tests/run_tests.ts",
       "target": "skills/audit/tests/run_tests.ts"
-    },
-    {
-      "source": "skills/public/workflow/review/tests/test_selfrebut_exceptions.py",
-      "target": "skills/audit/tests/test_selfrebut_exceptions.py"
     },
     {
       "source": "skills/public/workflow/review/tests/test_selfrebut_exceptions.ts",
@@ -1758,10 +1594,6 @@
       "target": "skills/author/references/templates/formatting-hook-template/README.md"
     },
     {
-      "source": "skills/public/engineering/skill-creator/references/templates/formatting-hook-template/format.sh",
-      "target": "skills/author/references/templates/formatting-hook-template/format.sh"
-    },
-    {
       "source": "skills/public/engineering/skill-creator/references/templates/formatting-hook-template/format.ts",
       "target": "skills/author/references/templates/formatting-hook-template/format.ts"
     },
@@ -1784,10 +1616,6 @@
     {
       "source": "skills/public/engineering/skill-creator/references/templates/notification-hook-template/hooks.json",
       "target": "skills/author/references/templates/notification-hook-template/hooks.json"
-    },
-    {
-      "source": "skills/public/engineering/skill-creator/references/templates/notification-hook-template/notify.sh",
-      "target": "skills/author/references/templates/notification-hook-template/notify.sh"
     },
     {
       "source": "skills/public/engineering/skill-creator/references/templates/notification-hook-template/notify.ts",
@@ -1814,10 +1642,6 @@
       "target": "skills/author/references/templates/validation-hook-template/package.json"
     },
     {
-      "source": "skills/public/engineering/skill-creator/references/templates/validation-hook-template/validate_template.py",
-      "target": "skills/author/references/templates/validation-hook-template/validate_template.py"
-    },
-    {
       "source": "skills/public/engineering/skill-creator/references/templates/validation-hook-template/validate_template.ts",
       "target": "skills/author/references/templates/validation-hook-template/validate_template.ts"
     },
@@ -1834,32 +1658,16 @@
       "target": "skills/author/scripts/_author_common.ts"
     },
     {
-      "source": "skills/public/engineering/skill-creator/scripts/check_package_surface.py",
-      "target": "skills/author/scripts/check_package_surface.py"
-    },
-    {
       "source": "skills/public/engineering/skill-creator/scripts/check_package_surface.ts",
       "target": "skills/author/scripts/check_package_surface.ts"
-    },
-    {
-      "source": "skills/public/engineering/skill-creator/scripts/list_plugins.sh",
-      "target": "skills/author/scripts/list_plugins.sh"
     },
     {
       "source": "skills/public/engineering/skill-creator/scripts/list_plugins.ts",
       "target": "skills/author/scripts/list_plugins.ts"
     },
     {
-      "source": "skills/public/engineering/skill-creator/scripts/register_local.sh",
-      "target": "skills/author/scripts/register_local.sh"
-    },
-    {
       "source": "skills/public/engineering/skill-creator/scripts/register_local.ts",
       "target": "skills/author/scripts/register_local.ts"
-    },
-    {
-      "source": "skills/public/engineering/skill-creator/scripts/scaffold_plugin.sh",
-      "target": "skills/author/scripts/scaffold_plugin.sh"
     },
     {
       "source": "skills/public/engineering/skill-creator/scripts/scaffold_plugin.ts",
@@ -2038,16 +1846,8 @@
       "target": "skills/author/scripts/tests/fixtures/positive/typo-key-plugin/commands/typo.md"
     },
     {
-      "source": "skills/public/engineering/skill-creator/scripts/tests/run_fixtures.py",
-      "target": "skills/author/scripts/tests/run_fixtures.py"
-    },
-    {
       "source": "skills/public/engineering/skill-creator/scripts/tests/run_fixtures.ts",
       "target": "skills/author/scripts/tests/run_fixtures.ts"
-    },
-    {
-      "source": "skills/public/engineering/skill-creator/scripts/validate_plugin.sh",
-      "target": "skills/author/scripts/validate_plugin.sh"
     },
     {
       "source": "skills/public/engineering/skill-creator/scripts/validate_plugin.ts",
@@ -2170,16 +1970,28 @@
       "target": "skills/author/tests/refs/templates/wizard-command-template.md.lines"
     },
     {
-      "source": "skills/public/engineering/skill-creator/tests/run_tests.py",
-      "target": "skills/author/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/engineering/skill-creator/tests/run_tests.ts",
       "target": "skills/author/tests/run_tests.ts"
     },
     {
       "source": "skills/public/engineering/skill-creator/tests/validate_plugin.test.ts",
       "target": "skills/author/tests/validate_plugin.test.ts"
+    },
+    {
+      "source": "skills/public/engineering/benchmark-checklist/NOTICE",
+      "target": "skills/benchmark-checklist/NOTICE"
+    },
+    {
+      "source": "skills/public/engineering/benchmark-checklist/SKILL.md",
+      "target": "skills/benchmark-checklist/SKILL.md"
+    },
+    {
+      "source": "skills/public/engineering/benchmark-checklist/tests/refs/SKILL.md.lines",
+      "target": "skills/benchmark-checklist/tests/refs/SKILL.md.lines"
+    },
+    {
+      "source": "skills/public/engineering/benchmark-checklist/tests/run_tests.ts",
+      "target": "skills/benchmark-checklist/tests/run_tests.ts"
     },
     {
       "source": "hosts/codex/skills/support/runtime-adaptation/SKILL.md",
@@ -2194,24 +2006,12 @@
       "target": "skills/bridge/references/probe-recipes.md"
     },
     {
-      "source": "skills/support/runtime-adaptation/scripts/export.py",
-      "target": "skills/bridge/scripts/export.py"
-    },
-    {
       "source": "skills/support/runtime-adaptation/scripts/export.ts",
       "target": "skills/bridge/scripts/export.ts"
     },
     {
-      "source": "skills/support/runtime-adaptation/scripts/install.py",
-      "target": "skills/bridge/scripts/install.py"
-    },
-    {
       "source": "skills/support/runtime-adaptation/scripts/install.ts",
       "target": "skills/bridge/scripts/install.ts"
-    },
-    {
-      "source": "skills/support/runtime-adaptation/scripts/probe.sh",
-      "target": "skills/bridge/scripts/probe.sh"
     },
     {
       "source": "skills/support/runtime-adaptation/scripts/probe.ts",
@@ -2238,16 +2038,8 @@
       "target": "skills/bridge/tests/refs/probe-recipes.md.lines"
     },
     {
-      "source": "skills/support/runtime-adaptation/tests/run_tests.py",
-      "target": "skills/bridge/tests/run_tests.py"
-    },
-    {
       "source": "skills/support/runtime-adaptation/tests/run_tests.ts",
       "target": "skills/bridge/tests/run_tests.ts"
-    },
-    {
-      "source": "skills/support/runtime-adaptation/tests/test_export.py",
-      "target": "skills/bridge/tests/test_export.py"
     },
     {
       "source": "skills/support/runtime-adaptation/tests/test_export.ts",
@@ -2272,10 +2064,6 @@
     {
       "source": "skills/public/engineering/refactor/references/wave-protocol.md",
       "target": "skills/cleanup/references/wave-protocol.md"
-    },
-    {
-      "source": "skills/public/engineering/refactor/scripts/cap_findings.py",
-      "target": "skills/cleanup/scripts/cap_findings.py"
     },
     {
       "source": "skills/public/engineering/refactor/scripts/cap_findings.ts",
@@ -2306,10 +2094,6 @@
       "target": "skills/cleanup/tests/refs/wave-protocol.md.lines"
     },
     {
-      "source": "skills/public/engineering/refactor/tests/run_tests.py",
-      "target": "skills/cleanup/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/engineering/refactor/tests/run_tests.ts",
       "target": "skills/cleanup/tests/run_tests.ts"
     },
@@ -2326,10 +2110,6 @@
       "target": "skills/consult/references/framing.md"
     },
     {
-      "source": "skills/public/workflow/second-opinion/references/gemini.md",
-      "target": "skills/consult/references/gemini.md"
-    },
-    {
       "source": "skills/public/workflow/second-opinion/references/synthesis-guide.md",
       "target": "skills/consult/references/synthesis-guide.md"
     },
@@ -2338,32 +2118,12 @@
       "target": "skills/consult/scripts/bridge-common.ts"
     },
     {
-      "source": "skills/public/workflow/second-opinion/scripts/check-cli.sh",
-      "target": "skills/consult/scripts/check-cli.sh"
-    },
-    {
       "source": "skills/public/workflow/second-opinion/scripts/check-cli.ts",
       "target": "skills/consult/scripts/check-cli.ts"
     },
     {
-      "source": "skills/public/workflow/second-opinion/scripts/council-bridge.sh",
-      "target": "skills/consult/scripts/council-bridge.sh"
-    },
-    {
       "source": "skills/public/workflow/second-opinion/scripts/council-bridge.ts",
       "target": "skills/consult/scripts/council-bridge.ts"
-    },
-    {
-      "source": "skills/public/workflow/second-opinion/scripts/gemini-bridge.sh",
-      "target": "skills/consult/scripts/gemini-bridge.sh"
-    },
-    {
-      "source": "skills/public/workflow/second-opinion/scripts/gemini-bridge.ts",
-      "target": "skills/consult/scripts/gemini-bridge.ts"
-    },
-    {
-      "source": "skills/public/workflow/second-opinion/scripts/parse-output.sh",
-      "target": "skills/consult/scripts/parse-output.sh"
     },
     {
       "source": "skills/public/workflow/second-opinion/scripts/parse-output.ts",
@@ -2386,16 +2146,8 @@
       "target": "skills/consult/tests/refs/framing.md.lines"
     },
     {
-      "source": "skills/public/workflow/second-opinion/tests/refs/gemini.md.lines",
-      "target": "skills/consult/tests/refs/gemini.md.lines"
-    },
-    {
       "source": "skills/public/workflow/second-opinion/tests/refs/synthesis-guide.md.lines",
       "target": "skills/consult/tests/refs/synthesis-guide.md.lines"
-    },
-    {
-      "source": "skills/public/workflow/second-opinion/tests/run_tests.py",
-      "target": "skills/consult/tests/run_tests.py"
     },
     {
       "source": "skills/public/workflow/second-opinion/tests/run_tests.ts",
@@ -2420,6 +2172,34 @@
     {
       "source": "skills/public/engineering/create-formal-verification-skill/tests/run_tests.ts",
       "target": "skills/create-formal-verification-skill/tests/run_tests.ts"
+    },
+    {
+      "source": "skills/public/workflow/create-verification-skill/NOTICE",
+      "target": "skills/create-verification-skill/NOTICE"
+    },
+    {
+      "source": "skills/public/workflow/create-verification-skill/SKILL.md",
+      "target": "skills/create-verification-skill/SKILL.md"
+    },
+    {
+      "source": "skills/public/workflow/create-verification-skill/references/feature-map-example/README.md",
+      "target": "skills/create-verification-skill/references/feature-map-example/README.md"
+    },
+    {
+      "source": "skills/public/workflow/create-verification-skill/references/feature-map-example/add-item.md",
+      "target": "skills/create-verification-skill/references/feature-map-example/add-item.md"
+    },
+    {
+      "source": "skills/public/workflow/create-verification-skill/references/feature-map-example/find-item.md",
+      "target": "skills/create-verification-skill/references/feature-map-example/find-item.md"
+    },
+    {
+      "source": "skills/public/workflow/create-verification-skill/tests/refs/SKILL.md.lines",
+      "target": "skills/create-verification-skill/tests/refs/SKILL.md.lines"
+    },
+    {
+      "source": "skills/public/workflow/create-verification-skill/tests/run_tests.ts",
+      "target": "skills/create-verification-skill/tests/run_tests.ts"
     },
     {
       "source": "skills/public/engineering/dag-it/NOTICE",
@@ -3630,10 +3410,6 @@
       "target": "skills/dashboard/tests/refs/recovery.md.lines"
     },
     {
-      "source": "skills/public/operations/dashboard/tests/run_tests.py",
-      "target": "skills/dashboard/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/operations/dashboard/tests/run_tests.ts",
       "target": "skills/dashboard/tests/run_tests.ts"
     },
@@ -3652,10 +3428,6 @@
     {
       "source": "skills/public/workflow/record-decision/tests/refs/SKILL.md.lines",
       "target": "skills/decide/tests/refs/SKILL.md.lines"
-    },
-    {
-      "source": "skills/public/workflow/record-decision/tests/run_tests.py",
-      "target": "skills/decide/tests/run_tests.py"
     },
     {
       "source": "skills/public/workflow/record-decision/tests/run_tests.ts",
@@ -3858,10 +3630,6 @@
       "target": "skills/deck/scripts/assemble.py"
     },
     {
-      "source": "skills/public/artifacts/slides/scripts/ensure_marp.sh",
-      "target": "skills/deck/scripts/ensure_marp.sh"
-    },
-    {
       "source": "skills/public/artifacts/slides/scripts/ensure_marp.ts",
       "target": "skills/deck/scripts/ensure_marp.ts"
     },
@@ -3886,24 +3654,12 @@
       "target": "skills/deck/tests/refs/styles.md.lines"
     },
     {
-      "source": "skills/public/artifacts/slides/tests/run_tests.py",
-      "target": "skills/deck/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/artifacts/slides/tests/run_tests.ts",
       "target": "skills/deck/tests/run_tests.ts"
     },
     {
-      "source": "skills/public/artifacts/slides/tests/test_slop_axes.py",
-      "target": "skills/deck/tests/test_slop_axes.py"
-    },
-    {
       "source": "skills/public/artifacts/slides/tests/test_slop_axes.ts",
       "target": "skills/deck/tests/test_slop_axes.ts"
-    },
-    {
-      "source": "skills/public/artifacts/slides/tests/test_style_fonts.py",
-      "target": "skills/deck/tests/test_style_fonts.py"
     },
     {
       "source": "skills/public/artifacts/slides/tests/test_style_fonts.ts",
@@ -3914,20 +3670,12 @@
       "target": "skills/delegate/SKILL.md"
     },
     {
-      "source": "skills/support/task-delegation/scripts/codex-bridge.sh",
-      "target": "skills/delegate/scripts/codex-bridge.sh"
-    },
-    {
       "source": "skills/support/task-delegation/scripts/codex-bridge.ts",
       "target": "skills/delegate/scripts/codex-bridge.ts"
     },
     {
       "source": "skills/support/task-delegation/tests/refs/SKILL.md.lines",
       "target": "skills/delegate/tests/refs/SKILL.md.lines"
-    },
-    {
-      "source": "skills/support/task-delegation/tests/run_tests.py",
-      "target": "skills/delegate/tests/run_tests.py"
     },
     {
       "source": "skills/support/task-delegation/tests/run_tests.ts",
@@ -5006,40 +4754,20 @@
       "target": "skills/diagram/repos/diagram-design/skills/diagram-design/scripts/self_check.py"
     },
     {
-      "source": "skills/public/artifacts/svg-diagram/scripts/check_effective_size.py",
-      "target": "skills/diagram/scripts/check_effective_size.py"
-    },
-    {
       "source": "skills/public/artifacts/svg-diagram/scripts/check_effective_size.ts",
       "target": "skills/diagram/scripts/check_effective_size.ts"
-    },
-    {
-      "source": "skills/public/artifacts/svg-diagram/scripts/encode_drawio_url.py",
-      "target": "skills/diagram/scripts/encode_drawio_url.py"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/scripts/encode_drawio_url.ts",
       "target": "skills/diagram/scripts/encode_drawio_url.ts"
     },
     {
-      "source": "skills/public/artifacts/svg-diagram/scripts/export_scale.py",
-      "target": "skills/diagram/scripts/export_scale.py"
-    },
-    {
       "source": "skills/public/artifacts/svg-diagram/scripts/export_scale.ts",
       "target": "skills/diagram/scripts/export_scale.ts"
     },
     {
-      "source": "skills/public/artifacts/svg-diagram/scripts/measure_label.py",
-      "target": "skills/diagram/scripts/measure_label.py"
-    },
-    {
       "source": "skills/public/artifacts/svg-diagram/scripts/measure_label.ts",
       "target": "skills/diagram/scripts/measure_label.ts"
-    },
-    {
-      "source": "skills/public/artifacts/svg-diagram/scripts/repair_png.py",
-      "target": "skills/diagram/scripts/repair_png.py"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/scripts/repair_png.ts",
@@ -5050,32 +4778,16 @@
       "target": "skills/diagram/scripts/subset_fonts.py"
     },
     {
-      "source": "skills/public/artifacts/svg-diagram/scripts/test-verify-geometry.py",
-      "target": "skills/diagram/scripts/test-verify-geometry.py"
-    },
-    {
       "source": "skills/public/artifacts/svg-diagram/scripts/test-verify-geometry.ts",
       "target": "skills/diagram/scripts/test-verify-geometry.ts"
-    },
-    {
-      "source": "skills/public/artifacts/svg-diagram/scripts/verify-connectors.py",
-      "target": "skills/diagram/scripts/verify-connectors.py"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/scripts/verify-connectors.ts",
       "target": "skills/diagram/scripts/verify-connectors.ts"
     },
     {
-      "source": "skills/public/artifacts/svg-diagram/scripts/verify-geometry.py",
-      "target": "skills/diagram/scripts/verify-geometry.py"
-    },
-    {
       "source": "skills/public/artifacts/svg-diagram/scripts/verify-geometry.ts",
       "target": "skills/diagram/scripts/verify-geometry.ts"
-    },
-    {
-      "source": "skills/public/artifacts/svg-diagram/scripts/verify-text-width.py",
-      "target": "skills/diagram/scripts/verify-text-width.py"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/scripts/verify-text-width.ts",
@@ -5130,16 +4842,8 @@
       "target": "skills/diagram/tests/refs/upstream-integration.md.lines"
     },
     {
-      "source": "skills/public/artifacts/svg-diagram/tests/run_tests.py",
-      "target": "skills/diagram/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/artifacts/svg-diagram/tests/run_tests.ts",
       "target": "skills/diagram/tests/run_tests.ts"
-    },
-    {
-      "source": "skills/public/artifacts/svg-diagram/tests/test_cjk_contract.py",
-      "target": "skills/diagram/tests/test_cjk_contract.py"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/tests/test_cjk_contract.ts",
@@ -5170,6 +4874,10 @@
       "target": "skills/disk-manager/references/macos.md"
     },
     {
+      "source": "skills/public/operations/disk-manager/references/worktrees.md",
+      "target": "skills/disk-manager/references/worktrees.md"
+    },
+    {
       "source": "skills/public/operations/disk-manager/scripts/history.ts",
       "target": "skills/disk-manager/scripts/history.ts"
     },
@@ -5188,6 +4896,10 @@
     {
       "source": "skills/public/operations/disk-manager/scripts/storage.ts",
       "target": "skills/disk-manager/scripts/storage.ts"
+    },
+    {
+      "source": "skills/public/operations/disk-manager/scripts/worktree_audit.ts",
+      "target": "skills/disk-manager/scripts/worktree_audit.ts"
     },
     {
       "source": "skills/public/operations/disk-manager/templates/aliases.zsh",
@@ -5226,16 +4938,16 @@
       "target": "skills/disk-manager/tests/snapshot.test.ts"
     },
     {
+      "source": "skills/public/operations/disk-manager/tests/worktree-audit.test.ts",
+      "target": "skills/disk-manager/tests/worktree-audit.test.ts"
+    },
+    {
       "source": "skills/support/emoji-policy/SKILL.md",
       "target": "skills/emoji/SKILL.md"
     },
     {
       "source": "skills/support/emoji-policy/tests/refs/SKILL.md.lines",
       "target": "skills/emoji/tests/refs/SKILL.md.lines"
-    },
-    {
-      "source": "skills/support/emoji-policy/tests/run_tests.py",
-      "target": "skills/emoji/tests/run_tests.py"
     },
     {
       "source": "skills/support/emoji-policy/tests/run_tests.ts",
@@ -5260,10 +4972,6 @@
     {
       "source": "skills/support/git-conventions/references/secrets.md",
       "target": "skills/gitrules/references/secrets.md"
-    },
-    {
-      "source": "skills/support/git-conventions/scripts/check_commit.py",
-      "target": "skills/gitrules/scripts/check_commit.py"
     },
     {
       "source": "skills/support/git-conventions/scripts/check_commit.ts",
@@ -5294,27 +5002,19 @@
       "target": "skills/gitrules/tests/refs/secrets.md.lines"
     },
     {
-      "source": "skills/support/git-conventions/tests/run_tests.py",
-      "target": "skills/gitrules/tests/run_tests.py"
-    },
-    {
       "source": "skills/support/git-conventions/tests/run_tests.ts",
       "target": "skills/gitrules/tests/run_tests.ts"
     },
     {
-      "source": "skills/support/catalog-help/SKILL.md",
+      "source": "skills/support/jstack-help/SKILL.md",
       "target": "skills/help/SKILL.md"
     },
     {
-      "source": "skills/support/catalog-help/tests/refs/SKILL.md.lines",
+      "source": "skills/support/jstack-help/tests/refs/SKILL.md.lines",
       "target": "skills/help/tests/refs/SKILL.md.lines"
     },
     {
-      "source": "skills/support/catalog-help/tests/run_tests.py",
-      "target": "skills/help/tests/run_tests.py"
-    },
-    {
-      "source": "skills/support/catalog-help/tests/run_tests.ts",
+      "source": "skills/support/jstack-help/tests/run_tests.ts",
       "target": "skills/help/tests/run_tests.ts"
     },
     {
@@ -5372,6 +5072,38 @@
     {
       "source": "skills/support/host-audit/tests/run_tests.ts",
       "target": "skills/host-audit/tests/run_tests.ts"
+    },
+    {
+      "source": "skills/public/engineering/how/NOTICE",
+      "target": "skills/how/NOTICE"
+    },
+    {
+      "source": "skills/public/engineering/how/SKILL.md",
+      "target": "skills/how/SKILL.md"
+    },
+    {
+      "source": "skills/public/engineering/how/references/explanation-format.md",
+      "target": "skills/how/references/explanation-format.md"
+    },
+    {
+      "source": "skills/public/engineering/how/references/explorer-brief.md",
+      "target": "skills/how/references/explorer-brief.md"
+    },
+    {
+      "source": "skills/public/engineering/how/tests/refs/SKILL.md.lines",
+      "target": "skills/how/tests/refs/SKILL.md.lines"
+    },
+    {
+      "source": "skills/public/engineering/how/tests/refs/explanation-format.md.lines",
+      "target": "skills/how/tests/refs/explanation-format.md.lines"
+    },
+    {
+      "source": "skills/public/engineering/how/tests/refs/explorer-brief.md.lines",
+      "target": "skills/how/tests/refs/explorer-brief.md.lines"
+    },
+    {
+      "source": "skills/public/engineering/how/tests/run_tests.ts",
+      "target": "skills/how/tests/run_tests.ts"
     },
     {
       "source": "skills/public/artifacts/humanize/LICENSE.dodaeri",
@@ -5518,10 +5250,6 @@
       "target": "skills/humanize/scripts/_common.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/scripts/audit_measures.py",
-      "target": "skills/humanize/scripts/audit_measures.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/scripts/audit_measures.ts",
       "target": "skills/humanize/scripts/audit_measures.ts"
     },
@@ -5538,72 +5266,36 @@
       "target": "skills/humanize/scripts/golden_checks.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/scripts/lint_taxonomy.py",
-      "target": "skills/humanize/scripts/lint_taxonomy.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/scripts/lint_taxonomy.ts",
       "target": "skills/humanize/scripts/lint_taxonomy.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/scripts/metrics.py",
-      "target": "skills/humanize/scripts/metrics.py"
     },
     {
       "source": "skills/public/artifacts/humanize/scripts/metrics.ts",
       "target": "skills/humanize/scripts/metrics.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/scripts/metrics_v1.py",
-      "target": "skills/humanize/scripts/metrics_v1.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/scripts/metrics_v1.ts",
       "target": "skills/humanize/scripts/metrics_v1.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/scripts/metrics_v2.py",
-      "target": "skills/humanize/scripts/metrics_v2.py"
     },
     {
       "source": "skills/public/artifacts/humanize/scripts/metrics_v2.ts",
       "target": "skills/humanize/scripts/metrics_v2.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/scripts/prescan.py",
-      "target": "skills/humanize/scripts/prescan.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/scripts/prescan.ts",
       "target": "skills/humanize/scripts/prescan.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/scripts/reconcile.py",
-      "target": "skills/humanize/scripts/reconcile.py"
     },
     {
       "source": "skills/public/artifacts/humanize/scripts/reconcile.ts",
       "target": "skills/humanize/scripts/reconcile.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/scripts/req_coverage.py",
-      "target": "skills/humanize/scripts/req_coverage.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/scripts/req_coverage.ts",
       "target": "skills/humanize/scripts/req_coverage.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/scripts/taxonomy_rules.py",
-      "target": "skills/humanize/scripts/taxonomy_rules.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/scripts/taxonomy_rules.ts",
       "target": "skills/humanize/scripts/taxonomy_rules.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/scripts/verify_gates.py",
-      "target": "skills/humanize/scripts/verify_gates.py"
     },
     {
       "source": "skills/public/artifacts/humanize/scripts/verify_gates.ts",
@@ -5738,64 +5430,32 @@
       "target": "skills/humanize/tests/refs/taxonomy-codespace.md.lines"
     },
     {
-      "source": "skills/public/artifacts/humanize/tests/run_tests.py",
-      "target": "skills/humanize/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/tests/run_tests.ts",
       "target": "skills/humanize/tests/run_tests.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/tests/test_content_contract.py",
-      "target": "skills/humanize/tests/test_content_contract.py"
     },
     {
       "source": "skills/public/artifacts/humanize/tests/test_content_contract.ts",
       "target": "skills/humanize/tests/test_content_contract.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/tests/test_e2_exemption.py",
-      "target": "skills/humanize/tests/test_e2_exemption.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/tests/test_e2_exemption.ts",
       "target": "skills/humanize/tests/test_e2_exemption.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/tests/test_gaejosik_attribution.py",
-      "target": "skills/humanize/tests/test_gaejosik_attribution.py"
     },
     {
       "source": "skills/public/artifacts/humanize/tests/test_gaejosik_attribution.ts",
       "target": "skills/humanize/tests/test_gaejosik_attribution.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/tests/test_noslop_exemptions.py",
-      "target": "skills/humanize/tests/test_noslop_exemptions.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/tests/test_noslop_exemptions.ts",
       "target": "skills/humanize/tests/test_noslop_exemptions.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/tests/test_outcomes_schema.py",
-      "target": "skills/humanize/tests/test_outcomes_schema.py"
     },
     {
       "source": "skills/public/artifacts/humanize/tests/test_outcomes_schema.ts",
       "target": "skills/humanize/tests/test_outcomes_schema.ts"
     },
     {
-      "source": "skills/public/artifacts/humanize/tests/test_register_axis.py",
-      "target": "skills/humanize/tests/test_register_axis.py"
-    },
-    {
       "source": "skills/public/artifacts/humanize/tests/test_register_axis.ts",
       "target": "skills/humanize/tests/test_register_axis.ts"
-    },
-    {
-      "source": "skills/public/artifacts/humanize/tests/test_req_coverage.py",
-      "target": "skills/humanize/tests/test_req_coverage.py"
     },
     {
       "source": "skills/public/artifacts/humanize/tests/test_req_coverage.ts",
@@ -5828,10 +5488,6 @@
     {
       "source": "skills/public/artifacts/hwpx-document/assets/fixtures/minimal.md",
       "target": "skills/hwpx/assets/fixtures/minimal.md"
-    },
-    {
-      "source": "skills/public/artifacts/hwpx-document/hooks/hwpx_guard.py",
-      "target": "skills/hwpx/hooks/hwpx_guard.py"
     },
     {
       "source": "skills/public/artifacts/hwpx-document/hooks/hwpx_guard.test.ts",
@@ -5912,10 +5568,6 @@
     {
       "source": "skills/public/artifacts/hwpx-document/scripts/build_hwpx.py",
       "target": "skills/hwpx/scripts/build_hwpx.py"
-    },
-    {
-      "source": "skills/public/artifacts/hwpx-document/scripts/ensure_hwpx.sh",
-      "target": "skills/hwpx/scripts/ensure_hwpx.sh"
     },
     {
       "source": "skills/public/artifacts/hwpx-document/scripts/ensure_hwpx.ts",
@@ -6082,10 +5734,6 @@
       "target": "skills/hwpx/tests/refs/xml-structure.md.lines"
     },
     {
-      "source": "skills/public/artifacts/hwpx-document/tests/run_tests.py",
-      "target": "skills/hwpx/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/artifacts/hwpx-document/tests/run_tests.ts",
       "target": "skills/hwpx/tests/run_tests.ts"
     },
@@ -6118,10 +5766,6 @@
       "target": "skills/image/scripts/nanobanana.py"
     },
     {
-      "source": "skills/public/artifacts/image-generation/scripts/probe_backends.sh",
-      "target": "skills/image/scripts/probe_backends.sh"
-    },
-    {
       "source": "skills/public/artifacts/image-generation/scripts/probe_backends.ts",
       "target": "skills/image/scripts/probe_backends.ts"
     },
@@ -6136,10 +5780,6 @@
     {
       "source": "skills/public/artifacts/image-generation/tests/refs/prompts.md.lines",
       "target": "skills/image/tests/refs/prompts.md.lines"
-    },
-    {
-      "source": "skills/public/artifacts/image-generation/tests/run_tests.py",
-      "target": "skills/image/tests/run_tests.py"
     },
     {
       "source": "skills/public/artifacts/image-generation/tests/run_tests.ts",
@@ -7830,6 +7470,42 @@
       "target": "skills/journey-qa/tests/upstream_check.test.ts"
     },
     {
+      "source": "skills/public/engineering/maintain-formal-verification-skill/NOTICE",
+      "target": "skills/maintain-formal-verification-skill/NOTICE"
+    },
+    {
+      "source": "skills/public/engineering/maintain-formal-verification-skill/SKILL.md",
+      "target": "skills/maintain-formal-verification-skill/SKILL.md"
+    },
+    {
+      "source": "skills/public/engineering/maintain-formal-verification-skill/repos/pstack/LICENSE",
+      "target": "skills/maintain-formal-verification-skill/repos/pstack/LICENSE"
+    },
+    {
+      "source": "skills/public/engineering/maintain-formal-verification-skill/repos/pstack/skills/maintain-formal-verification-skill/SKILL.md",
+      "target": "skills/maintain-formal-verification-skill/repos/pstack/skills/maintain-formal-verification-skill/SKILL.md"
+    },
+    {
+      "source": "skills/public/engineering/maintain-formal-verification-skill/tests/run_tests.ts",
+      "target": "skills/maintain-formal-verification-skill/tests/run_tests.ts"
+    },
+    {
+      "source": "skills/public/workflow/maintain-verification-skill/NOTICE",
+      "target": "skills/maintain-verification-skill/NOTICE"
+    },
+    {
+      "source": "skills/public/workflow/maintain-verification-skill/SKILL.md",
+      "target": "skills/maintain-verification-skill/SKILL.md"
+    },
+    {
+      "source": "skills/public/workflow/maintain-verification-skill/tests/refs/SKILL.md.lines",
+      "target": "skills/maintain-verification-skill/tests/refs/SKILL.md.lines"
+    },
+    {
+      "source": "skills/public/workflow/maintain-verification-skill/tests/run_tests.ts",
+      "target": "skills/maintain-verification-skill/tests/run_tests.ts"
+    },
+    {
       "source": "skills/support/model-selection/SKILL.md",
       "target": "skills/models/SKILL.md"
     },
@@ -7858,10 +7534,6 @@
       "target": "skills/models/tests/routing_runtime.ts"
     },
     {
-      "source": "skills/support/model-selection/tests/run_tests.py",
-      "target": "skills/models/tests/run_tests.py"
-    },
-    {
       "source": "skills/support/model-selection/tests/run_tests.ts",
       "target": "skills/models/tests/run_tests.ts"
     },
@@ -7870,16 +7542,8 @@
       "target": "skills/office/SKILL.md"
     },
     {
-      "source": "skills/public/artifacts/office-documents/scripts/check_cjk_font.py",
-      "target": "skills/office/scripts/check_cjk_font.py"
-    },
-    {
       "source": "skills/public/artifacts/office-documents/scripts/check_cjk_font.ts",
       "target": "skills/office/scripts/check_cjk_font.ts"
-    },
-    {
-      "source": "skills/public/artifacts/office-documents/scripts/ensure_officecli.sh",
-      "target": "skills/office/scripts/ensure_officecli.sh"
     },
     {
       "source": "skills/public/artifacts/office-documents/scripts/ensure_officecli.ts",
@@ -7898,16 +7562,8 @@
       "target": "skills/office/tests/refs/SKILL.md.lines"
     },
     {
-      "source": "skills/public/artifacts/office-documents/tests/run_tests.py",
-      "target": "skills/office/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/artifacts/office-documents/tests/run_tests.ts",
       "target": "skills/office/tests/run_tests.ts"
-    },
-    {
-      "source": "skills/public/artifacts/office-documents/tests/test_router.py",
-      "target": "skills/office/tests/test_router.py"
     },
     {
       "source": "skills/public/artifacts/office-documents/tests/test_router.ts",
@@ -7954,10 +7610,6 @@
       "target": "skills/plan/references/slice-shape.md"
     },
     {
-      "source": "skills/public/workflow/plan/scripts/contract_lint.py",
-      "target": "skills/plan/scripts/contract_lint.py"
-    },
-    {
       "source": "skills/public/workflow/plan/scripts/contract_lint.ts",
       "target": "skills/plan/scripts/contract_lint.ts"
     },
@@ -7994,10 +7646,6 @@
       "target": "skills/plan/tests/refs/slice-shape.md.lines"
     },
     {
-      "source": "skills/public/workflow/plan/tests/run_tests.py",
-      "target": "skills/plan/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/workflow/plan/tests/run_tests.ts",
       "target": "skills/plan/tests/run_tests.ts"
     },
@@ -8026,10 +7674,6 @@
       "target": "skills/proof/scripts/korean_character_count.py"
     },
     {
-      "source": "skills/public/artifacts/korean-proofread/scripts/korean_spell_check.py",
-      "target": "skills/proof/scripts/korean_spell_check.py"
-    },
-    {
       "source": "skills/public/artifacts/korean-proofread/scripts/korean_spell_check.ts",
       "target": "skills/proof/scripts/korean_spell_check.ts"
     },
@@ -8050,10 +7694,6 @@
       "target": "skills/proof/tests/refs/spell-check.md.lines"
     },
     {
-      "source": "skills/public/artifacts/korean-proofread/tests/run_tests.py",
-      "target": "skills/proof/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/artifacts/korean-proofread/tests/run_tests.ts",
       "target": "skills/proof/tests/run_tests.ts"
     },
@@ -8064,10 +7704,6 @@
     {
       "source": "skills/public/engineering/remove-capability/references/removal-checklist.md",
       "target": "skills/prune/references/removal-checklist.md"
-    },
-    {
-      "source": "skills/public/engineering/remove-capability/scripts/prune.py",
-      "target": "skills/prune/scripts/prune.py"
     },
     {
       "source": "skills/public/engineering/remove-capability/scripts/prune.ts",
@@ -8084,10 +7720,6 @@
     {
       "source": "skills/public/engineering/remove-capability/tests/refs/removal-checklist.md.lines",
       "target": "skills/prune/tests/refs/removal-checklist.md.lines"
-    },
-    {
-      "source": "skills/public/engineering/remove-capability/tests/run_tests.py",
-      "target": "skills/prune/tests/run_tests.py"
     },
     {
       "source": "skills/public/engineering/remove-capability/tests/run_tests.ts",
@@ -8438,10 +8070,6 @@
       "target": "skills/react/tests/refs/applying.md.lines"
     },
     {
-      "source": "skills/public/engineering/react-performance/tests/run_tests.py",
-      "target": "skills/react/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/engineering/react-performance/tests/run_tests.ts",
       "target": "skills/react/tests/run_tests.ts"
     },
@@ -8482,32 +8110,16 @@
       "target": "skills/recall/references/staleness.md"
     },
     {
-      "source": "skills/public/operations/session-memory/scripts/migrate_sessions.py",
-      "target": "skills/recall/scripts/migrate_sessions.py"
-    },
-    {
       "source": "skills/public/operations/session-memory/scripts/migrate_sessions.ts",
       "target": "skills/recall/scripts/migrate_sessions.ts"
-    },
-    {
-      "source": "skills/public/operations/session-memory/scripts/session_migration/claude.py",
-      "target": "skills/recall/scripts/session_migration/claude.py"
     },
     {
       "source": "skills/public/operations/session-memory/scripts/session_migration/claude.ts",
       "target": "skills/recall/scripts/session_migration/claude.ts"
     },
     {
-      "source": "skills/public/operations/session-memory/scripts/session_migration/codex.py",
-      "target": "skills/recall/scripts/session_migration/codex.py"
-    },
-    {
       "source": "skills/public/operations/session-memory/scripts/session_migration/codex.ts",
       "target": "skills/recall/scripts/session_migration/codex.ts"
-    },
-    {
-      "source": "skills/public/operations/session-memory/scripts/session_migration/common.py",
-      "target": "skills/recall/scripts/session_migration/common.py"
     },
     {
       "source": "skills/public/operations/session-memory/scripts/session_migration/common.ts",
@@ -8536,10 +8148,6 @@
     {
       "source": "skills/public/operations/session-memory/tests/refs/staleness.md.lines",
       "target": "skills/recall/tests/refs/staleness.md.lines"
-    },
-    {
-      "source": "skills/public/operations/session-memory/tests/run_tests.py",
-      "target": "skills/recall/tests/run_tests.py"
     },
     {
       "source": "skills/public/operations/session-memory/tests/run_tests.ts",
@@ -8586,24 +8194,12 @@
       "target": "skills/research/references/tier-profile.md"
     },
     {
-      "source": "skills/public/research/research/scripts/cite_check.py",
-      "target": "skills/research/scripts/cite_check.py"
-    },
-    {
       "source": "skills/public/research/research/scripts/cite_check.ts",
       "target": "skills/research/scripts/cite_check.ts"
     },
     {
-      "source": "skills/public/research/research/scripts/coverage_matrix.py",
-      "target": "skills/research/scripts/coverage_matrix.py"
-    },
-    {
       "source": "skills/public/research/research/scripts/coverage_matrix.ts",
       "target": "skills/research/scripts/coverage_matrix.ts"
-    },
-    {
-      "source": "skills/public/research/research/scripts/ensure_research.sh",
-      "target": "skills/research/scripts/ensure_research.sh"
     },
     {
       "source": "skills/public/research/research/scripts/ensure_research.ts",
@@ -8628,10 +8224,6 @@
     {
       "source": "skills/public/research/research/tests/research_migration.test.ts",
       "target": "skills/research/tests/research_migration.test.ts"
-    },
-    {
-      "source": "skills/public/research/research/tests/run_tests.py",
-      "target": "skills/research/tests/run_tests.py"
     },
     {
       "source": "skills/public/research/research/tests/run_tests.ts",
@@ -18630,10 +18222,6 @@
       "target": "skills/science/repos/kdense/skills/zarr-python/references/v3_migration.md"
     },
     {
-      "source": "skills/public/research/scientific-tools/scripts/rebuild-index.py",
-      "target": "skills/science/scripts/rebuild-index.py"
-    },
-    {
       "source": "skills/public/research/scientific-tools/scripts/rebuild-index.ts",
       "target": "skills/science/scripts/rebuild-index.ts"
     },
@@ -18662,16 +18250,8 @@
       "target": "skills/science/tests/refs/tier-a-verdicts.md.lines"
     },
     {
-      "source": "skills/public/research/scientific-tools/tests/run_tests.py",
-      "target": "skills/science/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/research/scientific-tools/tests/run_tests.ts",
       "target": "skills/science/tests/run_tests.ts"
-    },
-    {
-      "source": "skills/public/research/scientific-tools/tests/test_tier_a_roster.py",
-      "target": "skills/science/tests/test_tier_a_roster.py"
     },
     {
       "source": "skills/public/research/scientific-tools/tests/test_tier_a_roster.ts",
@@ -18708,10 +18288,6 @@
     {
       "source": "skills/public/engineering/credential-response/tests/refs/secret-shapes.md.lines",
       "target": "skills/secrets/tests/refs/secret-shapes.md.lines"
-    },
-    {
-      "source": "skills/public/engineering/credential-response/tests/run_tests.py",
-      "target": "skills/secrets/tests/run_tests.py"
     },
     {
       "source": "skills/public/engineering/credential-response/tests/run_tests.ts",
@@ -18762,16 +18338,8 @@
       "target": "skills/setup/references/testing-guidance.md"
     },
     {
-      "source": "skills/public/engineering/repository-setup/scripts/instruction_inventory.py",
-      "target": "skills/setup/scripts/instruction_inventory.py"
-    },
-    {
       "source": "skills/public/engineering/repository-setup/scripts/instruction_inventory.ts",
       "target": "skills/setup/scripts/instruction_inventory.ts"
-    },
-    {
-      "source": "skills/public/engineering/repository-setup/scripts/load_guidelines.py",
-      "target": "skills/setup/scripts/load_guidelines.py"
     },
     {
       "source": "skills/public/engineering/repository-setup/scripts/load_guidelines.ts",
@@ -18810,20 +18378,12 @@
       "target": "skills/setup/tests/refs/testing-guidance.md.lines"
     },
     {
-      "source": "skills/public/engineering/repository-setup/tests/run_tests.py",
-      "target": "skills/setup/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/engineering/repository-setup/tests/run_tests.ts",
       "target": "skills/setup/tests/run_tests.ts"
     },
     {
       "source": "skills/public/engineering/repository-setup/tests/setup-migration.test.ts",
       "target": "skills/setup/tests/setup-migration.test.ts"
-    },
-    {
-      "source": "skills/public/engineering/repository-setup/tests/test_instruction_inventory.py",
-      "target": "skills/setup/tests/test_instruction_inventory.py"
     },
     {
       "source": "skills/public/engineering/repository-setup/tests/test_instruction_inventory.ts",
@@ -20530,10 +20090,6 @@
       "target": "skills/tdd/references/test-portfolio.md"
     },
     {
-      "source": "skills/public/workflow/test-driven-development/scripts/test_gates.py",
-      "target": "skills/tdd/scripts/test_gates.py"
-    },
-    {
       "source": "skills/public/workflow/test-driven-development/scripts/test_gates.ts",
       "target": "skills/tdd/scripts/test_gates.ts"
     },
@@ -20666,10 +20222,6 @@
       "target": "skills/tdd/tests/refs/typescript.md.lines"
     },
     {
-      "source": "skills/public/workflow/test-driven-development/tests/run_tests.py",
-      "target": "skills/tdd/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/workflow/test-driven-development/tests/run_tests.ts",
       "target": "skills/tdd/tests/run_tests.ts"
     },
@@ -20746,12 +20298,32 @@
       "target": "skills/team/tests/refs/team-examples.md.lines"
     },
     {
-      "source": "skills/support/parallel-execution/tests/run_tests.py",
-      "target": "skills/team/tests/run_tests.py"
-    },
-    {
       "source": "skills/support/parallel-execution/tests/run_tests.ts",
       "target": "skills/team/tests/run_tests.ts"
+    },
+    {
+      "source": "skills/public/engineering/typescript-best-practices/NOTICE",
+      "target": "skills/typescript-best-practices/NOTICE"
+    },
+    {
+      "source": "skills/public/engineering/typescript-best-practices/SKILL.md",
+      "target": "skills/typescript-best-practices/SKILL.md"
+    },
+    {
+      "source": "skills/public/engineering/typescript-best-practices/references/patterns.md",
+      "target": "skills/typescript-best-practices/references/patterns.md"
+    },
+    {
+      "source": "skills/public/engineering/typescript-best-practices/tests/refs/SKILL.md.lines",
+      "target": "skills/typescript-best-practices/tests/refs/SKILL.md.lines"
+    },
+    {
+      "source": "skills/public/engineering/typescript-best-practices/tests/refs/patterns.md.lines",
+      "target": "skills/typescript-best-practices/tests/refs/patterns.md.lines"
+    },
+    {
+      "source": "skills/public/engineering/typescript-best-practices/tests/run_tests.ts",
+      "target": "skills/typescript-best-practices/tests/run_tests.ts"
     },
     {
       "source": "skills/public/engineering/web-interface/LICENSE.web-interface-guidelines",
@@ -20946,10 +20518,6 @@
       "target": "skills/ui/tests/refs/web-interface-guidelines.md.lines"
     },
     {
-      "source": "skills/public/engineering/web-interface/tests/run_tests.py",
-      "target": "skills/ui/tests/run_tests.py"
-    },
-    {
       "source": "skills/public/engineering/web-interface/tests/run_tests.ts",
       "target": "skills/ui/tests/run_tests.ts"
     },
@@ -20968,10 +20536,6 @@
     {
       "source": "skills/public/engineering/upstream-maintenance/tests/refs/license-classes.md.lines",
       "target": "skills/upstream/tests/refs/license-classes.md.lines"
-    },
-    {
-      "source": "skills/public/engineering/upstream-maintenance/tests/run_tests.py",
-      "target": "skills/upstream/tests/run_tests.py"
     },
     {
       "source": "skills/public/engineering/upstream-maintenance/tests/run_tests.ts",
@@ -21018,6 +20582,10 @@
       "target": "skills/verify/references/merge.md"
     },
     {
+      "source": "skills/public/workflow/verify/references/pr-feedback.md",
+      "target": "skills/verify/references/pr-feedback.md"
+    },
+    {
       "source": "skills/public/workflow/verify/references/security-verification.md",
       "target": "skills/verify/references/security-verification.md"
     },
@@ -21054,40 +20622,20 @@
       "target": "skills/verify/scripts/ci_diagnosis.ts"
     },
     {
-      "source": "skills/public/workflow/verify/scripts/package_check.py",
-      "target": "skills/verify/scripts/package_check.py"
-    },
-    {
       "source": "skills/public/workflow/verify/scripts/package_check.ts",
       "target": "skills/verify/scripts/package_check.ts"
-    },
-    {
-      "source": "skills/public/workflow/verify/scripts/package_identity.py",
-      "target": "skills/verify/scripts/package_identity.py"
     },
     {
       "source": "skills/public/workflow/verify/scripts/package_identity.ts",
       "target": "skills/verify/scripts/package_identity.ts"
     },
     {
-      "source": "skills/public/workflow/verify/scripts/preflight.py",
-      "target": "skills/verify/scripts/preflight.py"
-    },
-    {
       "source": "skills/public/workflow/verify/scripts/preflight.ts",
       "target": "skills/verify/scripts/preflight.ts"
     },
     {
-      "source": "skills/public/workflow/verify/scripts/red_probe.py",
-      "target": "skills/verify/scripts/red_probe.py"
-    },
-    {
       "source": "skills/public/workflow/verify/scripts/red_probe.ts",
       "target": "skills/verify/scripts/red_probe.ts"
-    },
-    {
-      "source": "skills/public/workflow/verify/scripts/security_contract.py",
-      "target": "skills/verify/scripts/security_contract.py"
     },
     {
       "source": "skills/public/workflow/verify/scripts/security_contract.ts",
@@ -21100,10 +20648,6 @@
     {
       "source": "skills/public/workflow/verify/scripts/test_smells.ts",
       "target": "skills/verify/scripts/test_smells.ts"
-    },
-    {
-      "source": "skills/public/workflow/verify/scripts/workflow.py",
-      "target": "skills/verify/scripts/workflow.py"
     },
     {
       "source": "skills/public/workflow/verify/scripts/workflow.ts",
@@ -21198,6 +20742,10 @@
       "target": "skills/verify/tests/refs/merge.md.lines"
     },
     {
+      "source": "skills/public/workflow/verify/tests/refs/pr-feedback.md.lines",
+      "target": "skills/verify/tests/refs/pr-feedback.md.lines"
+    },
+    {
       "source": "skills/public/workflow/verify/tests/refs/security-verification.md.lines",
       "target": "skills/verify/tests/refs/security-verification.md.lines"
     },
@@ -21228,10 +20776,6 @@
     {
       "source": "skills/public/workflow/verify/tests/review-cycle.test.ts",
       "target": "skills/verify/tests/review-cycle.test.ts"
-    },
-    {
-      "source": "skills/public/workflow/verify/tests/run_tests.py",
-      "target": "skills/verify/tests/run_tests.py"
     },
     {
       "source": "skills/public/workflow/verify/tests/run_tests.ts",
@@ -21318,16 +20862,8 @@
       "target": "skills/workspace/references/sheets-troubleshooting.md"
     },
     {
-      "source": "skills/public/operations/google-workspace/scripts/collect_by_mtime.sh",
-      "target": "skills/workspace/scripts/collect_by_mtime.sh"
-    },
-    {
       "source": "skills/public/operations/google-workspace/scripts/collect_by_mtime.ts",
       "target": "skills/workspace/scripts/collect_by_mtime.ts"
-    },
-    {
-      "source": "skills/public/operations/google-workspace/scripts/collect_git.sh",
-      "target": "skills/workspace/scripts/collect_git.sh"
     },
     {
       "source": "skills/public/operations/google-workspace/scripts/collect_git.ts",
@@ -21338,16 +20874,8 @@
       "target": "skills/workspace/scripts/collection-common.ts"
     },
     {
-      "source": "skills/public/operations/google-workspace/scripts/ensure_gws.sh",
-      "target": "skills/workspace/scripts/ensure_gws.sh"
-    },
-    {
       "source": "skills/public/operations/google-workspace/scripts/ensure_gws.ts",
       "target": "skills/workspace/scripts/ensure_gws.ts"
-    },
-    {
-      "source": "skills/public/operations/google-workspace/scripts/token_check.py",
-      "target": "skills/workspace/scripts/token_check.py"
     },
     {
       "source": "skills/public/operations/google-workspace/scripts/token_check.ts",
@@ -21392,10 +20920,6 @@
     {
       "source": "skills/public/operations/google-workspace/tests/refs/sheets-troubleshooting.md.lines",
       "target": "skills/workspace/tests/refs/sheets-troubleshooting.md.lines"
-    },
-    {
-      "source": "skills/public/operations/google-workspace/tests/run_tests.py",
-      "target": "skills/workspace/tests/run_tests.py"
     },
     {
       "source": "skills/public/operations/google-workspace/tests/run_tests.ts",
@@ -21494,6 +21018,10 @@
       "target": "tests/refs/quality-verifier.md.lines"
     },
     {
+      "source": "tests/refs/reflect.md.lines",
+      "target": "tests/refs/reflect.md.lines"
+    },
+    {
       "source": "tests/refs/sag-automation-scout.md.lines",
       "target": "tests/refs/sag-automation-scout.md.lines"
     },
@@ -21512,6 +21040,14 @@
     {
       "source": "tests/refs/sag-learning-extractor.md.lines",
       "target": "tests/refs/sag-learning-extractor.md.lines"
+    },
+    {
+      "source": "tests/refs/sag-tooling-gap-finder.md.lines",
+      "target": "tests/refs/sag-tooling-gap-finder.md.lines"
+    },
+    {
+      "source": "tests/refs/sag-unverified-claims-finder.md.lines",
+      "target": "tests/refs/sag-unverified-claims-finder.md.lines"
     },
     {
       "source": "tests/refs/setup-recall.md.lines",
@@ -21546,56 +21082,28 @@
       "target": "tests/refs/wrap.md.lines"
     },
     {
-      "source": "tests/test_contracts.py",
-      "target": "tests/test_contracts.py"
-    },
-    {
       "source": "tests/test_contracts.ts",
       "target": "tests/test_contracts.ts"
-    },
-    {
-      "source": "tests/test_dev_agents.py",
-      "target": "tests/test_dev_agents.py"
     },
     {
       "source": "tests/test_dev_agents.ts",
       "target": "tests/test_dev_agents.ts"
     },
     {
-      "source": "tests/test_dev_commands.py",
-      "target": "tests/test_dev_commands.py"
-    },
-    {
       "source": "tests/test_dev_commands.ts",
       "target": "tests/test_dev_commands.ts"
-    },
-    {
-      "source": "tests/test_dev_hooks.py",
-      "target": "tests/test_dev_hooks.py"
     },
     {
       "source": "tests/test_dev_hooks.ts",
       "target": "tests/test_dev_hooks.ts"
     },
     {
-      "source": "tests/test_dev_pr_label.py",
-      "target": "tests/test_dev_pr_label.py"
-    },
-    {
       "source": "tests/test_dev_pr_label.ts",
       "target": "tests/test_dev_pr_label.ts"
     },
     {
-      "source": "tests/test_evals.py",
-      "target": "tests/test_evals.py"
-    },
-    {
       "source": "tests/test_evals.ts",
       "target": "tests/test_evals.ts"
-    },
-    {
-      "source": "tests/test_floor_parity.py",
-      "target": "tests/test_floor_parity.py"
     },
     {
       "source": "tests/test_floor_parity.ts",
@@ -21606,72 +21114,36 @@
       "target": "tests/test_mods.ts"
     },
     {
-      "source": "tests/test_onboarding.py",
-      "target": "tests/test_onboarding.py"
-    },
-    {
       "source": "tests/test_onboarding.ts",
       "target": "tests/test_onboarding.ts"
-    },
-    {
-      "source": "tests/test_profiles.py",
-      "target": "tests/test_profiles.py"
     },
     {
       "source": "tests/test_profiles.ts",
       "target": "tests/test_profiles.ts"
     },
     {
-      "source": "tests/test_repack.py",
-      "target": "tests/test_repack.py"
-    },
-    {
       "source": "tests/test_repack.ts",
       "target": "tests/test_repack.ts"
-    },
-    {
-      "source": "tests/test_repository.py",
-      "target": "tests/test_repository.py"
     },
     {
       "source": "tests/test_repository.ts",
       "target": "tests/test_repository.ts"
     },
     {
-      "source": "tests/test_session_migration.py",
-      "target": "tests/test_session_migration.py"
-    },
-    {
       "source": "tests/test_session_migration.ts",
       "target": "tests/test_session_migration.ts"
-    },
-    {
-      "source": "tests/test_skill_store.py",
-      "target": "tests/test_skill_store.py"
     },
     {
       "source": "tests/test_skill_store.ts",
       "target": "tests/test_skill_store.ts"
     },
     {
-      "source": "tests/test_work_agents.py",
-      "target": "tests/test_work_agents.py"
-    },
-    {
       "source": "tests/test_work_agents.ts",
       "target": "tests/test_work_agents.ts"
     },
     {
-      "source": "tests/test_work_commands.py",
-      "target": "tests/test_work_commands.py"
-    },
-    {
       "source": "tests/test_work_commands.ts",
       "target": "tests/test_work_commands.ts"
-    },
-    {
-      "source": "tests/test_work_hooks.py",
-      "target": "tests/test_work_hooks.py"
     },
     {
       "source": "tests/test_work_hooks.ts",

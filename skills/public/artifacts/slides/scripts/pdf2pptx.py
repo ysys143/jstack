@@ -61,8 +61,8 @@ def _need(mod: str):
         pkg = DEPS.get(mod, mod)
         print(
             f"Error: '{pkg}' is missing; this step cannot continue.\n"
-            f"  Install: pip install -r requirements.txt   (deck skill directory)\n"
-            f"  Or: pip install {pkg}",
+            f"  Install: uv pip install -r requirements.txt   (deck skill directory)\n"
+            f"  Or: uv pip install {pkg}",
             file=sys.stderr,
         )
         raise SystemExit(2)
@@ -90,7 +90,7 @@ def load_call_gemini():
     except ImportError:
         print(
             "Error: missing image-skill dependencies; upscaling is unavailable.\n"
-            "  Install: pip install -r requirements.txt\n"
+            "  Install: uv pip install -r requirements.txt\n"
             "  Or use --skip-upscale to retain original resolution.",
             file=sys.stderr,
         )

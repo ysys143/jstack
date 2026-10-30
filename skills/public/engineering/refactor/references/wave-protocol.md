@@ -1,9 +1,9 @@
 # Wave protocol — restraint, and what a baseline-free scan may claim
 
-`cleanup` sweeps the whole codebase by definition. That is the difference from
-`audit`, and it is also the reason two rules written for `audit` matter more
-here than there. This file carries both, restated for a skill that has no
-baseline.
+`cleanup` takes its scope as an argument: by default the files changed on the
+branch, and at `--scope=all` the whole codebase. That is the difference from
+`audit`, and it is also the reason two rules written for `audit` matter more here
+than there. This file carries both, restated for a skill that has no baseline.
 
 ## Why this file exists at all
 
@@ -13,9 +13,9 @@ already bounded by the size of the change. `cleanup` has no such bound.
 
 | | `audit` | `cleanup` |
 |---|---|---|
-| Input | A named target with a baseline | The codebase, entire |
+| Input | A named target with a baseline | The files in scope: by default those changed since the merge base, at most the codebase entire |
 | Output | A verdict | A work plan |
-| Natural bound on output size | The diff | **none** |
+| Natural bound on output size | The diff | **none**: a scope bounds where to look, not how many findings it holds |
 
 **The flooding risk is overwhelmingly larger here.** A rule that keeps a PR
 review readable is a rule that keeps a whole-repository sweep from being useless.
@@ -66,6 +66,11 @@ The taxonomy's axes divide by whether they need a baseline to mean anything.
 **`cleanup` has no baseline, so the delta axes are void here.** Applying them
 anyway produces a finding whose evidence does not exist: nobody can say what a
 file's length was before, when there is no before.
+
+The default `--scope=diff` is `base..HEAD`: the files the branch touched. That
+chooses where to look. It does not give the sweep a before-state, because the sweep
+does not compare those files with how they stood at the merge base, so the delta
+axes stay void under it. What the branch itself added is `audit`'s question.
 
 ### Why the split is a burden question, not a bookkeeping one
 

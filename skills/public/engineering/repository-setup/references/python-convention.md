@@ -10,9 +10,9 @@ repository that cannot satisfy them has exactly one place to say so: a
 
 | Hook | Event | What it enforces |
 | --- | --- | --- |
-| `validate_uv_usage.py` | PreToolUse on `Bash` | `pip`/`pip3`/`pipx` are blocked with the uv equivalent named; `uv pip ...` requires a `.venv` to exist |
-| `ruff_check_after_edit.py` | PostToolUse on `Write`/`Edit` | ruff lint on the edited Python file, with the findings split into auto-fixable and manual |
-| `ruff_check_before_commit.py` | PreToolUse on `Bash` | ruff format then re-stage, then ruff check; a failing check blocks the commit |
+| `validate_uv_usage.js` | PreToolUse on `Bash` | `pip`/`pip3`/`pipx` are blocked with the uv equivalent named; `uv pip ...` requires a `.venv` to exist |
+| `ruff_check_after_edit.js` | PostToolUse on `Write`/`Edit` | ruff lint on the edited Python file, with the findings split into auto-fixable and manual |
+| `ruff_check_before_commit.js` | PreToolUse on `Bash` | ruff format then re-stage, then ruff check; a failing check blocks the commit |
 
 ## The six switches
 
@@ -20,18 +20,18 @@ Every one of them lives in `pyproject.toml`, under `[tool.claude-hooks]`.
 
 | Key | Default | Write | Effect | Read by |
 | --- | --- | --- | --- | --- |
-| `enforce_uv` | on | `false` | pip, pip3, and pipx stop being blocked | `validate_uv_usage.py` |
-| `enforce_venv_check` | on | `false` | `uv pip ...` no longer requires `.venv` to exist first | `validate_uv_usage.py` |
-| `ruff_check` | on | `false` | no lint pass after a Python file is written or edited | `ruff_check_after_edit.py` |
-| `pre_commit_check` | on | `false` | commits stop being gated on format and check | `ruff_check_before_commit.py` |
-| `auto_format` | on | `false` | the commit gate stops reformatting and re-staging files | `ruff_check_before_commit.py` |
+| `enforce_uv` | on | `false` | pip, pip3, and pipx stop being blocked | `validate_uv_usage.js` |
+| `enforce_venv_check` | on | `false` | `uv pip ...` no longer requires `.venv` to exist first | `validate_uv_usage.js` |
+| `ruff_check` | on | `false` | no lint pass after a Python file is written or edited | `ruff_check_after_edit.js` |
+| `pre_commit_check` | on | `false` | commits stop being gated on format and check | `ruff_check_before_commit.js` |
+| `auto_format` | on | `false` | the commit gate stops reformatting and re-staging files | `ruff_check_before_commit.js` |
 | `pyright_check` | **off** | `true` | pyright runs after edits and before commits | both ruff hooks |
 
 `pyright_check` is the odd one twice over.
 It is the only switch whose default is off, and the only one two hooks read.
 Everything else defaults to enforcing.
 
-There is no seventh. `show_fixable` appears in `ruff_check_after_edit.py`'s
+There is no seventh. `show_fixable` appears in `ruff_check_after_edit.js`'s
 config dictionary but is never read back out of `pyproject.toml`, so writing it
 does nothing.
 
@@ -80,8 +80,8 @@ quoted boolean. Measured against the code as it stands:
 | `enforce_uv` | works | works |
 | `enforce_venv_check` | works | works |
 | `ruff_check` | works | works |
-| `pyright_check` in `ruff_check_after_edit.py` | works | works |
-| `pyright_check` in `ruff_check_before_commit.py` | works | **ignored** |
+| `pyright_check` in `ruff_check_after_edit.js` | works | works |
+| `pyright_check` in `ruff_check_before_commit.js` | works | **ignored** |
 | `pre_commit_check` | works | **ignored** |
 | `auto_format` | works | **ignored** |
 
@@ -91,9 +91,9 @@ vanish from the gate that was supposed to catch them. Write bare booleans.
 
 ## The commit hook reads a different file from the other two
 
-`validate_uv_usage.py` and `ruff_check_after_edit.py` walk up from the working
+`validate_uv_usage.js` and `ruff_check_after_edit.js` walk up from the working
 directory and stop at the first directory holding either a `pyproject.toml` or a
-`.git`. `ruff_check_before_commit.py` asks git instead, via
+`.git`. `ruff_check_before_commit.js` asks git instead, via
 `git rev-parse --show-toplevel`, and reads the `pyproject.toml` there.
 
 In a monorepo whose packages carry their own `pyproject.toml`, those are two

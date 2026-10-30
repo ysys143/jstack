@@ -76,6 +76,6 @@ if (process.env.JSTACK_QUICK_CONTRACTS !== '1' && !in_deleted_run()) {
     check('upstream template check passes in a separate copy', run.status === 0 && !run.error, `details: ${evidence}` + (run.status === 0 && !run.error ? '' : `; exit ${run.status ?? run.signal}: ${run.error?.message ?? ''} ${tail}`));
   } finally { rmSync(box, { recursive: true, force: true }); }
 }
-check_contract_coverage(check, file, root, { per_file: { 'SKILL.md': 9, NOTICE: 4 } });
+check_contract_coverage(check, file, root, { per_file: { 'SKILL.md': 9, NOTICE: 5 } });
 console.log(`${total - failed}/${total} passed`);
 process.exitCode = failed ? 1 : 0;

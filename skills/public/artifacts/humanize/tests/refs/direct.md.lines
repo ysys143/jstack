@@ -1,4 +1,4 @@
-# blob:2df78ff0504b28e7c8ef6cbd6be9ab0295c056b7
+# blob:7c4180517646edc340c5cee4d6e4695457fb24b4
 # Direct editing contract
 ## Selection
 `direct` is the default when the requested output is Korean or English and the
@@ -292,6 +292,21 @@ transitions, and conclusions that only restate the opening.
 decorative em dashes, semicolons, heading fragments, listicle rhythm, and
 forced groups of three when they add no structure. Preserve punctuation and
 lists that carry real meaning.
+- Use a colon only before a list, a quotation, or an example. Do not let a
+mid-sentence colon stand in for a verb or a "because"; write one sentence
+that states the relation.
+- Cut an adverb that props up a weak verb: use a stronger verb or the measured
+value the source supplies. Keep an adverb that adds a fact.
+- Do not compress prose into fragments, arrows, or symbol shorthand. Keep
+articles and verbs. Terse genres such as commit subjects, changelog lines,
+table cells, and UI strings keep their form.
+- For English technical documentation, name the document's mode before editing
+and let the mode decide what to prune. Two questions pick it: does the text
+inform action or understanding, and does the reader learn or work? Action
+while learning is a tutorial, action while working a how-to, understanding
+while working a reference, understanding while learning an explanation. A
+reference stays dry, a how-to keeps action only, and opinion belongs only in
+an explanation. A mode choice does not authorize restructuring.
 - Do not force antithesis, a `not X but Y` construction, sentence fragments,
 contractions, or varied sentence openings. Keep any of them when they fit
 the source's voice and express a real distinction.
@@ -335,9 +350,10 @@ structural-tell, report, mail, notice, business-reply, training-material, blog,
 and LinkedIn rules adapt 도대리의 서랍장 humanize-ko (EP.01,
 <https://dodaeri.vercel.app/ep/1>, MIT; see `NOTICE`). Its 50-point self-score
 is not part of this contract: `direct` assigns no scores. Two upstream rules
-conflict with contracts above and are not in this file; whether to adopt them
-is an open maintainer decision: adding a reaction the writer might have had to a
-blog post (the no-invention rule), and replacing every dash without exception
-(the code, quoted-output, and numeric-range exemptions). The language-level triage and English
-one-pass rules are local adaptations. This file is the local execution contract;
+conflict with contracts above and are not in this file. The maintainer rejected
+both on 2026-10-30: adding a reaction the writer might have had to a blog post,
+because it invents content the source does not hold (the no-invention rule);
+and replacing every dash without exception, because it would corrupt code,
+quoted output, and numeric ranges (the dash rule's exemptions). The
+language-level triage and English one-pass rules are local adaptations. This file is the local execution contract;
 the upstream repository is provenance, not a runtime dependency.

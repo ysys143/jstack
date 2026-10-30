@@ -40,7 +40,7 @@ string to match. Category L rule 4 corrects IDs used as grammatical subjects;
 it does not detect missing requirements.
 
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/req_coverage.js \
+node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/req_coverage.js \
   --requirements <RFP ID list> --proposal _workspace/{run_id}/01_input.txt
 ```
 
@@ -65,7 +65,7 @@ summary. Never report an unperformed check as a pass.
 
 If original and rewritten requirement data are available as JSON, also run:
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/scripts/content_contract.js \
+node ${JSTACK_PLUGIN_ROOT}/scripts/content_contract.js \
   --before _workspace/{run_id}/01_source.json \
   --after _workspace/{run_id}/03_rewrite.json \
   --mode procurement --json
@@ -77,7 +77,7 @@ but paraphrases changing value anchors fail. Changed natural language remains
 
 ## Phase 2: Detect
 
-Invoke `korean-procurement-detector` with `Agent` (`model: "opus"`).
+Invoke `korean-procurement-detector` with `Agent`.
 
 Output: `_workspace/{run_id}/02_detection.json`.
 
@@ -85,7 +85,7 @@ Output: `_workspace/{run_id}/02_detection.json`.
 
 ## Phase 3: Rewrite
 
-Invoke `korean-procurement-rewriter` (`model: "opus"`).
+Invoke `korean-procurement-rewriter`.
 Apply categories in order: `O -> M -> L -> K -> N`.
 
 Output: `_workspace/{run_id}/03_rewrite.md` and `03_rewrite_diff.json`.

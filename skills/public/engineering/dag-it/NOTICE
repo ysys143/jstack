@@ -8,7 +8,7 @@
 |---|---|
 | Upstream | https://github.com/ysys143/just-dag-it |
 | Pinned commit | 1dfc962d3c42564c872a11d750902b701adeb40f |
-| Branch | fix/consumer-boundary-verification-20261022 (two commits ahead of main `c407dfe`; not on the remote when copied on 2026-10-30) |
+| Branch | main (the pin reached main through ysys143/just-dag-it#1, merge commit `e0be122`, on 2026-10-30) |
 | License | MIT (`repos/just-dag-it/LICENSE`, full text below) |
 | Files | 188 |
 | Tree digest (sha256) | c51a7957288ef6b31681b18d44a6391e41123506b98bac12f370324d5b2c0d6b |

@@ -991,7 +991,7 @@
     {
       "id": "just-dag-it",
       "repo": "ysys143/just-dag-it",
-      "branch": "fix/consumer-boundary-verification-20261022",
+      "branch": "main",
       "license": {
         "spdx_id": "MIT",
         "class": "MIT"
@@ -1015,7 +1015,7 @@
           },
           "ownerSkill": "dag-it",
           "notes": [
-            "Copied from a local branch two commits ahead of main c407dfe; the pin was not on the remote when copied on 2026-10-30. Push the branch, or move the pin to the merged commit, before measuring.",
+            "Pinned at 1dfc962, which reached main through ysys143/just-dag-it#1 (merge commit e0be122) on 2026-10-30.",
             "Excluded .claude-plugin/ when imported."
           ]
         }
@@ -1101,6 +1101,119 @@
           "ownerSkill": "create-formal-verification-skill",
           "notes": [
             "pstack 0.15.36."
+          ]
+        },
+        {
+          "mode": "snapshot",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/maintain-formal-verification-skill",
+            "pstack/LICENSE"
+          ],
+          "localPaths": [
+            "skills/public/engineering/maintain-formal-verification-skill/repos/pstack"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/maintain-formal-verification-skill/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "maintain-formal-verification-skill",
+          "notes": [
+            "pstack 0.15.36."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/benchmark-checklist",
+            "pstack/skills/principle-explain-the-number"
+          ],
+          "localPaths": [
+            "skills/public/engineering/benchmark-checklist"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/benchmark-checklist/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "benchmark-checklist",
+          "notes": [
+            "Rewritten as a jstack-native skill; see its NOTICE for what changed."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/typescript-best-practices",
+            "pstack/skills/principle-boundary-discipline",
+            "pstack/skills/principle-type-system-discipline"
+          ],
+          "localPaths": [
+            "skills/public/engineering/typescript-best-practices"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/typescript-best-practices/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "typescript-best-practices",
+          "notes": [
+            "Rewritten as a jstack-native skill; see its NOTICE for what changed."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/how",
+            "pstack/skills/teach"
+          ],
+          "localPaths": [
+            "skills/public/engineering/how"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/how/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "how",
+          "notes": [
+            "Rewritten as a jstack-native skill; see its NOTICE for what changed."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/create-verification-skill"
+          ],
+          "localPaths": [
+            "skills/public/workflow/create-verification-skill"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/create-verification-skill/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "create-verification-skill",
+          "notes": [
+            "Rewritten as a jstack-native skill; see its NOTICE for what changed."
+          ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/maintain-verification-skill"
+          ],
+          "localPaths": [
+            "skills/public/workflow/maintain-verification-skill"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/maintain-verification-skill/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "maintain-verification-skill",
+          "notes": [
+            "Rewritten as a jstack-native skill; see its NOTICE for what changed."
           ]
         }
       ]

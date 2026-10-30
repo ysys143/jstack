@@ -1,36 +1,16 @@
-# blob:3cd8e4550eab8f7e3f73f704caac0ff54647ad93
+# blob:83f996351aba08122618498b174f9befde883dd8
 # /weekly-wrapup — review the week from local records
-Use the shared `runtime/work_report.js` core for the week containing the
-requested date. This command is one convenience surface for a weekly report;
-the workflow that calls it remains responsible for the request and completion
-decision. The historical command name is a compatibility label; other workflows
-may call the same core directly. Without a date, use the current local date and
-state the local timezone. The core searches records and prepares a recoverable
-report; Google Drive, Sheets, email, or another collaboration space is a later
-publication choice.
-## Sequence
-1. Run the local collector with `--period weekly --date YYYY-MM-DD`. The period
-is Monday through Sunday. Include Git commits, changed or created files,
-and any explicitly configured session export; preserve warnings for sources
-that could not be read.
-2. Read `evidence.jsonl`, `manifest.json`, and the evidence judgment reference.
-Deduplicate repeated traces without strengthening their meaning. A clone,
-build output, commit title, or session heading may explain a lead but cannot
-establish completed work, approval, delivery, authorship, or importance.
-3. Write a concise Korean `report.md` with observed facts, interpretations tied
-to evidence IDs, confirmation questions, and the next useful action. An
-empty or partial source means “no confirmed record” or “collection warning”,
-never “no work”.
-4. Show the local draft before any external write. Ask which destination, account,
-and target should receive it. Do not assume a Google Sheet or a fixed row or
-column exists.
-5. If Google is selected, continue with `jstack:google-workspace`; otherwise use
-the selected sink's contract. Record the destination receipt separately and
-retain the local report when publication fails.
+Run the `jstack:wrapup` skill for one week. This command supplies only the period
+and the date; collection, evidence judgment, the draft, and publication follow
+that skill, so a change there reaches this command without an edit here.
+- **Period and date:** `--period weekly` for the week containing the date
+argument, or the current local date when none is given. The period is
+Monday through Sunday. State the local timezone in the result.
+- **Core:** the shared `runtime/work_report.js` collector, run locally.
+- **Show the local draft** before any external write, then ask which destination,
+account, and target should receive it. Never assume a sheet, row, or column
+exists: C/D-style physical addresses do not belong in the report core.
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/runtime/work_report.js" \
 --period weekly --date "${1:-$(date +%F)}"
 ```
-The report core uses semantic fields. A destination adapter may map them to its
-own headers or properties, but C/D-style physical addresses never belong in
-the core and do not determine whether the weekly report is complete.

@@ -14,6 +14,7 @@ const contracts: Record<string, [string, RegExp][]> = {
   'SKILL.md': [
     ['sends the reader to the pinned upstream procedure', /Read `repos\/pstack\/skills\/create-formal-verification-skill\/SKILL\.md`/],
     ['maps the pstack /statechart skill to the jstack statechart skill by name only', /use the jstack `statechart` skill\. Refer to it by name in the generated skill, as upstream says; copy none of its commands, options or paths\./],
+    ['the upstream pointer to the maintain skill names the jstack skill', /Where it points the user at `\/maintain-formal-verification-skill`, name the jstack `maintain-formal-verification-skill` skill\./],
     ['a check that could not run is not a pass', /instead of skipping the proof step; a check that could not run is not a pass/],
     ['the generated skill never lives under this skill directory', /Never write them under this skill directory; a plugin update replaces it/],
     ['the pinned copy is not edited here', /Do not edit `repos\/pstack\/`\. A fix belongs upstream/],
@@ -49,6 +50,6 @@ function treeDigest(dir: string): { digest: string; count: number } {
 const notice = read(join(root, 'NOTICE')), tree = treeDigest(copyRoot);
 check('NOTICE records the digest and file count of the pinned copy', notice.includes(`| Tree digest (sha256) | ${tree.digest} |`) && notice.includes(`| Files | ${tree.count} |`), `${tree.count} files ${tree.digest.slice(0, 12)}`);
 check('the pinned copy holds the upstream skill and the pstack license', existsSync(join(skill, 'SKILL.md')) && existsSync(join(copyRoot, 'LICENSE')));
-check_contract_coverage(check, file, root, { per_file: { 'SKILL.md': 7, NOTICE: 3 } });
+check_contract_coverage(check, file, root, { per_file: { 'SKILL.md': 8, NOTICE: 4 } });
 console.log(`${total - failed}/${total} passed`);
 process.exitCode = failed ? 1 : 0;

@@ -2,7 +2,7 @@
 /** Invoke OfficeCLI only; never run its global agent-skill installer. */
 import { runProcess } from '../../../../../runtime/os.js';
 import { isMain } from '../../../../../runtime/entry.js';
-export const PKG = '@officecli/officecli@latest';
+export const PKG = '@officecli/officecli@1.0.160';
 export function main(): number {
   const installed = runProcess('officecli', ['--version'], { timeout: 30_000 });
   if (!installed.error && installed.status === 0 && installed.stdout.trim()) {

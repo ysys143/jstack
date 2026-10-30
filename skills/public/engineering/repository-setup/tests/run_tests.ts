@@ -164,7 +164,7 @@ for (const [file, needles] of [["LICENSE.claude-plugins-official", ["Apache Lice
 check_contract_coverage(check,SELF,ROOT,{per_file:{"LICENSE.claude-plugins-official": 1, "SKILL.md":46,"references/instruction-maintenance.md":5,"references/checklist.md":16,"references/comment-convention-governance.md":7,"references/convention-conflicts.md":11,"references/python-convention.md":13,"scripts/load_guidelines.js":15,"scripts/instruction_inventory.js":1,"scripts/project_portability.js":1,"references/testing-guidance.md":3,"NOTICE":1},live_ran:live_ran});
 check_body_deletion(check,SELF,ROOT,{minimum:46,live_ran:live_ran});
 check_no_constant_assertions(check,SELF);
-check_total(check,results,139);
+check_total(check, results, 139);
 passed = results.filter(result=>result[1]).length;
 console.log(("\n"+passed+"/"+length(results)+" 통과"));
 return (truth((isDeepStrictEqual(passed,length(results))))?0:1);

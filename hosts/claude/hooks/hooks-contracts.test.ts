@@ -86,20 +86,6 @@ test('model checker covers unknown, approved, notebook, block and Bash warning d
     assert.equal(checkModelStatus(`openai:${outdated}`)[0], true);
     assert.equal(checkModelStatus('not-a-model')[1], undefined);
 });
-test('optional Python oracle compares every model and hook verdict', { skip: process.env.JSTACK_ORACLE !== '1' }, () => {
-    const oracle = spawnSync('python3', ['-c', `import sys,json,importlib.util
-sys.path.insert(0,'scripts')
-import models_database as db
-spec=importlib.util.spec_from_file_location('check_model_versions','hosts/claude/hooks/check_model_versions.py')
-hook=importlib.util.module_from_spec(spec);spec.loader.exec_module(hook)
-print(json.dumps({name:[db.check_model_status(name)[0],hook.check_file_content('test.py','model="'+name+'"',[])] for name in db.get_all_model_names()}))`], { encoding: 'utf8' });
-    assert.equal(oracle.status, 0, oracle.stderr);
-    const values = JSON.parse(oracle.stdout);
-    for (const name of getAllModelNames()) {
-        assert.equal(checkModelStatus(name)[0], values[name][0], name);
-        assert.equal(checkContent('test.py', `model="${name}"`, []) ?? null, values[name][1]?.replaceAll('models_database.py', 'models_database.ts') ?? null, name);
-    }
-});
 test('project diagnostic records the completed checker result, never an availability-only pass', async () => {
     const root = mkdtempSync(join(tmpdir(), 'jstack-project-check-'));
     try {

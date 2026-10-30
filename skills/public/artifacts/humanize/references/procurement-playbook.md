@@ -181,6 +181,8 @@ Bold figure captions only when emphasis is needed.
 
 ### O-1. Convert vague expressions to definite commitments
 
+Apply these replacements only to commitments the proposer has confirmed (O-1); mark an unconfirmed possibility for the author instead.
+
 | Disallowed | Replacement |
 |---|---|
 | ~할 수 있다 / ~할 수 있음 | ~한다 |

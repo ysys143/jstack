@@ -1,4 +1,4 @@
-# blob:296f617d8225642337525465e41d9b81b37efffc
+# blob:df758427121cedcbf729276992d87041911a1953
 # TDD Guide: Rust
 ## Framework
 - **In-house Test Framework** — `#[test]`, `#[cfg(test)]` (No separate installation required)
@@ -185,8 +185,7 @@ Requires Node.js 20+.
 ```bash
 git fetch origin main
 cargo llvm-cov --workspace --lcov --output-path lcov.info
-pip install diff-cover # diff-cover 9+ reads LCOV
-diff-cover lcov.info --compare-branch=origin/main --fail-under=90
+uvx diff-cover lcov.info --compare-branch=origin/main --fail-under=90 # diff-cover 9+ reads LCOV
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
 --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \
 --coverage lcov.info --fail-under 90

@@ -1,4 +1,4 @@
-# blob:60b73eb53b697a2e114db4407c019a3d6567e832
+# blob:a07e7b0201e5408c176d11f47a79b943a9dc5099
 # Audit — judge, do not touch
 For security requests, also read the [security discovery contract](references/security-discovery.md)
 and separate static evidence from executable reproduction. Read the
@@ -13,7 +13,7 @@ map when an E-7 finding is sufficient. This conditional path preserves the read-
 **"Tell me what is wrong" and "fix it" have different safety properties.**
 | | `audit` | `cleanup` |
 |---|---|---|
-| Writes | **never** | yes |
+| Writes | **never** to the repository (a proof script runs from scratch) | yes |
 | Reversible | nothing to reverse | needs a clean tree first |
 | Wrong output costs | a wasted read | a wrong edit in the codebase |
 | Runs on | anything, including code you do not own | your working tree only |
@@ -59,6 +59,28 @@ The list is closed at eight, and `tests/test_selfrebut_exceptions.js` fails
 closed if an item, its decision-rule sentence, or the 5-plus-3 split of its sources
 goes missing. A missing exception is not a smaller list; it is a class of real
 defect that disappears with no line in any report.
+## Beyond the diff
+For a change to a shared function, schema, wire format, or configuration, and for
+any small diff you do not yet trust, ask what breaks somewhere the diff does not
+show. Listing callers is the easy part, since a search does it. Look where a
+search stops: the called library's own source and its pinned version, the order
+things run in (teardown, async, retries), the forms the data takes elsewhere (JSON
+an API returns, a database column, bytes another language reads), flags, and code
+several calls downstream.
+Most changes that look risky are safe because of one fact. Find that fact, state
+it, and prove it by running real code, not by writing it up: a short script or test
+that calls the shipped code and fails loudly if the fact is false. A writeup
+reads as convincing whether or not it is true, so the run is the proof. Run it from
+a scratch directory outside the repository, so the review still writes nothing
+there, and only for code you own or were asked to execute; for code you do not
+own, stop at a step-by-step argument and say so.
+Say how far each fact got: asserted, pointed at a `file:line`, argued step by
+step, run, or reproduced in the running app. A fact that stopped at "asserted" is
+reported as unproven.
+## Existing PR feedback
+When the pull request already carries review comments or a failing CI run, read
+[PR feedback](../verify/references/pr-feedback.md) to classify them. That
+procedure drafts and stops; this skill posts nothing either.
 ## Phase 3: report
 Every finding carries `file:line`, the failure it causes, and — when you have
 one — the input that triggers it.
@@ -66,18 +88,13 @@ one — the input that triggers it.
 **Separate what you verified from what you believe.** These are different claims
 and the reader cannot tell them apart from the wording alone.
 ## Review termination
-Finish after reporting the requested scope. When fixes are also authorized,
-the coordinator follows [review termination](../verify/references/self-check.md#review-termination):
-one initial review followed by a focused verification of the reported defects
-and risks introduced by the fixes. Reopen only for a concrete unresolved defect,
-new regression evidence, changed requirements, or an explicit user request.
-Preference changes and optional improvements do not reopen a passing review.
-Keep finding IDs stable across correction rounds. State the requirement or
-observable failure behind each blocker; report advisory improvements separately.
-After two broad rounds, continue with the unresolved findings and their affected
-paths rather than another full scan. If the same blocker survives two correction
-attempts, reassess its cause and remedy before another patch. Outstanding required
-checks remain outstanding; ending a review cycle is not task completion.
+Finish after reporting the requested scope. When fixes are also authorized, the
+coordinator follows [review termination](../verify/references/self-check.md#review-termination),
+which owns the rules: one initial review, a focused follow-up, stable finding IDs,
+and the limit on broad rounds. This skill keeps no copy of them. In this skill's
+report, state the requirement or observable failure behind each blocker and list
+advisory improvements separately. Ending a review is not task completion;
+outstanding required checks stay outstanding.
 ## `--scope=all`
 Reviewing a whole repository rather than a change **degrades two axes** — the
 1000-line axis reports age instead of risk, and "did this change add it" has no
@@ -99,8 +116,6 @@ found by reading, and the report says which it was
 - The exception list is enumerable, not exhaustive — a ninth case is an edit to
 `references/security-exceptions.md`, not a call made mid-review
 ## Optional SDLC caller
-When an explicitly selected `sdlc` run supplies context, preserve its task/run,
-requirement revision and input hashes with the raw result and execution observation.
-Return the original verdict and unverified scope to that coordinator; do not advance
-its stage or approve a human gate. A standalone or external caller does not need
-an SDLC run or new mandatory arguments.
+When an explicitly selected `sdlc` run calls this skill, follow
+[the leaf rules in sdlc](../sdlc/SKILL.md#leaf-skills-called-by-a-run). A standalone
+call needs no run context.

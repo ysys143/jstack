@@ -1,4 +1,4 @@
-# blob:a4c4ad3616f7cb083c597f44943c3174f2bcd461
+# blob:b3bb89d9157219516241b16af0e4dadf71fb20d1
 # Gitrules — git conventions
 ## Why these four together
 Branch, commit, PR, and secrets **are called at the same moments.** You branch
@@ -41,7 +41,8 @@ at `references/branch.md`. Do not create new branches in it.
 ```
 `(scope)` is optional — for plugin work use `plugins`, `git`, `model-checker`.
 **Subject** — 50 characters or fewer, no trailing period, ends with an action
-verb (add, modify, change, or remove).
+verb (add, modify, change, or remove). This is the one place the subject
+length is set; other skills and commands point here instead of restating it.
 **Body** — separated from the subject by a blank line; the first paragraph is
 **why** (problem, motivation), the second is **how** (approach). Wrap at 72.
 **Never advertise the tool, and never add an AI co-author trailer.**

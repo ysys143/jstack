@@ -19,9 +19,3 @@ test('invalid findings fail before reporting a misleading empty result', () => {
   const child = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/cap_findings.js', import.meta.url))], { input: '{"findings":false}', encoding: 'utf8' });
   assert.equal(child.status, 2); assert.equal(child.stdout, ''); assert.match(child.stderr, /expected a list/);
 });
-test('Python oracle preserves complete capped JSON for mixed severity inputs', { skip: process.env.JSTACK_ORACLE !== '1' }, () => {
-  const values = Array.from({ length: 47 }, (_, i) => ({ id: i, severity: ['high', 'LOW', 'unknown', 'medium', '__proto__'][i % 5], message: '한글 😀' }));
-  const script = fileURLToPath(new URL('../../../../../../skills/public/engineering/refactor/scripts/cap_findings.py', import.meta.url)).replace('/dist/skills/', '/skills/');
-  const child = spawnSync('python3', [script], { input: JSON.stringify(values), encoding: 'utf8' });
-  assert.equal(child.status, 0, child.stderr); assert.deepEqual(cap(values), JSON.parse(child.stdout));
-});

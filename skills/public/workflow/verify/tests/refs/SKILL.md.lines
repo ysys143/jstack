@@ -1,7 +1,9 @@
-# blob:8e840abe563e4297048e4156d9847c760fb03f46
+# blob:b82c3646695abec945f245ca1ba073c1b352db9d
 # Verify — is it actually done
 For task requests and corrections, follow the shared [request continuity protocol](../../runtime/TASKS.md) once per session.
 For a CI failure or stale run investigation, read the [CI diagnosis procedure](references/ci-diagnosis.md); it does not verify current code.
+For review comments on a pull request, or for deciding whether a red CI run is a
+flake, read [PR feedback](references/pr-feedback.md).
 Apply the [security verification contract](references/security-verification.md) and
 [pinned upstream reference](references/defending-code-upstream.md) only when the
 contract includes a `보안검증` link. Preserve the existing state and execution
@@ -98,6 +100,14 @@ and required checks pass, continue toward completion; repeat or broaden only for
 new changes, failures, stale evidence, or unresolved correctness concerns.
 A zero exit code with zero
 tests collected is not a pass.
+Each check ends **VERIFIED**, **NOT VERIFIED**, or **INCONCLUSIVE**. INCONCLUSIVE
+means the check could not answer the question: it did not run, it observed a
+different surface than the one that failed, or its result looks the same whether
+the change works or not. It is not a pass. Put it in the Result column and under
+Open in the report. When a check passes too easily, such as green on the first
+run or green with and without the change, test the observation method before
+trusting the result: confirm the command can fail (`scripts/red_probe.js`) and
+that it reads the artifact itself, not a report about the artifact.
 **A pipe hides the exit code.** `cmd | head` reports head's status, not cmd's.
 Write `cmd > out.txt 2>&1; rc=$?` instead.
 ## Bulk edit safety
@@ -135,12 +145,14 @@ enforcement survives because it is proportionate: a new untested branch fails on
 its first run, and nobody is punished for code they did not write.
 | Language | Diff coverage command |
 |---|---|
-| Python | `coverage xml && diff-cover coverage.xml --compare-branch=origin/main --fail-under=90` |
-| JS/TS | `jest --changedSince=origin/main --coverage` with a per-run threshold |
-| Go | `go test -coverprofile=c.out ./...`, convert to cobertura, then `diff-cover` |
-| Rust | `cargo llvm-cov --lcov --output-path lcov.info && diff-cover lcov.info` |
+| Python | `coverage xml && uvx diff-cover coverage.xml --compare-branch=origin/main --fail-under=90` |
+| JS/TS | `jest --coverage --coverageReporters=lcov && uvx diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=90` (vitest: `--coverage.reporter=lcov`) |
+| Go | `go test -coverprofile=c.out ./...`, convert to cobertura, then `uvx diff-cover` |
+| Rust | `cargo llvm-cov --lcov --output-path lcov.info && uvx diff-cover lcov.info` |
 The per-language recipe lives in the matching section of `tdd`'s language
-guides; this skill owns the gate and the reason for it.
+guides; this skill owns the gate and the reason for it. A `--changedSince` or
+`related` run only narrows what executes. It does not measure coverage, so it
+is a fast loop and never this gate.
 **Diff coverage is a floor, not a proof.** A line executed by a test that
 asserts nothing is covered and unverified — which is exactly the state
 `scripts/red_probe.js` exists to detect. Run the probe on the checks that the
@@ -177,17 +189,24 @@ Retain the command, tested input identity, relevant environment, result, and log
 location when available. Distinguish checks executed now, valid results reused,
 and checks not executed. Do not claim time or cost savings without measurements.
 ## Merging a worktree back
-When the work happened in a git worktree, squash-merge it with a message that
-carries the reasoning, not just the file list.
+Merging is not part of verifying. Squash-merge a worktree only when the user
+asked for the merge, and only after they approve the specific squash. A squash
+makes the individual commits unreachable and puts a commit on the target
+branch, which is hard to take back once anyone pulls it. A finished worktree, a
+green check, or a request to verify is not a request to merge.
 1. **Confirm you are in a worktree** — `git rev-parse --git-dir` contains `/worktrees/`
 2. **Verify first.** Phases 1–3 above, before the merge, not after
-3. Squash-merge into the target branch
-4. The message follows `gitrules` — subject 50 chars, body says why then how
+3. **Ask for approval.** Show the target branch, the commits the squash will
+hide, the diff summary, and the drafted message. Wait for the user's yes
+4. Squash-merge into the target branch only after that approval
+5. The message follows `gitrules`, which owns the subject length and the body
+format: why first, then how
 **Do not merge on a red check.** A squash makes the individual commits
 unreachable; the failure becomes harder to bisect.
 The full six-phase procedure — validation, research, target preparation, the
 squash itself, the message, and post-merge verification — is in
-`references/merge.md`.
+`references/merge.md`. Its approval gate sits before the squash and no other
+instruction in that file overrides it.
 ## What this skill owns
 | File | Read or run it when |
 |---|---|
@@ -203,6 +222,7 @@ squash itself, the message, and post-merge verification — is in
 | `references/flaky-tests.md` | A test passes and fails on the same code; retries and quarantine |
 | `references/test-evidence.md` | Explaining a test speed or flakiness rule with its cited source |
 | `references/interactive-cli.md` | Checking a prompt, dialog, TUI, or agent CLI session in a real terminal with tmux or another PTY driver |
+| `references/pr-feedback.md` | Responding to pull request review comments, bot comments, or a failing CI run before any reply, push, or rerun |
 | `references/ci-diagnosis.md` | Diagnosing a CI failure against exact repository, head, run, job, and attempt evidence |
 | `scripts/preflight.js` | Before a package is installed — mode is detected, symlinks are refused |
 | `scripts/package_check.js` | Before release — CHANGELOG top must equal the manifest `version` |
@@ -226,19 +246,12 @@ squash itself, the message, and post-merge verification — is in
 - The human column stays human. Reporting it as settled is the failure this
 skill exists to prevent
 ## Task routing and completion
-For authorized delegation, use the common routing contract in
-[Runtime routing](../../runtime/ROUTING.md). Run `jst route plan --request FILE`,
-then `jst route run --decision FILE` to reserve one attempt. A native decision
-is executed through the current session tools; it is not a CLI substitution.
-Record independently checked artifacts with `jst route record`. If `jstack` is not
-found, follow [jst command on PATH](../../runtime/CLI-PATH.md). Retain explicit
-user model choices, permission boundaries, exclusive files, and host fork limits.
-Only a verification failure permits one model transition; environment failures
-do not justify stronger models. Small tasks stay with the coordinator.
+For authorized delegation, follow [Runtime routing](../../runtime/ROUTING.md):
+plan with `jst route plan`, reserve one attempt with `jst route run`, execute, and
+record checked artifacts with `jst route record`. It owns model transitions and
+the rules every calling skill follows.
 For a selected SDLC Release or the ship command, read [shared ship gates](references/ship-gates.md).
 ## Optional SDLC caller
-When an explicitly selected `sdlc` run supplies context, preserve its task/run,
-requirement revision and input hashes with the raw result and execution observation.
-Return the original verdict and unverified scope to that coordinator; do not advance
-its stage or approve a human gate. A standalone or external caller does not need
-an SDLC run or new mandatory arguments.
+When an explicitly selected `sdlc` run calls this skill, follow
+[the leaf rules in sdlc](../sdlc/SKILL.md#leaf-skills-called-by-a-run). A standalone
+call needs no run context.

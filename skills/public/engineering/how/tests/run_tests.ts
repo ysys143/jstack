@@ -1,0 +1,48 @@
+/** Owning contracts for how: code is explained smallest-complete-answer first, with parallel reading only for large questions. */
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { check_body_deletion, check_contract_coverage, check_no_constant_assertions, check_ref_contracts, check_skill_body, check_total, split_frontmatter, type Result } from '../../../../_suite_lib.js';
+
+const SUITE_FILE = fileURLToPath(import.meta.url), ROOT = dirname(dirname(SUITE_FILE)), SKILLS = dirname(dirname(dirname(ROOT)));
+const COMMIT = "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe";
+const results: Result[] = [];
+function check(name: string, ok: unknown, detail: unknown = ''): void { results.push([name, Boolean(ok), detail]); console.log(`[${ok ? 'PASS' : 'FAIL'}] ${name}${detail ? ' — ' + String(detail) : ''}`); }
+const read = (path: string) => existsSync(path) ? readFileSync(path, 'utf8') : '';
+const flat = (text: string) => text.replace(/\s+/g, ' ');
+const width = (text: string) => [...text].reduce((sum, char) => sum + (/[\u1100-\u115f\u2e80-\u303e\u3041-\u33ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7a3\uf900-\ufaff\uff00-\uff60\uffe0-\uffe6]/.test(char) ? 2 : 1), 0);
+
+const [fm, rawBody] = split_frontmatter(read(join(ROOT, 'SKILL.md')));
+const skill = flat(rawBody), notice = read(join(ROOT, 'NOTICE')), noticeFlat = flat(notice);
+
+const RULES: [string, string][] = [["Purpose: reads and explains and changes no file", "This skill reads and explains. It changes no file."], ["Purpose: placement questions are in scope", "\"where should this live?\""], ["Size: small questions are read and explained without delegation", "**Small**"], ["Size: large questions split the reading", "**Large**"], ["Size: when in doubt take the small path", "When in doubt, take the small path."], ["Size: delegating a question shorter than its brief costs more", "Delegating a question shorter than its brief costs more than answering it."], ["Size: an ambiguous scope is stated and the work goes on", "state your reading of it and go on"], ["Read: two to four angles", "two to four angles"], ["Read: independent reading fits parallel-execution", "fits `parallel-execution`"], ["Read: the brief survives without this conversation", "brief that survives without this conversation"], ["Read: readers are read-only", "Readers are read-only."], ["Read: git status after the readers return", "run `git status`"], ["Read: the tier follows model-selection and no model name is pinned", "Do not pin a model name here."], ["Read: a slice with no result is a gap in the explanation", "A slice with no result is a gap in the explanation, not a pass"], ["Combine: the coordinator writes the explanation", "Do not split the writing across several workers."], ["Combine: disagreements are settled by reading the code", "settle each disagreement by reading the code"], ["Combine: open questions are carried into the answer", "Carry their open questions into the answer"], ["Combine: placement is answered from the neighbors that own the code", "name the layer or package that already owns the neighbors of this code"], ["Combine: no invented convention", "If the repository shows no convention, say so; do not invent one."], ["Order: the smallest complete answer comes first", "**Give the smallest complete answer first.**"], ["Order: one or two sentences, then stop", "One or two sentences that stand alone, then stop."], ["Order: add layers only when asked", "Add layers only when the reader asks."], ["Order: a one-shot run offers depth at the end", "put the offer to go deeper at the end"], ["Order: terms are defined before use", "**Define terms before using them.**"], ["Order: say concrete things", "Say concrete things."], ["Order: stack diagrams for three or more parts", "**Stack diagrams for three or more parts.**"], ["Order: redraw with the next part added", "redraw with the third added"], ["Order: one all-at-once diagram is a reference", "A single all-at-once diagram is a reference, not an explanation."], ["Order: draw nothing when prose covers the flow", "If prose already covers the flow, draw nothing."], ["Order: no quizzes and no theater", "**No quizzes and no theater.**"], ["Order: do not ask the reader to repeat anything back", "Do not ask the reader to repeat anything back"], ["Order: do not flag a part as important, tricky or interesting", "do not flag a part as important, tricky, or interesting"], ["Present: the explanation itself, not a report about the work", "Reply with the explanation itself, not a report about the work you did."], ["Present: in the user's language", "Write in the user's language"], ["Boundary: motivation belongs to research or a recorded decision", "| Why a design was chosen, and its history | `research` skill, or the recorded decision (`decide` skill) |"], ["Boundary: planning belongs to plan", "| Planning a change after understanding the code | `plan` skill |"], ["Boundary: quality judgment belongs to review", "| Judging the quality of existing code | `audit` skill |"], ["Boundary: SVG drawing belongs to svg-diagram", "| Draw a finished architecture as SVG | `diagram` skill |"], ["Limits: true of the revision you read", "The explanation is true of the revision you read."], ["Limits: intent is not in the code", "Intent is not in the code."], ["Limits: a path not traced is listed as untraced", "A path you could not trace is listed as untraced, not guessed"], ["References: the brief template", "`references/explorer-brief.md`"], ["References: the section layout", "`references/explanation-format.md`"]];
+for (const [name, needle] of RULES) check(`SKILL.md ${name}`, skill.includes(needle), skill.includes(needle) ? '' : `missing: ${needle.slice(0, 60)}`);
+
+const description = /^description:\s*"([^"]*)"/m.exec(fm)?.[1] ?? '';
+check('Language: description follows "<sentence>. Triggers: <Korean triggers>."', /^[A-Z][^\n]*\. Triggers: [^\n]*[가-힣][^\n]*\.$/.test(description), description);
+check('Language: description fits 100 display columns (a Korean character counts as two)', description.length > 0 && width(description) <= 100, `${width(description)} columns`);
+check('Language: description names its Korean and file triggers', ["어떻게 동작", "구조 설명", "어디에 둬야"].every((term: string) => description.includes(term)));
+
+
+const prose = flat([rawBody, ...["explorer-brief.md", "explanation-format.md"].map((file: string) => read(join(ROOT, 'references', file)))].join(' '));
+const FORBID: [string, string, string][] = [["no Cursor, pstack or Task-tool references", "\\.cursor|poteto|pstack|Task tool|readonly|subagent_type|unslop", ""], ["no model slugs", "\\b(opus|sonnet|haiku|grok|gpt)-?\\d?", "i"]];
+for (const [name, pattern, flags] of FORBID) check(`Language: ${name}`, !new RegExp(pattern, flags).test(prose));
+
+check('NOTICE: states the skill is adapted from pstack (MIT)', /is adapted from pstack \(MIT\)/.test(noticeFlat));
+check('NOTICE: pins the upstream commit', notice.includes(COMMIT));
+check('NOTICE: says it is a rewrite and not a pinned copy', /not a pinned copy/.test(noticeFlat));
+check('NOTICE: lists at least three changes', ((/## What changed\n([\s\S]*?)\n## /.exec(notice)?.[1] ?? '').match(/^- /gm) ?? []).length >= 3);
+check('NOTICE: carries the MIT license text of the upstream author', notice.includes('Permission is hereby granted, free of charge') && notice.includes('Copyright (c) 2026 Lauren Tan'));
+check('NOTICE: records what jstack added, including the tests', notice.includes('## Added by jstack') && notice.includes('`tests/`'));
+const NOTICE_EXTRA: [string, string][] = [["NOTICE: names the teach skill whose order was applied", "skills/teach/SKILL.md"], ["NOTICE: names the upstream skill path", "skills/how/SKILL.md"], ["NOTICE: names the upstream explorer prompt", "skills/how/references/explorer-prompt.md"]];
+for (const [name, needle] of NOTICE_EXTRA) check(name, notice.includes(needle), notice.includes(needle) ? '' : `missing: ${needle}`);
+
+check_ref_contracts(check, ROOT, [["explorer-brief.md", "explorer brief: fields, report shape, PASS ISSUES BLOCKED verdict", ["| Question |", "| Angle |", "| Out of scope |", "| Already known |", "| Mode |", "| Return shape |", "Read-only: never edit, create, or delete a file", "**Components found:**", "**Flow:**", "**Files read:**", "**Boundaries:**", "**Non-obvious things:**", "**Open questions:**", "**Verdict:**", "`PASS`", "`ISSUES`", "`BLOCKED`", "Read one or two cited locations yourself"], 1200], ["explanation-format.md", "explanation format: five sections in order and a voice rule set", ["## Overview", "## Key concepts", "## How it works", "## Where things live", "## Gotchas", "## Voice", "Define a term before the first sentence that uses it.", "Each picture is the previous one plus one part.", "Drop every section that does not apply", "Do not print framing labels"], 1050]] as [string, string, string[], number][]);
+check_skill_body(check, ROOT, { needles: ["Give the smallest complete answer first", "Stack diagrams for three or more parts", "No quizzes and no theater"], floor: 2950 });
+check_contract_coverage(check, SUITE_FILE, ROOT, { per_file: {"SKILL.md": 51, "NOTICE": 9, "references/explorer-brief.md": 3, "references/explanation-format.md": 3} });
+check_body_deletion(check, SUITE_FILE, ROOT, { minimum: 51 });
+check_no_constant_assertions(check, SUITE_FILE);
+check_total(check, results, 79);
+const passed = results.filter(([, ok]) => ok).length;
+console.log(`\n${passed}/${results.length} 통과`);
+process.exitCode = passed === results.length ? 0 : 1;

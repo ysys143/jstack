@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dateValue, localDate, makeScope, scopeList, shiftDate } from '../scripts/collection-common.js';
 import { collect as collectMtime } from '../scripts/collect_by_mtime.js';
@@ -49,7 +49,6 @@ test('Git collection matches the shell oracle on a real isolated repository', ()
     for (const args of [['init', '-q', repo], ['-C', repo, '-c', 'commit.gpgsign=false', 'commit', '--allow-empty', '-q', '-m', 'fixture title']]) { const result = spawnSync('git', args, { env, encoding: 'utf8' }); assert.equal(result.status, 0, result.stderr); }
     const args = ['2026-01-01', '2026-01-03'];
     const js = spawnSync(process.execPath, [entry('./collect_git.js'), ...args], { env, encoding: 'utf8' }); assert.equal(js.status, 0, js.stderr); assert.match(js.stdout, /fixture title/);
-    if (process.platform !== 'win32' && process.env.JSTACK_ORACLE) { const output=join(f.root,'shell-output.md'); const shell = spawnSync('bash', [resolve('skills/workspace/scripts/collect_git.sh'), ...args, output], { env, encoding: 'utf8' }); assert.deepEqual([js.status, js.stdout, js.stderr], [shell.status, readFileSync(output,'utf8'), shell.stderr]); }
   } finally { f.cleanup(); }
 });
 test('Git failures remain incomplete and author fragments remain one literal argument', { skip: process.platform === 'win32' }, () => {

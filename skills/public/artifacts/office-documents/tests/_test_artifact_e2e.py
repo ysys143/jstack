@@ -29,7 +29,7 @@ def command() -> list[str] | None:
     if office:
         return [office]
     npx = shutil.which("npx")
-    return [npx, "--yes", "@officecli/officecli@latest"] if npx else None
+    return [npx, "--yes", "@officecli/officecli@1.0.160"] if npx else None
 
 
 def run(cli: list[str], args: list[str], evidence: Path, label: str, env: dict[str, str]) -> None:

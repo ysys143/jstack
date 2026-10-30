@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import {spawnSync} from 'node:child_process';
 import {checkPluginPaths} from './check_plugin_paths.js';
 import {checkPathsRegression,parseMiss} from './check_paths_regression.js';
 import * as builder from '../packaging/build.js';
@@ -64,10 +63,6 @@ test('regression keeps the zero-new-miss ceiling and preserves reference/source 
   const {root,write}=fixture(t);const miss='  scripts/gone.js\n    <- skills/a/SKILL.md';write('tests/fixtures/path-reference-baseline.txt','## jstack\n'+miss);write('checker.js','fixture');const checker=path.join(root,'checker.js');
   const output='참조 2건 / 실재 1건 / MISS 1건\nMISS:\n'+miss;assert.equal(parseMiss(output).size,1);assert.equal(checkPathsRegression({root,checker,run:()=>({status:1,stdout:output,stderr:''})}).code,0);
   const changed=output+'\n  scripts/new.js\n    <- skills/a/SKILL.md';assert.equal(checkPathsRegression({root,checker,run:()=>({status:1,stdout:changed,stderr:''})}).code,1);
-});
-test('optional path Python oracle matches compiled-reference and fenced missing diagnostics',{skip:process.env.JSTACK_ORACLE!=='1'},t=>{
-  const {root,write}=fixture(t);write('skills/a/SKILL.md','scripts/present.js\n```\nscripts/absent.js\n```\n자료/결과.md\n`/missing-command`\n');write('scripts/present.js','');write('자료/결과.md','');
-  const result=spawnSync('python3',['scripts/check_plugin_paths.py',root],{encoding:'utf8'});const actual=checkPluginPaths(root);assert.equal(actual.code,result.status);assert.deepEqual(parseMiss(actual.lines.join('\n')),parseMiss(result.stdout));assert.equal(actual.total,Number(/^참조 (\d+)/m.exec(result.stdout)![1]));
 });
 
 

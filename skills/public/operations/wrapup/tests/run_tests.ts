@@ -26,6 +26,8 @@ test('the wrapup convenience surface delegates shared reporting behavior', () =>
   const core = readFileSync(corePath, 'utf8');
   assert.match(skill, /편의 진입점 중 하나/);
   assert.match(skill, /어떤 작업도 `wrapup`을 거쳐야/);
+  assert.match(skill, /얇은\s*진입점이다/);
+  assert.match(skill, /두 명령은 절차를\s*되풀이하지 않는다/);
   assert.match(skill, /runtime\/work_report\.js/);
   assert.match(core, /A workflow may call\s+it/);
   assert.match(core, /Any selected workflow may call it directly/);

@@ -76,6 +76,8 @@ categories:
     - "skills/statechart/repos/pstack/**"
   vendored-create-formal-verification-skill:
     - "skills/create-formal-verification-skill/repos/pstack/**"
+  vendored-maintain-formal-verification-skill:
+    - "skills/maintain-formal-verification-skill/repos/pstack/**"
   scheduler:
     - "skills/dashboard/vitest.config.ts"
 

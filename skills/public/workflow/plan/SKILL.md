@@ -52,9 +52,27 @@ it reads the evidence first, asks one question at a time, and records the answer
 in this spec. Run it here for a new request, and again whenever the user asks to
 be interviewed or grilled, during building as well as before.
 
-**Do not proceed while ambiguous.** If you cannot get the answer, state the
-assumption and record it in the spec — then you know where to look when it turns
-out wrong.
+**Run a question that a run can answer.** Before asking which approach works, ask
+whether running something would settle it (behaviour, timing, output,
+performance). If so, run the smallest throwaway probe in a scratch directory and
+report the result. Ask only about product or preference calls no run can settle.
+The probe states its question, method and effects first, stays local and
+reversible, installs nothing, touches no shared state, and its code is never kept.
+
+**What stops and what does not.** Stop for a question that evidence cannot answer
+and that changes purpose, acceptance, scope or authority, and before any step that
+is hard to undo or leaves this machine (push, PR, publish, delete, install, paid
+API, long-running service). Everything else is local and reversible: reading,
+probing, drafting the spec, even drafting the contract. Do it, and report what you
+did and what is still open in the same reply, so the user corrects afterwards
+instead of approving each step.
+
+**Do not proceed while ambiguous.** If you cannot get the answer, report it as a
+blocker: name the question, what it blocks and who can answer it, and record it as
+`open` in the spec. Do not fill the gap with an assumption and move on. Work that
+does not rest on the answer may continue. A small reversible choice that nothing
+else depends on is the one exception: record it under Assumptions with the
+condition for revisiting it.
 
 ## Phase 2: write the spec
 
@@ -63,6 +81,9 @@ stack, a stack replacement, or a rebuild that changes behavior), read
 [the migration verification reference](references/migration-verification.md)
 before writing Decisions and Acceptance criteria. A schema or data migration
 alone is not one.
+
+Such a plan declares where breakage is allowed and what each phase must pass, and
+does not plan compatibility copies; the reference says how.
 
 Put these sections in `spec.md`.
 
@@ -73,11 +94,33 @@ Put these sections in `spec.md`.
 | **Edge cases** | The boundaries surfaced in Phase 1 |
 | **Constraints** | Performance, compatibility, deadline, what must not be used |
 | **Decisions** | Answers from Phase 1, carried from the interview's record |
-| **Assumptions** | What was assumed instead of answered, and when to revisit it |
+| **Assumptions** | Small reversible choices made instead of an answer, and when to revisit them |
 
 **Whether the acceptance criteria are verifiable is what makes this document
 worth writing.** Not "responds quickly" but "p95 under 200 ms"; not "is secure"
 but "unauthenticated requests get 401".
+
+### Sketch the shape before the code
+
+For non-trivial work, add a **Shape** section to the spec, written before any
+implementation.
+
+- Write the caller's usage first, then derive types, signatures and module
+  boundaries from it, with `not implemented` bodies or pseudocode instead of
+  working code. Get the core data structures and their access paths right before
+  any logic; the logic that follows is then close to obvious.
+- Compare at least two structurally different shapes, not point fixes inside one.
+  Prefer the one that hides more behind a smaller interface and in which a change
+  that looks right from one file is right for the whole repository.
+- Put what every later slice benefits from (shared types, test setup, CI) first,
+  after removing the dead code in its way.
+- When a new requirement lands in an existing design, redesign as if it had been
+  there from the start, carry it through types, docs, examples and rationale, and
+  deliver it in slices. Do not bolt it on.
+- Once implementation starts, the sketch is the contract. A need it did not
+  foresee is a signal to surface, not to absorb. If the same workaround keeps
+  appearing, or types need escape hatches such as casts, the sketch is wrong:
+  redraw it instead of patching.
 
 ### The machine-readable half
 
@@ -173,7 +216,8 @@ be recut before more of them are built on that answer.
 ## When to go back to Phase 1
 
 Go back the moment a question appears **that you cannot answer**. Filling it with
-an assumption and moving on bakes that assumption into the code.
+an assumption and moving on bakes that assumption into the code. The one exception
+is the small reversible choice from Phase 1, recorded under Assumptions.
 
 ## Boundaries
 
@@ -192,8 +236,6 @@ an assumption and moving on bakes that assumption into the code.
 
 ## Optional SDLC caller
 
-When an explicitly selected `sdlc` run supplies context, preserve its task/run,
-requirement revision and input hashes with the raw result and execution observation.
-Return the original verdict and unverified scope to that coordinator; do not advance
-its stage or approve a human gate. A standalone or external caller does not need
-an SDLC run or new mandatory arguments.
+When an explicitly selected `sdlc` run calls this skill, follow
+[the leaf rules in sdlc](../sdlc/SKILL.md#leaf-skills-called-by-a-run). A standalone
+call needs no run context.

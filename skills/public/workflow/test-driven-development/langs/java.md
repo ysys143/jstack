@@ -255,8 +255,7 @@ git fetch origin main
 mvn -q test jacoco:report          # target/site/jacoco/jacoco.xml
 # With Gradle, the jacocoTestReport task must set xml.required = true
 
-pip install diff-cover
-diff-cover target/site/jacoco/jacoco.xml \
+uvx diff-cover target/site/jacoco/jacoco.xml \
     --compare-branch=origin/main --fail-under=90
 
 # Checker path for CI environments that cannot install diff-cover

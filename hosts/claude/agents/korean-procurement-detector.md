@@ -1,7 +1,6 @@
 ---
 name: korean-procurement-detector
 description: Detection specialist that identifies spans in Korean public-procurement proposals matching categories K through O in `${CLAUDE_PLUGIN_ROOT}/skills/humanize/references/procurement-taxonomy.md`, covering procurement-commitment register drift, requirement-traceability role collapse, caption-format violations, body-visual disconnects, and hard-rule violations, then reports category, severity, offsets, reason, and suggested_fix in JSON for evidence-based rewriting.
-model: opus
 ---
 
 # Korean Procurement Style Detector

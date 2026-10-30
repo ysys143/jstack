@@ -26,14 +26,6 @@ description: "Explicit SDLC only: clarify a change through scoped release. 명�
 - Reviewing, explaining or auditing an existing SDLC run without asking to change code
 </Do_Not_Use_When>
 
-<Offer_When>
-- The request is a large, multi-file, long-running or release-bound software change, and
-  the message has no invocation token
-- Offer once per task, in one sentence: `jstack:sdlc`로 시작하면 이 변경을 SDLC로 진행할 수
-  있습니다. The offer never starts a run; do not offer for questions, small fixes, or after a
-  refusal
-</Offer_When>
-
 A general build request, installing jstack, a standalone leaf, or an `autopilot` request
 from another coordinator does not select it. The recipe is `autonomous-build`, revision 1;
 it promises a checked path, not unattended completion or permission to publish.
@@ -66,6 +58,13 @@ method; required reviews and human acceptance; and a current immutable code
 contract mapping. Bind the user's acceptance to this spec revision. A clear
 instruction to implement that exact spec suffices; do not ask again.
 
+When the change is a migration, the spec also carries the plan's breakage
+declaration: where the build or tests may be red during Execute, and which checks
+each phase must pass. Accepting the spec accepts the declaration. Breakage outside
+it is a defect. Whatever is released is green: allowed breakage ends before
+Release, and Prove runs the full evidence set. Phase commits during Execute are
+local checkpoints under the run's commit approval; a red one is never pushed.
+
 Choose `local-commit` or `pr-and-ship` at entry, using an already explicit choice.
 Use ordinary implementation by default. Select TDD only when requested or agreed;
 its scenario approval then case approval remain separate human gates. Mark which
@@ -96,6 +95,35 @@ to Execute. Amend the existing request for the same purpose, then initialize a
 new repo contract and record the link; never edit its immutable contract.yaml.
 A different purpose needs a new task/run. Recheck dependent approvals and proofs.
 A dirty-tree refactor remains blocked: do not silently commit or stash to enter it.
+
+## Decision trail
+
+For a long or unattended run, leave a trail a reviewer can follow without the
+transcript, in records the run already keeps: decisions and assumptions as lines in
+the spec's Decisions and Assumptions (`source: agent`, with an evidence pointer),
+and what ran in leaf results and observations. Do not add a separate decision log
+file; a second log would compete with these records.
+
+Record decision points, not every action: a fork chosen, a pivot or revert and its
+trigger, a discarded worker result, a blocker. Each entry says what was chosen, why
+in plain words, and carries a pointer that resolves (commit, `path:line`, receipt,
+output path), never a paragraph. The trail is append-only: a wrong call gets a later
+entry that supersedes it.
+
+Before handing back, compare the trail with what happened in this session. Each
+entry maps to a real decision or action, each pointer shows what the entry claims,
+and a fork or abandoned approach that shaped the work but has no entry gets one.
+Fix the trail, not the story. Tell the user which entries rest on weak evidence.
+
+## Leaf skills called by a run
+
+Leaf skills point here instead of restating these rules. When a run supplies
+context, the leaf preserves its task/run, requirement revision and input hashes
+with the raw result and execution observation, and returns the original verdict
+and unverified scope to this coordinator. A leaf does not advance a stage or
+approve a human gate. A leaf keeps its own clean-tree prerequisite and does not
+commit or stash to satisfy it without authorization. A standalone or external
+caller needs no SDLC run or new mandatory arguments.
 
 ## Release and leaving the workflow
 

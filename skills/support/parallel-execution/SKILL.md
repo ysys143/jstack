@@ -81,6 +81,23 @@ the result to the coordinator for fresh verification. A simple task whose
 contract says `위임: 불필요` stays local; generating a brief would cost more than
 the work.
 
+## Run one unit before you fan out
+
+When the same job repeats over many pieces, finish one piece end to end first,
+yourself or with a single worker, and only then fan out the rest. The first run
+finds the missing permission, the wrong output shape and the unstated assumption
+once. Fanning out first finds each of them N times at the same moment.
+
+## Competing candidates need a rubric first
+
+When several workers attempt the same artefact so the best can be picked, write
+the scoring rubric before any of them starts: three to six concrete, gradeable
+criteria for what success looks like on this task. Keep the rubric with the
+picker and give candidates only the task. A rubric written after the candidates
+exist gets fitted to whichever one you already liked. Score each candidate
+against the rubric criterion by criterion, then take over the strongest parts of
+the losers by hand rather than averaging the candidates.
+
 ## Independent means independent
 
 If agents are meant to give independent judgements, do not let one see another's
@@ -104,6 +121,22 @@ proof of independence.
 
 Reports that agree with each other are not thereby correct; agreement is
 evidence only when the agents were actually independent.
+
+## Account for every worker
+
+Every worker you start ends as done, replaced, or absorbed into another
+worker's slice. Do not report the task finished while one is still unaccounted
+for. A worker that has gone quiet is judged by its side effects (files written,
+commits pushed, output produced), not by its last status message, which says
+what it meant to do.
+
+A slice with no result is a gap, not a pass. When a report lacks the evidence
+its brief asked for, respawn that worker once. A second miss is recorded in the
+final report as a gap. Never continue with N-1 results when the review was
+required: a missing required review blocks the claim until it has run.
+
+A worker that writes gets its own worktree or branch. Two workers sharing one
+checkout overwrite each other's edits and leave nothing to tell whose they were.
 
 ## What does not belong in a subagent
 
@@ -132,15 +165,10 @@ evidence only when the agents were actually independent.
 
 ## Task routing and completion
 
-For authorized delegation, use the common routing contract in
-[Runtime routing](../../runtime/ROUTING.md). Run `jst route plan --request FILE`,
-then `jst route run --decision FILE` to reserve one attempt. A native decision
-is executed through the current session tools; it is not a CLI substitution.
-Record independently checked artifacts with `jst route record`. If `jstack` is not
-found, follow [jst command on PATH](../../runtime/CLI-PATH.md). Retain explicit
-user model choices, permission boundaries, exclusive files, and host fork limits.
-Only a verification failure permits one model transition; environment failures
-do not justify stronger models. Small tasks stay with the coordinator.
+For authorized delegation, follow [Runtime routing](../../runtime/ROUTING.md):
+plan with `jst route plan`, reserve one attempt with `jst route run`, execute, and
+record checked artifacts with `jst route record`. It owns model transitions and
+the rules every calling skill follows.
 
 ## Boundary
 

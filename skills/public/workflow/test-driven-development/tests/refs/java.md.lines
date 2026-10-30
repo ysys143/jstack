@@ -1,4 +1,4 @@
-# blob:115e6a981b23f82b03d0868f0b54bcbc0ed9f8c3
+# blob:168b4eb1766bf8af4d2aa987d765d7e4b990151a
 # TDD Guide: Java
 ## Framework
 - **JUnit 5** (JUnit Jupiter) — Current standard (2017 release, Spring Boot / Quarkus defaults)
@@ -198,8 +198,7 @@ Requires Node.js 20+.
 git fetch origin main
 mvn -q test jacoco:report # target/site/jacoco/jacoco.xml
 # With Gradle, the jacocoTestReport task must set xml.required = true
-pip install diff-cover
-diff-cover target/site/jacoco/jacoco.xml \
+uvx diff-cover target/site/jacoco/jacoco.xml \
 --compare-branch=origin/main --fail-under=90
 # Checker path for CI environments that cannot install diff-cover
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \

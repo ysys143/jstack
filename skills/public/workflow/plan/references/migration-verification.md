@@ -70,6 +70,33 @@ as the spec is clarified; gaps in the spec surface here first.
   With a contract, set `인간검토: 필요` on it; without one, bind it to a gate as
   above.
 
+## Plan the breakage, not a bridge
+
+Do not plan compatibility copies: no old and new paths running side by side, no
+adapter kept only so that every phase stays green. They outlive the migration
+and become the debt it was meant to remove. Move to the target structure
+directly, and write these into the plan, under **Constraints**, so the user
+approves them with the spec:
+
+- **Where breakage is allowed.** Name the phases or paths in which the build, a
+  test or a feature may be red, and why. Red outside that declaration is a
+  defect, not part of the plan.
+- **What each phase must still pass.** For each phase, the checks that must be
+  green for the code it touches, such as a focused build or the tests of the
+  touched area. A short list per phase, not the whole suite.
+- **Full verification at the last phase.** The final phase runs the whole
+  evidence set chosen above. Nothing is merged or released before it is green.
+- **A commit is the rollback.** End each phase in its own commit so undoing it
+  is a revert; do not add a flag or a dual path for rollback. Phase commits are
+  local checkpoints: making them needs the same commit authorization as any other
+  commit, and a red phase commit is never pushed. Squash or finish to green before
+  anything leaves the machine.
+- **A forced bridge names its removal.** When a PR or release boundary forces
+  compatibility code, for example an external consumer, a published interface,
+  or a deploy that cannot be atomic, list it as a bridge and add the step that
+  deletes it, with the condition for that step. A bridge with no removal step is
+  not accepted.
+
 ## Before scaling the run
 
 Follow "Pilot before scaling" in the parallel-execution support skill

@@ -37,7 +37,7 @@ docs/tests/
 ```
 
 Why src layout:
-- `pip install -e .` makes tests use the same import behavior as production.
+- `uv sync` installs the project in editable mode, so tests use the same import behavior as production.
 - Imports resolve to the installed package instead of the local directory.
 - This prevents `sys.path` bugs that appear only in CI.
 
@@ -280,7 +280,7 @@ pytest -m "not slow"                # filter by marker
 ## Coverage
 
 ```bash
-pip install pytest-cov
+uv add --dev pytest-cov
 pytest --cov=src --cov-branch --cov-report=term-missing
 pytest --cov=src --cov-branch --cov-report=html   # htmlcov/index.html
 pytest --cov=src --cov-branch --cov-report=xml    # coverage.xml — diff-gate input
@@ -327,8 +327,7 @@ git fetch origin main
 
 pytest --cov=src --cov-branch --cov-report=xml    # coverage.xml
 
-pip install diff-cover
-diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
+uvx diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
 
 # Use this skill's checker when CI cannot install diff-cover
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \

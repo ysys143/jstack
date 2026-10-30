@@ -11,5 +11,10 @@ push or merge. Stop when a preceding step fails.
 
 Bind the verdict to repository, HEAD, base, check output and relevant inputs.
 Changed inputs invalidate it. An unavailable checker, interrupted run or uncertain
-outcome remains incomplete. Preserve the existing optional acceptance walkthrough
-when invoked from the Claude ship command; that offer is not an additional gate.
+outcome remains incomplete. The one carry-over is a review verdict across a
+rebase: it still stands when `git patch-id --stable` gives the same id for the
+reviewed change and the new head's change (diff each against its own merge base).
+The rebase moved the commits without altering what they change. Check results
+bound to a build or to the base content do not carry over; run them again.
+Preserve the existing optional acceptance walkthrough when invoked from the
+Claude ship command; that offer is not an additional gate.

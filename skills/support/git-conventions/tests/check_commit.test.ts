@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkBranch, checkMessage } from '../scripts/check_commit.js';
 import { DEFAULT_CONVENTIONS } from '../../../../runtime/conventions.js';
@@ -13,19 +13,6 @@ const script = fileURLToPath(new URL('../scripts/check_commit.js', import.meta.u
 function isolated(home: string, extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env, HOME: home, USERPROFILE: home, ...extra }; delete env.JSTACK_PROFILE; if (!('JSTACK_CONVENTIONS_FILE' in extra)) delete env.JSTACK_CONVENTIONS_FILE; return env;
 }
-const oracle = resolve('skills/gitrules/scripts/check_commit.py');
-test('commit and branch verdicts match the Python oracle, including Unicode lengths', { skip: !process.env.JSTACK_ORACLE }, () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-gitrules-'));
-  try {
-    const messages = ['', 'feat: add behavior', 'feat(scope): explain behavior\n\nThe reason and implementation.', 'invalid', "a'quote", 'feat: ends.', 'wrong: subject', 'fix: ' + '한'.repeat(46), 'fix: ' + '😀'.repeat(46), 'fix: subject\nbody', 'fix: subject\n\n' + 'a'.repeat(73), 'fix: subject\n\nhttp' + 'x'.repeat(100), 'fix: subject\n\nGenerated with Claude Code', 'fix: subject\n\nCo-Authored-By: Claude', 'fix: subject\n\nClaude-Session: abc', 'fix: subject\n\nGenerated with [Claude Code](https://claude.com/claude-code)', 'fix: subject\n\nco-authored-by:claude <x@y>', 'fix: subject\n\nCO-AUTHORED-BY :  Claude', 'fix: subject\n\ngenerated  with claude code', 'fix: subject\n\nclaude-session : 1', 'fix: subject\n\n\u{1F916} Generated with [Claude Code](https://claude.com/claude-code)', 'fix: subject\n\n  Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>', 'fix: subject\n\nexplain why Co-Authored-By: Claude is banned', 'fix: subject\n\nCo-authored-by: Claudette <c@example.com>', 'fix: subject\n\nCo-authored-by: Claude Monet <claude@example.com>', 'fix: subject\n\nCo-Authored-By: Monet <x@anthropic.com>', 'fix: subject\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>', 'fix: subject\n\nCo-authored-by: Claudeé <c@example.com>', 'fix: subject\n\nCo-authored-by: Claude한 <c@example.com>','fix: subject\r\n\r\nbody', 'fix: subject\u2028\u2028body'];
-    const branches = ['feat/topic', 'fix/two/levels', 'remove/topic', 'username/topic', 'bad_name/Topic', 'feat/', 'feat/a_', 'feat/a/b', "feat/a'", 'Feat/topic'];
-    for (const [flag, cases] of [['--message', messages], ['--branch-name', branches]] as const) for (const value of cases) {
-      const options = { cwd: root, encoding: 'utf8' as const, env: isolated(root, { PYTHONDONTWRITEBYTECODE: '1' }) };
-      const py = spawnSync('python3', [oracle, flag, value], options), js = spawnSync(process.execPath, [script, flag, value], options);
-      assert.notEqual(py.status, null, py.stderr); assert.deepEqual([js.status, js.stdout, js.stderr], [py.status, py.stdout, py.stderr], `${flag} ${JSON.stringify(value)}`);
-    }
-  } finally { rmSync(root, { recursive: true, force: true }); }
-});
 test('invalid arguments, missing staged files, and non-repositories cannot report a pass', () => {
   const root = mkdtempSync(join(tmpdir(), 'jstack-gitrules-negative-'));
   try {

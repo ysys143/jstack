@@ -29,7 +29,7 @@ at the verification stage.
 
 **2.1 lint + prescan (deterministic, before the LLM):** Run with `Bash`.
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/prescan.js \
+node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/prescan.js \
   --input _workspace/{run_id}/01_input.txt \
   --taxonomy ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md \
   --out _workspace/{run_id}/02_candidates.json
@@ -39,7 +39,7 @@ forms or duplicate IDs stop execution before candidate generation. Output:
 `02_candidates.json`, containing ANCHORED candidates, COMPUTED metrics, and a
 taxonomy hash stamp.
 
-**2.2 detector (LLM judgment):** Invoke `ai-tell-detector` with `Agent` (`model: "opus"`).
+**2.2 detector (LLM judgment):** Invoke `ai-tell-detector` with `Agent`.
 ```
 run_id: {run_id}
 input_path: _workspace/{run_id}/01_input.txt
@@ -53,7 +53,7 @@ candidate in `findings` or `kept`.
 
 **2.3 reconcile (deterministic gate, after the LLM):** Run with `Bash`.
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/reconcile.js \
+node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/reconcile.js \
   --candidates _workspace/{run_id}/02_candidates.json \
   --detection _workspace/{run_id}/02_detection.json \
   --taxonomy ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md \
@@ -70,7 +70,7 @@ candidates, at most 2 times. If it still fails, request human intervention.
 
 **Execution mode:** one subagent call per iteration, at most 3 iterations.
 
-Invoke `korean-style-rewriter` with `Agent` (`model: "opus"`).
+Invoke `korean-style-rewriter` with `Agent`.
 
 Input:
 ```
@@ -89,7 +89,7 @@ auditor's rollback decision.
 
 Run with `Bash` (vendored from upstream im-not-ai v2.3):
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/verify_gates.js \
+node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/verify_gates.js \
   --before _workspace/{run_id}/01_input.txt \
   --after _workspace/{run_id}/03_rewrite.md \
   --genre {essay|news|blog|report}
@@ -246,8 +246,9 @@ Handle feedback by type:
 
 ## Agent invocation rules
 
-**Specify `model: "opus"` in every Agent call.** Pass data through numbered files
-under `_workspace/{run_id}/`.
+**Do not pin a model in an Agent call.** Model choice follows the `models` skill
+(`model-selection`), and no model family is a prerequisite of this pipeline.
+Pass data through numbered files under `_workspace/{run_id}/`.
 
 Agent definitions in the plugin's `agents/` directory: korean-ai-tell-taxonomist,
 ai-tell-detector, korean-style-rewriter, content-fidelity-auditor, naturalness-reviewer.

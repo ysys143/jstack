@@ -43,10 +43,12 @@ information: exactly which capability is missing.
 
 ## Never install on the user's behalf
 
-Print the command; do not run it. Installing changes a machine the user
-maintains, in a way this session did not scope and cannot undo cleanly. Package
-managers pull dependencies, write outside the project, and sometimes require
-elevation — none of that is inside "help me with this task".
+Print the command; do not run it unless the user authorized that install for
+this task; a request to do the task is not
+authorization to install what it needs. Installing changes a machine the user maintains,
+in a way this session did not scope and cannot undo cleanly. Package managers
+pull dependencies, write outside the project, and sometimes require elevation —
+none of that is inside "help me with this task".
 
 The output on exit 2 is the install command, in full, ready to paste. Guidance
 that says "install X" without the command is not guidance.
@@ -143,15 +145,10 @@ the two disagree with nobody being told.
 
 ## Task routing and completion
 
-For authorized delegation, use the common routing contract in
-[Runtime routing](../../runtime/ROUTING.md). Run `jst route plan --request FILE`,
-then `jst route run --decision FILE` to reserve one attempt. A native decision
-is executed through the current session tools; it is not a CLI substitution.
-Record independently checked artifacts with `jst route record`. If `jstack` is not
-found, follow [jst command on PATH](../../runtime/CLI-PATH.md). Retain explicit
-user model choices, permission boundaries, exclusive files, and host fork limits.
-Only a verification failure permits one model transition; environment failures
-do not justify stronger models. Small tasks stay with the coordinator.
+For authorized delegation, follow [Runtime routing](../../runtime/ROUTING.md):
+plan with `jst route plan`, reserve one attempt with `jst route run`, execute, and
+record checked artifacts with `jst route record`. It owns model transitions and
+the rules every calling skill follows.
 
 ## Boundary
 

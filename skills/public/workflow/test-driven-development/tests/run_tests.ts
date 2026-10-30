@@ -20,10 +20,10 @@ function walk(root:string):[string,string[],string[]][]{const entries=readdirSyn
 const SKILL_FLOOR:any=4413;
 const [C_FLOOR, GO_FLOOR, JAVA_FLOOR, JS_FLOOR]:any=[7148, 7520, 8854, 6726];
 const [PY_FLOOR, RUST_FLOOR, TS_FLOOR, ANTI_FLOOR]:any=[9845, 7070, 7217, 7183];
-const PER_FILE:any={"SKILL.md": 44, "langs/c.md": 7, "langs/go.md": 6, "langs/java.md": 6, "langs/javascript.md": 6, "langs/python.md": 8, "langs/rust.md": 6, "langs/typescript.md": 6, "references/antipatterns.md": 10, "references/test-budget.md": 3, "references/test-portfolio.md": 3, "NOTICE": 1};
-const BODY_MIN:any=44;
-const GATE_MIN:any=28;
-const TOTAL:any=137;
+const PER_FILE:any={"SKILL.md": 47, "langs/c.md": 7, "langs/go.md": 6, "langs/java.md": 6, "langs/javascript.md": 6, "langs/python.md": 8, "langs/rust.md": 6, "langs/typescript.md": 6, "references/antipatterns.md": 10, "references/test-budget.md": 3, "references/test-portfolio.md": 3, "NOTICE": 1};
+const BODY_MIN:any=47;
+const GATE_MIN:any=29;
+const TOTAL:any=141;
 const TEST_BUDGET_FLOOR:any=4247;
 const TEST_PORTFOLIO_FLOOR:any=2393;
 const FAIL_UNDER:any="90";
@@ -69,6 +69,10 @@ check("Gate: scenario approval is required", (truth((contains((fm + skill), "[ap
 check("Gate: prohibits proceeding without approval", (contains(skill, "Do not proceed without the user's approval")));
 check("Gate: limitations identify approval as a human step", (truth((contains(skill, "human step"))) && truth((contains(skill, "never automatic")))));
 check("Gate: cites a mechanism for checking both approvals", (truth((contains(skill, "test_gates.js approvals"))) && truth((contains(skill, "a rule with no enforcement")))));
+{const td=temporaryDirectory();try{const seg=skill.split('```').find((part:string)=>part.includes('Scenario-Approved-By:'))??'';const pp=join(td,'skill_plan.md');writeFileSync(pp,seg);const [prc,pout]=gate('approvals','--plan',pp);check("Gate: the approval example in SKILL.md passes the approvals checker",prc===0&&contains(pout,'two approvals are recorded'),`rc=${prc}`);}finally{removeTree(td,{ignore_errors:true});}}
+check("Gate: drafting and scratch probes proceed and are reported; building waits for approval", (contains(skill, "**What waits and what does not.**") && contains(skill, "local and reversible") && contains(skill, "say in your\nreply what you drafted or ran") && contains(skill, "ask first") && contains(skill, "Everything from Phase 3 on is built")));
+check("Bug fix: a cheap local test fails before the fix, otherwise the closest executable check with the reason", (contains(skill, "## Fixing a bug") && contains(skill, "watch it fail for the reason in the report") && contains(skill, "**No new test beats a bad one:**") && contains(skill, "say why there is no failing test") && contains(skill, "failing-before")));
+check("uv: no language guide or SKILL.md tells the reader to run pip or pipx", (!sorted(on_disk).some((f:string)=>/\bpipx?\s+install\b|\bpython3?\s+-m\s+pip\b/.test(read(join(LANGS,f)))) && !/\bpipx?\s+install\b/.test(skill)));
 check("Gate: cites diff coverage instead of an absolute threshold", (truth((contains(skill, "test_gates.js diff-coverage"))) && truth((contains(skill, "take legacy debt hostage"))) && truth((contains(skill, "lines this change added")))));
 polarity("Polarity: prohibition on proceeding without approval has not reversed", skill, ["**Do not proceed without the user's approval.**", "**Scenario approval is a human step.** It is never automatic"], ["may proceed without the user", "Proceed without", "approval is optional", "approval is automatic", "proceed without waiting", "It is automatic", "approval when the scenarios are obvious"]);
 (n_all=count(skill, "proceed without the user's approval"));
