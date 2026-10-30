@@ -4590,8 +4590,16 @@
       "target": "skills/host-audit/tests/run_tests.ts"
     },
     {
+      "source": "skills/public/artifacts/humanize/LICENSE.dodaeri",
+      "target": "skills/humanize/LICENSE.dodaeri"
+    },
+    {
       "source": "skills/public/artifacts/humanize/LICENSE.fluent-korean",
       "target": "skills/humanize/LICENSE.fluent-korean"
+    },
+    {
+      "source": "skills/public/artifacts/humanize/LICENSE.humanizer",
+      "target": "skills/humanize/LICENSE.humanizer"
     },
     {
       "source": "skills/public/artifacts/humanize/LICENSE.im-not-ai",
@@ -4604,6 +4612,10 @@
     {
       "source": "skills/public/artifacts/humanize/LICENSE.noslop-ko",
       "target": "skills/humanize/LICENSE.noslop-ko"
+    },
+    {
+      "source": "skills/public/artifacts/humanize/LICENSE.stop-slop",
+      "target": "skills/humanize/LICENSE.stop-slop"
     },
     {
       "source": "skills/public/artifacts/humanize/NOTICE",

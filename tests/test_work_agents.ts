@@ -39,8 +39,10 @@ bare=new Set([...bare].filter((name:string)=>![...refs].some((ref:string)=>basen
 (bare=new Set(Array.from(bare).filter((b: any) => truth((!isDeepStrictEqual(b,(n + ".md"))))).map((b: any) => (b))));
 check(("References: " + pyStr(n) + " has no pathless filename citations"), !truth(bare), (pyStr(sorted(bare))));
 }
+{const nr=read(join(AG, "naturalness-reviewer.md"));
+check("naturalness-reviewer: reader rubric is evidence that never overrides gates", contains(nr, "### Axis 4: Reader rubric") && contains(nr, "It never overrides Axis 1,\nthe fidelity audit, or the deterministic gates.") && contains(nr, "**Deletion beyond the floor**"));}
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 48);
+check_total(check, results, 49);
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any) => truth(ok)).map(([_name, ok, _detail]: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + pyStr(passed) + "/" + pyStr(length(results)) + " 통과"));
 return (truth((isDeepStrictEqual(passed,length(results)))) ? 0 : 1);

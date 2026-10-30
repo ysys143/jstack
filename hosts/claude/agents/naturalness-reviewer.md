@@ -32,11 +32,29 @@ Flag over-polishing when at least two of these signals occur together:
 - **Excessive colloquialization**: Formal prose becomes `~해요` or `~네요` unless the source was already informal or colloquial.
 - **Overworked rhythm**: Every sentence becomes deliberately short and breathless, or long sentences are mixed in excessively and become difficult to read.
 - **Excessive vocabulary replacement**: Core source terms are replaced and topic continuity is lost.
+- **Deletion beyond the floor**: Without markup symbols (`#`, `**`, `|`, emoji), the rewrite is under 75% of the source, and a deleted sentence is not chatbot residue, an empty stock phrase, or a repetition of the sentence before it.
+- **New tells**: The rewrite adds a closing punch, an aphorism, a `A라기보다 B` contrast, a tallying ending, or a dash that the source did not have.
 
 ### Axis 3: Korean naturalness (qualitative judgment)
 - Are particles and endings natural?
 - Does logic flow across paragraphs?
 - Are there stumbling points such as awkward word order, unnecessary commas, or ungrammatical sentences?
+
+### Axis 4: Reader rubric (stop-slop via dodaeri)
+Score the source and the rewrite from 1 to 10 on each question, for a total out of 50:
+
+| Axis | Question |
+|---|---|
+| Directness | Does it say the thing, or announce that it will? |
+| Rhythm | Do sentence lengths and endings vary, or tick like a metronome? |
+| Reader trust | Does it avoid re-explaining what the reader knows and over-reassuring? |
+| Human voice | Read aloud, does it sound like something a person said? |
+| Density | Are deletable sentences and modifiers left? |
+
+The rubric is reviewer judgment recorded as evidence. It never overrides Axis 1,
+the fidelity audit, or the deterministic gates. A rewrite total under 35 with no
+other trigger yields `rewrite_round_2` targeting the spans behind the lowest
+axes, counted inside the three-round limit.
 
 ## Decision matrix
 
@@ -67,6 +85,11 @@ Flag over-polishing when at least two of these signals occur together:
     "over_polish_signals": [],
     "verdict": "accept",
     "quality_level": "A"
+  },
+  "reader_rubric": {
+    "source": {"directness": 3, "rhythm": 3, "reader_trust": 3, "human_voice": 3, "density": 3, "total": 15},
+    "rewrite": {"directness": 8, "rhythm": 7, "reader_trust": 7, "human_voice": 7, "density": 7, "total": 36},
+    "length_ratio": 0.84
   },
   "residual_findings": [
     {

@@ -9,7 +9,7 @@ description: "Edit prose, remove AI tells, write up findings. Triggers: 고쳐�
 
 Choose the execution level before the language rules. Select `direct` when the
 requested output is Korean or English and the user makes an unqualified edit
-request such as `고쳐줘`, `다듬어줘`, `윤문해줘`, `영문 윤문해줘`,
+request such as `고쳐줘`, `다듬어줘`, `윤문해줘`, `말투 다듬어줘`, `영문 윤문해줘`,
 `edit this`, `polish this`, or `rewrite this clearly`. Read
 `references/direct.md`, apply its Korean or English branch, return only the
 edited artifact, and stop. Structural rewriting is allowed; `direct` is

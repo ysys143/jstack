@@ -32,6 +32,9 @@ local path.
 | [jkf87/noslop-ko](https://github.com/jkf87/noslop-ko) | MIT | — | `humanize` references |
 | [corca-ai/claude-plugins](https://github.com/corca-ai/claude-plugins) | MIT | — | `google-workspace` report references |
 | [epoko77-ai/im-not-ai](https://github.com/epoko77-ai/im-not-ai) | MIT | `82137e8` | `humanize` references and scripts |
+| 도대리의 서랍장, humanize-ko ([EP.01](https://dodaeri.vercel.app/ep/1)) | MIT, declared on the page; no individual holder named | — | `humanize` references and the `naturalness-reviewer` agent |
+| [blader/humanizer](https://github.com/blader/humanizer) | MIT | — | `humanize` English references and Korean structure rules |
+| [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) | MIT | — | `naturalness-reviewer` reader rubric |
 | [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) | MIT | `7b8fece` | `verify`, `plan` and `skill-creator` references |
 | [OWASP/CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries) | CC BY-SA 4.0 | `6b6a66b` | `skills/public/workflow/review/references/owasp-cheatsheet-map.md` |
 | hyperresearch | MIT | — | `skills/public/research/research` references and wrapper contract |
