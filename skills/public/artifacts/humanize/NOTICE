@@ -9,7 +9,19 @@ projects; their license texts are kept beside this file.
 | [jkf87/noslop-ko](https://github.com/jkf87/noslop-ko) | `LICENSE.noslop-ko` | `references/register-invariants.md`, `references/ai-tell-taxonomy.md` |
 | [snflkd/fluent-korean](https://github.com/snflkd/fluent-korean) | `LICENSE.fluent-korean` | `references/ai-tell-taxonomy.md` and the `fluent-korean` output styles |
 | [chrisryugj/kordoc](https://github.com/chrisryugj/kordoc) | `LICENSE.kordoc` | `references/register-axis.md` |
+| 도대리의 서랍장, humanize-ko ([EP.01](https://dodaeri.vercel.app/ep/1)) | `LICENSE.dodaeri` | `references/ai-tell-taxonomy.md` (v3.2), `references/rewriting-playbook.md`, `references/direct.md`, `references/pipeline-general.md`, and the `naturalness-reviewer` agent |
+| [blader/humanizer](https://github.com/blader/humanizer) | `LICENSE.humanizer` | `references/en-taxonomy.md` and `references/en-body.md` (v2.9.1), and, through humanize-ko, the Korean structure rules C-13–C-17 and D-8–D-15 |
+| [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) | `LICENSE.stop-slop` | Through humanize-ko, the five-axis reader rubric in the `naturalness-reviewer` agent |
 
 The abstract-metaphor and dash rules (taxonomy categories L and J-3) follow the
 principles of benelog's gist "클로드 문체 없애기 지침", which carries no license. Only the
 principles are used; the wording is original and no text is copied from the gist.
+
+humanize-ko itself adapts im-not-ai, blader/humanizer, and stop-slop. Its page
+declares MIT without naming an individual holder and asks that its source and
+license section be kept; `LICENSE.dodaeri` records that. The adapted text was
+read on 2026-10-30 through a reader view of the page; the SHA-256 of the skill
+text in that view (from its frontmatter through its license section) is
+`6d8af3d1479affca8174188bbe16c78b215b49b2ae489fc7dfb4e2b97c108a0b`. Rules are
+restated in English; their Korean example phrases are quoted from humanize-ko
+under its MIT terms. The skill file itself is not vendored.

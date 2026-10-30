@@ -1,4 +1,6 @@
-# Korean AI-Tell Taxonomy v3.1
+# Korean AI-Tell Taxonomy v3.2
+
+> v3.2 changes: Absorbed 도대리의 서랍장 humanize-ko (EP.01, MIT). Added HOLISTIC rules C-13–C-17, D-8–D-15, E-8–E-10, G-4, I-7, and I-8 without corpus validation. Made A-10, G-1, and I-4 preserve modality (commitment strength) and added the strawman test to C-8's keep conditions.
 
 > v3.1 changes: Selectively ported four preventive rules from snflkd/fluent-korean (output-style, MIT): A-20 (chains/density of 의), A-21 (morpheme-by-morpheme technical-term translation), F-6 (misused metaphors), and F-7 (pedantic archaic/rare words). All are HOLISTIC/S3 naturalness rules without corpus validation. E-2 now distinguishes nominal-ending variation to retain from telegraphic style to remove. J-3 also incorporates the em-dash rule from benelog’s "클로드 문체 없애기 지침" gist: replace by function (parenthetical insertion with parentheses, sentence connection with separate sentences, title/subtitle with body text), exempt code/quotations, and **prohibit colon substitution**.
 
@@ -91,7 +93,7 @@ Traces of English/Japanese syntax forced into Korean word order and particles: t
 ### A-10. Overuse of "~할 수 있다" [S2]
 - Pattern: Possibility statements (English `can/be able to`).
 - Example: "효율을 높**일 수 있다**. 비용을 줄**일 수 있다**. 시간을 단축**할 수 있다**."
-- Remedy: Shift to definite assertions ("높인다", "줄인다"). Retain only when possibility is the intended meaning.
+- Remedy: **Preserve modality.** Assert ("높인다", "줄인다") only when the source states an established fact and "할 수 있다" is a translation reflex, not a possibility claim. When possibility, capability, or permission is the meaning, keep that strength and vary only the surface of some occurrences ("높일 여지가 있다", "줄이는 데 쓸 수 있다", or a joined clause). Changing a possibility into an assertion changes commitment strength (`references/register-invariants.md`, immutable item 8).
 
 ### A-11. Overuse of "~을 위해" purpose clauses [S2]
 - Pattern: `X을 위해 Y한다` (English `in order to`).
@@ -222,6 +224,7 @@ Traces of English/Japanese syntax forced into Korean word order and particles: t
 - class: ANCHORED
 - 표층형: `(?:가|이) 아니라|라기보다|이기 이전에|인가,`
 - Keep: **Do not eliminate all**. Removing every antithesis when the original has 5+ makes verify_gates P2 FAIL. Keep one per chain (evidence: preservation choice).
+- Keep (strawman test · dodaeri port): Keep an antithesis whose A is a belief the reader actually holds or that the source attributes to someone; that contrast is content. Rewrite it when nobody in the text holds A and the denial exists only to make B look larger: state B directly ("이건 기술의 문제가 아닙니다. 사람의 문제입니다." → "원인은 사람에게 있습니다"). Do not rewrite into another C-8 surface form: "A라기보다 B" is itself a C-8 trigger. The lightweight `direct` route keeps at most one surviving contrast per artifact.
 
 ### C-9. Parenthesized numeric indexing "1) 2) 3)" [S2] · upstream port in v3.0
 - Pattern: `1) ... 2) ... 3) ...` lists within a paragraph or adjacent sentences. A notation signature separate from C-1 (첫째·둘째) and C-2 (bullets). LLMs use it almost automatically for three items.
@@ -253,6 +256,38 @@ Traces of English/Japanese syntax forced into Korean word order and particles: t
 - Remedy: When over the threshold, revise some sentences by (a) splitting at periods, (b) absorbing commas into connective endings, or (c) deleting commas.
 - class: COMPUTED
 - 지표: comma_inclusion_rate > 0.5 and sentence_count >= 5
+
+### C-13. Forced triplets [S2] · dodaeri port
+- Pattern: Content is padded or trimmed to exactly three items when the meaning does not have three parts: "효율, 혁신, 성장", three examples where one carries the point, or three short facts followed by a one-line lesson.
+- Remedy: Cut to the items the source actually supports, or develop the strongest one. Keep a genuine three-part list. Never invent a third item and never delete a fact that the source states.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+- **Empirical caution**: Ported without corpus validation. Treat it as a preventive naturalness rule; promote to ANCHORED only after the extension rule's two reproductions and a surface regex.
+
+### C-14. Closing one-line punch and staccato fragments [S2] · dodaeri port
+- Pattern: A paragraph ends with a short standalone sentence that restates what it just said ("이게 핵심입니다.", "차이는 분명합니다.", "다시 읽어 보세요."), or a run of verbless fragments ("변명 없이. 핑계 없이.").
+- Remedy: Delete the punch when it carries no new fact. Merge staccato fragments into one sentence with the predicate restored. A short sentence that adds a new fact is not a punch; keep it.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+- **Empirical caution**: Ported without corpus validation. Treat it as a preventive naturalness rule; promote to ANCHORED only after the extension rule's two reproductions and a surface regex.
+
+### C-15. Heading restated by the first sentence [S2] · dodaeri port
+- Pattern: The sentence right under a heading repeats the heading ("## 성능" → "성능이 중요합니다.").
+- Remedy: Delete that sentence and start with the first sentence that adds information. Distinct from C-6, which targets "이 섹션에서는 ~를 다룬다" guidance.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### C-16. Tables for two- or three-item comparisons [S3] · dodaeri port
+- Pattern: A comparison that one or two sentences carry is turned into a table, or each table cell holds a full sentence.
+- Remedy: Write the comparison as prose when sentences carry it. Keep tables whose cells are data the reader scans across rows, and never alter table data itself.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### C-17. Text describing itself [S2] · dodaeri port
+- Pattern: The artifact narrates its own form: "아래 표는 ~를 비교한 것입니다", "이 문서는 ~순서로 구성되어 있습니다", "확인되지 않은 내용은 표시했습니다".
+- Remedy: Delete what the reader can already see. Keep a reading instruction the reader needs and cannot infer, such as the meaning of a marker the document defines.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
 
 ---
 
@@ -306,6 +341,57 @@ Stock phrases rarely used by human Korean writers but repeatedly generated by LL
 - 표층형: `(?:을|를) 넘어 |['"'"].{1,20}['"'"]에서 ['"'"].{1,20}['"'"](?:으로|로)`
 - Keep: Preserve physical movement or boundary crossing ("고개를 넘어").
 
+### D-8. Aphorism formula [S2] · dodaeri port
+- Pattern: A maxim-shaped sentence stands in for the claim: "본질은 ~다", "결국 중요한 건 ~다", "X는 Y의 언어다".
+- Remedy: Replace it with the concrete claim the paragraph supports. If the paragraph supports none, delete the maxim instead of inventing one.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+- **Empirical caution**: Ported without corpus validation. Treat it as a preventive naturalness rule; promote to ANCHORED only after the extension rule's two reproductions and a surface regex.
+
+### D-9. Teaser openers [S2] · dodaeri port
+- Pattern: An opener delays the point: "자, 그럼 살펴볼까요?", "지금부터 알아야 할 것은", "솔직히 말하면?".
+- Remedy: Delete the opener and begin with the point.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### D-10. Arguing with an absent opponent [S2] · dodaeri port
+- Pattern: A rebuttal frame introduces an objection that nobody in the text raised: "오해하지 마세요", "~라고 생각하실 수도 있지만".
+- Remedy: Delete the invented objection and keep the claim. Keep the frame when the source names who holds the objection or the reader is known to hold it.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### D-11. Inflated meaning and outlook endings [S2] · dodaeri port
+- Pattern: An ordinary fact is given grand significance ("중요한 전환점", "새로운 시대의 신호"), or the text ends with a hopeful outlook paragraph ("앞으로가 더 기대됩니다") or a closing "향후/앞으로/중장기적으로" with no date or plan behind it.
+- Remedy: Keep the fact and end on the last concrete fact. Replace a vague future marker with the actual date or plan when the source gives one; otherwise delete the marker, not the plan it introduces.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### D-12. Signboard sentences [S2] · dodaeri port
+- Pattern: A sentence announces that a topic exists instead of stating it: "과제도 남아 있다", "한계도 분명하다".
+- Remedy: Replace the signboard with the actual challenge or limitation the source gives. When the source gives none, delete the signboard.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### D-13. Tallying endings [S2] · dodaeri port
+- Pattern: A sentence ends by tallying its own logic: "~하는 이유다", "결국 ~로 이어진다".
+- Remedy: State the cause and result in normal order ("그래서 ~다"). Do not create a new tallying ending while rewriting.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### D-14. Dictionary metaphors [S2] · dodaeri port
+- Pattern: Stock metaphors from news and policy prose replace a factual statement: "청사진", "적신호", "신호탄", "뿌리내리다", "진단은 서늘하다".
+- Remedy: State the fact the metaphor stands for: plan, warning, first instance, settled adoption, or a severe assessment. Distinct from category L, which covers abstract verbs and nouns with keep conditions.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+- **Empirical caution**: Ported without corpus validation. Treat it as a preventive naturalness rule; promote to ANCHORED only after the extension rule's two reproductions and a surface regex.
+
+### D-15. Chatbot residue and knowledge-limit confessions [S1] · dodaeri port
+- Pattern: Conversation wrappers ("좋은 질문입니다!", "물론이죠!", "도움이 되셨길 바랍니다", "더 궁금한 점이 있으시면 말씀해 주세요", "다음은 ~입니다.") or knowledge-limit hedges ("구체적인 자료는 제한적이지만 ~로 보입니다") survive in an artifact.
+- Remedy: Delete the wrapper and keep the content it wraps. Replace a knowledge-limit hedge with a plain statement that the supplied material does not contain the information, or delete it.
+- **Boundary**: Greetings, sign-offs, and signatures in letters, mail, and notices predate chatbots. They are not residue; keep them.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
 **Remedy:** Mostly **delete**. When the meaning is needed, use concrete nouns/verbs ("중요하다" → "핵심이다", or give specific evidence).
 
 ---
@@ -353,6 +439,24 @@ Stock phrases rarely used by human Korean writers but repeatedly generated by LL
 - Remedy: Choose the addressee level at the start and keep it consistent. **Apply only to dialogue/spoken-language text**, not genres using a single formal register.
 - class: HOLISTIC
 - Source: 김혜영 2019 (estimated threshold)
+
+### E-8. Progressive aspect overuse [S2] · dodaeri port
+- Pattern: "~되고 있다" / "~고 있다" appears three or more times in one paragraph where no ongoing action is meant.
+- Remedy: Turn some occurrences into the simple present ("읽고 있다" → "읽는다"). Keep the progressive when the source describes an action in progress.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### E-9. Repeated sentence openers [S2] · dodaeri port
+- Pattern: Consecutive sentences start with the same subject or the same word. C-7 and H-5 cover conjunctions and paragraph openers; this covers subject and word repetition inside a paragraph.
+- Remedy: Join the sentences or reorder them. Do not replace the repeated term with a synonym; one concept keeps one term.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### E-10. Paragraph-final obligation formula [S3] · dodaeri port
+- Pattern: Every paragraph ends with "~해야 한다".
+- Remedy: Keep each obligation and its strength, and move some of them to the start or middle of their paragraphs. Do not weaken or delete an obligation.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
 
 ---
 
@@ -418,7 +522,7 @@ Stock phrases rarely used by human Korean writers but repeatedly generated by LL
 - "~인 것으로 판단된다"
 - "~라고 여겨진다"
 - "~인 듯하다" attached to every sentence ending.
-- Remedy: Assert where support permits; hedge only genuine uncertainty.
+- Remedy: Vary the hedging ending ("~로 보인다" → "~로 본다", or a stated basis such as "~에 따르면") without removing the hedge. Do not vary into another listed hedge ("~인 듯하다"). Do not turn a hedge into an assertion unless the source itself supplies the evidence that settles the matter; the writer's uncertainty is content. Delete a hedge only when it is redundant with another hedge on the same claim (G-2).
 
 ### G-2. Double/triple hedging
 - "~할 가능성이 있을 수 있다"
@@ -432,6 +536,12 @@ Stock phrases rarely used by human Korean writers but repeatedly generated by LL
 - class: ANCHORED
 - 표층형: `양쪽 모두|두 가지 모두|장점도 있지만|신중하게|균형 잡힌|균형을`
 - Keep: Retain 1–3 occurrences and actual financial/physical balance references.
+
+### G-4. Borrowed authority without a source [S2] · dodaeri port
+- Pattern: An unsourced attribution lends weight to a claim: "전문가들은 ~라고 말합니다", "많은 연구에 따르면", "~라는 분석이다/평가다".
+- Remedy: Do not delete the claim and never invent a source. Remove only the inflation around it, and mark the claim for the writer as `[출처 확인 필요]` unless the destination forbids markers. Whether the claim stays is the writer's decision.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
 
 ---
 
@@ -478,7 +588,7 @@ Stock phrases rarely used by human Korean writers but repeatedly generated by LL
 
 ### I-4. "~할 필요가 있다"
 - Literal English `should/need to`.
-- Remedy: "~해야 한다" or a concrete recommendation.
+- Remedy: Shorten to a predicate of the **same strength**: "검토할 필요가 있다" → "검토가 필요하다". Do not lower it to a suggestion ("검토해 볼 만하다") or raise it to the obligation "~해야 한다" unless the source states an obligation elsewhere.
 
 ### I-5. "~이/가 필요하다"
 - "혁신이 필요하다", "변화가 필요하다"
@@ -488,6 +598,18 @@ Stock phrases rarely used by human Korean writers but repeatedly generated by LL
 - Pattern: "N 능력" repeats 3+ times in a document, describing abilities as noun phrases instead of verbs, echoing literal English `ability to X / X capability`.
 - Example: "사고 **능력**", "워크플로우 수행 **능력**", "장기 문맥 유지 **능력**", "추론 **능력**"
 - Remedy: Expand into verbs. "사고 능력은 뛰어나다" → "잘 사고한다" / "사고의 수준이 높다"; "워크플로우 수행 능력" → "워크플로우를 얼마나 잘 처리하는지". Limit "~능력" to two occurrences per document.
+
+### I-7. Focus frames "중요한 것은/핵심은/관건은 ~다" [S2] · dodaeri port
+- Pattern: A frame noun holds the subject position and the claim follows a copula: "중요한 것은 ~이다", "핵심은 ~다", "관건은 ~다", "주목할 점은 ~라는 점이다".
+- Remedy: Join subject and predicate directly ("~가 중요하다", "~다").
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
+
+### I-8. Clustered administrative verbs [S2] · dodaeri port
+- Pattern: "확대·강화·개선·확보·마련·구축" cluster in one paragraph and hide what anyone actually does.
+- Remedy: Replace them with the concrete action the source describes. When the source gives no concrete action, keep the verb; do not invent an action.
+- class: HOLISTIC
+- Source: 도대리의 서랍장 humanize-ko (EP.01, MIT), restating blader/humanizer structure patterns for Korean business writing
 
 ---
 
@@ -695,6 +817,7 @@ The detector takes prescan’s `02_candidates.json` and produces the following J
   - `H-5` Consecutive paragraph openings `따라서·이에·이를 위해` [S2]: the same logical conjunction appears at the start of three or more consecutive paragraphs, a special case of H-1. Example: "따라서 ~한다. 이에 ~한다. 이를 위해 ~한다." Remove at least two; sentence content should reveal causality.
 - **v2.0** (2026-07-13): Introduced the **rule-management model and runtime application guarantees**. (1) Added `class` (ANCHORED/COMPUTED/HOLISTIC) for all rules, with machine fields `표층형` for ANCHORED and `지표` for COMPUTED. (2) Added three deterministic scripts: `lint_taxonomy.js` (SSOT integrity), `prescan.js` (deterministic candidates), and `reconcile.js` (candidate exhaustion/hash agreement gates). (3) Added **L. Abstract metaphor lexicon** (L-1–L-11), based on benelog’s guidance: 무너진다·맞물린다·가른다·무겁다·지점·축·겹·손잡이·사실상·셈이다 plus the related extension 결. (4) Added `candidate_id`, `kept[]` (evidence tokens), and `meta.coverage` to the output schema. Backfilled surface/class fields in representative A–J rules (A-2·A-7·A-8·D-1·F-1·H-4·I-1·J-3·E-1); expand the rest incrementally, append-only.
 - **v3.0** (2026-07-23): **Absorbed upstream im-not-ai v2.3.** (1) Thirteen new rules: A-16 (literal pronouns, translation contexts only), A-17 (hold), A-18 (left-branching adnominal modifiers, COMPUTED), A-19 (double particles, ANCHORED), C-9–C-12 (numeric indexing, colon headings, connective ending + comma at KatFish 4.84×, comma inclusion rate), D-7 (transformation formula), E-4–E-7 (simple-sentence dominance, clause length, POS diversity, honorifics), G-3 (safe-balance lexicon). (2) Five empirical recalibrations: A-2 S1→S2 (Choi 2016 rejection); C-1 S1→S2 with default preservation; C-8 S2→**S1** (negative antithesis AI 9.2×, G²=41.7, strongest measured signal) plus negative–positive variants; E-1 redefined as missing long sentences (11×); I-1 default preservation (humans twice as often). (3) Redefined B-2 to prohibit mechanical literal translation of technical terms. (4) Added the D-category prohibition on inserting target phrases during rewriting. (5) **Renumbered IDs**: local v1.2 A-16→A-20, A-17→A-21, adopting upstream IDs as canonical to resolve collisions. (6) Vendored `metrics_v1/v2` (KatFish measured baselines + Toral translationese T1–T8), `verify_gates.js` (four-axis convergence/non-destructive gates), and `tests/golden/checks.py` (MIT, epoko77-ai/im-not-ai); added seven COMPUTED metrics and ported `empirical-validation.md`.
+- **v3.2** (2026-10-30): **Absorbed 도대리의 서랍장 humanize-ko (EP.01, MIT).** (1) Nineteen HOLISTIC rules without corpus validation: C-13 (forced triplets), C-14 (closing punch and staccato), C-15 (heading restated), C-16 (small comparison tables), C-17 (self-describing text), D-8 (aphorisms), D-9 (teaser openers), D-10 (absent opponent), D-11 (inflated meaning and outlook endings), D-12 (signboard sentences), D-13 (tallying endings), D-14 (dictionary metaphors), D-15 (chatbot residue, with the greeting and signature boundary), E-8 (progressive aspect), E-9 (repeated openers), E-10 (paragraph-final obligation), G-4 (borrowed authority), I-7 (focus frames), I-8 (administrative verbs). (2) Modality preservation: A-10, G-1, and I-4 no longer turn possibility, hedges, or need into assertions or obligations, matching immutable item 8 in `register-invariants.md`. (3) C-8 keeps antitheses whose A the reader actually holds and forbids rewriting into "A라기보다 B".
 - Extension rule: Add subpatterns only after at least two reproductions in practical input and near-absence among human writers. **ANCHORED promotion requires `표층형`; COMPUTED promotion requires `지표`** (enforced by lint).
 - Related skill: See `public-procurement-style` for procurement-specific register deviations (K–O).
 

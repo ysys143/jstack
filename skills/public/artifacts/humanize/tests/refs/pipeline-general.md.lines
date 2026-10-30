@@ -1,4 +1,4 @@
-# blob:8aaad133931b0aba3779e208c83c025eaa234d50
+# blob:8b0c46de6f94dedf10fc204ba4a7804aee5034e2
 # Pipeline: General Korean Humanization
 A five-agent pipeline that detects and classifies AI signatures in Korean text,
 then rewrites it into natural Korean while preserving content.
@@ -102,6 +102,11 @@ Both read `_workspace/{run_id}/01_input.txt`, `03_rewrite.md`, and
 `03_rewrite_diff.json`:
 - **fidelity-auditor:** produce `04_fidelity_audit.json` assessing semantic equivalence.
 - **naturalness-reviewer:** produce `05_naturalness_review.json` assessing residual tells and overediting.
+It also records the five-axis reader rubric (directness, rhythm, reader trust,
+human voice, density; 50 points) for source and rewrite, and the markup-free
+length ratio. The rubric is evidence for the reviewer's verdict, not a gate:
+it can request at most one extra rewrite through the reviewer's decision
+matrix and never overrides fidelity or the deterministic gates.
 Use `04_fidelity_audit.json` as `content_contract.js`'s `--review` input. A review
 without original/rewrite SHA256 hashes, `verified`/`changed`/`uncertain` verdicts
 for original propositions, changed ranges, and evidence spans on both sides
@@ -134,6 +139,7 @@ _Upstream contract: `en-body.md`, Embedded mode. File ledger :208 required the K
 - Original/rewrite lengths and edit rate.
 - Per-category detection counts before and after.
 - Score change (`severity_weighted_score`).
+- Reader rubric totals for source and rewrite, with the length ratio.
 - Remaining findings, if any.
 - Quality grade (A/B/C/D).
 3. Present the rewrite as the primary deliverable; everything else is supplementary.

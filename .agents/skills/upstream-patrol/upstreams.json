@@ -1104,6 +1104,98 @@
           ]
         }
       ]
+    },
+    {
+      "id": "dodaeri-humanize-ko",
+      "repo": null,
+      "branch": null,
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [],
+          "localPaths": [
+            "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md",
+            "skills/public/artifacts/humanize/references/rewriting-playbook.md",
+            "skills/public/artifacts/humanize/references/direct.md",
+            "skills/public/artifacts/humanize/references/pipeline-general.md",
+            "hosts/claude/agents/naturalness-reviewer.md",
+            "skills/public/artifacts/humanize/NOTICE",
+            "skills/public/artifacts/humanize/LICENSE.dodaeri"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "humanize",
+          "notes": [
+            "A web page, not a Git repository: https://dodaeri.vercel.app/ep/1 (도대리의 서랍장 EP.01). Read 2026-10-30; the skill-text SHA-256 is recorded in the humanize NOTICE. Recheck the page for a changed skill text instead of measuring commits.",
+            "Not adopted, open for a maintainer decision: the blog rule that adds a reaction the writer might have had, and the dash rule without exceptions."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "humanizer",
+      "repo": "blader/humanizer",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "pin-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [],
+          "localPaths": [
+            "skills/public/artifacts/humanize/references/en-taxonomy.md",
+            "skills/public/artifacts/humanize/references/en-body.md",
+            "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md",
+            "skills/public/artifacts/humanize/LICENSE.humanizer"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "humanize",
+          "notes": [
+            "Ported at v2.9.1 per en-taxonomy.md; no commit pin is recorded. Korean structure rules reach it indirectly through dodaeri-humanize-ko. Set upstreamPaths at the first review."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stop-slop",
+      "repo": "hardikpandya/stop-slop",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "pin-required",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "adapted",
+          "pin": null,
+          "upstreamPaths": [],
+          "localPaths": [
+            "hosts/claude/agents/naturalness-reviewer.md",
+            "skills/public/artifacts/humanize/LICENSE.stop-slop"
+          ],
+          "pinRecordedIn": null,
+          "ownerSkill": "humanize",
+          "notes": [
+            "Adapted indirectly through dodaeri-humanize-ko (the five-axis reader rubric); no commit pin is recorded. Set upstreamPaths at the first review."
+          ]
+        }
+      ]
     }
   ],
   "exclusions": [
