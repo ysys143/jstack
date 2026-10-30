@@ -141,6 +141,15 @@ export async function runContracts(options: ContractOptions): Promise<number> {
       if (result.status !== 0) throw new Error('Disposable dashboard dependency installation failed');
       env.JSTACK_DASHBOARD_DEPENDENCIES = join(dependencyRoot, 'node_modules');
     }
+    // The pinned statechart upstream tests need fast-check; install its locked copy here, never in the source tree.
+    if (!options.quick && (!selected.length || selected.includes('statechart'))) {
+      const dependencyRoot = join(root, 'statechart-test-environment'); mkdirSync(dependencyRoot);
+      for (const file of ['package.json', 'package-lock.json']) cpSync(join(runtime, 'skills/statechart/tests/environment', file), join(dependencyRoot, file));
+      const result = runProcess('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: dependencyRoot, env, maxBuffer: 16 * 1024 * 1024 });
+      writeFileSync(join(root, 'statechart-dependencies.log'), (result.stdout ?? '') + (result.stderr ?? ''));
+      if (result.status !== 0) throw new Error('Disposable statechart test dependency installation failed');
+      env.JSTACK_STATECHART_DEPENDENCIES = join(dependencyRoot, 'node_modules');
+    }
     if (!selected.length || selected.some(label => /test_repack\.(?:py|js)$/.test(label))) {
       const dependencyRoot = join(root, 'contributor-build-environment'); mkdirSync(dependencyRoot);
       for (const file of ['package.json', 'package-lock.json']) cpSync(join(source, file), join(dependencyRoot, file));

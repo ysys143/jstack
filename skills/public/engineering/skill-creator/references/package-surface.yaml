@@ -72,6 +72,10 @@ categories:
     - "skills/journey-qa/repos/journey-qa/**"
   vendored-dag-it:
     - "skills/dag-it/repos/just-dag-it/**"
+  vendored-statechart:
+    - "skills/statechart/repos/pstack/**"
+  vendored-create-formal-verification-skill:
+    - "skills/create-formal-verification-skill/repos/pstack/**"
   scheduler:
     - "skills/dashboard/vitest.config.ts"
 

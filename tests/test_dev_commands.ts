@@ -38,7 +38,7 @@ check("Inventory: the unified command count is 35", (isDeepStrictEqual(length(al
 (names=sorted(WANT));
 (_skill_dirs=sorted(Array.from(readdirSync(join(ROOT, "skills"))).filter((d: any) => truth(isfile(join(ROOT, "skills", d, "SKILL.md")))).map((d: any) => (d))));
 (_agent_files=sorted(Array.from(readdirSync(join(ROOT, "agents"))).filter((f: any) => truth(ends(f, ".md"))).map((f: any) => (f))));
-for (let [_label, _real, _expected] of [["skills", length(_skill_dirs), 42], ["commands", length(all_names), 35], ["agents", length(_agent_files), 17]]) {
+for (let [_label, _real, _expected] of [["skills", length(_skill_dirs), 44], ["commands", length(all_names), 35], ["agents", length(_agent_files), 17]]) {
 check(("Inventory: unified " + pyStr(_label) + " count matches the fixed inventory"), (isDeepStrictEqual(_real,_expected)), ("expected " + pyStr(_expected) + " / actual " + pyStr(_real)));
 }
 for (let w of WANT) {

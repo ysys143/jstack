@@ -1052,6 +1052,58 @@
           ]
         }
       ]
+    },
+    {
+      "id": "pstack",
+      "repo": "cursor/plugins",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/statechart",
+            "pstack/LICENSE"
+          ],
+          "localPaths": [
+            "skills/public/engineering/statechart/repos/pstack"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/statechart/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "statechart",
+          "notes": [
+            "pstack 0.15.36. The suite runs the 367 upstream tests with TLC 1.7.4 and the fast-check lock in tests/environment."
+          ]
+        },
+        {
+          "mode": "snapshot",
+          "pin": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
+          "upstreamPaths": [
+            "pstack/skills/create-formal-verification-skill",
+            "pstack/LICENSE"
+          ],
+          "localPaths": [
+            "skills/public/engineering/create-formal-verification-skill/repos/pstack"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/create-formal-verification-skill/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "create-formal-verification-skill",
+          "notes": [
+            "pstack 0.15.36."
+          ]
+        }
+      ]
     }
   ],
   "exclusions": [

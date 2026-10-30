@@ -13,7 +13,7 @@
       "**/*.cjs",
       "**/*.ts",
       "**/*.tsx",
-      "!skills/public/workflow/journey-qa/repos", "!skills/public/engineering/dag-it/repos", "!hosts/claude/mods/*/**"
+      "!skills/public/workflow/journey-qa/repos", "!skills/public/engineering/dag-it/repos", "!skills/public/engineering/statechart/repos", "!skills/public/engineering/create-formal-verification-skill/repos", "!hosts/claude/mods/*/**"
     ]
   },
   "formatter": {

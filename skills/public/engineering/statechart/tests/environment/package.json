@@ -1,0 +1,8 @@
+{
+  "name": "jstack-statechart-test-environment",
+  "private": true,
+  "description": "Locked devDependencies of the pinned upstream statechart tests; installed only in a disposable contract snapshot.",
+  "devDependencies": {
+    "fast-check": "4.5.3"
+  }
+}
