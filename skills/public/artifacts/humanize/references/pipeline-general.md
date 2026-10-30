@@ -129,6 +129,11 @@ Both read `_workspace/{run_id}/01_input.txt`, `03_rewrite.md`, and
 
 - **fidelity-auditor:** produce `04_fidelity_audit.json` assessing semantic equivalence.
 - **naturalness-reviewer:** produce `05_naturalness_review.json` assessing residual tells and overediting.
+  It also records the five-axis reader rubric (directness, rhythm, reader trust,
+  human voice, density; 50 points) for source and rewrite, and the markup-free
+  length ratio. The rubric is evidence for the reviewer's verdict, not a gate:
+  it can request at most one extra rewrite through the reviewer's decision
+  matrix and never overrides fidelity or the deterministic gates.
 
 Use `04_fidelity_audit.json` as `content_contract.js`'s `--review` input. A review
 without original/rewrite SHA256 hashes, `verified`/`changed`/`uncertain` verdicts
@@ -174,6 +179,7 @@ _Upstream contract: `en-body.md`, Embedded mode. File ledger :208 required the K
    - Original/rewrite lengths and edit rate.
    - Per-category detection counts before and after.
    - Score change (`severity_weighted_score`).
+   - Reader rubric totals for source and rewrite, with the length ratio.
    - Remaining findings, if any.
    - Quality grade (A/B/C/D).
 3. Present the rewrite as the primary deliverable; everything else is supplementary.
