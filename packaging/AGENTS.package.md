@@ -65,6 +65,7 @@ made directly to an installed cache. Public package entries resolve this payload
 using their installed relative path; no publisher source path is required.
 
 Core contributor contracts run with Node. The runner creates a disposable
-package and installs locked dashboard build dependencies only there:
+package and installs locked dashboard build dependencies and the locked statechart
+test environment only there:
 `node dist/packaging/run_contracts.js`.
 Other selected suites use their own documented dependency providers.

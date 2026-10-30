@@ -38,7 +38,8 @@ Builds fail on drift and never refresh the list automatically.
 suite, deletion regression, measured floor, shared-library behavior, and canonical
 source check. `node dist/scripts/run_suites.js setup workspace` selects affected suites.
 Tests use a temporary Git snapshot; preserve the user's index and unrelated edits.
-Only the disposable snapshot may install locked dashboard build dependencies.
+Only the disposable snapshot may install locked dashboard build dependencies and the
+locked statechart test environment.
 Do not install optional user integrations during tests. Missing checkers and zero
 suites are failures. Bind validation evidence to the tested input hash.
 

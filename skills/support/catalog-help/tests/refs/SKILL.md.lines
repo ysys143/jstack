@@ -1,4 +1,4 @@
-# blob:5cfc2f7385cce7c0ac3ecef0748097a8db4b71fe
+# blob:c1ec6a500d33c1df114d3220db49c1938788ef64
 # Help — routed by decision, not by name
 ## Why a map and not a list
 A list of names tells you what exists; it does not tell you which one applies.
@@ -60,6 +60,8 @@ controlled by `../../contracts/skill-catalog.json`, not this source-owner map.
 | Check the Claude Code or Codex setup (skills, MCP servers, agents, listing budget) before or after installing jstack | `host-audit` |
 | Walk a product's install and onboarding as a new team in a clean environment, or make leak-gated docs screenshots | `journey-qa` |
 | Move a repeated, deterministic sweep, benchmark, or regression out of the agent's loop into a DAG | `dag-it` |
+| Check a TLA+ model with TLC and draw a Mermaid statechart with the shortest path to each broken rule | `statechart` |
+| Formally verify a property with a model checker, proof assistant or SMT-backed verifier and leave a project-local verify skill | `create-formal-verification-skill` |
 | Route a situation to the right skill | `help` |
 ## Commands are explicit entry points
 The map indexes **skills, and only skills**. Commands and agents are left out on

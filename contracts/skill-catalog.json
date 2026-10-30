@@ -422,6 +422,24 @@
       "aliases": []
     },
     {
+      "owner": "statechart",
+      "name": "statechart",
+      "visibility": "public",
+      "category": "engineering",
+      "purpose": "Check a TLA+ model with TLC and draw it as a Mermaid statechart in the reader's words, with the shortest path to each state that breaks a rule.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
+      "owner": "create-formal-verification-skill",
+      "name": "create-formal-verification-skill",
+      "visibility": "public",
+      "category": "engineering",
+      "purpose": "Formally verify the code where a bug costs the most and tests reach the least, and leave a project-local skill that checks later changes against that property.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
       "owner": "dag-it",
       "name": "dag-it",
       "visibility": "public",
