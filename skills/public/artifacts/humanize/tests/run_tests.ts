@@ -388,12 +388,15 @@ check("eval: criteria item counts match actual taxonomy", (isDeepStrictEqual(Obj
 {const dr=read(join(ROOT, "references", "direct.md")),tx=read(join(ROOT, "references", "ai-tell-taxonomy.md")),pb=read(join(ROOT, "references", "rewriting-playbook.md")),pg=read(join(ROOT, "references", "pipeline-general.md"));
 const rule=(id:string)=>{const start=tx.indexOf("\n### "+id+". ");if(start<0)return "";const next=tx.indexOf("\n### ",start+1);return tx.slice(start,next<0?undefined:next);};
 check("dodaeri: direct keeps commitment strength", contains(dr, "Keep commitment strength.") && contains(dr, "or `~할 필요가 있다` into an obligation") && contains(dr, "collapse\nonly stacked hedges"));
-check("dodaeri: direct deletion floor names its cases and the 75% check", contains(dr, "Delete a whole sentence only when it is chatbot\nresidue") && contains(dr, "within 75–110% of the\nsource") && contains(dr, "This is an internal check, not an output."));
+check("dodaeri: direct deletion floor names its cases and the 75% check", contains(dr, "Delete a whole sentence only in these cases") && contains(dr, "staging with no claim behind it") && contains(dr, "a deletion a genre rule below names") && contains(dr, "within 75–110% of the\nsource") && contains(dr, "This is an internal check, not an output."));
 check("dodaeri: direct intensity levels keep content at every level", contains(dr, "`가볍게`, `톤 살려서`") && contains(dr, "No length floor, but content and commitment\n  strength stay.") && contains(dr, "A request only to shorten selects the bloat-only route instead."));
 check("dodaeri: direct removes Markdown for destinations that cannot render it", contains(dr, "## Destination") && contains(dr, "If the destination does not render Markdown"));
 check("dodaeri: voice sample outranks defaults but never content or dashes", contains(dr, "A voice sample outranks the defaults") && contains(dr, "It never overrides content preservation,\ncommitment strength, or the dash rule below."));
 check("dodaeri: greetings and signatures are not chatbot residue", contains(dr, "Greetings, sign-offs, and signatures\n  in letters, mail, and notices are not residue.") && contains(rule("D-15"), "predate chatbots"));
 check("dodaeri: direct owns the mail, notice, reply, training, report, and LinkedIn defaults", ["## Reports", "## Mail", "## Notices", "## Business replies", "## Training material and LMS", "## Blogs, essays, and opinion pieces", "## LinkedIn and similar social posts"].every(h => contains(dr, "\n"+h+"\n")));
+check("dodaeri: mail, notice, and reply bodies keep their defining rules", contains(dr, "Never invent them.") && contains(dr, "Remove the signature block only when the user says their mail program adds it.") && contains(dr, "Add the honorific `-시-` to the reader's actions") && contains(dr, "Put the conclusion on the first line and the completed facts on the next."));
+check("dodaeri: speech level has one named exception for social closing questions", contains(dr, "The one exception\n  is the closing question of a social post") && contains(dr, "Address readers as `여러분`, not `당신`."));
+check("dodaeri: markers yield to send-ready destinations", contains(dr, "The\ndestination forbids markers when the user says the text goes out as written"));
 check("dodaeri: blog defaults add no invented reaction", contains(dr, "Do not add an opinion, reaction, or fact the source does not contain.") && contains(dr, "is an open maintainer decision"));
 check("dodaeri: dash rule keeps code, quoted-output, and range exemptions without colons", contains(dr, "Do not substitute a colon.") && contains(dr, "Keep dashes in code, quoted output, and\n  numeric ranges"));
 check("dodaeri: borrowed authority keeps the claim and marks it", contains(dr, "never invent a source,\n  and add `[출처 확인 필요]`") && contains(rule("G-4"), "Do not delete the claim and never invent a source."));
@@ -402,7 +405,7 @@ check("dodaeri: A-10, G-1, and I-4 preserve modality", contains(rule("A-10"), "*
 check("dodaeri: nineteen ported rules exist as HOLISTIC with provenance", bad.length===0, `bad ${bad.join(", ")}`);}
 check("dodaeri: C-8 strawman test forbids rewriting into 라기보다", contains(rule("C-8"), "strawman test") && contains(rule("C-8"), "\"A라기보다 B\" is itself a C-8 trigger."));
 check("dodaeri: playbook strips staging, keeps claims, and inserts no punch", contains(pb, "**Strip the staging, keep the claim (dodaeri port):**") && contains(pb, "**Keep commitment strength (dodaeri port):**") && !contains(pb, "\"맞다. 그게 핵심이다.\"") && !contains(pb, "Three-step hedge reduction"));
-check("dodaeri: general pipeline records the reader rubric as evidence, not a gate", contains(pg, "The rubric is evidence for the reviewer's verdict, not a gate."));}
+check("dodaeri: general pipeline records the reader rubric as evidence, not a gate", contains(pg, "The rubric is evidence for the reviewer's verdict, not a gate:") && contains(pg, "never overrides fidelity or the deterministic gates"));}
 check_skill_body(check, ROOT, {needles: ["## Default direct execution", "return only the\nedited artifact", "Semantic preservation takes precedence.", "Warn or stop when the edit-rate threshold is exceeded;", "Identify language\nbefore genre:", "Preserve genre;"], floor: 3017});
 check_upstream_parity(check);
 check_no_constant_assertions(check, SUITE_FILE);
@@ -421,7 +424,7 @@ check("Baseline: z-score decision thresholds declared", truth((((value:any)=>tru
 try {(_bl2=JSON.parse(readFileSync(join(_bl_dir, "baseline_v2.json"),"utf8")));}catch(error){(_bl2={});}
 check("Baseline: baseline_v2.json parses as JSON", truth(_bl2));
 check("Baseline: v2 placeholder flags preserved (declared invariant)", (compare(count(JSON.stringify(_bl2,null,1), "\"_placeholder\": true"),70,">=")), (pyStr(count(JSON.stringify(_bl2,null,1), "\"_placeholder\": true")) + "개"));
-check_total(check, results, 247);
+check_total(check, results, 250);
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any) => truth(ok)).map(([_name, ok, _detail]: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + pyStr(passed) + "/" + pyStr(length(results)) + " 통과"));
 return (truth((isDeepStrictEqual(passed,length(results)))) ? 0 : 1);

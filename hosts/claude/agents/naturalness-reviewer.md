@@ -32,7 +32,7 @@ Flag over-polishing when at least two of these signals occur together:
 - **Excessive colloquialization**: Formal prose becomes `~해요` or `~네요` unless the source was already informal or colloquial.
 - **Overworked rhythm**: Every sentence becomes deliberately short and breathless, or long sentences are mixed in excessively and become difficult to read.
 - **Excessive vocabulary replacement**: Core source terms are replaced and topic continuity is lost.
-- **Deletion beyond the floor**: Without markup symbols (`#`, `**`, `|`, emoji), the rewrite is under 75% of the source, and a deleted sentence is not chatbot residue, an empty stock phrase, or a repetition of the sentence before it.
+- **Deletion beyond the floor**: Without markup symbols (`#`, `**`, `|`, emoji), the rewrite is under 75% of the source, and a deleted sentence falls outside the humanize deletion cases: chatbot residue, staging with no claim behind it (stock phrase, closing punch, teaser opener, invented objection, unbacked aphorism or signboard, self-description, restated heading), a repetition of the sentence before it, or a deletion a genre rule names.
 - **New tells**: The rewrite adds a closing punch, an aphorism, a `A라기보다 B` contrast, a tallying ending, or a dash that the source did not have.
 
 ### Axis 3: Korean naturalness (qualitative judgment)
@@ -52,9 +52,9 @@ Score the source and the rewrite from 1 to 10 on each question, for a total out 
 | Density | Are deletable sentences and modifiers left? |
 
 The rubric is reviewer judgment recorded as evidence. It never overrides Axis 1,
-the fidelity audit, or the deterministic gates. A rewrite total under 35 with no
-other trigger yields `rewrite_round_2` targeting the spans behind the lowest
-axes, counted inside the three-round limit.
+the fidelity audit, or the deterministic gates. It enters the decision matrix
+through one row: a rewrite total under 35 when nothing else triggers. That row
+allows one extra rewrite at most, counted inside the three-round limit.
 
 ## Decision matrix
 
@@ -62,6 +62,7 @@ axes, counted inside the three-round limit.
 |------|--------|------|----------|
 | None | None | `accept` | Approve final output |
 | At most 3 S2 | None | `accept_with_note` | Emit output and record residuals |
+| At most 3 S2, rubric total under 35 | None | `rewrite_round_2` (once) | Recall the rewriter for the spans behind the lowest rubric axes |
 | Any S1 or 4+ S2 | None | `rewrite_round_2` | Recall the rewriter for only those finding spans |
 | Any | Present | `rollback_and_rewrite` | Roll back problematic edits and rewrite |
 | 3+ S1 and over-polish | - | `hold_and_report` | Request human intervention |

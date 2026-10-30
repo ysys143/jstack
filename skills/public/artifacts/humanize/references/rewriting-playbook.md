@@ -37,9 +37,10 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
 8. **Strip the staging, keep the claim (dodaeri port):** A structural tell (an
    antithesis, a closing punch, an aphorism, decoration) is packaging. Remove the
    packaging and keep the claim, information, greeting, or feeling it carried as a
-   plain sentence. Delete a whole sentence only when it is chatbot residue (D-15),
-   an empty stock phrase with no claim (D-2), or a repetition of the sentence
-   right before it.
+   plain sentence. Delete a whole sentence only in the deletion cases that
+   `direct.md` lists: chatbot residue (D-15), staging with no claim behind it
+   (D-2, D-8–D-10, D-12, C-14, C-15, C-17), a repetition of the sentence right
+   before it, or a deletion a genre rule names.
 9. **Keep commitment strength (dodaeri port):** Do not turn `~해야 한다` into
    `~한다`, `~일 수 있다` into an assertion, or a hedge into a claim. Vary the
    surface of repeated modality instead. This is immutable item 8 in
@@ -149,7 +150,7 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
 ### G. Hedging
 
 - **Collapse stacked hedges to one:** "~할 수 있을 것으로 보인다" → "~할 것으로 보인다" / "어느 정도 ~할 수도 있을 것으로 보입니다" → "~할 수 있습니다". Keep exactly one hedge of the source's strength.
-- **Do not assert a hedged claim.** Turn a hedge into an assertion only when the source itself supplies the evidence that settles it. For repeated "~로 보인다 / ~로 판단된다", vary the ending ("~로 본다", "~듯하다") instead of removing the hedge.
+- **Do not assert a hedged claim.** Turn a hedge into an assertion only when the source itself supplies the evidence that settles it. For repeated "~로 보인다 / ~로 판단된다", vary the ending ("~로 본다", or a stated basis) instead of removing the hedge. Do not vary into "~인 듯하다", which G-1 also lists.
 - In medical, legal, and policy writing, the hedge is part of the meaning. Keep it and collapse only stacked hedges.
 
 ### H. Conjunctions
@@ -163,7 +164,7 @@ prescription in `ai-tell-taxonomy.md` into actual edits based on detection repor
 
 - Connect the ending directly instead of using "것이다".
   - "변화가 크다는 것이다" → "변화가 크다"
-- "~할 필요가 있다" → "~가 필요하다" / "~할 만하다". Use "~해야 한다" only when the source states an obligation.
+- "~할 필요가 있다" → "~가 필요하다". Do not weaken it to "~할 만하다"; use "~해야 한다" only when the source states an obligation.
 - **I-7 focus frames:** "중요한 것은 X라는 점이다" → "X가 중요하다"; "핵심은 X다" → state X directly.
 - **I-8 administrative verbs:** Replace "확대·강화·개선·확보·마련·구축" with the action the source describes ("교육 과정 강화" → "교육 시간을 주 2회로 늘림" only when the source says so). Without a concrete action in the source, keep the verb.
 - Make "~이 필요하다" concrete with a subject and verb: "혁신이 필요하다" → "이 회사가 제품을 다시 만들어야 한다", when context permits.

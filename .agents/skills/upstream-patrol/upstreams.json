@@ -1041,6 +1041,7 @@
           "localPaths": [
             "skills/public/artifacts/humanize/references/en-taxonomy.md",
             "skills/public/artifacts/humanize/references/en-body.md",
+            "skills/public/artifacts/humanize/references/ai-tell-taxonomy.md",
             "skills/public/artifacts/humanize/LICENSE.humanizer"
           ],
           "pinRecordedIn": null,

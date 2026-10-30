@@ -50,9 +50,19 @@ only stacked hedges such as `가능성이 있을 수 있다` → `가능성이 �
 
 Change the packaging, not the content. A tell is a way of saying something; the
 claim, information, greeting, or feeling it carries belongs to the writer and
-stays as a plain sentence. Delete a whole sentence only when it is chatbot
-residue, an empty stock phrase with no claim (`시사하는 바가 크다`), or a
-repetition of the sentence right before it. Leave sound sentences untouched.
+stays as a plain sentence. Delete a whole sentence only in these cases, and
+leave sound sentences untouched:
+
+- chatbot residue or a knowledge-limit confession;
+- staging with no claim behind it: an empty stock phrase (`시사하는 바가
+  크다`), a closing punch with no new fact, a teaser opener, an objection
+  nobody raised, an aphorism or signboard the source does not back with a
+  concrete claim, text describing itself, or a first sentence repeating its
+  heading;
+- a repetition of the sentence right before it;
+- a deletion a genre rule below names: a thin closing proposal in a report, a
+  criteria list a reply's list already shows, or, at the `세게` intensity,
+  background the reader already knows.
 
 Before delivery, compare lengths without markup symbols (`#`, `**`, `|`,
 emoji). For the default intensity the result stays within 75–110% of the
@@ -86,7 +96,7 @@ section headings; flattening them is not polishing.
 When the user supplies earlier writing of their own, read it first and follow
 its sentence length, endings, frequent connectors, paragraph openings, and use
 of commas and parentheses. A voice sample outranks the defaults in this file,
-including the parenthesis density. It never overrides content preservation,
+including how often it uses parentheses. It never overrides content preservation,
 commitment strength, or the dash rule below. Without a sample, use the genre
 defaults below.
 
@@ -125,7 +135,9 @@ defaults below.
   바로 쓸 수 있습니다.` → `설정 없이 켜자마자 자동으로 작동합니다.` Keep a short
   sentence only where it carries a new fact.
 - Use one speech level in one artifact. Do not mix `~요` and `~습니다`; keep the
-  source's formality level instead of raising or lowering it.
+  source's formality level instead of raising or lowering it. The one exception
+  is the closing question of a social post, which the LinkedIn rules below end
+  in polite form.
 - Put the conclusion or request first in replies, reports, and mail.
 - Remove a comma right after a connective ending (`발전하지만, 대응은` →
   `발전하지만 대응은`) and do not add one while rewriting.
@@ -214,7 +226,7 @@ unqualified polish of a narrative report.
   `되었습니다`, and join enumerations with `~했으며` rather than `~했고`.
 - Attach who made an effect or outcome claim (participant response, survey,
   observation). When the source has no basis, do not invent one; mark it as
-  `[근거: 설문? 관찰?]` for the writer.
+  `[근거: 설문? 관찰?]` for the writer unless the destination forbids markers.
 - Delete a closing proposal that the thin content does not support (`후속 과정을
   통해 확대해야 합니다`) and end on the last concrete fact. Keep a plan the
   source actually states.
@@ -270,6 +282,7 @@ When answering a superior's or colleague's question:
   allows, and why that helps: `~하는 공간으로, ~할 수 있어서 ~하지 않아도
   됩니다`.
 - Prefer `사용하다` to `쓰다` (`다시 쓸 수 있어서` → `다시 사용할 수 있어서`).
+  In training material this default outranks the common-word rule above.
 - Join two consecutive effect sentences as `~할 수 있으며, ~해서 ~에도
   유용합니다`.
 
@@ -341,7 +354,10 @@ requests them.
 Return only the edited artifact in the requested format. Do not add a preface,
 change log, rule checklist, score, status label, source note, or follow-up offer
 unless the user requested one. The in-text markers `[출처 확인 필요]` and
-`[근거: ...]` defined above are part of the edited artifact, not notes. When
+`[근거: ...]` defined above are part of the edited artifact, not notes. The
+destination forbids markers when the user says the text goes out as written,
+such as a send-ready mail or a post to publish; then leave the claim unmarked
+and mention the missing source in one line outside the artifact. When
 the user supplied a file, edit only its prose and keep code blocks, commands,
 paths, links, and table data. This output rule does not authorize deleting
 such material when it is part of the source artifact.
