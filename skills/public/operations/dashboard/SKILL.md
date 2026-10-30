@@ -70,7 +70,7 @@ an existing Codex layout is preserved.
 
 ## Emoji handling
 
-`jstack` ships `block_emoji.py`, while the dashboard emits emoji in its statusline.
+`jstack` ships `block_emoji.js`, while the dashboard emits emoji in its statusline.
 They do not mechanically conflict: the hook examines `PreToolUse` inputs, and
 statusline output is not a tool call (measured).
 

@@ -1,15 +1,14 @@
-# blob:36bb9b1e86612ba6ab939a9a4d68a02f042dd1f6
+# blob:f7fa96b77939f14e5a54bcf52252d214ee17ba83
 # Browser Tool Priority: One Authority
 Several browser tools can perform overlapping work. This file makes the selection explicit instead of letting whichever MCP happens to be loaded decide.
 ## Authority
-The same policy is needed in four places:
+The same policy is needed in three places:
 | Consumer | Why it needs the selection policy |
 |---|---|
-| UserPromptSubmit router hook (`hooks/route.py`, planned) | Detects relevant prompts and injects the policy. |
 | `deck` skill | Opens a browser during the visual-QA loop. |
 | `diagram` skill | Opens a browser to verify rendered diagrams. |
 | Project instructions appended by `setup` | Preserves the same order outside the plugin. |
-They should reference this file instead of maintaining four independent
+They should reference this file instead of maintaining three independent
 authorities. A standalone skill may inline the table so it remains functional
 when installed alone, but this file wins if the copy diverges.
 ## Selection Table

@@ -187,6 +187,7 @@ check("Status: Code 1 Identifies the reason for the existence of this protocol",
 check("Status: Reveal what Boolean hides", ((contains(skill, "exactly which capability is missing"))));
 check("Installation: Instead, they criticize you for not installing it.", ((contains(skill, "Never install on the user's behalf"))));
 check("Installation: Instructs to print commands but not execute them", ((contains(skill, "Print the command; do not run it"))));
+check("Installation: one rule for both hosts, running only an install the user authorized for this task", contains(skill, "do not run it unless the user authorized that install for\nthis task") && contains(skill, "a request to do the task is not\nauthorization to install what it needs"));
 check("Installation: Reveal rationale (machine change not scoped by session)", ((contains(skill, "this session did not scope"))));
 check("Installation: Guidance without commands is not guidance.", ((value:any)=>truth(value)?says(skill, "Guidance that says \"install X\" without the command is not guidance."):value)(says(skill, "The output on exit 2 is the install command, in full, ready to paste.")));
 (hit=installs_here(probe_src));
@@ -572,21 +573,22 @@ check("Rule: Every blocking rule has a reason", ((value:any)=>truth(value)?truth
 (native=read_or_empty((truth(isfile(built_native)) ? built_native : source_native)));
 check("native: entry retains point-of-use capability states", ((value:any)=>truth(value)?((contains(native, "scripts/probe.js"))):value)(((contains(native, "Exit 0 means fully available")))));
 check("native: delivery names the shared build path and host boundary", ((value:any)=>truth(value)?((contains(native, "Claude commands"))):value)(((contains(native, "dist/packaging/build.js")))));
+check("native: installation rule matches the shared body", contains(native, "Do not\nrun it unless the user authorized that install for this task") && !contains(native, "without task authorization"));
 (exported=subprocessRun([({executable:process.execPath}).executable, join(HERE, "test_export.js")],{capture_output:true,text:true}));
 check("native: relocated payload and independent failure controls execute", (isDeepStrictEqual(exported.returncode,0)), slice(exported.stdout, -(200)));
 check_skill_body(check, ROOT, {semantic: true, needles: ["Code 1 is the one that earns the convention", "Never install on the user's behalf", "Print the command; do not run it", "silent downgrade, and the user reads the output as if the full tool ran.", "Probe at the point of use, not at startup", "found by marker, not by path arithmetic", "excludes itself by skill directory, not by plugin name", "Substitution is for notation, never for a quoted literal"], floor: 4111});
 check_ref_contracts(check, ROOT, [["probe-recipes.md", "strength table, per-state wording, version floor, and auth split", ["strictly stronger", "state 1 goes unread too", "numerically, field by field", "Authentication is not installation", "binary resolves, `gh auth status` returns non-zero", "Signed-out is state 1, not 2"], 2357]]);
 check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/probe.js": 23, "scripts/install.js": 71, "scripts/rules.json": 74, "scripts/export.js": 1}, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:", "스크립트 계약:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
-(coverage={"SKILL.md": 40, "references/probe-recipes.md": 24, "scripts/probe.js": 23, "scripts/install.js": 71, "scripts/rules.json": 74, "scripts/export.js": 1});
+(coverage={"SKILL.md": 41, "references/probe-recipes.md": 24, "scripts/probe.js": 23, "scripts/install.js": 71, "scripts/rules.json": 74, "scripts/export.js": 1});
 if(truth(isfile(join(ROOT, "SKILL.codex.md")))) {
-(coverage["SKILL.codex.md"]=2);
+(coverage["SKILL.codex.md"]=3);
 } else {
 check("계약 커버리지: Codex source variant is hosted separately", isfile(source_native), source_native);
 }
 check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: coverage, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:", "스크립트 계약:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
-check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 40, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:", "스크립트 계약:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
+check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 41, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:", "스크립트 계약:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 206);
+check_total(check, results, 208);
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any) => truth(ok)).map(([_name, ok, _detail]: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + pyStr(passed) + "/" + pyStr(length(results)) + " 통과"));
 return (truth((isDeepStrictEqual(passed,length(results)))) ? 0 : 1);

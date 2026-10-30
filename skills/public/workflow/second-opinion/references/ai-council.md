@@ -1,37 +1,42 @@
-# AI council backend — agy and Codex in parallel
+# AI council backend — the Codex read-only participant
 
-Queries `agy` and `Codex` CLI with the same prompt at the same time and
-returns both raw responses side by side. It does not pick a winner, does not
-merge them into one answer, and does not run one AI to check the other's
-work — that ordering would make the second call a review of the first
-call's framing, exactly the failure `SKILL.md` opens with. Both backends see
-the identical prompt, independently.
+The council bridge sends one prompt to the `Codex` CLI and returns its raw
+response. It does not pick a winner, does not merge answers, and does not run
+one reviewer to check another's work — that ordering would make the second call
+a review of the first call's framing, exactly the failure `SKILL.md` opens with.
 
-This is the mechanism behind consult's "different angles" principle when the
-two angles are two different models rather than two different prompts to the
-same one: agy tends toward documentation quality, prose clarity, and broader
-context; Codex tends toward deep code reasoning, edge cases, and algorithmic
-correctness. That is a statement about what each backend is *good at*, not a
-lens assignment — see `references/synthesis-guide.md` for why treating "which
-CLI answered" as if it were an analytical lens is the first way this kind of
-panel goes wrong.
+One Codex answer is one reviewer. A panel needs a second independent answer, and
+the caller supplies it: a native reviewer given the same artefact and a different
+angle, or a second Codex round under a different lens. Neither reviewer sees the
+other's answer while answering. `references/synthesis-guide.md` says how to read
+the answers together.
 
-## When to reach for a panel instead of a single reviewer
+Codex tends toward deep code reasoning, edge cases, and algorithmic correctness.
+That is a statement about what the backend is *good at*, not a lens assignment —
+see `references/synthesis-guide.md` for why treating "which reviewer answered" as
+if it were an analytical lens is the first way a panel goes wrong.
+
+## When to reach for it instead of a native reviewer
 
 - Cross-verification of a conclusion before acting on it
-- Code review that benefits from two independent read-throughs
+- Code review that benefits from a read-through by a different model
 - A research claim that should survive more than one source's framing
 - Any moment a single model's confident, fluent wrong answer would be
   expensive to act on unchecked
+
+A native reviewer is enough when the session authorizes one and the question
+needs no second model. Do not describe the same model in a new context as a
+different model.
 
 ## Running it
 
 ```bash
 node "${JSTACK_PLUGIN_ROOT}/skills/consult/scripts/council-bridge.js" \
-  --prompt "The question or task for both AIs" \
+  --prompt "The question or task for the reviewer" \
   [--mode "research"|"review"|"debug"] \
   [--files "/path/to/file1,/path/to/file2"] \
   [--workdir "$(pwd)"] \
+  [--codex-model ID] \
   [--timeout 180]
 ```
 
@@ -44,17 +49,16 @@ exact.
 
 | Parameter | Required | Description |
 | --- | --- | --- |
-| `--prompt` | Yes | The question or task sent identically to both AIs |
+| `--prompt` | Yes | The question or task sent to the reviewer |
 | `--mode` | No | `research` (default), `review`, `debug` — each prepends a different instruction, not a different question |
 | `--files` | No | Comma-separated file paths inlined into the prompt as context |
 | `--workdir` | No | Directory Codex's sandbox is scoped to |
-| `--timeout` | No | Per-AI timeout in seconds (default: 180) |
+| `--codex-model` | No | Codex model ID; omitted keeps the CLI default |
+| `--timeout` | No | Timeout in seconds (default: 180) |
 
-Both AIs run as background processes and are waited on independently — one
-timing out or erroring does not block or discard the other's response. If
-only one CLI is installed, the bridge runs that one alone and says so in its
-summary line rather than failing outright; if neither is installed, it
-prints both `check-cli.js` install blocks and exits 1.
+If the Codex CLI is not installed, the bridge prints the `check-cli.js` install
+block and exits 1. A timeout or a nonzero exit is reported in the response block
+and in the exit code.
 
 ## The Codex call here is read-only, not a delegation
 
@@ -72,45 +76,34 @@ whatever default a future Codex CLI release might ship.
 
 Use `--codex-model ID` to honor an explicit Codex model selection. Omission
 retains the CLI default and does not establish the actual model identity.
-`--agy-model ID` accepts the requested backend option, but agy cannot run until
-a reviewed read-only adapter exists. It is currently reported as unsupported.
 A past SDK failure is not a permanent prohibition on model selection.
 
-Neither participant may receive permission-bypass flags. agy installation alone
-is not permission evidence. The Codex participant uses `--sandbox read-only`.
-One successful participant produces a partial panel; zero successful participants
-returns a nonzero exit. API keys are inherited from the process environment;
-no shell startup file is sourced and no credential values are reported.
+The call never receives permission-bypass flags and uses `--sandbox read-only`.
+Zero successful responses returns a nonzero exit. API keys are inherited from the
+process environment; no shell startup file is sourced and no credential values
+are reported.
 
 ## Output shape
 
 ```
-=== AGY RESPONSE ===
-[agy's raw answer, or "[agy CLI not installed - skipped]", or an error block]
-=== END AGY ===
-
 === CODEX RESPONSE ===
-[Codex's raw answer, or the installed/error equivalent]
+[Codex's raw answer, or an error block]
 === END CODEX ===
 ```
 
 followed by a `stderr` summary line, `Council: N/M AIs responded
-successfully.` Both blocks are unedited model output — reading them is where
+successfully.` The block is unedited model output — reading it is where
 `references/synthesis-guide.md`'s rules apply, not before.
 
 ## Availability
 
-Executable presence is inspected independently for `agy` and `codex`;
-`check-cli.js` supplies missing-tool guidance. Presence is not authentication
-or permission evidence. Installed agy remains unsupported for read-only work. A missing backend never blocks the other; it is reported as
-skipped in both the response block and the summary line, and nothing is
+Executable presence is inspected for `codex`; `check-cli.js` supplies missing-tool
+guidance. Presence is not authentication or permission evidence, and nothing is
 installed on the caller's behalf.
 
 ## Boundary
 
-Reading what the panel returned — without collapsing two answers into an
-averaged one — is `references/synthesis-guide.md`. Calling agy alone for a
-document-writing task, with no second opinion in play, is
-`references/gemini.md`. Handing Codex a write to actually execute, under a
-sandbox and workdir chosen for that purpose, is the `delegate` skill, not
-this one.
+Reading what reviewers returned — without collapsing several answers into an
+averaged one — is `references/synthesis-guide.md`.
+Handing Codex a write to actually execute, under a sandbox and workdir chosen for
+that purpose, is the `delegate` skill, not this one.

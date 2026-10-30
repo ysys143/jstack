@@ -423,6 +423,7 @@ let NAME:any,_:any,_OFF:any,_ROSTER_OFF:any,_SRC_AXES:any,_TAGS:any,_t:any,_w:an
 (skill_all=read(join(ROOT, "SKILL.md")));
 ([fm, skill]=split_frontmatter(skill_all));
 (notice=read(join(ROOT, "NOTICE")));
+check("Routing: unclear domain greps the K-Dense catalog instead of re-reading the routing table", contains(skill_all, "grep `references/_kdense-catalog.md` for the request's") && !contains(skill_all, "browse the full catalog in `references/_index.json`"));
 check("Name: frontmatter matches roster (science)", ((search("(?m)^name:\\s*science\\s*$", fm) !== null)), (truth(((contains(fm, "name:")))) ? (search("(?m)^name:\\s*(.+)$", fm)?.[1]??"missing") : "missing"));
 (src={});
 (_TAGS=["academic", "gdm", "kdense"]);
@@ -495,9 +496,9 @@ check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/rebuild-inde
 check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"NOTICE": 18, "references/_index.json": 6, "references/_sources.json": 27, "references/analysis-methodology.md": 9, "references/tier-a-verdicts.md": 23}, completeness: false, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), _OFF)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0), extra_skip: _OFF});
 (_ROSTER_OFF=[..._OFF,"tier A: ", "tier A 로스터:"]);
 check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"tests/test_tier_a_roster.js": 9}, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), _ROSTER_OFF)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0), extra_skip: ["스크립트 계약:", "tier A: ", "tier A 로스터:"]});
-check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 17, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), _OFF)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
+check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 18, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), _OFF)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 139);
+check_total(check, results, 140);
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any) => truth(ok)).map(([_name, ok, _detail]: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + pyStr(passed) + "/" + pyStr(length(results)) + " 통과"));
 return (truth((isDeepStrictEqual(passed,length(results)))) ? 0 : 1);

@@ -1,4 +1,4 @@
-# blob:746f67054094686022b495b78851d336be119c68
+# blob:47e887a1c471023dde614e78f683dda8e9c5a992
 # TDD Guide: TypeScript
 ## Framework Selection
 | Project | Recommendation | Reason |
@@ -129,8 +129,7 @@ Requires Node.js 20+.
 git fetch origin main
 npx vitest run --coverage --coverage.reporter=lcov # coverage/lcov.info
 # With Jest and ts-jest: npx jest --coverage --coverageReporters=lcov
-pip install diff-cover
-diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=90
+uvx diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=90
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
 --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \
 --coverage coverage/lcov.info --fail-under 90

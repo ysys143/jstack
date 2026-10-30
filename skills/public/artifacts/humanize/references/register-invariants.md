@@ -30,7 +30,7 @@ content rather than polishing it.
 5. Causal, conditional, and concessive relationships and their direction.
 6. Item order and ranking.
 7. Register itself: converting a fragment-style paragraph to prose is not polishing.
-8. Commitment strength: `할 수 있다` and `한다` make different promises.
+8. Commitment strength: `할 수 있다` and `한다` make different promises. The one exception is procurement rule O-1, and only for a commitment the proposer has confirmed; that change is not a violation, and an unconfirmed one stays unchanged.
 9. Legal article numbers, technology stacks, and their versions.
 10. Human traces: owner comments, unresolved markers, and parenthetical notes.
 

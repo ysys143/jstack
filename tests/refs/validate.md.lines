@@ -1,4 +1,4 @@
-# blob:ba5e0de8537c8223a52f3b96f1ec270731cc4f1a
+# blob:7d1d26bb0a01fe3af7bd31f34f676102ffa91bc0
 ---
 description: Validate deliverables against their contracts
 ---
@@ -44,5 +44,5 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js"
 ```
 It runs every discovered skill suite plus the root `tests/` suites, then
 checks measured floors, harness behavior, and copy parity. Similar names can
-make `validate.sh` look like plugin validation, but neither layer substitutes
+make `validate.js` look like plugin validation, but neither layer substitutes
 for the other.

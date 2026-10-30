@@ -39,8 +39,8 @@ Choose a kebab-case name, a description of one sentence plus two or three trigge
 
 ## Step 1.5: Consult the Anthropic Guidance
 
-For design and structure guidance, consult the pinned upstream pointers recorded
-in `upstream.toml` under `corca-ai-claude-plugins`:
+For design and structure guidance, consult these documents from the upstream
+`corca-ai-claude-plugins` repository:
 
 | Need | Upstream document |
 |---|---|

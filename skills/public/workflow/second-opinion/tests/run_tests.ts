@@ -20,10 +20,9 @@ const SCRIPTS=join(ROOT, "scripts");
 const SKILL_FLOOR=5097;
 const FR_FLOOR=1469;
 const AC_FLOOR=4163;
-const GE_FLOOR=4187;
 const SG_FLOOR=4250;
 
-const OWNED_MIN=8;
+const OWNED_MIN=7;
 const L0_TRIGGERS=["2차 의견", "적대적 검증"];
 function pyStr(value:any):string{return typeof value==='string'?value:repr(value);}
 function subprocessRun(argv:string[],options:any={}):any{const {capture_output,text,...native}=options;if(native.timeout!==undefined)native.timeout*=1000;const result=runProcess(argv[0],argv.slice(1),native);return {...result,returncode:result.status};}
@@ -65,7 +64,6 @@ let MODE_LEAD:any,P2PATH:any,_:any,_argv2:any,_gb:any,_raw:any,_sent:any,a2:any,
 ([fm, skill]=split_frontmatter(read(join(ROOT, "SKILL.md"))));
 (fr=read(join(ROOT, "references", "framing.md")));
 (ac=read(join(ROOT, "references", "ai-council.md")));
-(ge=read(join(ROOT, "references", "gemini.md")));
 (sg=read(join(ROOT, "references", "synthesis-guide.md")));
 check("Request: states that asking whether it looks right invites yes", ((contains(skill, "gets you a yes"))));
 check("Request: identifies framing as the cause", ((contains(skill, "The framing does the work"))));
@@ -119,23 +117,21 @@ check("Language: includes English triggers", ((value:any)=>truth(value)?((contai
 check("L0: description routes independent refutation", ((value:any)=>truth(value)?((contains(fm, "independent"))):value)(((contains(fm, "refute")))));
 (miss_t=Array.from(L0_TRIGGERS).filter((t: any) => truth(((!contains(fm, t))))).map((t: any) => (t)));
 check("Language: description names the Korean activation intent", ["2차 의견", "적대적 검증"].every(term => fm.includes(term)));
-check("L0: description advertises backend names (agy, codex, panel)", ((value:any)=>truth(value)?((value:any)=>truth(value)?((contains(skill, "panel"))):value)(((contains(skill, "Codex")))):value)(((contains(skill, "`agy`")))));
+check("L0: SKILL.md names the Codex backend and the panel", contains(skill, "Codex") && contains(skill, "panel") && !contains(skill, "`agy`"));
 check("L0: description identifies reviewers as external to internal subagents", ((contains(skill, "external model"))));
-check("References: SKILL.md cites gemini.md", ((contains(skill, "references/gemini.md"))));
 check("References: SKILL.md cites ai-council.md", ((contains(skill, "references/ai-council.md"))));
 check("References: SKILL.md cites synthesis-guide.md", ((contains(skill, "references/synthesis-guide.md"))));
 check("References: SKILL.md cites council-bridge.js", ((contains(skill, "scripts/council-bridge.js"))));
 check("References: SKILL.md cites check-cli.js", ((contains(skill, "scripts/check-cli.js"))));
 check("References: SKILL.md cites parse-output.js", ((contains(skill, "scripts/parse-output.js"))));
 check("References: SKILL.md cites framing.md", ((contains(skill, "references/framing.md"))));
-check("References: SKILL.md cites gemini-bridge.js within one hop", ((contains(skill, "scripts/gemini-bridge.js"))));
 check("References: synthesis-guide.md redirects to framing.md within two hops", ((contains(sg, "references/framing.md"))));
 (cited=new Set(findall("`((?:references|scripts)/[A-Za-z0-9._-]+)`", skill)));
 (dead=sorted(Array.from(cited).filter((c: any) => truth(!truth(existsSync(join(ROOT, c))))).map((c: any) => (c))));
 check("References: all backtick paths in SKILL.md exist (no dead pointers)", ((value:any)=>truth(value)?!truth(dead):value)((compare(length(cited),OWNED_MIN,">="))), (pyStr(length(cited)) + " citations / dead " + pyStr(dead)));
 owned=new Set([...readdirSync(join(ROOT,'references')).map(n=>'references/'+n),...readdirSync(join(ROOT,'scripts')).filter(n=>!n.endsWith('.ts')).map(n=>'scripts/'+n)]);orphan=sorted([...owned].filter(n=>!cited.has(n)));
 check("References: all references/ and scripts/ files are cited by SKILL.md (no orphans)", ((value:any)=>truth(value)?(compare(length(owned),OWNED_MIN,">=")):value)(!truth(orphan)), ("orphans " + pyStr(orphan) + " / owned " + pyStr(length(owned)) + " files"));
-check("Boundary: distinguishes the single backend (agy) from the panel (agy+Codex)", ((contains(skill, "one reviewer, one lens, no panel"))));
+check("Boundary: one Codex answer is one reviewer and a panel needs a second independent answer", contains(skill, "One Codex answer is one reviewer.") && contains(skill, "A panel needs a second, independent answer"));
 check("Boundary: SKILL.md also states the three panel-reading rules", ((contains(skill, "role is not a lens, disagreement is the deliverable a panel"))));
 check("Boundary: SKILL.md fixes Codex panel invocation to read-only", ((contains(skill, "--sandbox read-only"))));
 check("Boundary: explains redirection to delegate because the panel does not write", ((value:any)=>truth(value)?value:((contains(skill, "Handing Codex an actual write"))))(((contains(skill, "Handing Codex an actual\nwrite")))));
@@ -147,16 +143,6 @@ check("Panel document: explains why Codex is fixed to read-only", ((contains(ac,
 check("Panel document: records the previous workspace-write setting and its reason", ((value:any)=>truth(value)?((contains(ac, "read-only"))):value)(((contains(ac, "workspace-write")))));
 check("Panel document: redirects to synthesis-guide to distinguish roles from lenses", ((contains(ac, "references/synthesis-guide.md"))));
 check("Panel document: does not install missing tools on the caller's behalf", ((value:any)=>truth(value)?value:((contains(ac, "nothing is installed on the caller's behalf"))))(((contains(ac, "nothing is\ninstalled on the caller's behalf")))));
-check("Single-backend document: identifies agy as the backend and gemini-cli as deprecated", ((value:any)=>truth(value)?((contains(ge, "deprecated as of 2026-06-18"))):value)(((contains(ge, "successor to `gemini-cli`")))));
-check("Single-backend document: gemini-bridge.js invocation uses the exact CLAUDE_PLUGIN_ROOT path", ((contains(ge, "${JSTACK_PLUGIN_ROOT}/skills/consult/scripts/gemini-bridge.js"))));
-check("Single-backend document: gemini-bridge.js invocation is executable rather than commented", (Array.from(lines(ge)).filter((ln: any) => truth(((contains(ln, "gemini-bridge.js"))))).map((ln: any) => (starts(lstrip(ln), "node ")))).some((value:any)=>truth(value)), Array.from(lines(ge)).filter((ln: any) => truth(((contains(ln, "gemini-bridge.js"))))).map((ln: any) => (ln)));
-check("Single-backend document: model request preserves permission boundary",ge.includes("`--model ID`")&&ge.includes("read-only"));
-check("Single-backend document: output-processing step 1 reviews quality", ((contains(ge, "Review the quality first"))));
-check("Single-backend document: step 2 leaves adoption to the caller and does not edit files", ((value:any)=>truth(value)?((contains(ge, "changes nothing"))):value)(((contains(ge, "the caller's decision")))));
-check("Single-backend document: step 3 reports failures too", ((contains(ge, "failures included"))));
-check("Single-backend document: documents the --print/--prompt token-consumption trap", ((contains(ge, "consumes the next token as its value"))));
-check("Single-backend document: credentials are inherited without sourcing",ge.includes("process environment")&&ge.includes("not sourced"));
-check("Single-backend document: redirects to the panel (ai-council) and synthesis guide", ((value:any)=>truth(value)?((contains(ge, "references/synthesis-guide.md"))):value)(((contains(ge, "references/ai-council.md")))));
 check("prism: identifies taking the median as the failure mode", ((contains(sg, "taking the median of the models' opinions"))));
 check("prism: includes the role-versus-lens rule", ((contains(sg, "Role ≠ lens"))));
 check("prism: includes the disagreement-as-deliverable rule", ((contains(sg, "Disagreement is the deliverable"))));
@@ -166,31 +152,31 @@ check("prism: explains why the final section is not named Recommendation", ((con
 check("prism: identifies defaulting to the stricter side as hidden averaging", ((contains(sg, "is itself a hidden"))));
 (st=rows(sg, "## The three rules"));
 check("prism: three-rule section has no table (three prose items)", (isDeepStrictEqual(st,[])));
-check("Rules: prohibits bypassing bridges through direct agy/codex calls", ((contains(skill, "Never invoke `agy` or `codex` directly"))));
-check("Rules: explains lost sandbox, flag, and isolation guarantees when bypassed", ((contains(skill, "drops all three at once"))));
+check("Rules: prohibits bypassing the bridge through direct codex calls", ((contains(skill, "Never invoke `codex` directly"))));
+check("Rules: explains lost sandbox and flag guarantees when bypassed", ((contains(skill, "drops both at once"))));
 check("Rules: native reviewers require authorization",skill.includes("Native reviewers are permitted")&&skill.includes("current session authorize"));
 check("Rules: same model is not cross-model evidence",skill.includes("as a different model"));
 check("Rules: unavailable reviewer never locks the session",skill.includes("No session-wide tool lock"));
-check("Rules: explicit model arguments are supported",skill.includes("`--model ID`")&&skill.includes("`--codex-model ID`"));
+check("Rules: explicit model argument is supported",skill.includes("`--codex-model ID`")&&!skill.includes("`--model ID`"));
 check("Rules: obsolete SDK failure cannot prohibit model selection",skill.includes("permanent model prohibition"));
 check("Rules: reports exact stderr instead of improvising after bridge failure", ((value:any)=>truth(value)?((contains(skill, "exact stderr"))):value)(((contains(skill, "reported, not improvised around")))));
-check("Rules: failure diagnosis points to check-cli.js", ((contains(skill, "scripts/check-cli.js\" agy"))));
+check("Rules: failure diagnosis points to check-cli.js", ((contains(skill, "scripts/check-cli.js\" codex"))));
+check("Reproduction: only a reproduced finding survives and the dropped count is reported", contains(skill, "## For code and behavior, only a reproduced finding survives") && contains(skill, "A finding that does not reproduce is dropped, not downgraded.") && contains(skill, "Report the count\nand the reason"));
+check("Reproduction: the caller reruns each finding and applies no fix", contains(skill, "rerun each finding's command\nyourself before accepting it") && contains(skill, "do not apply fixes."));
+check("Reproduction: non-runnable objections are recorded as unverified, not findings", contains(skill, "record the objection as unverified") && contains(skill, "do not call it a\nfinding."));
 check("Rules: unspecified targets use git diff --name-only HEAD for candidates", ((contains(skill, "git diff --name-only HEAD"))));
 check("Rules: empty candidates trigger a user question (no whole-repository transmission)", ((value:any)=>truth(value)?((contains(skill, "send the whole repository"))):value)(((contains(skill, "ask the user which files to send")))));
 check_skill_body(check, ROOT, {semantic: true, needles: ["gets you a yes", "withhold why you believe it works", "A verdict is evidence, not permission", "agree by construction", "what the answer would change first", "role is not a lens, disagreement is the deliverable a panel", "quietly become that", "reported, not improvised around"], floor: SKILL_FLOOR});
-check_ref_contracts(check, ROOT, [["framing.md", "Send/withhold, refutation phrasing, specificity, model reviewers", ["**inaccessible**", "silence is not", "as unverified rather than as a finding", "a different kind of object"], FR_FLOOR], ["ai-council.md", "Panel invocation, read-only rationale, model-flag prohibition, availability, boundaries", ["${JSTACK_PLUGIN_ROOT}/skills/consult/scripts/council-bridge.js", "--sandbox read-only", "it never touches a file", "Council: N/M AIs responded\nsuccessfully.", "Both backends see", "expensive to act on unchecked", "explicit Codex model selection", "installed on the caller's behalf", "Handing Codex a write to actually execute"], AC_FLOOR], ["gemini.md", "Actual backend (agy), invocation, known pitfalls, output processing, boundaries", ["${JSTACK_PLUGIN_ROOT}/skills/consult/scripts/gemini-bridge.js", "successor to `gemini-cli`", "deprecated as of 2026-06-18", "consumes the next token as its value", "Technical specification writing", "`--model ID`", "Review the quality first", "not to referee two"], GE_FLOOR], ["synthesis-guide.md", "Three prism rules, reading procedure, output format, code-review/research synthesis", ["Role ≠ lens", "Disagreement is the deliverable", "Never average", "taking the median of the models' opinions", "the panel's highest-confidence output", "A disputed point with no resolving question", "not automatically weaker", "not called \"Recommendation.\"", "is itself a hidden", "grounds to check it, not grounds to trust it"], SG_FLOOR]], {semantic: ["ai-council.md", "gemini.md"]});
-{const home=temporaryDirectory();try{([rc, out, err]=run_script("check-cli.js",["agy"],{path:SAFE_PATH,home:home}));
-check("check-cli: missing agy returns rc=1 and its installation command", ((value:any)=>truth(value)?((contains(err, "npm install -g @google/agy"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
-([rc, out, err]=run_script("check-cli.js",["codex"],{path:SAFE_PATH,home:home}));
+check_ref_contracts(check, ROOT, [["framing.md", "Send/withhold, refutation phrasing, specificity, model reviewers", ["**inaccessible**", "silence is not", "as unverified rather than as a finding", "a different kind of object"], FR_FLOOR], ["ai-council.md", "Codex invocation, read-only rationale, model flag, availability, boundaries", ["${JSTACK_PLUGIN_ROOT}/skills/consult/scripts/council-bridge.js", "--sandbox read-only", "it never touches a file", "Council: N/M AIs responded\nsuccessfully.", "One Codex answer is one reviewer", "expensive to act on unchecked", "explicit Codex model selection", "installed on the caller's behalf", "Handing Codex a write to actually execute"], AC_FLOOR], ["synthesis-guide.md", "Three prism rules, reading procedure, output format, code-review/research synthesis", ["Role ≠ lens", "Disagreement is the deliverable", "Never average", "taking the median of the models' opinions", "the panel's highest-confidence output", "A disputed point with no resolving question", "not automatically weaker", "not called \"Recommendation.\"", "is itself a hidden", "grounds to check it, not grounds to trust it"], SG_FLOOR]], {semantic: ["ai-council.md"]});
+{const home=temporaryDirectory();try{([rc, out, err]=run_script("check-cli.js",["codex"],{path:SAFE_PATH,home:home}));
 check("check-cli: missing codex returns rc=1 and its installation command", ((value:any)=>truth(value)?((contains(err, "npm install -g @openai/codex"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
-([rc, out, err]=run_script("check-cli.js",["gemini"],{path:SAFE_PATH,home:home}));
-check("check-cli: gemini deprecation notice directs installation of agy", ((value:any)=>truth(value)?((value:any)=>truth(value)?((contains(err, "npm install -g @google/agy"))):value)(((contains(err, "deprecated")))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
 ([rc, out, err]=run_script("check-cli.js",["totally-unknown-cli"],{path:SAFE_PATH,home:home}));
+check("check-cli: agy and gemini are no longer known CLIs", (()=>{const [r1,,e1]=run_script("check-cli.js",["agy"],{path:SAFE_PATH,home:home});const [r2,,e2]=run_script("check-cli.js",["gemini"],{path:SAFE_PATH,home:home});return r1===1&&r2===1&&e1.includes("No install instructions")&&e2.includes("No install instructions")&&!e1.includes("@google/agy")&&!e2.includes("@google/agy");})());
 check("check-cli: unknown CLI produces general guidance", ((value:any)=>truth(value)?((contains(err, "No install instructions"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
 {const stubdir=temporaryDirectory();try{
-mkstub(stubdir, "agy", "process.exitCode=0;");
-([rc, out, err]=run_script("check-cli.js",["agy"],{path:(pyStr(stubdir) + ":" + pyStr(SAFE_PATH)),home:home}));
-check("check-cli: available agy returns rc=0 without output", ((value:any)=>truth(value)?(isDeepStrictEqual(strip(err),"")):value)((isDeepStrictEqual(rc,0))), ("rc=" + pyStr(rc) + " err=" + pyStr(slice(strip(err), 0, 60))));}finally{removeTree(stubdir);}}
+mkstub(stubdir, "codex", "process.exitCode=0;");
+([rc, out, err]=run_script("check-cli.js",["codex"],{path:(pyStr(stubdir) + ":" + pyStr(SAFE_PATH)),home:home}));
+check("check-cli: available codex returns rc=0 without output", ((value:any)=>truth(value)?(isDeepStrictEqual(strip(err),"")):value)((isDeepStrictEqual(rc,0))), ("rc=" + pyStr(rc) + " err=" + pyStr(slice(strip(err), 0, 60))));}finally{removeTree(stubdir);}}
 ([rc, out, err]=run_script("parse-output.js",["text"],{path:SAFE_PATH,home:home,input_text:"\u001b[31mHELLO\u001b[0m  \n"}));
 check("parse-output: text mode strips ANSI and trims surrounding whitespace", (isDeepStrictEqual(out,"HELLO")), pyStr(out));
 ([rc, out, err]=run_script("parse-output.js",["json-extract"],{path:SAFE_PATH,home:home,input_text:"{\"result\": \"extracted value\"}"}));
@@ -201,42 +187,36 @@ check("parse-output: missing known keys pretty-prints the entire JSON", ((contai
 check("parse-output: non-JSON falls back to the original with ANSI removed", (isDeepStrictEqual(strip(out),"not json at all")), pyStr(out));
 ([rc, out, err]=run_script("parse-output.js",[],{path:SAFE_PATH,home:home,input_text:"  raw text  "}));
 check("parse-output: omitted arguments default to text", (isDeepStrictEqual(out,"raw text")), pyStr(out));
-([rc, out, err]=run_script("gemini-bridge.js",[],{path:SAFE_PATH,home:home}));
-check("gemini-bridge: missing --prompt returns rc=1", ((value:any)=>truth(value)?((contains(err, "--prompt is required"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
-([rc, out, err]=run_script("gemini-bridge.js",["--prompt", "x", "--bogus", "y"],{path:SAFE_PATH,home:home}));
-check("gemini-bridge: unknown flag returns rc=1 and identifies the flag", ((value:any)=>truth(value)?((contains(err, "Unknown option: --bogus"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
-([rc, out, err]=run_script("gemini-bridge.js",["--prompt", "x"],{path:SAFE_PATH,home:home}));
-check("gemini-bridge: missing agy returns rc=1 and its installation command", ((value:any)=>truth(value)?((contains(err, "npm install -g @google/agy"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
-// Real CLI entry points under a hostile PATH; agy must never execute.
+([rc, out, err]=run_script("council-bridge.js",[],{path:SAFE_PATH,home:home}));
+check("council-bridge: missing --prompt returns rc=1", ((value:any)=>truth(value)?((contains(err, "--prompt is required"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
+([rc, out, err]=run_script("council-bridge.js",["--prompt", "x", "--bogus", "y"],{path:SAFE_PATH,home:home}));
+check("council-bridge: unknown flag returns rc=1 and identifies the flag", ((value:any)=>truth(value)?((contains(err, "Unknown option: --bogus"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
+([rc, out, err]=run_script("council-bridge.js",["--prompt", "x", "--agy-model", "y"],{path:SAFE_PATH,home:home}));
+check("council-bridge: the removed --agy-model flag is rejected", ((value:any)=>truth(value)?((contains(err, "Unknown option: --agy-model"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
+([rc, out, err]=run_script("council-bridge.js",["--prompt", "x"],{path:SAFE_PATH,home:home}));
+check("council-bridge: missing codex returns rc=1 and its installation command", ((value:any)=>truth(value)?((contains(err, "npm install -g @openai/codex"))):value)((isDeepStrictEqual(rc,1))), slice(strip(err), 0, 80));
+// Real CLI entry points under a hostile PATH; an installed agy must never execute.
 {const bin=temporaryDirectory();try{
  const trace=join(home,'unauthorized-write');
  mkstub(bin,'agy',"require('node:fs').writeFileSync("+JSON.stringify(trace)+",'BAD');console.log('unsafe');");
- ([rc,out,err]=run_script('gemini-bridge.js',['--prompt','review','--model','literal-model'],{path:bin,home}));
- check('agy: installed backend is refused without a reviewed read-only adapter',rc===1&&err.includes('read-only consultation is unsupported'),err);
- check('agy: refused invocation does not execute the provider',!existsSync(trace),trace);
- ([rc,out,err]=run_script('council-bridge.js',['--prompt','review'],{path:bin,home}));
- check('council: zero successful respondents fails',rc===1&&err.includes('0/1'),err);
- check('council: blocked agy cannot write',!existsSync(trace),out);
  const capture=join(home,'codex-args');
  mkstub(bin,'codex',"require('node:fs').writeFileSync("+JSON.stringify(capture)+",JSON.stringify(process.argv.slice(2)));require('node:fs').readFileSync(0);console.log('CODEX-buffer');");
  ([rc,out,err]=run_script('council-bridge.js',['--prompt','review','--codex-model','literal-model'],{path:bin,home}));
  const args=existsSync(capture)?JSON.parse(readFileSync(capture,'utf8')):[];
- check('council: partial successful results survive',rc===0&&out.includes('CODEX-buffer')&&err.includes('1/2'),out);
+ check('council: the Codex response survives and is the only participant',rc===0&&out.includes('=== CODEX RESPONSE ===')&&out.includes('CODEX-buffer')&&!out.includes('AGY')&&err.includes('1/1'),out);
  check('council: exact model reaches Codex argv',args[args.indexOf('-m')+1]==='literal-model',args);
  check('council: Codex is read-only',args[args.indexOf('--sandbox')+1]==='read-only',args);
- check('council: no permission bypass',!args.includes('--dangerously-skip-permissions')&&!existsSync(trace),args);
+ check('council: no permission bypass and an installed agy never runs',!args.includes('--dangerously-skip-permissions')&&!existsSync(trace),args);
  mkstub(bin,'codex',"process.exitCode=7;");
  ([rc,out,err]=run_script('council-bridge.js',['--prompt','review'],{path:bin,home}));
- check('council: all installed respondents failing is nonzero',rc===1&&err.includes('0/2'),err);
+ check('council: the only respondent failing is nonzero',rc===1&&err.includes('0/1'),err);
 }finally{removeTree(bin);}}
 }finally{removeTree(home);}}
-check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 58, "references/framing.md": 19, "references/ai-council.md": 8, "references/gemini.md": 11, "references/synthesis-guide.md": 11, "scripts/check-cli.js": 13, "scripts/parse-output.js": 10, "scripts/gemini-bridge.js": 5, "scripts/council-bridge.js": 5}, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
-check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 58, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
-(_gb=read(join(ROOT, "scripts", "gemini-bridge.js")));
-check('Output: unsupported backend never invokes a model',_gb.includes('No model was invoked'));
-check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/check-cli.js": 13, "scripts/parse-output.js": 10, "scripts/gemini-bridge.js": 5, "scripts/council-bridge.js": 5}, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:", "스크립트 계약:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
+check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 59, "references/framing.md": 19, "references/ai-council.md": 8, "references/synthesis-guide.md": 11, "scripts/check-cli.js": 11, "scripts/parse-output.js": 13, "scripts/council-bridge.js": 8}, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
+check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 59, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
+check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/check-cli.js": 11, "scripts/parse-output.js": 13, "scripts/council-bridge.js": 8}, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ["자기검사:", "계약 커버리지:", "스크립트 계약:"])))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 155);
+check_total(check, results, 137);
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any) => truth(ok)).map(([_name, ok, _detail]: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + pyStr(passed) + "/" + pyStr(length(results)) + " 통과"));
 return (truth((isDeepStrictEqual(passed,length(results)))) ? 0 : 1);

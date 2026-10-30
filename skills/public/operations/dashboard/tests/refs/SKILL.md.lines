@@ -1,4 +1,4 @@
-# blob:bb9ec4f50933758c14bed4864e59738527a23c0b
+# blob:d8d63b3010b4697a8a5234e18eff95df8425516f
 # Dashboard — current usage
 This skill vendors upstream `uppinote20/claude-dashboard` v1.34.0 (MIT).
 `NOTICE` and `UPSTREAM.sha256` record provenance, version, byte-level binding,
@@ -51,7 +51,7 @@ an existing Codex layout is preserved.
 `/jstack:check-usage` performs a one-time query without a statusline.
 `/jstack:dashboard-alias` adds the `check-ai` shell function for that query.
 ## Emoji handling
-`jstack` ships `block_emoji.py`, while the dashboard emits emoji in its statusline.
+`jstack` ships `block_emoji.js`, while the dashboard emits emoji in its statusline.
 They do not mechanically conflict: the hook examines `PreToolUse` inputs, and
 statusline output is not a tool call (measured).
 Organization policy also covers output, so an emoji-free configuration has been

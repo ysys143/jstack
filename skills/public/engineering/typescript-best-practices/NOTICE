@@ -1,0 +1,56 @@
+# NOTICE — typescript-best-practices
+
+## Adapted content
+
+`typescript-best-practices` is adapted from pstack (MIT), the Cursor plugin by Lauren Tan. It is a jstack-native rewrite, not a pinned copy: no upstream file is stored in this directory, and the text is written in jstack's own words.
+
+| Field | Value |
+|---|---|
+| Upstream | https://github.com/cursor/plugins (pstack 0.15.36) |
+| Pinned commit | 4dd1d05818d19792e7cd6e818f1667f95f7e1dbe |
+| Upstream paths | see the list below |
+| License | MIT (full text below) |
+
+Upstream paths, relative to `pstack/` in the upstream repository:
+
+- `skills/typescript-best-practices/SKILL.md`
+- `skills/typescript-best-practices/references/patterns.md`
+- `skills/principle-boundary-discipline/SKILL.md`
+- `skills/principle-type-system-discipline/SKILL.md`
+
+## What changed
+
+- Rewrote the rule table and the examples. The examples use a small task runner and cases from code like jstack's runtime (a persisted JSON file, a config parse), not the upstream examples.
+- Absorbed `principle-boundary-discipline` as the Boundary discipline section and `principle-type-system-discipline` into the rule table; the links to the pstack principle skills are gone.
+- Dropped the `paths:` frontmatter key (no jstack skill uses it) and the Cursor `disable-model-invocation` key; the trigger is stated in the description.
+- Dropped the structured-telemetry rule: jstack command-line tools print to standard output on purpose.
+- Reworded the schema rule for a repository with no schema library (jstack's runtime has none): one parse function per boundary, and no new dependency for one guard. The cast-free parse example is new.
+- Reduced the testing row to a pointer to the `test-driven-development` skill.
+
+## Added by jstack
+
+- `SKILL.md`, `references/patterns.md`, this NOTICE, and `tests/`.
+
+## License text
+
+MIT License
+
+Copyright (c) 2026 Lauren Tan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -1,4 +1,4 @@
-# blob:47c3c0aed4db7764cf6667a98d3e63852718a85f
+# blob:6dda7c631405b7627259421c530e0d88bb9002d1
 # Delegate — hand off the write, not the question
 When delegating security work, include only the input boundaries from the
 [security discovery contract](../audit/references/security-discovery.md) and execution
@@ -87,15 +87,10 @@ authentication, not installation, and mixing the two guidances back into one
 message is exactly the failure `bridge` names as a reduced path that does not
 say it is reduced.
 ## Task routing and completion
-For authorized delegation, use the common routing contract in
-[Runtime routing](../../runtime/ROUTING.md). Run `jst route plan --request FILE`,
-then `jst route run --decision FILE` to reserve one attempt. A native decision
-is executed through the current session tools; it is not a CLI substitution.
-Record independently checked artifacts with `jst route record`. If `jstack` is not
-found, follow [jst command on PATH](../../runtime/CLI-PATH.md). Retain explicit
-user model choices, permission boundaries, exclusive files, and host fork limits.
-Only a verification failure permits one model transition; environment failures
-do not justify stronger models. Small tasks stay with the coordinator.
+For authorized delegation, follow [Runtime routing](../../runtime/ROUTING.md):
+plan with `jst route plan`, reserve one attempt with `jst route run`, execute, and
+record checked artifacts with `jst route record`. It owns model transitions and
+the rules every calling skill follows.
 ## Boundary
 Three things sit next to this skill and are not it.
 Asking for a verdict on work that already exists, and treating agreement with

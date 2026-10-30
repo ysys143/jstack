@@ -236,8 +236,7 @@ git fetch origin main
 
 cargo llvm-cov --workspace --lcov --output-path lcov.info
 
-pip install diff-cover                     # diff-cover 9+ reads LCOV
-diff-cover lcov.info --compare-branch=origin/main --fail-under=90
+uvx diff-cover lcov.info --compare-branch=origin/main --fail-under=90   # diff-cover 9+ reads LCOV
 
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
     --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \

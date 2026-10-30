@@ -1,4 +1,4 @@
-# blob:f30b77e5aa70f3db25a3c546ed1cbde7da209e13
+# blob:b5f3824629ce3cda7c5a8d6b1475461b9e138149
 # Cleanup — fix, one axis at a time
 ## Before anything
 **Lock the behaviour first.** A cleanup that changes behaviour is not a cleanup;
@@ -11,12 +11,17 @@ are about to move
 known mess for an unknown one.
 ## Scope is an argument, not a skill
 ```
-cleanup --scope=diff --axes=slop # axis 8 only, current changes
+cleanup --scope=diff --axes=slop # axis 8 only, files changed on this branch
 cleanup --scope=file --axes=5,6
 cleanup --scope=all --axes=3
 ```
-**Default is `--scope=diff`.** Widening the scope widens the blast radius, and
-two axes degrade at `--scope=all` (see the taxonomy).
+**Default is `--scope=diff`.** It means the files changed between the merge base
+and `HEAD` (`git diff --name-only "$(git merge-base origin/main HEAD)"..HEAD`,
+with the repository's own base branch in place of `origin/main` if it differs). The
+tree is clean before a pass, so a bare `git diff` is empty and is not the scope.
+On the base branch itself that range is empty too: do not widen on your own. Ask
+for an explicit `--scope=file` or `--scope=all`, or stop. Widening the scope widens
+the blast radius, and two axes degrade at `--scope=all` (see the taxonomy).
 ## The axes
 `references/quality-taxonomy.md` is **the single source of truth**, and this
 skill holds it. `audit` references this file and keeps no copy — one file, zero
@@ -50,14 +55,46 @@ reverted by half when one of them is wrong.
 | 4 | Narrow contracts (axis 7) | The remaining shape is visible |
 | 5 | Split by change axis (axis 1) | Last — the file is smaller already |
 **Re-run the tests after each pass.** Not at the end.
+## Who runs which pass
+On a host with agents, a cleanup run splits across three, in this order.
+1. The `quality-auditor` agent runs first and edits nothing. It judges the scope
+against the taxonomy and returns findings, which `cap_findings.js` caps.
+2. The `quality-executor` agent runs next, one axis per pass. It receives the
+findings for that axis only, fixes only those, re-runs the tests after the pass
+and reverts a pass that fails. The next axis starts after the previous one is
+green.
+3. The `quality-verifier` agent runs last. It receives the diff and the original
+target, not the executor's reasoning, runs the proving command and reads its
+output. The executor's own "tests pass" does not close the cleanup.
+Without agents, play the same three roles inline in the same order, and state that
+the verification was not independent.
 ## Restraint
-Three things stop a cleanup.
+Five things stop a cleanup.
 1. **The test does not pass after the pass** — revert that pass, do not patch forward
 2. **The diff grew past what the finding justified** — a one-line finding does
 not license a module rewrite
 3. **You are about to change behaviour to make it cleaner** — that is a
 different task and needs `plan`
+4. **The diff lowers the reader's load nowhere** — revert it. A change nobody
+reads more easily is churn
+5. **Keeping every pass green would need a compatibility layer** (an adapter, a
+dual path, a flag) — that is a migration, not a cleanup. Stop and hand it to
+`plan`
 **Deleting a test to make a pass green is never a cleanup.**
+Four rules keep a pass honest.
+- **Type checks and lint are not a behaviour lock.** They stay green through a
+behaviour change. The tests from "Before anything" are the lock.
+- **Callers move with the API.** When a pass reshapes an API, move every in-repo
+caller in the same change and delete the old one. Do not leave a shim. A rename
+is checked by searching strings, docs and config as well as symbols. Public or
+external consumers cannot be moved this way, so a break for them goes to `plan`.
+- **Remove before you add.** When a pass has to introduce something (an
+extraction, a type), the dead code and redundant guards in its way go first.
+- **Comments:** axis 8 (S1) removes a comment that restates its line. A comment that
+states a constraint ("do not reorder", "talk to X first") is not slop. Offer the
+cheapest enforcement in scope (a type, a test, a lint rule), and delete the
+comment only after that enforcement exists. If the offer is declined, keep the
+comment and report the constraint as unenforced.
 ## Report
 Say what changed, which axis each change served, and what you left alone with
 the reason. **What you deliberately did not touch is part of the result** —
@@ -70,10 +107,11 @@ otherwise the next person re-finds it and assumes it was missed.
 | Confirming it is still correct | `verify` skill |
 ## Limits (stated)
 - This skill **changes files**. It needs a clean tree and passing tests first
-- It does not decide whether a finding is worth fixing — `audit` ranked them
+- It does not decide whether a finding is worth fixing — `audit` (or the
+`quality-auditor` agent) ranked them
 - Axis 8 (slop) fires **only from the closed list** in the taxonomy. Anything
 outside that list is not reported as slop
 ## Optional SDLC caller
-Return the original result and input hashes to an explicitly selected SDLC caller.
-Keep the clean-tree prerequisite: do not commit or stash to satisfy it without
-authorization. Standalone calls require no run context.
+When an explicitly selected `sdlc` run calls this skill, follow
+[the leaf rules in sdlc](../sdlc/SKILL.md#leaf-skills-called-by-a-run). A standalone
+call needs no run context.

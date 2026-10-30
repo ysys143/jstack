@@ -99,6 +99,31 @@ input only for an explicit intermittency or external-failure question, with a
 finite attempt/time budget. Record failures and total attempts. One green retry
 does not settle an intermittent defect.
 
+When two corrections that share one premise fail the same check, the premise is
+the suspect. Write it as one sentence, then make an observation that would come
+out differently if it were false, and run it before a third correction. If the
+evidence contradicts the premise, look for what the failures have in common that
+it did not predict.
+
+Fix the root cause: the first place the system did something it should not, not
+the place where the wrong state became visible. A guard, retry, swallowed error,
+or clamped value at the symptom hides the evidence, and it is a fix only when the
+state it handles is legitimate. After the fix, search for the same fault
+elsewhere.
+
+When a check is worth running twice, make it a rerunnable script or test command
+instead of a hand procedure, so a reviewer runs it rather than trusting your
+account. Build the smallest one that does or proves the job, not a framework, and
+skip it when the check is one obvious command.
+
+Every changed line must trace to the confirmed cause. Revert what a refuted
+hypothesis motivated; a change that might help is a hypothesis, not a fix. Verify
+on the surface where the failure was seen, because a unit test shows branch
+behavior, not that the bug is gone, and a run on the wrong surface is
+inconclusive. When a cheap reproducing test exists and committing is part of the
+task, put the failing test in an earlier commit than the fix so the history shows
+it red.
+
 For a failure unrelated to the change, rerun that one test once. If it flips,
 report it as flaky with its seed, order, and output instead of looping the suite;
 [flaky tests](flaky-tests.md) covers detection, retries, and quarantine. Read a

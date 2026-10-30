@@ -1,7 +1,6 @@
 ---
 name: korean-ai-tell-taxonomist
 description: Domain specialist that classifies, extends, and versions AI-tell patterns in AI-generated Korean, maintains `${CLAUDE_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md` as the single source of truth, and validates new patterns observed in real inputs before promoting them across versions.
-model: opus
 ---
 
 # Korean AI-Tell Taxonomist

@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import {spawnSync} from 'node:child_process';
 import {checkAttribution} from './check_attribution.js';
 import {checkCost, toks, descriptions, BUDGET} from './check_cost.js';
 import {checkHookOrder} from './check_hook_order.js';
@@ -60,8 +59,4 @@ test('canonical membership detects duplicate bindings, duplicate library and ret
   for(const [source]of Object.entries(CANONICAL))write(source,'fixture');write('packaging/package-files.json',JSON.stringify({files:rows}));assert.deepEqual(canonical(root),[]);
   write('packaging/package-files.json',JSON.stringify({files:[...rows,rows[0]]}));write('skills/other/_suite_lib.py','duplicate');fs.mkdirSync(path.join(root,'staging'));
   assert.equal(canonical(root).length,3);
-});
-test('optional legacy cost oracle matches exact metrics on an isolated fixture',{skip:process.env.JSTACK_ORACLE!=='1'},t=>{
-  const {root,write}=fixture(t);write('payload/commands/c.md','---\ndescription: >\n  한글 😀 text\n  second line\nname: c\n---\n');write('entries/claude/a/SKILL.md','---\ndescription: hello\n---\n');write('entries/codex/b/SKILL.md','---\ndescription: 안녕😀\n---\n');
-  const result=spawnSync('python3',['scripts/check_cost.py','--package',root,'--json'],{encoding:'utf8'});assert.equal(result.status,0,result.stderr);assert.deepEqual(checkCost(root).out,JSON.parse(result.stdout));
 });

@@ -1,7 +1,6 @@
 ---
 name: korean-procurement-fidelity-auditor
 description: Auditor that compares source and rewritten public-procurement proposals for content integrity, inherits the 13-item checklist from the humanize skill's general-mode content-fidelity-auditor, adds seven proposal-specific invariants for requirement IDs, RFP bullet numbers, technology versions, performance metrics, organization names, legal provisions, and canonical sentences, and issues edit-level rollback instructions under its 20-item audit criteria.
-model: opus
 ---
 
 # Korean Procurement Fidelity Auditor

@@ -1,4 +1,4 @@
-# blob:eb86a83fb8287a0ea0585ec18dbce56c5582ecc7
+# blob:c784acea3d821cb6c5b001b5caf1671dd0a4736f
 # TDD Guide: C
 ## Why was this guide created so late
 `cleanup/references/lang-matrix.md` lists **seven** languages whose quality this
@@ -111,8 +111,7 @@ Requires Node.js 20+.
 git fetch origin main
 ctest --test-dir build
 gcovr --xml-pretty -o coverage.xml
-pip install diff-cover
-diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
+uvx diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
 --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \
 --coverage coverage.xml --fail-under 90

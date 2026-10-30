@@ -1,7 +1,8 @@
 # Reading a panel — without averaging it away
 
-`ai-council.md`'s bridge hands back two raw, independent answers. What you do
-with those two answers next is where a multi-model panel most often fails —
+A panel is two or more raw, independent answers to the same artefact: the Codex
+answer from `ai-council.md`'s bridge plus a native reviewer's, for example. What
+you do with those answers next is where a multi-model panel most often fails —
 not in the querying, in the reading. The exact way this class of tool fails
 is **taking the median of the models' opinions** and calling it the answer.
 Three rules keep that from happening; the rest of this document is the
@@ -9,22 +10,22 @@ mechanical steps that apply them.
 
 ## The three rules
 
-**Role ≠ lens.** Which CLI answered a prompt is not the same thing as which
-angle was examined. "agy said X, Codex said Y" describes two vendors, not
-two perspectives — if both were asked the identical question with no
-distinction of what to look for, a difference in their answers may be
+**Role ≠ lens.** Which reviewer answered a prompt is not the same thing as which
+angle was examined. "Codex said X, the native reviewer said Y" describes two
+reviewers, not two perspectives — if both were asked the identical question with
+no distinction of what to look for, a difference in their answers may be
 genuine disagreement, or it may just be two models sampling the same
 underspecified prompt differently. `SKILL.md`'s own principle — give
 reviewers **different angles**, correctness versus failure-under-load versus
 what a hostile user does versus what breaks on the next change — is what
-turns two vendor calls into an actual panel. Assign the lens in the prompt
+turns two calls into an actual panel. Assign the lens in the prompt
 (`--mode review` for correctness, a debug-framed prompt for failure
 scenarios); do not assume the model boundary supplies one for free.
 
-**Disagreement is the deliverable.** When agy and Codex disagree, that
+**Disagreement is the deliverable.** When reviewers disagree, that
 disagreement is the useful output of the panel, not friction to be smoothed
-over before reporting back. Do not silently prefer one AI's answer because
-it sounds more confident, matches your prior, or came from the backend
+over before reporting back. Do not silently prefer one reviewer's answer because
+it sounds more confident, matches your prior, or came from the reviewer
 usually strong in that domain — "Codex is usually right about code" is a
 role, not evidence for this particular claim. Every disputed point gets
 carried forward paired with **the single question that would resolve it** —
@@ -33,7 +34,7 @@ as "requires further investigation," which is a way of saying nothing
 happened.
 
 **Never average.** Do not compute a consensus, a middle ground, or a
-"balancing both perspectives" verdict. If agy says the function is correct
+"balancing both perspectives" verdict. If one reviewer says the function is correct
 and Codex names a race condition, the synthesis is not "probably mostly
 fine" — it is "run the case Codex named." A false consensus that removes a
 real finding is worse than reporting the disagreement raw and letting the
@@ -48,7 +49,7 @@ averaged one.
 
 Identify claims or recommendations that appear in **both** responses,
 independently arrived at. These are the panel's highest-confidence output —
-present them first, and say plainly that both backends converged on them
+present them first, and say plainly that the reviewers converged on them
 without prompting from each other.
 
 ### Step 2: Disagreement analysis
@@ -67,12 +68,12 @@ synthesis, not a nuanced one.
 
 ### Step 3: Unique insights
 
-A point raised by only one backend is not automatically weaker — it may be
-the one the other backend's training or tooling made it blind to. Report it
+A point raised by only one reviewer is not automatically weaker — it may be
+the one the other reviewer's training or tooling made it blind to. Report it
 on its own terms; do not discount it for being unconfirmed by the other
-side, and do not credit it just because it came from the backend "known for"
-that kind of insight (agy for documentation and context, Codex for code
-reasoning) — that is role, again, not lens.
+side, and do not credit it just because it came from the reviewer "known for"
+that kind of insight (Codex for code reasoning, say) — that is role, again,
+not lens.
 
 ### Step 4: Output format
 
@@ -83,13 +84,13 @@ reasoning) — that is role, again, not lens.
 - [Finding] (both agree, independently)
 
 ### Disputed Points
-- [Point]: agy says X, Codex says Y.
+- [Point]: reviewer A says X, reviewer B says Y.
   Resolving question: [the concrete test/input/read that would settle it]
   [Checked: result, if run] / [Unchecked: pending]
 
 ### Unique Insights
-- From agy: [insight]
-- From Codex: [insight]
+- From reviewer A: [insight]
+- From reviewer B: [insight]
 
 ### What this changes
 [What action follows — not a single "unified recommendation" manufactured by
@@ -104,10 +105,13 @@ disagreement visible in the write-up instead of dissolving at the last step.
 ## Code review synthesis
 
 1. Categorize by severity: Critical / Warning / Info.
-2. De-duplicate findings both backends flagged identically — that is
+2. De-duplicate findings both reviewers flagged identically — that is
    agreement collapsing correctly, not averaging (the finding did not change
    shape; it was just said twice).
-3. For a genuine conflict between the two, do not lean toward the stricter
+3. Rerun each finding's command before it goes in the synthesis. A finding that
+   does not reproduce is dropped and counted ("6 reported, 2 reproduced, 4
+   dropped"), as `SKILL.md` requires for code and behavior.
+4. For a genuine conflict between the two, do not lean toward the stricter
    recommendation by default — strictness is not evidence, and a rule that
    auto-resolves every conflict toward the same pole is itself a hidden
    average. Name both findings and the test or read that would show which
@@ -115,7 +119,7 @@ disagreement visible in the write-up instead of dissolving at the last step.
 
 ## Research synthesis
 
-1. Cross-reference factual claims between the two responses.
+1. Cross-reference factual claims between the responses.
 2. Flag contradictions prominently rather than picking whichever claim
    sounds more authoritative.
 3. Prefer specific, cited claims over vague assertions from either side —

@@ -196,7 +196,7 @@ Hard rules differ by project. This category covers only norms common to most pub
 ### O-1. Ambiguous expressions [S1]
 - Pattern: `~할 수 있다`, `~할 수 있음`, `가능하다`, `가능함`, `고려하고 있다`, `고려 중이다`, `~을 지향한다`
 - Evidence: RFP notices often explicitly assign deductions or zero points to possibility expressions.
-- Remedy: Convert to definite assertions.
+- Remedy: Convert to definite assertions only where the proposer has confirmed the commitment (the source or the author states it will be delivered). Leave an unconfirmed possibility unchanged and mark it for the author; raising it would promise what the proposer has not agreed to.
   - `높일 수 있다` -> `높인다`
   - `가능하다` -> `수행한다` / `지원한다`
   - `고려 중` -> `적용한다` when confirmed; delete the sentence when unconfirmed.

@@ -1,7 +1,6 @@
 ---
 name: korean-procurement-rewriter
 description: Specialist that surgically rewrites Korean public-procurement proposals from korean-procurement-detector findings, corrects category K-through-O departures with playbook recipes while preserving the procurement-commitment register, never changes requirement IDs, numbers, versions, or proper nouns, and monitors change rate to prevent over-polishing.
-model: opus
 ---
 
 # Korean Procurement Style Rewriter

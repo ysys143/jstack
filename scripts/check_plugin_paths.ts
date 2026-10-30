@@ -404,11 +404,6 @@ export const IGNORE: Rule[] = [
     "^skills/gitrules/references/"
   ],
   [
-    "^/path/to/file\\d+\\.(md|py)$",
-    "gemini 위임 예문의 인자 자리표시자 — 사용자 파일을 가리키는 예시다",
-    "^skills/consult/references/gemini\\.md$"
-  ],
-  [
     "^SESSIONS/",
     "`$SESSIONS` 변수 아래 런타임 산출 경로 — 세션 내보내기 디렉터리이지 트리 참조가 아니다",
     "^skills/recall/SKILL\\.md$"

@@ -168,16 +168,17 @@
     },
     {
       "owner": "help",
-      "name": "catalog-help",
+      "name": "jstack-help",
       "visibility": "support",
       "aliases": [
-        "help"
+        "help",
+        "catalog-help"
       ],
       "usedBy": [
         "author",
         "setup"
       ],
-      "when": "When explaining the catalog or resolving a previous skill name."
+      "when": "When the user asks which jstack skill fits a situation or what jstack can do, or when resolving a previous skill name."
     },
     {
       "owner": "humanize",
@@ -436,6 +437,60 @@
       "visibility": "public",
       "category": "engineering",
       "purpose": "Formally verify the code where a bug costs the most and tests reach the least, and leave a project-local skill that checks later changes against that property.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
+      "owner": "maintain-formal-verification-skill",
+      "name": "maintain-formal-verification-skill",
+      "visibility": "public",
+      "category": "engineering",
+      "purpose": "Re-align a project's formal verification with code that changed after it was last checked, and tell drift in the verification from bugs in the code.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
+      "owner": "benchmark-checklist",
+      "name": "benchmark-checklist",
+      "visibility": "public",
+      "category": "engineering",
+      "purpose": "Vet a performance measurement with seven evidence questions before reporting or acting on it.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
+      "owner": "typescript-best-practices",
+      "name": "typescript-best-practices",
+      "visibility": "public",
+      "category": "engineering",
+      "purpose": "Apply production TypeScript rules for type design and for validation at data boundaries.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
+      "owner": "how",
+      "name": "how",
+      "visibility": "public",
+      "category": "engineering",
+      "purpose": "Explain how code works and where things live, smallest complete answer first.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
+      "owner": "create-verification-skill",
+      "name": "create-verification-skill",
+      "visibility": "public",
+      "category": "workflow",
+      "purpose": "Generate a project-local skill that drives the real app and proves behavior, after the user approves the target path.",
+      "aliases": [],
+      "invocation": "explicit"
+    },
+    {
+      "owner": "maintain-verification-skill",
+      "name": "maintain-verification-skill",
+      "visibility": "public",
+      "category": "workflow",
+      "purpose": "Audit a project-local verification skill and its feature map against the app, and correct proven drift with approval.",
       "aliases": [],
       "invocation": "explicit"
     },

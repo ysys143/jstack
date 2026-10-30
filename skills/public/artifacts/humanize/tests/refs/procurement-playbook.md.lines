@@ -1,4 +1,4 @@
-# blob:cfb2c5f7f47002e6a5f341012cce67c34153654a
+# blob:7ec980f12511acd9f17b23de23f9459a7dad248a
 # Public Procurement Rewriting Playbook
 Recipes for converting K–O findings from `procurement-taxonomy.md` into text edits. This serves the same role for public procurement as `rewriting-playbook.md` does for general humanization.
 ## 0. Highest principles
@@ -136,6 +136,7 @@ v
 상단은 {A}, 중앙은 {B}, 하단은 {C}를 나타낸다.
 ```
 ### O-1. Convert vague expressions to definite commitments
+Apply these replacements only to commitments the proposer has confirmed (O-1); mark an unconfirmed possibility for the author instead.
 | Disallowed | Replacement |
 |---|---|
 | ~할 수 있다 / ~할 수 있음 | ~한다 |

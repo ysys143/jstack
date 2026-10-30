@@ -154,8 +154,7 @@ git fetch origin main
 ctest --test-dir build
 gcovr --xml-pretty -o coverage.xml
 
-pip install diff-cover
-diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
+uvx diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
 
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
     --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \

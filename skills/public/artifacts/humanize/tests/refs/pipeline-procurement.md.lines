@@ -1,4 +1,4 @@
-# blob:e6be55546b6349787c87aa98ea43b54c8e013608
+# blob:e8c06e750464a6e99c1508192a9806f09a08d488
 # Pipeline: Korean Procurement Style
 A four-agent pipeline correcting style, formatting, and text/visual integration
 against the Korean public-procurement commitment register (`조달-확약 레지스터`).
@@ -31,7 +31,7 @@ rewriting. Style detection cannot find an ID absent from the text: there is no
 string to match. Category L rule 4 corrects IDs used as grammatical subjects;
 it does not detect missing requirements.
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/req_coverage.js \
+node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/req_coverage.js \
 --requirements <RFP ID list> --proposal _workspace/{run_id}/01_input.txt
 ```
 - Exit 0: full coverage; proceed to Phase 2.
@@ -51,7 +51,7 @@ Without a requirement list, skip this phase and record the skip in the Phase 5
 summary. Never report an unperformed check as a pass.
 If original and rewritten requirement data are available as JSON, also run:
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/scripts/content_contract.js \
+node ${JSTACK_PLUGIN_ROOT}/scripts/content_contract.js \
 --before _workspace/{run_id}/01_source.json \
 --after _workspace/{run_id}/03_rewrite.json \
 --mode procurement --json
@@ -61,11 +61,11 @@ strength, deliverables, and evidence sets for each ID. Array reordering is allow
 but paraphrases changing value anchors fail. Changed natural language remains
 `provisional` without independent review JSON and cannot be promoted to final.
 ## Phase 2: Detect
-Invoke `korean-procurement-detector` with `Agent` (`model: "opus"`).
+Invoke `korean-procurement-detector` with `Agent`.
 Output: `_workspace/{run_id}/02_detection.json`.
 **Gate:** If `detected_count == 0`, finish with "조달 문체 이탈 없음".
 ## Phase 3: Rewrite
-Invoke `korean-procurement-rewriter` (`model: "opus"`).
+Invoke `korean-procurement-rewriter`.
 Apply categories in order: `O -> M -> L -> K -> N`.
 Output: `_workspace/{run_id}/03_rewrite.md` and `03_rewrite_diff.json`.
 **Gates:**

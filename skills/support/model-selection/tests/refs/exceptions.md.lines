@@ -1,4 +1,4 @@
-# blob:c30df46092b77bd177ce81c740d63811f82fd020
+# blob:9730890e029a857ee706ce637fc6c0238b43259e
 # Exceptions — what the checker reads, and from where
 The deprecated-model check runs as a PreToolUse hook on `Write`, `Edit`, and
 `Bash`. Two path contracts decide what it does: one file it reads from the
@@ -58,7 +58,7 @@ plugin was:
 ```bash
 # WRONG — dies the day the plugin is renamed, and dies silently
 find ~/.claude/plugins/cache/<marketplace>/<plugin> \
--name "models_database.py" | sort -V | tail -1
+-name "models_database.js" | sort -V | tail -1
 ```
 `find` on a path that no longer exists prints nothing and exits 0. The variable
 holding the destination becomes empty, `cp` fails or writes to the wrong place,
@@ -67,7 +67,7 @@ and the sync step reports success. Use the plugin's own root instead:
 DB="${JSTACK_PLUGIN_ROOT}/scripts/models_database.js"
 ```
 The same rule kills the other legacy shape, `Glob **/model-version-checker/hooks/
-models_database.py` — a glob over a directory name is the same hardcoded name
+models_database.js` — a glob over a directory name is the same hardcoded name
 wearing a different hat, and it also matches the wrong copy when two versions
 are installed side by side.
 ## Edge cases

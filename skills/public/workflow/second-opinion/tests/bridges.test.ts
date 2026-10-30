@@ -3,9 +3,8 @@ import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseOutput } from '../scripts/parse-output.js';
 import { commandInvocation, runCommand } from '../scripts/bridge-common.js';
 
 const entry = (name: string) => name === 'codex-bridge.js' ? fileURLToPath(new URL('../../../../support/task-delegation/scripts/codex-bridge.js', import.meta.url)) : fileURLToPath(new URL(name, new URL('../scripts/', import.meta.url)));
@@ -30,22 +29,6 @@ function fixture() {
   return { root, bin, env, fake, run, calls, cleanup: () => rmSync(root, { recursive: true, force: true }) };
 }
 
-test('parse-output matches the shell oracle for text, wrappers, JSON, and malformed output', { skip: !process.env.JSTACK_ORACLE }, () => {
-  const shell = resolve('skills/consult/scripts/parse-output.sh');
-  for (const [format, input] of [['text', '  first \n\tsecond\t\n'], ['text', '\x1b[31m  red \x1b[0m\n'], ['json-extract', '{"result":"answer"}'], ['json-extract', '{"content":[{"text":"a"},"b",{"skip":true}]}'], ['json-extract', '{"unknown":{"한글":2}}'], ['json-extract', 'not JSON\n'], ['json-extract', 'null'], ['other', ' untouched \n']] as const) {
-    const result = spawnSync('bash', [shell, format], { input, encoding: 'utf8' });
-    assert.equal(result.status, 0, result.stderr); assert.equal(parseOutput(input, format), result.stdout, format + ':' + input);
-  }
-});
-test('agy consultation refuses installed unsafe backend without invoking it', () => {
-  const f = fixture();
-  try {
-    f.fake('agy', "require('node:fs').writeFileSync('UNAUTHORIZED','bad');process.stdout.write('unsafe');");
-    const result = f.run('./gemini-bridge.js', ['--prompt','review','--model','literal']);
-    assert.equal(result.status,1); assert.match(result.stderr,/read-only consultation is unsupported/);
-    assert.equal(f.calls().length,0); assert.equal(existsSync(join(f.root,'UNAUTHORIZED')),false);
-  } finally { f.cleanup(); }
-});
 test('Codex delegation uses stdin, literal model/workdir argv, and read-only by default', { skip: process.platform === 'win32' }, () => {
   const f = fixture();
   try {
@@ -62,22 +45,24 @@ test('Codex delegation uses stdin, literal model/workdir argv, and read-only by 
 test('bridge negatives retain stderr and reject missing, unauthenticated, empty, failed and timed-out execution', { skip: process.platform === 'win32' }, () => {
   const f = fixture();
   try {
-    const missing = f.run('./gemini-bridge.js', ['--prompt', 'query']); assert.equal(missing.status, 1); assert.equal(missing.stdout, ''); assert.match(missing.stderr, /CLI not found/);
+    const missing = f.run('./council-bridge.js', ['--prompt', 'query']); assert.equal(missing.status, 1); assert.equal(missing.stdout, ''); assert.match(missing.stderr, /CLI not found/);
     f.fake('codex', "process.stdout.write('must not run');");
     const auth = f.run('codex-bridge.js', ['--prompt', 'query'], { OPENAI_API_KEY: '' }); assert.equal(auth.status, 1); assert.match(auth.stderr, /unauthenticated/); assert.equal(f.calls().length, 0);
     const before = f.calls().length;
-    for (const args of [['--prompt'], ['--prompt', 'query', '--timeout', '-1'], ['--prompt', 'query', '--timeout', 'bad'], ['--prompt', 'query', '--unknown', 'x']]) assert.equal(f.run('./gemini-bridge.js', args).status, 1);
+    for (const args of [['--prompt'], ['--prompt', 'query', '--timeout', '-1'], ['--prompt', 'query', '--timeout', 'bad'], ['--prompt', 'query', '--unknown', 'x']]) assert.equal(f.run('./council-bridge.js', args).status, 1);
     assert.equal(f.calls().length, before);
   } finally { f.cleanup(); }
 });
-test('council represents missing and failed respondents and pins Codex to read-only', { skip: process.platform === 'win32' }, () => {
+test('council reports a missing or failed Codex participant, ignores an installed agy, and pins Codex to read-only', { skip: process.platform === 'win32' }, () => {
   const f = fixture();
   try {
-    const absent = f.run('./council-bridge.js', ['--prompt', 'query']); assert.equal(absent.status, 1); assert.equal(absent.stdout, ''); assert.match(absent.stderr, /Neither agy nor Codex/);
+    const absent = f.run('./council-bridge.js', ['--prompt', 'query']); assert.equal(absent.status, 1); assert.equal(absent.stdout, ''); assert.match(absent.stderr, /Codex CLI is not installed/);
+    f.fake('agy', "require('node:fs').writeFileSync('UNAUTHORIZED','bad');process.stdout.write('unsafe');");
     f.fake('codex', "process.stdout.write('codex response');");
-    const one = f.run('./council-bridge.js', ['--prompt', 'query']); assert.equal(one.status, 0); assert.match(one.stdout, /agy CLI not installed - skipped/); assert.match(one.stderr, /1\/1 AIs responded successfully/); assert.deepEqual(f.calls()[0].args.slice(0, 4), ['exec', '--sandbox', 'read-only', '--skip-git-repo-check']);
-    f.fake('agy', "process.stderr.write('provider denied\\n'); process.exitCode = 9;");
-    const both = f.run('./council-bridge.js', ['--prompt', 'query']); assert.equal(both.status, 0); assert.match(both.stdout, /agy failed with exit code 126\]\nagy read-only consultation is unsupported/); assert.match(both.stderr, /1\/2 AIs responded successfully/);
+    const one = f.run('./council-bridge.js', ['--prompt', 'query']); assert.equal(one.status, 0); assert.match(one.stdout, /=== CODEX RESPONSE ===\ncodex response/); assert.doesNotMatch(one.stdout, /AGY/); assert.match(one.stderr, /1\/1 AIs responded successfully/); assert.deepEqual(f.calls()[0].args.slice(0, 4), ['exec', '--sandbox', 'read-only', '--skip-git-repo-check']);
+    assert.equal(f.calls().filter(call => call.name === 'agy').length, 0); assert.equal(existsSync(join(f.root, 'UNAUTHORIZED')), false);
+    f.fake('codex', "process.stderr.write('provider denied\\n'); process.exitCode = 9;");
+    const failed = f.run('./council-bridge.js', ['--prompt', 'query']); assert.equal(failed.status, 1); assert.match(failed.stdout, /Codex failed with exit code 9\]\nprovider denied/); assert.match(failed.stderr, /0\/1 AIs responded successfully/);
   } finally { f.cleanup(); }
 });
 test('transport enforces timeout/output bounds and preserves split UTF-8 bytes', { skip: process.platform === 'win32' }, async () => {

@@ -405,10 +405,6 @@ simple commands, honoring quotes, `;`, `&&`, `||`, `|`, `$(...)`, backticks,
   project code therefore only warns, while the Write tool blocks the same text
   in a code file. `perl -i` counts as a write too, but perl runs its script as
   code, so a name in the script blocks.
-- The TypeScript and Python twins parse identically. `Bash verdicts agree
-  between the TypeScript and Python twins` in `model-versions-twins.test.ts`
-  runs the Python twin over every case in each run and is skipped only without
-  `python3`.
 
 **A name inside a path is not a model (#144).** Wherever a name is matched
 (Write, Edit, MultiEdit and NotebookEdit content, the judged text of a Bash
@@ -791,14 +787,14 @@ and exit 0. `--amend` with no readable HEAD message checks nothing for it.
 
 ## validate_before_publish.js
 
-Intercepts `register_local.sh` calls and runs the format
-checker against the target plugin. **This is the chain's only shell hook.**
+Intercepts `register_local.js` calls (and the older `.sh` name) and runs the format
+checker against the target plugin.
 
 ```contract
 matcher:   Bash
 fail-open: missing target or checker and checker failure block; stdin parse failure
            and tool mismatch pass
-block when: command invokes register_local.sh and the
+block when: command invokes register_local.js or .sh and the
             extracted plugin directory is absent, the format checker is absent,
             or the checker exits nonzero
 exit contract: nonzero exit (exit 1); stream diagnostics unchanged on stdout
@@ -830,7 +826,7 @@ that output**. This version uses only ASCII prefixes (`[HOOK]` and `[BLOCK]`).
 Every other hook fails open; this one differs.
 
 ```
-1) <hooks>/../scripts/validate_plugin.sh
+1) <hooks>/../scripts/validate_plugin.js
 2) skills/author/scripts/validate_plugin.js (installed payload)
 3) skills/author/scripts/validate_plugin.js (source checkout)
 ```
@@ -1039,9 +1035,10 @@ This is static schema evidence, not an observed trusted-hook execution.
 
 The project lane (`runtime/project-hooks`) runs only on `git commit` (PreToolUse)
 or on edits to Python, JavaScript/TypeScript, Go, or Rust paths (PostToolUse). It
-sets `JSTACK_HOOK_CONTEXT=1`, reads decision state, may claim the single pending
-prompt, and records a diagnostic; it never records a decision, installs a tool,
-formats files, or creates `.jstack/`. `JSTACK_PROJECT_HOOKS=0` disables the lane.
+sets `JSTACK_HOOK_CONTEXT=1`, reads decision state, and records a diagnostic; it
+never asks for or records a decision, installs a tool, formats files, or creates
+`.jstack/`. An undecided project is off: the lane runs nothing and stays quiet
+unless the state file is damaged. `JSTACK_PROJECT_HOOKS=0` disables the lane.
 
 ---
 

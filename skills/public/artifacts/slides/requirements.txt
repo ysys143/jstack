@@ -1,7 +1,7 @@
 # Shared deck dependencies, merging the legacy md-to-presentation and
 # pdf-to-presentation lists so users need not choose between them.
 #
-#   pip install -r requirements.txt
+#   uv pip install -r requirements.txt   (run `uv venv` first if there is no .venv)
 #
 # The skill does not install these on the user's behalf. Missing dependencies
 # produce exit 2 with this filename instead of requiring traceback diagnosis.

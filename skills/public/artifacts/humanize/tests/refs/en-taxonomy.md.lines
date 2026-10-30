@@ -1,9 +1,11 @@
-# blob:a69cb02b86df017a4a844e55b56394db3d0511d5
+# blob:875d22265dab221814e01af9653710488d2a5eea
 # English AI-Tell Taxonomy v1.1 (machine layer)
 Machine-readable rule layer for `humanize-en`. Mirrors the prose patterns in `SKILL.md` (IDs `EN-1`..`EN-24`,
 where the number = the original SKILL.md pattern number), `EN-25`..`EN-31` **Abstract Metaphor Lexicon**, and
 `EN-32`..`EN-42` ported from upstream `blader/humanizer` v2.9.1 (authority tropes, signposting, rhetorical
 openers, hyphenated pairs, aphorism formulas, en dash / double hyphen, and five HOLISTIC structure/rhythm rules).
+`EN-43`..`EN-45` are HOLISTIC rules for sentence-level crutches (mid-sentence colon, adverb propping a weak verb,
+over-compression), adapted from a technical-writing checklist.
 `scripts/prescan.js`·`reconcile.js`·`lint_taxonomy.js` parse the `class` / `surface` / `metric` fields below.
 ## Rule classes and runtime guarantee
 - **ANCHORED** — a specific surface form triggers it. Carries a `- surface:` regex. `prescan.js` deterministically
@@ -175,7 +177,7 @@ irreducibly HOLISTIC (structure/rhythm, no reliable surface form).
 - surface: `(?i)(the language of|the currency of|the architecture of|becomes a trap)`
 ### EN-37. En dash and double hyphen [S2]
 - Companion to EN-13 (em dash density). En dashes (–) and spaced double hyphens ( -- ) are the same tell.
-- Fix: replace with a period, comma, colon, or parentheses; restructure if needed.
+- Fix: replace with a period, comma, or parentheses; restructure if needed. Do not substitute a mid-sentence colon (EN-43).
 - class: ANCHORED
 - surface: `–|\s--\s`
 - Keep: en dash inside a genuine numeric range (e.g. 1990–2000) — mark as kept with the range as evidence.
@@ -199,6 +201,21 @@ irreducibly HOLISTIC (structure/rhythm, no reliable surface form).
 - A run of short declarative fragments engineered to manufacture drama.
 - Fix: merge into normal clauses; keep at most one short sentence for emphasis.
 - class: HOLISTIC
+### EN-43. Colon as a mid-sentence connector [S2]
+- A colon used as a connector inside a sentence, standing in for a verb, "because", or a comparison
+("If you come from classic automation: you describe conditions instead of registering handlers").
+- Fix: write one sentence that states the relation. A colon before a list, a quotation, or an example is fine.
+- class: HOLISTIC
+### EN-44. Adverb propping a weak verb [S2]
+- An adverb that carries the claim the verb should carry ("runs quickly", "significantly improves").
+- Fix: use a stronger verb, or state the measured value. Keep an adverb that adds a fact the source supplies.
+- class: HOLISTIC
+### EN-45. Over-compression [S2]
+- Dropped articles, verbless fragments, arrows, symbol shorthand, or abbreviations that make the reader decode
+("Parser rejects bad date → exit 2, no write").
+- Fix: write whole sentences with articles and verbs, and spell out arrows. Keep terse text when the genre
+requires it (commit subjects, changelog lines, table cells, UI strings).
+- class: HOLISTIC
 ---
 ## Detection output contract (Detector → Rewriter)
 Same contract as `references/ai-tell-taxonomy.md` v2.0: every ANCHORED candidate from
@@ -207,6 +224,8 @@ Same contract as `references/ai-tell-taxonomy.md` v2.0: every ANCHORED candidate
 (1) hash agreement across taxonomy/candidates/detection, (2) all ANCHORED candidates accounted for,
 (3) each triggered COMPUTED rule has a matching finding.
 ## Version
+- **v1.2** (2026-10-30): added EN-43..EN-45 (HOLISTIC: mid-sentence colon, adverb propping a weak verb,
+over-compression). EN-37's fix no longer offers a colon.
 - **v1.1** (2026-07-28): ported upstream `blader/humanizer` v2.9.1 patterns. Added EN-32..EN-37 (ANCHORED:
 authority tropes, signposting, rhetorical openers, predicate-position hyphenated pairs, aphorism formulas,
 en dash / double hyphen) and EN-38..EN-42 (HOLISTIC: tailing negations, passive voice, fragmented headers,

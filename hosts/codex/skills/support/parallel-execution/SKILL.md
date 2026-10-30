@@ -16,6 +16,12 @@ overlapping edits.
 Keep sequential work whole when a later step needs the previous result. Gather
 in parallel when useful, then synthesize once after all reports arrive.
 
+When the same job repeats over many pieces, finish one piece end to end before
+fanning out the rest, so a missing permission or wrong output shape surfaces
+once. When workers compete on the same artifact, write the scoring rubric
+(three to six gradeable criteria) before any of them starts and keep it with the
+picker, not the candidates.
+
 ## Experimental task-size comparison
 
 Choose local work, one delegated task, or separately checkable parallel parts
@@ -110,6 +116,13 @@ An agent report is a claim. Before building on it, inspect the owned files,
 diff, command output, and exit status. Agreement is evidence only when reviewers
 were independent. If the report conflicts with the artifact, the artifact and
 fresh verification win.
+
+Every worker you start ends as done, replaced, or absorbed into another
+worker's slice. Judge a quiet worker by its side effects (files, commits,
+output), not its status text. A slice with no result is a gap, not a pass: when
+a report lacks the evidence its brief asked for, respawn that worker once, and
+record a second miss as a gap. Never continue with N-1 results when the review
+was required. A worker that writes gets its own worktree or branch.
 
 For contracted work, run `workflow.js verify <task-id>`. A native reviewer
 result may be attached with `record-review`, which binds its raw output and

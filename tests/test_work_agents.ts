@@ -23,7 +23,7 @@ const WANT=["ai-tell-detector", "content-fidelity-auditor", "korean-ai-tell-taxo
 function main():any{
 let _:any,all_names:any,b:any,bare:any,body:any,f:any,fm:any,missing:any,n:any,names:any,ok:any,passed:any,r:any,raw:any,refs:any;
 (all_names=sorted(Array.from(readdirSync(AG)).filter((f: any) => truth(ends(f, ".md"))).map((f: any) => (slice(f, 0, -(3))))));
-check("Inventory: the unified agent count is 17", (isDeepStrictEqual(length(all_names),17)), (pyStr(length(all_names))));
+check("Inventory: the unified agent count is 19", (isDeepStrictEqual(length(all_names),19)), (pyStr(length(all_names))));
 (names=sorted(WANT));
 for (let n of names) {
 (raw=read(join(AG, (n + ".md"))));

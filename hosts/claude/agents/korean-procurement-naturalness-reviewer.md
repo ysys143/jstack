@@ -1,7 +1,6 @@
 ---
 name: korean-procurement-naturalness-reviewer
 description: Naturalness reviewer that judges whether rewritten public-procurement proposals preserve the procurement-commitment register while reading naturally to evaluators, reruns korean-procurement-detector to measure residual K-through-O findings, detects over-polishing such as genre drift, literary embellishment, excessive colloquialization, or loss of commitment function, and triggers a second rewrite or rollback.
-model: opus
 ---
 
 # Korean Procurement Naturalness Reviewer

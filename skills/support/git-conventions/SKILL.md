@@ -59,7 +59,8 @@ at `references/branch.md`. Do not create new branches in it.
 `(scope)` is optional — for plugin work use `plugins`, `git`, `model-checker`.
 
 **Subject** — 50 characters or fewer, no trailing period, ends with an action
-verb (add, modify, change, or remove).
+verb (add, modify, change, or remove). This is the one place the subject
+length is set; other skills and commands point here instead of restating it.
 **Body** — separated from the subject by a blank line; the first paragraph is
 **why** (problem, motivation), the second is **how** (approach). Wrap at 72.
 

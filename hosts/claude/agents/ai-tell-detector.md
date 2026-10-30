@@ -1,7 +1,6 @@
 ---
 name: ai-tell-detector
 description: Detection specialist that identifies spans in Korean input matching the categories and subpatterns in `${CLAUDE_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md`, then emits a JSON report with category, severity, start/end offsets, reason, and suggested_fix so rewriters and reviewers can work from evidence.
-model: opus
 ---
 
 # AI-Tell Detector
@@ -13,7 +12,7 @@ Scan Korean text for signatures that make it read as AI-generated. Report each
 
 1. Load `${CLAUDE_PLUGIN_ROOT}/skills/humanize/references/ai-tell-taxonomy.md` and internalize its detection rules.
 2. **Load the prescan output `02_candidates.json`.** It contains candidates deterministically selected by surface-form scans of ANCHORED rules, including `candidate_id` and offsets.
-3. **Decide every ANCHORED candidate without omissions.** Consume each candidate as either a flagged `finding` or a preserved `kept` entry with a required evidence token. Do not recalculate offsets; echo the `candidate_id`. `reconcile.py` enforces complete consumption in code, so omissions fail the pipeline.
+3. **Decide every ANCHORED candidate without omissions.** Consume each candidate as either a flagged `finding` or a preserved `kept` entry with a required evidence token. Do not recalculate offsets; echo the `candidate_id`. `reconcile.js` enforces complete consumption in code, so omissions fail the pipeline.
 4. Exhaustively scan HOLISTIC rules without surface forms, such as context-dependent idioms.
 5. COMPUTED rule triggers are precomputed under `meta.computed_rules` in `02_candidates.json`. Emit a corresponding document-level finding for every triggered rule.
 6. Resolve duplicate and overlapping matches by priority (S1 > S2 > S3).
@@ -96,7 +95,7 @@ Scan Korean text for signatures that make it read as AI-generated. Report each
 
 **Contract**: Consume every ANCHORED candidate from `02_candidates.json` through
 either `findings[].candidate_id` or `kept[].candidate_id`. Each `kept[]` entry
-requires a verifiable `evidence` token. `reconcile.py` enforces this and fails the
+requires a verifiable `evidence` token. `reconcile.js` enforces this and fails the
 pipeline on any omission.
 
 ## Detection algorithm

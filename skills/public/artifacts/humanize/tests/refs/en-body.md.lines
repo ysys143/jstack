@@ -1,4 +1,4 @@
-# blob:182370854a7db4d86c077c723fc3b556ea83d9a1
+# blob:c5d24f2c32f050891f02689613bc609bf6b45764
 ---
 name: humanize-en
 version: 2.3.0
@@ -316,7 +316,37 @@ Also catch **tailing negations** — clipped fragments like "…, no guessing" t
 > Then AlphaEvolve arrived. It had no preference for symmetry. No aesthetic prior. No nostalgia for human taste. The old rules were gone.
 **After:**
 > AlphaEvolve changed the search because it did not favor symmetry or human-looking designs. That made some of the older assumptions less useful.
+### 35. Colon as a Mid-Sentence Connector
+**Problem:** A colon between two clauses does the work of a verb or a "because" and leaves the relation unstated (`EN-43`). A colon before a list, a quotation, or an example is fine.
+**Before:**
+> If you come from classic automation: you describe conditions instead of registering event handlers.
+**After:**
+> Classic automation registers event handlers. Here you describe the conditions instead.
+### 36. Adverb Propping a Weak Verb
+**Problem:** The adverb carries the claim and the verb carries nothing (`EN-44`). Choose a stronger verb or state the measured value. Keep an adverb that adds a fact the source supplies.
+**Before:**
+> The new cache significantly improves lookups and runs quickly.
+**After:**
+> The new cache speeds up lookups.
+State a measured figure only when the source supplies one. Never invent the number the adverb stood in for.
+### 37. Over-Compression
+**Problem:** Dropped articles, verbless fragments, arrows, and abbreviations make the reader decode instead of read (`EN-45`). Genres that are terse by design (commit subjects, changelog lines, table cells, UI strings) keep their form.
+**Before:**
+> Parser rejects bad date → exit 2, no write.
+**After:**
+> The parser rejects a bad date, exits with code 2, and writes nothing.
 Note: em dash coverage (§13) extends to **en dashes (–) and spaced double hyphens ( -- )** — treat them the same way (`EN-37`). One en dash inside a genuine numeric range (1990–2000) is legitimate; keep it.
+---
+## DOCUMENTATION MODE (Diátaxis)
+When the input is technical documentation (a README, guide, runbook, API page, or design note), name its one mode before editing. Two questions pick it: does the text inform action or understanding, and does it serve a reader who is learning or a reader who is working?
+| Text informs | Reader is | Mode |
+|---|---|---|
+| Action | Learning | Tutorial |
+| Action | Working | How-to |
+| Understanding | Working | Reference |
+| Understanding | Learning | Explanation |
+The mode decides which tells to prune. A reference stays dry: no instruction, persuasion, or opinion. A how-to keeps action only and links background instead of inlining it. A tutorial says what the reader will see after each step. An explanation may weigh trade-offs, and it is the only mode where the writer's opinion belongs.
+The mode does not authorize restructuring. If a document mixes modes, say so in one line and edit each part by its own mode. Do not split or merge documents unless the user asked.
 ---
 ## DETECTION GUIDANCE
 ### What NOT to flag (false positives)
@@ -369,7 +399,7 @@ quote) is silently missed. The machine layer lives in `${JSTACK_PLUGIN_ROOT}/ski
 1. Save the input to `_workspace/{run_id}/01_input.txt`.
 2. **Prescan** — deterministically list every anchored candidate:
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/prescan.js \
+node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/prescan.js \
 --input _workspace/{run_id}/01_input.txt \
 --taxonomy ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/en-taxonomy.md \
 --out _workspace/{run_id}/02_candidates.json
@@ -381,7 +411,7 @@ a short `evidence` token, e.g. a literal physical use). Echo `meta.taxonomy_hash
 `_workspace/{run_id}/02_detection.json`. Schema: see the contract in `${JSTACK_PLUGIN_ROOT}/skills/humanize/references/en-taxonomy.md`.
 4. **Reconcile** — enforce the guarantee:
 ```
-python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/reconcile.js \
+node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/reconcile.js \
 --candidates _workspace/{run_id}/02_candidates.json \
 --detection _workspace/{run_id}/02_detection.json \
 --taxonomy ${JSTACK_PLUGIN_ROOT}/skills/humanize/references/en-taxonomy.md \
@@ -389,7 +419,7 @@ python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/reconcile.js \
 ```
 Exit code != 0 means an anchored candidate went unaccounted (or a hash/evidence violation). Revisit those spans
 and rerun. This is what turns "I think I caught them all" into "the tool proved I did."
-Self-test the machine layer any time with `python3 ${JSTACK_PLUGIN_ROOT}/skills/humanize/tests/run_tests.js` (normal + failure-path gates).
+Self-test the machine layer any time with `node ${JSTACK_PLUGIN_ROOT}/skills/humanize/tests/run_tests.js` (normal + failure-path gates).
 **Before (AI-sounding):**
 > Great question! Here is an essay on this topic. I hope this helps!
 >

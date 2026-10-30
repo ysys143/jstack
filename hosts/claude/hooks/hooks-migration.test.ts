@@ -8,13 +8,9 @@ import { handle as emoji, bashWritesAFile } from './block_emoji.js';
 import { findPipCommands, projectRoot } from './validate_uv_usage.js';
 import { checkPluginVersion } from './check_readme_version.js';
 import { checkVersionConsistency } from './check_marketplace_versions.js';
-const source = resolve('hosts/claude/hooks');
-function python(name: string, payload: unknown, cwd = process.cwd()): any { const result = spawnSync('python3', [join(source, name + '.py')], { input: JSON.stringify(payload), encoding: 'utf8', cwd }); assert.equal(result.status, 0, result.stderr); return result.stdout.trim() ? JSON.parse(result.stdout) : {}; }
 function node(name: string, payload: unknown, cwd = process.cwd()): any { const result = spawnSync(process.execPath, [resolve('dist/hosts/claude/hooks', name + '.js')], { input: JSON.stringify(payload), encoding: 'utf8', cwd }); assert.equal(result.status, 0, result.stderr); return result.stdout.trim() ? JSON.parse(result.stdout) : {}; }
 test('emoji preserves all write-tool decisions and read-only negative controls', () => { for (const payload of [{ tool_name: 'Write', tool_input: { content: '한글 text' } }, { tool_name: 'Write', tool_input: { content: '\u{1f600}' } }, { tool_name: 'Edit', tool_input: { new_string: '\u{1f600}' } }, { tool_name: 'MultiEdit', tool_input: { edits: [{ new_string: '\u{1f600}' }] } }, { tool_name: 'NotebookEdit', tool_input: { new_source: '\u{1f600}' } }, { tool_name: 'Bash', tool_input: { command: 'grep "\u{1f600}" f 2>/dev/null' } }, { tool_name: 'Bash', tool_input: { command: 'echo "\u{1f600}" > f' } }]) {
     assert.equal(emoji(payload)?.decision, JSON.stringify(payload).includes('😀') && payload.tool_input.command?.startsWith('grep') !== true ? 'block' : undefined);
-    if (process.env.JSTACK_ORACLE === '1')
-        assert.deepEqual(emoji(payload) ?? {}, python('block_emoji', payload));
 } assert.equal(bashWritesAFile('grep thing f 2>&1'), false); assert.equal(bashWritesAFile('tee out'), true); });
 test('emoji block message keeps its prefix and points at the user-request exemption', () => {
     const payload = { tool_name: 'Write', tool_input: { content: 'done \u{1f4a1} and \u{1f4cc}' } };
@@ -26,17 +22,11 @@ test('emoji block message keeps its prefix and points at the user-request exempt
     assert.match(tail, /If the user explicitly asked for these emoji, this is a policy exemption: read payload\/skills\/emoji\/SKILL\.md in the installed jstack package \(section "When the user asked for emoji"\)/);
     assert.match(tail, /do not retry the same call unchanged\.$/);
     assert.equal(/[^\x00-\x7f]/.test(tail), false, 'the guidance itself stays ASCII');
-    // The Python twin lists distinct emoji in set order, which varies per process; one emoji keeps the comparison exact.
-    const single = { tool_name: 'Write', tool_input: { content: 'done \u{1f4a1}' } };
-    if (process.env.JSTACK_ORACLE === '1')
-        assert.equal(python('block_emoji', single).reason, emoji(single)?.reason);
 });
 test('uv command detection preserves legacy decisions without ambient project config', () => { const temp = mkdtempSync(join(tmpdir(), 'jstack-hooks-')); try {
     for (const command of ['pip install a', 'python3 -m pip freeze', 'pipx run a', 'echo "pip install a"', 'cat <<EOF\npip install a\nEOF', 'uv pip list', 'uv pip install a', 'uv add a', 'uv pip list && pip install a']) {
         const payload = { tool_name: 'Bash', tool_input: { command } };
         assert.equal(node('validate_uv_usage', payload, temp).decision, ['pip install a', 'python3 -m pip freeze', 'pipx run a', 'uv pip install a'].includes(command) ? 'block' : undefined, command);
-        if (process.env.JSTACK_ORACLE === '1')
-            assert.equal(node('validate_uv_usage', payload, temp).decision, python('validate_uv_usage', payload, temp).decision, command);
     }
     writeFileSync(join(temp, 'pyproject.toml'), '[tool.claude-hooks]\nenforce_uv = false\n');
     assert.deepEqual(node('validate_uv_usage', { tool_name: 'Bash', tool_input: { command: 'pip install a' } }, temp), {});
@@ -74,7 +64,6 @@ test('recent changes matches shell hook context without Python in new runtime', 
     mkdirSync(join(temp, 'docs'));
     writeFileSync(join(temp, 'docs', 'CHANGELOG.md'), Array.from({ length: 25 }, (_, i) => `change ${i}`).join('\n') + '\n');
     const env = { ...process.env, CLAUDE_PROJECT_DIR: temp };
-    const previous = process.env.JSTACK_ORACLE === '1' ? spawnSync('bash', [join(source, 'load-recent-changes.sh')], { cwd: temp, env, encoding: 'utf8' }) : undefined;
     const current = spawnSync(process.execPath, [resolve('dist/hosts/claude/hooks/load-recent-changes.js')], { cwd: temp, env, encoding: 'utf8' });
     assert.equal(current.status, 0, current.stderr);
     const output = JSON.parse(current.stdout);
@@ -82,10 +71,6 @@ test('recent changes matches shell hook context without Python in new runtime', 
     assert.deepEqual(Object.keys(output.hookSpecificOutput).sort(), ['additionalContext', 'hookEventName']);
     assert.equal(output.hookSpecificOutput.hookEventName, 'SessionStart');
     assert.equal(output.hookSpecificOutput.additionalContext, 'Recent CHANGELOG entries:\n' + Array.from({ length: 20 }, (_, i) => `change ${i + 5}`).join('\n') + '\n\n\n');
-    if (previous) {
-        assert.equal(previous.status, 0, previous.stderr);
-        assert.equal(output.hookSpecificOutput.additionalContext, JSON.parse(previous.stdout).additionalContext);
-    }
 }
 finally {
     rmSync(temp, { recursive: true, force: true });

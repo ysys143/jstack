@@ -43,6 +43,7 @@ export interface HookState {
   schemaVersion: typeof SCHEMA_VERSION; revision: number;
   location: { kind: StateLocation['kind']; key: string };
   decision: Decision; approval?: Approval; history: Omit<Approval, 'messageRef' | 'answerSha256'>[];
+  /** Written by earlier versions that asked from a hook; still read so old state files stay valid, never written. */
   pending?: PendingPrompt;
   observed: { host: Host; jstackVersion: string };
   diagnostic?: Diagnostic; updatedAt: string;
@@ -182,7 +183,7 @@ function update(location: StateLocation, expectedRevision: number, mutate: (curr
 export interface RecordDecisionInput { approval: Approval; expectedRevision: number; observed?: HookState['observed']; now?: number; }
 /**
  * Record the user's actual answer. Only a user-invoked command path may call this;
- * hooks return a pending decision instead. Replaces malformed state only because the
+ * hooks never ask and never record. Replaces malformed state only because the
  * choice is explicit.
  */
 export function recordDecision(location: StateLocation, input: RecordDecisionInput, env: NodeJS.ProcessEnv = process.env): HookState {
@@ -208,27 +209,6 @@ export function reopenDecision(location: StateLocation, input: { provenance: Pro
     const { approval: _approval, ...rest } = current.state;
     return { ...rest, decision: 'undecided', pending: undefined, updatedAt: isoNow(input.now) };
   }, { replaceInvalid: true });
-}
-
-/**
- * Claim the single pending prompt for an undecided project. Returns false when another
- * process already surfaced it within `ttlMs`, so concurrent first actions do not
- * duplicate the question. This records that a question was asked, never an answer.
- */
-export function claimPendingPrompt(location: StateLocation, input: { host: Host; ttlMs?: number; now?: number }): { claimed: boolean; state: HookState } {
-  const now = input.now ?? Date.now(); const ttl = input.ttlMs ?? 10 * 60 * 1000;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const current = readState(location);
-    if (current.status === 'malformed' || current.status === 'incompatible') return { claimed: true, state: current.state };
-    if (current.state.decision !== 'undecided') return { claimed: false, state: current.state };
-    const pending = current.state.pending;
-    if (pending && now - Date.parse(pending.since) < ttl) return { claimed: false, state: current.state };
-    try {
-      const state = update(location, current.state.revision, c => ({ ...c.state, pending: { since: isoNow(now), host: input.host }, updatedAt: isoNow(now) }));
-      return { claimed: true, state };
-    } catch (error) { if (!(error instanceof StateConflict)) throw error; }
-  }
-  throw new StateError('could not claim the pending project decision after repeated concurrent updates');
 }
 
 /**

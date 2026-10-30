@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import {spawnSync} from 'node:child_process';
 import {anchors,evaluate,machineTextCheck,procurementCheck,propositions,sha256,parseDocument} from './content_contract.js';
 function fixture(t:any,before:string,after:string){const root=fs.mkdtempSync(path.join(os.tmpdir(),'jstack-fidelity-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));const left=path.join(root,'before'),right=path.join(root,'after'),review=path.join(root,'review.json');fs.writeFileSync(left,before);fs.writeFileSync(right,after);return {left,right,review};}
 test('anchors retain multiplicity, quotes, Unicode digits, requirement IDs, and negation signals',()=>{
@@ -28,9 +27,4 @@ test('procurement rejects changed IDs, duplicate evidence, lost unknowns, and un
   for(const failure of ['requirement-value-changed:REQ-1:minimum','evidence-set-changed','unknown-removed'])assert.ok(result.failures.includes(failure));assert.ok(result.review_flags.length);
   assert.equal(parseDocument('{"minimum":9007199254740993}').minimum,9007199254740993n);
   const {left,right}=fixture(t,'{"requirements":[{"id":"REQ-1","minimum":9007199254740992}]}','{"requirements":[{"id":"REQ-1","minimum":9007199254740993}]}');assert.equal(evaluate(left,right,'procurement').status,'rejected');
-});
-test('optional Python content oracle compares full unchanged/general/procurement output',{skip:process.env.JSTACK_ORACLE!=='1'},t=>{
-  for(const [before,after,mode] of [['값 3개를 보존한다.','값 3개를 유지한다.','general'],['Same 2','Same 2','general'],['{"requirements":[{"id":"REQ-1","minimum":1}]}','{"requirements":[{"id":"REQ-1","minimum":1.0}]}','procurement'],['{"requirements":[{"id":"REQ-1","minimum":20}]}','{"requirements":[{"id":"REQ-1","minimum":21}]}','procurement']]){
-    const {left,right}=fixture(t,before!,after!);const result=spawnSync('python3',['scripts/content_contract.py','--before',left,'--after',right,'--mode',mode!,'--json'],{encoding:'utf8'});assert.ok([0,1,2].includes(result.status!));assert.deepEqual(evaluate(left,right,mode),JSON.parse(result.stdout));
-  }
 });

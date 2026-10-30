@@ -1,4 +1,4 @@
-# blob:44bf3f9aad5e40d3352e8e294789f8f9e3332417
+# blob:eb32664296ee7924805f8d381769b3489708b289
 # /setup-recall — complete the missing producer wiring
 The `recall` skill contains only the **consumer side** of the session-log
 indexing pipeline. Producer source already exists under `skills/recall/bin/`,
@@ -112,7 +112,7 @@ new file only when none exists.
 ### 5. Wire the `SessionEnd` hook
 Read `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json`. This differs from
 `~/.claude/plugins`: it is the user's global configuration, and this repository's
-`hooks/hooks.json` already updates it through `register_local.sh`. Follow the same
+`hooks/hooks.json` already updates it through `register_local.js`. Follow the same
 convention: read first, preserve existing entries, and add only missing ones.
 Skip the change when `hooks.SessionEnd[0].hooks` already contains this binary
 path. Otherwise add:

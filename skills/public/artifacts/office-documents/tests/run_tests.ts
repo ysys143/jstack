@@ -96,7 +96,7 @@ const SCRIPTS = join(ROOT, "scripts");
 const CHECK = join(SCRIPTS, "check_cjk_font.js");
 const ENSURE = join(SCRIPTS, "ensure_officecli.js");
 const ROUTER_CHECKS = 9;
-const SECTION_SKELETON = [["## Backend: OfficeCLI", ["npx --yes @officecli/officecli@latest", "global\nchange"]], ["## Phase 0: availability", ["ensure_officecli.js", "exit 0", "exit 1", "exit 2"]], ["## Phase 1: choose the format", ["| Signal | Format |", "tests/test_router.js"]], ["## Phase 2: query the tool's schema", ["help docx", "Quote paths"]], ["## Phase 3: Korean font contract (required)", ["<a:ea>", "check_cjk_font.js", "Pretendard"]], ["## Phase 4: procurement conventions", ["req_coverage.js", "procurement"]], ["## Phase 5: save and inspect", ["officecli close", "close"]], ["## Explicit limitations", [".doc", "refresh"]]];
+const SECTION_SKELETON = [["## Backend: OfficeCLI", ["npx --yes @officecli/officecli@1.0.160", "global\nchange"]], ["## Phase 0: availability", ["ensure_officecli.js", "exit 0", "exit 1", "exit 2"]], ["## Phase 1: choose the format", ["| Signal | Format |", "tests/test_router.js"]], ["## Phase 2: query the tool's schema", ["help docx", "Quote paths"]], ["## Phase 3: Korean font contract (required)", ["<a:ea>", "check_cjk_font.js", "Pretendard"]], ["## Phase 4: procurement conventions", ["req_coverage.js", "procurement"]], ["## Phase 5: save and inspect", ["officecli close", "close"]], ["## Explicit limitations", [".doc", "refresh"]]];
 function split_sections(body: any): any {
     let buf: any, line: any, out: any, title: any;
     [out, title, buf] = [{}, null, []];
@@ -134,6 +134,7 @@ function main(): any {
     ensure_src = read(ENSURE);
     check("Policy: SKILL.md forbids officecli install", (truth((contains(skill, "Do not run `officecli install`"))) || truth((contains(skill, "Do not run officecli install")))));
     check("Policy: explains global installation into every agent", (truth((contains(skill, "every detected AI agent"))) || truth((contains(skill, "global")))));
+    check("Policy: OfficeCLI is pinned to an exact version in SKILL.md and ensure_officecli", (/@officecli\/officecli@\d+\.\d+\.\d+/.test(skill)) && (/@officecli\/officecli@\d+\.\d+\.\d+/.test(ensure_src)) && (!contains(skill, "officecli@latest")) && (!contains(ensure_src, "officecli@latest")));
     exec_lines = (() => { const __items: any[] = []; for (const l of iterable(ensure_src.split(/\r?\n/).filter((_: string, i: number, xs: string[]) => i < xs.length - 1 || xs[i] !== ""))) {
         if (!truth((truth(l.trim()) && truth((!truth(starts(l.trim(), "#")))))))
             continue;
@@ -246,17 +247,17 @@ function main(): any {
         }
     }
     check("Body skeleton: every section retains minimum content", (!truth(_thin)), ("empty sections " + String(_thin)));
-    check_skill_body(check, ROOT, { needles: ["npx --yes @officecli/officecli@latest", "ensure_officecli.js", "Final output is `.hwpx`", "global\nchange", "An unresolved destination fails", "Always `close` (or `save`) before another program reads the file.", "Do not claim the backend is available when it is not.", "Do not run `officecli install`.", "Do not validate through `effective.font`", "Do not duplicate per-format element and property lists here.", "Do not call the output complete before a person opens it.", "Quote paths to prevent shell bracket expansion."], floor: 3120 });
+    check_skill_body(check, ROOT, { needles: ["npx --yes @officecli/officecli@1.0.160", "ensure_officecli.js", "Final output is `.hwpx`", "global\nchange", "An unresolved destination fails", "Always `close` (or `save`) before another program reads the file.", "Do not claim the backend is available when it is not.", "Do not run `officecli install`.", "Do not validate through `effective.font`", "Do not duplicate per-format element and property lists here.", "Do not call the output complete before a person opens it.", "Quote paths to prevent shell bracket expansion."], floor: 3120 });
     check_no_constant_assertions(check, __file__);
     live_ran = (() => { const __items: any[] = []; for (const r of iterable(results)) {
         if (!truth((!truth(starts(r[0], ["자기검사:", "계약 커버리지:", "스크립트 계약:"])))))
             continue;
         __items.push(1);
     } return __items; })().reduce((sum: number, value: any) => sum + Number(value), 0);
-    check_contract_coverage(check, __file__, ROOT, { per_file: { "SKILL.md": 20 }, live_ran: live_ran });
-    check_body_deletion(check, __file__, ROOT, { minimum: 20, extra_strip: [], live_ran: live_ran });
-    check_script_contracts(check, __file__, ROOT, { scripts: { "scripts/check_cjk_font.js": 8, "scripts/ensure_officecli.js": 3, "tests/test_router.js": 10 }, live_ran: live_ran });
-    check_total(check, results, 51);
+    check_contract_coverage(check, __file__, ROOT, { per_file: { "SKILL.md": 21 }, live_ran: live_ran });
+    check_body_deletion(check, __file__, ROOT, { minimum: 21, extra_strip: [], live_ran: live_ran });
+    check_script_contracts(check, __file__, ROOT, { scripts: { "scripts/check_cjk_font.js": 8, "scripts/ensure_officecli.js": 4, "tests/test_router.js": 10 }, live_ran: live_ran });
+    check_total(check, results, 52);
     passed = (() => { const __items: any[] = []; for (const [_name, ok, _detail] of iterable(results)) {
         if (!truth(ok))
             continue;

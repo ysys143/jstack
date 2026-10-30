@@ -29,8 +29,23 @@ description: Open a PR that explains why, after self-review
 | Which alternatives were rejected, and why? | Review repeats rejected suggestions |
 | How was this verified? | A claim of passing has no supporting evidence |
 | What was deliberately left out? | Reviewers mistake scope decisions for omissions |
+| Who or what does this touch, and why is that safe or risky? | Reviewers check only the files in the diff and miss the callers, consumers, and data it reaches |
 
 **Do not rewrite the diff as prose.** Reviewers can read the diff themselves.
+
+The body keeps the two headings `gitrules` sets, `## Summary` and `## Test plan`.
+Answer the why, rejected-alternatives, left-out, and touched-area rows under
+Summary, and the verification row under Test plan. Keep SHAs, step-by-step logs, and long
+command output out of the body and link them instead, so the body stays a
+one-minute briefing.
+
+## After the PR is open
+
+When the PR gets review comments (including bot comments) or a CI run fails, read
+`${CLAUDE_PLUGIN_ROOT}/skills/verify/references/pr-feedback.md`. It classifies each
+comment and each failure and drafts the replies and fixes locally. Posting a
+reply, resolving a thread, pushing, and rerunning a remote job each wait for the
+user's approval.
 
 ## Tools
 

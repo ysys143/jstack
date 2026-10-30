@@ -1,0 +1,56 @@
+# NOTICE — create-verification-skill
+
+## Adapted content
+
+`create-verification-skill` is adapted from pstack (MIT), the Cursor plugin by Lauren Tan. It is a jstack-native rewrite, not a pinned copy: no upstream file is stored in this directory, and the text is written in jstack's own words.
+
+| Field | Value |
+|---|---|
+| Upstream | https://github.com/cursor/plugins (pstack 0.15.36) |
+| Pinned commit | 4dd1d05818d19792e7cd6e818f1667f95f7e1dbe |
+| Upstream paths | see the list below |
+| License | MIT (full text below) |
+
+Upstream paths, relative to `pstack/` in the upstream repository:
+
+- `skills/create-verification-skill/SKILL.md`
+- `skills/create-verification-skill/references/feature-map-example/README.md`
+- `skills/create-verification-skill/references/feature-map-example/create-note.md`
+- `skills/create-verification-skill/references/feature-map-example/search.md`
+
+## What changed
+
+- Rewrote the procedure (interview, generate, seed the feature map, prove, offer upkeep) in jstack's voice.
+- Replaced the Cursor output folder `.cursor/skills/verify-<app>/` with the target project's own skill folder: `.claude/skills/verify-<app>/` for Claude Code and `.agents/skills/verify-<app>/` for Codex.
+- Added an approval step: the user approves the target path and the file list before anything is written into their repository.
+- Named the jstack `verify` skill (and its interactive CLI reference) where the upstream text named generic harness recipes, and `maintain-verification-skill` for upkeep.
+- Replaced the example feature map with a new one for an invented app (Pantry, harness `drive-pantry`); the feature-entry contract (four sections, fixed order) is kept.
+- Replaced the Cursor `disable-model-invocation` frontmatter with a jstack description of the form "<sentence>. Triggers: <Korean triggers>."
+
+## Added by jstack
+
+- `SKILL.md`, `references/feature-map-example/` (three files), this NOTICE, and `tests/`.
+
+## License text
+
+MIT License
+
+Copyright (c) 2026 Lauren Tan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

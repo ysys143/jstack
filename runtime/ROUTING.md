@@ -132,6 +132,15 @@ Complex constraints add a checklist; a failed verification adds failure evidence
 The core brief always preserves deliverable, permissions and verification. These
 guidance choices depend on the task, never on whether the name contains Astra.
 
+## Rules every calling skill follows
+
+Skills that delegate point here instead of restating these rules. Small tasks
+stay with the coordinator. Retain explicit user model choices, permission
+boundaries, exclusive files, and host fork limits. A native decision runs through
+the current session's tools; it is not a CLI substitution. Only a verification
+failure permits one model transition; environment failures do not justify a
+stronger model. If `jst` is not found, follow [jst command on PATH](CLI-PATH.md).
+
 ## Adapter boundaries
 
 `jst route probe` reports installed CLI versions and help-advertised flags without

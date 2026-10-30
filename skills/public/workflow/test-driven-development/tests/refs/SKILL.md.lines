@@ -1,4 +1,4 @@
-# blob:8635695e681741350a374c7f59d9d2af44be0276
+# blob:fcf6c44cf33c7039ca055ded09e3db63c7175137
 # TDD — test first
 ## Why incremental is folded in here
 **Slicing the work and building each slice test-first happen at the same moment.**
@@ -46,17 +46,41 @@ is not a slice.
 **Each finished slice must add one thing that runs.** If nothing new runs, the
 slice was cut wrong.
 ## Phase 2: scenarios in user terms [approval required]
-Write them as **user behaviour and business rules**, not code structure.
+Write them as **user behaviour and business rules**, not code structure. Give every
+scenario and every case an ID: the approval checker looks for `TS-NNN` and `TC-NNN`
+rows, then for the two approval lines. Once both approvals are in, the plan looks
+like this:
 ```
 ## Test Scenarios
-1. Correct email and password → dashboard
-2. Wrong password → stay on the form, show the error
-3. Five failures → locked for 15 minutes
+| ID | User action | Verification goal |
+|---|---|---|
+| TS-001 | Correct email and password | Land on the dashboard |
+| TS-002 | Wrong password | Stay on the form, show the error |
+| TS-003 | Five failures in a row | Locked for 15 minutes |
+Scenario-Approved-By: Dana Lee 2026-09-02
+## Detailed Test Cases
+| Case ID | Scenario | Expected result |
+|---|---|---|
+| TC-001 | TS-001 | Redirect to the dashboard |
+| TC-002 | TS-002 | Form stays, error message shown |
+| TC-003 | TS-003 | Sixth attempt refused for 15 minutes |
+Case-Approved-By: Dana Lee 2026-09-02
 ```
-**Do not proceed without the user's approval.** Wrong scenarios make everything
-below them wrong — this is the most expensive point to get wrong.
+The approval line is `<Marker> <name> <date>`. Write it only after the user has
+said yes, or have the user write it. The checker reads the line but cannot tell who
+typed it, so a line written beforehand turns the gate into a formality. A
+placeholder such as `TBD`, `-` or `N/A` fails.
+**What waits and what does not.** Drafting scenarios or cases, reading
+code to find the behaviour they describe, and running a throwaway probe in a
+scratch directory are local and reversible: do them without asking, and say in your
+reply what you drafted or ran. A probe that installs a dependency, touches shared
+state or writes outside this machine is not that kind of step; ask first.
+**Do not proceed without the user's approval.** Everything from Phase 3 on is built
+on the scenarios. Wrong scenarios make everything below them wrong — this is the
+most expensive point to get wrong. Cases get the same stop before the first test
+is written.
 Two approvals are required — scenarios, then cases — and a rule with no enforcement
-is a recommendation. Record both in the plan and let the checker read them:
+is a recommendation. Let the checker read the plan:
 Requires Node.js 20+.
 ```bash
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js approvals \
@@ -90,6 +114,29 @@ no executable lines. Each `langs/*` guide carries the same gate in that language
 own tooling under **diff coverage**.
 Back to Phase 1. **Completion is judged by the `verify` skill** — "the tests pass"
 and "the requirement is met" are different questions.
+## Fixing a bug
+A bug fix is one slice with one scenario: the behaviour the report says is broken.
+When a cheap, local test can reproduce it, make the failure executable before
+touching production code.
+1. Name the intended behaviour, the observed behaviour and the smallest repro. If
+the intended behaviour is disputed, settle it through Phase 2 first.
+2. Write the narrowest test that would have caught the bug, in the test file the
+code path already uses. It encodes the intended behaviour, not today's
+implementation.
+3. Run it and watch it fail for the reason in the report. A pass, or a failure for
+an unrelated reason, means the test is wrong: fix it before the code.
+4. Make the smallest production change that satisfies it, then run it again.
+When no cheap test path exists (broad harness setup, brittle mocks, slow end-to-end
+infrastructure, production-only state, a vague repro), do not build one to satisfy
+the procedure. Use the closest executable check, such as a targeted script, a repro
+command or a focused integration check, and say why there is no failing test.
+**No new test beats a bad one:** a test that mostly exercises mocks, pins
+implementation detail, depends on timing or global state, or would be deleted right
+after the fix proves nothing.
+Do not edit or weaken an existing assertion to match a wrong implementation, unless
+the expected behaviour really changed and you say why. Report the failing-before
+test or check and the failure it gave, the passing-after run, and, when there is no
+failing-before evidence, why and what you used instead.
 ## Common failures
 - **Batching tests afterwards** — they end up shaped by the implementation and
 stop catching its defects
@@ -110,8 +157,6 @@ tautological assertion still counts as covered
 - This skill supplies the procedure; the language's own tooling runs the tests
 - **Scenario approval is a human step.** It is never automatic
 ## Optional SDLC caller
-When an explicitly selected `sdlc` run supplies context, preserve its task/run,
-requirement revision and input hashes with the raw result and execution observation.
-Return the original verdict and unverified scope to that coordinator; do not advance
-its stage or approve a human gate. A standalone or external caller does not need
-an SDLC run or new mandatory arguments.
+When an explicitly selected `sdlc` run calls this skill, follow
+[the leaf rules in sdlc](../sdlc/SKILL.md#leaf-skills-called-by-a-run). A standalone
+call needs no run context.

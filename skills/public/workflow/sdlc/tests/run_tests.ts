@@ -22,8 +22,11 @@ for (const [name, rule] of [
   ['use_when token', /<Use_When>[\s\S]*`jstack:sdlc`, `\/sdlc`, `\$sdlc`, `\/jstack:sdlc`,[\s\S]*<\/Use_When>/],
   ['use_when confirmation', /<Use_When>[\s\S]*ask the user whether to start an SDLC[\s\S]*requirementsSha256[\s\S]*<\/Use_When>/],
   ['do_not_use_when', /<Do_Not_Use_When>[\s\S]*sdlc name appears only in other text[\s\S]*<\/Do_Not_Use_When>/],
-  ['offer once, never starts', /<Offer_When>[\s\S]*Offer once per task[\s\S]*The offer never starts a run[\s\S]*<\/Offer_When>/],
+  ['breakage declaration is part of the approved spec', /spec also carries the plan's breakage\s+declaration[\s\S]*Accepting the spec accepts the declaration[\s\S]*Whatever is released is green/],
+  ['decision trail reuses existing records', /Do not add a separate decision log\s+file; a second log would compete/],
+  ['decision trail is append-only and audited before handback', /append-only: a wrong call gets a later\s+entry that supersedes it[\s\S]*Before handing back, compare the trail with what happened/],
 ] as const) check(`SDLC: ${name}`, rule.test(body));
+check('SDLC: no Offer_When block for an explicit-invocation skill', !body.includes('<Offer_When>') && !body.includes('SDLC로 시작하면'));
 check('Run protocol: event identity and no implicit resume', /current revision, run, coordinator and epoch/.test(read('references/run-protocol.md')) && /never executes/.test(read('references/run-protocol.md')));
 check('Release: readback and post-commit freshness', /Run verify again for the new HEAD/.test(read('references/release.md')) && /do not retry/.test(read('references/release.md')));
 for (const name of ['sdlc.test.js', 'sdlc-release.test.js', 'sdlc-ship.test.js', 'sdlc_effects.test.js']) {
@@ -31,9 +34,9 @@ for (const name of ['sdlc.test.js', 'sdlc-release.test.js', 'sdlc-ship.test.js',
   const out = spawnSync(process.execPath, ['--test', join(plugin, 'runtime', name)], { encoding: 'utf8', timeout: 120000, env });
   check(`Runtime behavior: ${name}`, out.status === 0 && /(?:pass [1-9]|# pass [1-9])/.test(out.stdout), out.status === 0 ? '' : out.stdout + out.stderr);
 }
-check_contract_coverage(check, suite, root, { per_file: { 'SKILL.md': 14, 'references/run-protocol.md': 1, 'references/release.md': 1 } });
-check_body_deletion(check, suite, root, { minimum: 14 });
+check_contract_coverage(check, suite, root, { per_file: { 'SKILL.md': 16, 'references/run-protocol.md': 1, 'references/release.md': 1 } });
+check_body_deletion(check, suite, root, { minimum: 16 });
 check_no_constant_assertions(check, suite);
-check_total(check, results, 28);
+check_total(check, results, 31);
 console.log(`\n${results.filter(([, ok]) => ok).length}/${results.length} 통과`);
 process.exitCode = results.every(([, ok]) => ok) ? 0 : 1;

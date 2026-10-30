@@ -5,7 +5,7 @@ import { realpathSync, readFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
-    HOOK_CONTEXT_ENV, claimPendingPrompt, computeFingerprint, diagnosticReuse, fileProjectView, planActions,
+    HOOK_CONTEXT_ENV, computeFingerprint, diagnosticReuse, fileProjectView, planActions,
     readState, recordDiagnostic, relevantConfigPaths, resolveExecutable, resolveStateLocation, retryAllowed, selectCheckers,
     checkablePaths, type Fingerprint, type Plan, type PlanChange, type PlanInput, type ReadResult, type RetryTrigger, type Selection, type StateLocation,
 } from '../../../runtime/project-hooks/index.js';
@@ -13,11 +13,6 @@ import type { ChangedPath, NormalizedEvent } from './hook-event.js';
 import type { Verdict } from './hook-output.js';
 const POLICY = 'project';
 const CHECK_TIMEOUT_MS = 60000;
-const shellQuote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
-function decisionCommand(env: NodeJS.ProcessEnv): string | undefined {
-    const root = env.CLAUDE_PLUGIN_ROOT || env.PLUGIN_ROOT;
-    return root ? `node ${shellQuote(join(root, 'payload/runtime/project-hooks/decision_cli.js'))} choose configured|without-setup --message-ref <actual-user-message-or-command-ref>` : undefined;
-}
 /** Root-relative forward-slash path, or undefined when the path lies outside the root. */
 export function rootRelative(root: string, file: string): string | undefined {
     let real = file;
@@ -128,18 +123,10 @@ export async function runProjectLane(event: NormalizedEvent, env: NodeJS.Process
     else
         changes = planChanges(location.root, event.changes).changes;
     const view = fileProjectView(location.root);
-    const base: PlanInput = { trigger, state: { decision: read.state.decision, status: read.status, explanation: read.explanation }, changes, uncertain: !!uncertain, view, decisionCommand: decisionCommand(env) };
+    const base: PlanInput = { trigger, state: { decision: read.state.decision, status: read.status, explanation: read.explanation }, changes, uncertain: !!uncertain, view };
     let plan: Plan = planActions(base);
     let fingerprint: Fingerprint | undefined;
-    if (plan.gate === 'pending-decision') {
-        let surface = true;
-        try {
-            surface = claimPendingPrompt(location, { host: event.host }).claimed;
-        }
-        catch { /* surfacing twice is better than never asking */ }
-        plan = planActions({ ...base, surfacePending: surface });
-    }
-    else if (plan.gate === 'run' && !plan.oneOff) {
+    if (plan.gate === 'run' && !plan.oneOff) {
         // Hash only after the plan says checks are due in a configured project.
         const { version, manifest } = pluginVersion(env);
         const selection = selectCheckers(checkablePaths(changes).paths, view);
@@ -163,8 +150,6 @@ export async function runProjectLane(event: NormalizedEvent, env: NodeJS.Process
 }
 function verdicts(plan: Plan, root: string, env: NodeJS.ProcessEnv, deps: LaneDeps): Verdict[] {
     const out: Verdict[] = [];
-    if (plan.pendingDecision?.surface)
-        out.push({ action: 'context', policy: POLICY, text: plan.pendingDecision.message });
     if (plan.gate === 'run') {
         const run = deps.runAction ?? runSelection;
         for (const action of plan.actions) {
@@ -173,8 +158,8 @@ function verdicts(plan: Plan, root: string, env: NodeJS.ProcessEnv, deps: LaneDe
                 out.push(verdict);
         }
     }
-    // A deferred or undecided plan stays quiet unless it has something the model must not mistake for a pass.
-    const reportable = plan.gate === 'run' || (plan.gate === 'pending-decision' && !!plan.pendingDecision?.surface) || (plan.gate === 'skip' && plan.unknowns.length > 0);
+    // A deferred plan, and a project whose checks are off, stay quiet unless they have something the model must not mistake for a pass.
+    const reportable = plan.gate === 'run' || (plan.gate === 'skip' && plan.unknowns.length > 0);
     if (!reportable)
         return out;
     const offered = new Set(plan.offers.map(offer => offer.message));

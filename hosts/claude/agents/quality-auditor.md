@@ -15,6 +15,12 @@ Use the canonical axes at
 `${CLAUDE_PLUGIN_ROOT}/skills/cleanup/references/quality-taxonomy.md`.
 Do not create a copy; copies silently diverge from their source.
 
+## Scope
+
+Audit the files the caller names. With no list, use the files changed since the
+merge base. Return findings grouped by axis so the executor can take one axis per
+pass, and run before any edit: the executor starts from your findings.
+
 ## Judgment principles
 
 The default verdict is **blocked**; passing requires evidence. Reversing this

@@ -62,5 +62,5 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js"
 
 It runs every discovered skill suite plus the root `tests/` suites, then
 checks measured floors, harness behavior, and copy parity. Similar names can
-make `validate.sh` look like plugin validation, but neither layer substitutes
+make `validate.js` look like plugin validation, but neither layer substitutes
 for the other.

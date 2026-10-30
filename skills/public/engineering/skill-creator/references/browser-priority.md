@@ -4,16 +4,15 @@ Several browser tools can perform overlapping work. This file makes the selectio
 
 ## Authority
 
-The same policy is needed in four places:
+The same policy is needed in three places:
 
 | Consumer | Why it needs the selection policy |
 |---|---|
-| UserPromptSubmit router hook (`hooks/route.py`, planned) | Detects relevant prompts and injects the policy. |
 | `deck` skill | Opens a browser during the visual-QA loop. |
 | `diagram` skill | Opens a browser to verify rendered diagrams. |
 | Project instructions appended by `setup` | Preserves the same order outside the plugin. |
 
-They should reference this file instead of maintaining four independent
+They should reference this file instead of maintaining three independent
 authorities. A standalone skill may inline the table so it remains functional
 when installed alone, but this file wins if the copy diverges.
 

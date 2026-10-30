@@ -55,6 +55,14 @@ sqlite3 "$SESSIONS/.metadata.db" \
   "SELECT session_datetime, project, session_id, summary FROM sessions WHERE session_datetime <> '' ORDER BY session_datetime DESC LIMIT 5;"
 ```
 
+Search only the current workspace's sessions by default: filter the index by
+the `project` value that matches the current repository. Read another project's
+sessions only when the user asks, and name the projects you read. Open a recall
+answer with its scope (workspace, time range, number of sessions matched), then
+list each hit with its date, session id, and a status tag taken from the
+repository rather than from the session's own claim: `[merged #N]`,
+`[open #N]`, `[abandoned]`, or `[unknown]` when nothing can be checked.
+
 Use the exported Markdown corpus for keyword or full-session content. An empty
 result means the index or export pipeline may be absent or stale; it does not
 prove that the work never happened. Verify paths and dates before acting on a

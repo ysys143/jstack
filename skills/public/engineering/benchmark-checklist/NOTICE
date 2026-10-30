@@ -1,0 +1,53 @@
+# NOTICE — benchmark-checklist
+
+## Adapted content
+
+`benchmark-checklist` is adapted from pstack (MIT), the Cursor plugin by Lauren Tan. It is a jstack-native rewrite, not a pinned copy: no upstream file is stored in this directory, and the text is written in jstack's own words.
+
+| Field | Value |
+|---|---|
+| Upstream | https://github.com/cursor/plugins (pstack 0.15.36) |
+| Pinned commit | 4dd1d05818d19792e7cd6e818f1667f95f7e1dbe |
+| Upstream paths | see the list below |
+| License | MIT (full text below) |
+
+Upstream paths, relative to `pstack/` in the upstream repository:
+
+- `skills/benchmark-checklist/SKILL.md`
+- `skills/principle-explain-the-number/SKILL.md`
+
+## What changed
+
+- Rewrote the skill in jstack's voice. The seven questions and the report rules are kept; their wording is new.
+- Absorbed `principle-explain-the-number`: the claim and the noise floor are written down before a run, and eval results get the same questions.
+- Dropped the closing section that pointed to the pstack Perf issue and Hillclimb playbooks, and the pointer to the Opening a PR playbook in the report rules.
+- Replaced the Cursor `disable-model-invocation` frontmatter with a jstack description of the form "<sentence>. Triggers: <Korean triggers>."
+- Added the boundary with `react-performance` and with the `verify` skill's validation-cost reference, and a stated-limits section.
+
+## Added by jstack
+
+- `SKILL.md`, this NOTICE, and `tests/`.
+
+## License text
+
+MIT License
+
+Copyright (c) 2026 Lauren Tan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

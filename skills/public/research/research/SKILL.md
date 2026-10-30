@@ -3,7 +3,11 @@ name: research
 description: "Source-backed deep research with verified citations. Triggers: 심층 조사, 출처 검증."
 ---
 
-# Research — deep research for procurement
+# Research — source-backed deep research with verified citations
+
+Every report passes the question, source lens, breadth and depth, writing, and
+citation-check phases. A procurement proposal adds the requirements list
+(Phase 0.5) and the requirements-to-response check (the second check in Phase 4).
 
 ## This skill is self-contained
 
@@ -66,6 +70,22 @@ Do not invent unavailable paths. Disclose blocked access.
 - Limit CJK paragraphs to **800 characters** (English: 1500). The provenance and
   rationale of these limits are in `references/tier-profile.md`.
 
+### Grade every claim
+
+Give each claim in the report one grade, by how the report knows it.
+
+| Grade | Meaning | What the text must show |
+|---|---|---|
+| **Quoted** | A source states it | The citation `[n]` that points at the passage |
+| **Converging evidence** | Two or more independent sources point the same way and none states it whole | Every source cited |
+| **Inferred** | The report reasons from sources to the claim | The label `[추론]` and the step that connects source to claim |
+| **Unknown** | The search found nothing, or the question was not searched | The label `[불명]` and which of the two it is |
+
+Use "because", "the reason is", or "이유는" only for Quoted and Converging claims.
+For an Inferred claim write "this suggests" or "one reading is". A guess is a
+prompt for more searching, not a conclusion to defend. An empty search is a
+finding: write `읽은 범위에서 찾지 못했다`, never "does not exist".
+
 ## Phase 4: two mechanically enforced checks
 
 ### Verify every citation
@@ -87,7 +107,7 @@ checking an unknown half cannot establish reliability of the rest. See
 A person or LLM must read **every** sentence/source pair emitted by `--pairs`.
 Whether a source actually supports a sentence is beyond mechanical checking.
 
-### Map requirements to responses
+### Map requirements to responses (procurement proposals)
 
 ```
 node ${JSTACK_PLUGIN_ROOT}/skills/research/scripts/coverage_matrix.js \

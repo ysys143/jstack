@@ -7,7 +7,12 @@ description: "Close the session: record done, unfinished and next steps"
 ## Sequence
 
 1. **Record unfinished work first.** Commits and diffs already record completed
-   work; remaining work otherwise has no record.
+   work; remaining work otherwise has no record. Start `sag-followup-suggester`
+   with the evidence it cannot see on its own: `git status --short --branch`, the
+   diff stat, the open task items, and a plain list of what the user asked for and
+   what was finished. It returns blocked, deliberately omitted, and unfinished
+   items, ordered by what each one blocks. Check each item against the repository
+   before recording it; its report is a claim.
 2. Inspect remaining worktree changes and **decide** whether to commit or discard.
    Ambiguous leftovers prevent the next session from distinguishing intent.
 3. Store only what the next session needs, following the `recall` skill.
@@ -28,3 +33,13 @@ description: "Close the session: record done, unfinished and next steps"
 Separate completed, unfinished, and deliberately omitted work. Without the third
 category, the next reader may mistake a scope decision for an omission and review
 it again.
+
+## Waiting on the user
+
+After the report, list every item that only the user can move: a product choice,
+an approval, an irreversible action, access you lack. Include items raised
+earlier in the session that are still open. For each, write what they need to
+decide it from this list alone: the call, your pick, the evidence behind the
+pick, and the risk. Give the PR, issue, or branch each one concerns by name or
+number. Work you can still do yourself is not an item, and a call is never
+invented to fill the list. When nothing waits on them, say so in one line.

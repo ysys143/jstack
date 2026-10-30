@@ -12,7 +12,7 @@ This skill is a pinned copy of an upstream project kept under `repos/pstack/skil
 ## Start
 
 1. Read `repos/pstack/skills/create-formal-verification-skill/SKILL.md`: choosing the target, choosing the tool, what makes the result good, generating the verify skill, and proving it before hand-off.
-2. Where it names the pstack `/statechart` skill, use the jstack `statechart` skill. Refer to it by name in the generated skill, as upstream says; copy none of its commands, options or paths.
+2. Where it names the pstack `/statechart` skill, use the jstack `statechart` skill. Refer to it by name in the generated skill, as upstream says; copy none of its commands, options or paths. Where it points the user at `/maintain-formal-verification-skill`, name the jstack `maintain-formal-verification-skill` skill.
 3. Check that the chosen verification tool runs before promising a result. Report what is missing instead of skipping the proof step; a check that could not run is not a pass.
 
 ## Where things live
@@ -25,6 +25,7 @@ This skill is a pinned copy of an upstream project kept under `repos/pstack/skil
 | Need | Owner |
 |---|---|
 | Read a TLA+ result as shortest bug paths and a statechart | `statechart` |
+| Bring an existing verification back in line after the code changed | `maintain-formal-verification-skill` |
 | Check that a code change is complete | `verify` |
 | Write the tests for a feature | `test-driven-development` |
 | Write a general skill that is not a verification skill | `skill-creator` |

@@ -10,8 +10,12 @@ description: "Create or edit DOCX, XLSX or PPTX with OfficeCLI. Triggers: 워드
 `@officecli/officecli` (Apache 2.0) is invoked externally, not bundled.
 
 ```
-npx --yes @officecli/officecli@latest <command> ...
+npx --yes @officecli/officecli@1.0.160 <command> ...
 ```
+
+The version is pinned so every call runs the same code. Change it only by
+updating this file and `scripts/ensure_officecli.js` (built from its TypeScript
+source) together.
 
 Do not run `officecli install`. It installs skills into every detected AI agent
 (Claude Code, Cursor, Windsurf, Copilot, and others). That is an unrequested global
@@ -55,9 +59,9 @@ Do not duplicate per-format element and property lists here. The tool's schema
 is the sole authoritative versioned source.
 
 ```
-npx --yes @officecli/officecli@latest help docx          # Elements
-npx --yes @officecli/officecli@latest help pptx shape    # Element details
-npx --yes @officecli/officecli@latest help xlsx add      # Supported additions
+npx --yes @officecli/officecli@1.0.160 help docx          # Elements
+npx --yes @officecli/officecli@1.0.160 help pptx shape    # Element details
+npx --yes @officecli/officecli@1.0.160 help xlsx add      # Supported additions
 ```
 
 Verbs are `add · set · get · query · remove`; paths look like

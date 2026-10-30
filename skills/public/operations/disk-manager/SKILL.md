@@ -120,6 +120,7 @@ See `references/installation.md` for migration, aliases and recovery.
 | Docker, Colima, VM disks or volumes | `references/containers.md` |
 | Dependencies, model files, package or browser caches | `references/development-caches.md` |
 | Scheduling, legacy collector or database detected, shell commands or `jst` missing from PATH | `references/installation.md` |
+| Linked git worktrees, agent checkouts or a repository with many worktrees | `references/worktrees.md` |
 
 Personal incident logs and machine-specific keep decisions remain private. Carry
 their reusable lessons here only after checking the causal explanation.

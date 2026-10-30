@@ -1,4 +1,4 @@
-# blob:125f426a63592d7e36a4ff46d166b48f4624016c
+# blob:1b39a889473b53c99d971e01375d30daea7d694b
 # Merge worktree
 Squash-merge the current worktree branch back into the target branch with a
 comprehensive, structured commit message.
@@ -14,8 +14,20 @@ Gather these before anything else. Every later phase reads one of them.
 | Current branch | `git branch --show-current` |
 | Recent commits | `git log --oneline -20` |
 | Working tree status | `git status --short` |
+## Approval gate
+Nothing in this procedure runs until the user has asked for the merge. Before
+Phase 4 (the first write to the target branch), stop and show the user the target
+branch, the commits the squash will hide, the diff summary from Phase 2, and the
+drafted commit message. Wait for an explicit yes. A merge changes the target
+branch and a squash hides the individual commits, and neither is easy to take
+back once the branch is pulled. A green check, a finished worktree, or an earlier
+request to verify is not that yes.
+This gate outranks the instruction below to run every phase: stop at the gate,
+and do not run Phases 4 to 6 without the yes. If the message or the target
+changes after the yes, ask again.
 ## Instructions
-Follow these phases exactly, in order. Do NOT skip phases.
+Follow these phases in order and do not skip any. The approval gate above is not
+a phase to skip and cannot be waived by this instruction.
 ---
 ### Phase 1: Validation
 1. **Verify worktree**: Check `git rev-parse --git-dir` contains `/worktrees/`. If not, stop:
@@ -32,6 +44,7 @@ Follow these phases exactly, in order. Do NOT skip phases.
 4. **Read key files**: read the significantly changed files
 5. **Categorize**: feat / fix / refactor / test / docs / chore
 6. **Identify dominant conventional commit type**
+7. **Draft the commit message** (Phase 5 gives the structure) so it can be shown at the approval gate
 ---
 ### Phase 3: Target branch preparation
 1. Check target branch state: `git -C <original-repo-path> log --oneline -10 <target>`
@@ -39,6 +52,7 @@ Follow these phases exactly, in order. Do NOT skip phases.
 3. Fetch latest: `git -C <original-repo-path> fetch origin <target> 2>/dev/null`
 ---
 ### Phase 4: Squash merge
+Start only after the approval gate above has a yes.
 1. Checkout target in original repo: `git -C <original-repo-path> checkout <target>`
 2. Squash merge: `git -C <original-repo-path> merge --squash <worktree-branch>`
 3. If conflicts: list files, show markers, **stop and report** -- do NOT auto-resolve
@@ -46,11 +60,14 @@ Follow these phases exactly, in order. Do NOT skip phases.
 ### Phase 5: Craft commit message and commit
 Structure:
 ```
-<type>: <concise summary in imperative mood, under 72 chars, no period>
+<type>: <summary line>
 <2-4 sentence paragraph explaining what was done and WHY.>
 Changes:
 - <grouped bullet points>
 ```
+The summary line follows the subject rule in `gitrules` (length, ending, no
+period); this file does not restate it. Commit the message the user approved at
+the gate.
 Trailers are not written here. `gitrules` owns the trailer set for this
 repository; copying a template into this file would give the repository two
 answers to the same question, and the stale one wins whenever someone reads
@@ -67,7 +84,7 @@ EOF
 1. Confirm: `git -C <original-repo-path> log --oneline -3`
 2. Report: commit hash, summary, target branch
 3. Remind: worktree branch still exists; delete with `git worktree remove <path>` if done
-4. Remind: `git push` to push to remote
+4. Remind: pushing would publish the commit; do not push without the user's approval
 ---
 ## Important notes
 - Never force-push or use destructive git operations without explicit user confirmation

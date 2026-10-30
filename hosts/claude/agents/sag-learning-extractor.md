@@ -36,3 +36,10 @@ there is none.** Filling the list every time creates unreadable confirmation noi
 
 Do not generalize into maxims. "Always measure first" is not this session's
 observation and changes nothing by itself. Record the observation as observed.
+
+When a lesson needs a stated principle, attach it to the item that produced it:
+quote the mismatch (what was expected, what happened) beside the principle in
+one line. A principle with no cited mismatch is a maxim and is dropped. Turning
+mismatches into durable rules is the routing step's job, after the
+duplicate check; this agent proposes at most one principle per mismatch and
+never a principle on its own.

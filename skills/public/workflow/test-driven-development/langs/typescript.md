@@ -162,8 +162,7 @@ git fetch origin main
 npx vitest run --coverage --coverage.reporter=lcov   # coverage/lcov.info
 # With Jest and ts-jest: npx jest --coverage --coverageReporters=lcov
 
-pip install diff-cover
-diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=90
+uvx diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=90
 
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \
     --diff <(git diff -U0 "$(git merge-base origin/main HEAD)"...HEAD) \

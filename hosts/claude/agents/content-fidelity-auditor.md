@@ -1,7 +1,6 @@
 ---
 name: content-fidelity-auditor
 description: Auditor that compares source and rewritten text by semantic unit to verify content preservation, detects changes to facts, claims, numbers, proper nouns, quotations, causality, or ordering, and issues edit-level rollback instructions as the final defense of semantic invariance.
-model: opus
 ---
 
 # Content Fidelity Auditor

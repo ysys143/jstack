@@ -15,29 +15,6 @@ test('process arguments retain Unicode and shell metacharacters literally', () =
   const result = runProcess(process.execPath, ['-e', 'console.log(JSON.stringify(process.argv.slice(1)))', ...args]); assert.equal(result.status, 0); assert.deepEqual(JSON.parse(result.stdout), args);
 });
 
-test('Python and TS writers contend on the same portable lock in both directions', { skip: process.platform === 'win32' || !process.env.JSTACK_ORACLE }, async t => {
-  const { spawn, spawnSync } = await import('node:child_process');
-  const { withLock } = await import('./os.js');
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-lock-')));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  for (const module of ['profiles', 'skill_store']) {
-    const file = path.join(root, `${module}.lock`);
-    const script = `import importlib.util, pathlib, sys, time\nspec=importlib.util.spec_from_file_location('fixture', sys.argv[1]); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)\nwith m.portable_lock(pathlib.Path(sys.argv[2]), timeout=float(sys.argv[3])):\n print('held', flush=True)\n time.sleep(float(sys.argv[4]))`;
-    const source = path.resolve('runtime', `${module}.py`);
-    const child = spawn('python3', ['-c', script, source, file, '1', '0.4']);
-    const exited = new Promise<number | null>(resolve => child.on('exit', resolve));
-    await new Promise<void>((resolve, reject) => { child.stdout.once('data', () => resolve()); child.once('error', reject); child.once('exit', code => { if (code !== 0) reject(new Error('Python lock holder failed')); }); });
-    assert.throws(() => withLock(file, () => assert.fail('overlapping TS writer'), 80), /unavailable/);
-    assert.equal(await exited, 0);
-    withLock(file, () => {
-      const blocked = spawnSync('python3', ['-c', script, source, file, '0.08', '0']);
-      assert.notEqual(blocked.status, 0); assert.match(blocked.stderr.toString(), /state lock unavailable/);
-    });
-    const released = spawnSync('python3', ['-c', script, source, file, '1', '0']);
-    assert.equal(released.status, 0, released.stderr.toString());
-  }
-});
-
 test('recovery preserves live and unknown owners and recovers a proven terminated writer', async t => {
   const { spawn } = await import('node:child_process');
   const { recoverLock, withLock, privateDir, atomicWrite } = await import('./os.js');

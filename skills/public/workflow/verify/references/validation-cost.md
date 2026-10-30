@@ -15,6 +15,18 @@ Compare like-for-like inputs, runner capacity, concurrency, and cache state.
 Keep tail latency visible; do not infer a stable improvement from one fast run.
 Report unknown costs as unmeasured and retain correctness checks while optimizing.
 
+Before reporting a speedup or a regression, make the measuring harness print its
+error count and a count of the work it actually did. A run that failed early or
+measured nothing then cannot read as zero cost. Take the baseline first, on the
+unchanged code, and report a median of repeated runs. Keep a change only when the
+metric moves past the run-to-run noise with the gate still green; otherwise revert
+the whole change, not part of it. When the feature does not exist on the base
+branch, compare against an absolute budget instead of a ratio to the base.
+
+Try remedies in order of cost: skip the work, do not repeat it, do less of
+it, do it later, do it concurrently, and only then make it cheaper. Do not state a
+performance ceiling you have not run.
+
 ## Reduce repeated setup before adding workers
 
 Keep checks individually callable, and share preparation in aggregate execution.

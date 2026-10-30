@@ -79,7 +79,7 @@ plugin was:
 ```bash
 # WRONG — dies the day the plugin is renamed, and dies silently
 find ~/.claude/plugins/cache/<marketplace>/<plugin> \
-     -name "models_database.py" | sort -V | tail -1
+     -name "models_database.js" | sort -V | tail -1
 ```
 
 `find` on a path that no longer exists prints nothing and exits 0. The variable
@@ -91,7 +91,7 @@ DB="${JSTACK_PLUGIN_ROOT}/scripts/models_database.js"
 ```
 
 The same rule kills the other legacy shape, `Glob **/model-version-checker/hooks/
-models_database.py` — a glob over a directory name is the same hardcoded name
+models_database.js` — a glob over a directory name is the same hardcoded name
 wearing a different hat, and it also matches the wrong copy when two versions
 are installed side by side.
 

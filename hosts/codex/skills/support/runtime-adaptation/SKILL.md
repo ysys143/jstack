@@ -29,7 +29,8 @@ on the requested result. A binary's existence does not prove authentication,
 permissions, rendering, or the required operation works.
 
 Print an actionable installation command when a dependency is missing. Do not
-install software on the user's behalf without task authorization. Pass through
+run it unless the user authorized that install for this task; a request to do the
+task is not authorization to install what it needs. Pass through
 the maintained tool's arguments and errors; a bridge is not a replacement CLI.
 An expected failing TDD test is different from a missing execution capability.
 

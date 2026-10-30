@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { run } from './decision_cli.js';
 import { recommendProjectChecks } from './recommend.js';
-import { HOOK_CONTEXT_ENV, StateConflict, claimPendingPrompt, readState, recordDecision, resolveStateLocation } from './state.js';
+import { HOOK_CONTEXT_ENV, StateConflict, readState, recordDecision, resolveStateLocation } from './state.js';
 import { computeFingerprint, diagnosticReuse, retryAllowed } from './fingerprint.js';
 import { planActions } from './plan.js';
 import { selectCheckers, type ProjectView } from './select.js';
@@ -124,23 +124,17 @@ test('non-Git state is path-keyed; malformed state is never silently repaired by
     const broken = readState(one);
     assert.equal(broken.status, 'malformed');
     assert.equal(broken.state.decision, 'undecided');
-    assert.equal(claimPendingPrompt(one, { host: 'claude' }).claimed, true);
     assert.equal(readState(one).status, 'malformed');
-    assert.throws(() => recordDecision(one, { approval: { provenance: 'explicit-command', choice: 'configured', host: 'claude', recordedAt: new Date().toISOString(), messageRef: 'fixture-user-command' }, expectedRevision: 1 }), StateConflict);
   } finally { rmSync(parent, { recursive: true, force: true }); }
 });
 
-test('prompt claim is deduplicated and an explicit answer survives a stale writer', () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-pending-state-'));
+test('an explicit answer survives a stale writer', () => {
+  const root = mkdtempSync(join(tmpdir(), 'jstack-stale-state-'));
   try {
     assert.equal(git(root, ['init', '-q']).status, 0);
     const location = resolveStateLocation(root);
-    const now = Date.now();
-    assert.equal(claimPendingPrompt(location, { host: 'claude', now }).claimed, true);
-    assert.equal(claimPendingPrompt(location, { host: 'codex', now: now + 1000 }).claimed, false);
     const revision = readState(location).state.revision;
     recordDecision(location, { approval: { provenance: 'explicit-command', choice: 'without-setup', host: 'codex', recordedAt: new Date().toISOString(), messageRef: 'fixture-user-command' }, expectedRevision: revision });
-    assert.equal(claimPendingPrompt(location, { host: 'claude', now: now + 700000 }).claimed, false);
     assert.throws(() => recordDecision(location, { approval: { provenance: 'explicit-command', choice: 'configured', host: 'claude', recordedAt: new Date().toISOString(), messageRef: 'stale-command' }, expectedRevision: revision }), StateConflict);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
@@ -183,7 +177,8 @@ test('a diagnostic reuses only a matching pass and a no-setup choice never runs 
     assert.equal(noSetup.gate, 'skip');
     assert.equal(noSetup.actions.length, 0);
     const pending = planActions({ trigger: 'commit', state: { decision: 'undecided', status: 'missing' }, changes: [{ relative: 'a.py', op: 'update' }], view: view({ 'pyproject.toml': '[tool.ruff]\n' }) });
-    assert.equal(pending.gate, 'pending-decision');
+    assert.equal(pending.gate, 'skip');
     assert.equal(pending.actions.length, 0);
+    assert.equal(pending.reason, 'project checks are off until the user turns them on');
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
