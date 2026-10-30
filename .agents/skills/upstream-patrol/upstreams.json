@@ -987,6 +987,71 @@
           ]
         }
       ]
+    },
+    {
+      "id": "just-dag-it",
+      "repo": "ysys143/just-dag-it",
+      "branch": "fix/consumer-boundary-verification-20261022",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "1dfc962d3c42564c872a11d750902b701adeb40f",
+          "upstreamPaths": [
+            "."
+          ],
+          "localPaths": [
+            "skills/public/engineering/dag-it/repos/just-dag-it"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/dag-it/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "dag-it",
+          "notes": [
+            "Copied from a local branch two commits ahead of main c407dfe; the pin was not on the remote when copied on 2026-10-30. Push the branch, or move the pin to the merged commit, before measuring.",
+            "Excluded .claude-plugin/ when imported."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dagster-skills",
+      "repo": "dagster-io/skills",
+      "branch": "main",
+      "license": {
+        "spdx_id": "Apache-2.0",
+        "class": "Apache-2.0"
+      },
+      "lastReviewed": null,
+      "state": "unreviewed",
+      "reviews": [],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "ed0248b1b6b70710a8785e3ff4880b44496c0f94",
+          "upstreamPaths": [
+            "plugins/dagster/skills/dagster-expert"
+          ],
+          "localPaths": [
+            "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/engineering/dag-it/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "dag-it",
+          "notes": [
+            "Reaches jstack inside the just-dag-it copy; update it through just-dag-it, not directly."
+          ]
+        }
+      ]
     }
   ],
   "exclusions": [

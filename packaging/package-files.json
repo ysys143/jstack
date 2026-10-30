@@ -2402,6 +2402,770 @@
       "target": "skills/consult/tests/run_tests.ts"
     },
     {
+      "source": "skills/public/engineering/dag-it/NOTICE",
+      "target": "skills/dag-it/NOTICE"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/SKILL.md",
+      "target": "skills/dag-it/SKILL.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/.gitignore",
+      "target": "skills/dag-it/repos/just-dag-it/.gitignore"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/LICENSE",
+      "target": "skills/dag-it/repos/just-dag-it/LICENSE"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/NOTICE",
+      "target": "skills/dag-it/repos/just-dag-it/NOTICE"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/README.md",
+      "target": "skills/dag-it/repos/just-dag-it/README.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/SKILL.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/SKILL.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/consumer-boundaries.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/consumer-boundaries.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/LICENSE",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/LICENSE"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/UPSTREAM.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/UPSTREAM.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/asset-selection.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/asset-selection.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/advanced-patterns.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/advanced-patterns.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/definition-metadata.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/definition-metadata.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/dependencies.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/assets/dependencies.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/choosing-automation.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/choosing-automation.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/advanced.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/advanced.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/core-concepts.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/core-concepts.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/customization.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/customization.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/operands.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/operands.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/operators.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/declarative-automation/operators.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/schedules.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/schedules.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/sensors/asset-sensors.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/sensors/asset-sensors.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/sensors/basic-sensors.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/sensors/basic-sensors.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/sensors/run-status-sensors.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/automation/sensors/run-status-sensors.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/agent/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/agent/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/agent/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/agent/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/agent/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/agent/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/alert-policy/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/alert-policy/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/alert-policy/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/alert-policy/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/alert-policy/sync.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/alert-policy/sync.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/artifact/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/artifact/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/artifact/download.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/artifact/download.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/artifact/upload.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/artifact/upload.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset-check.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset-check.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-evaluations.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-evaluations.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-events.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-events.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-health.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-health.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-partition-status.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get-partition-status.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/asset/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/add.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/add.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/delete.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/delete.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/code-location/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/delete.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/delete.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/settings-get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/settings-get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/settings-set.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/deployment/settings-set.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/general.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/general.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/insights.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/insights.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/issue/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/issue/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/job.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/job.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/saml-remove.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/saml-remove.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/saml-upload.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/saml-upload.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/settings-get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/settings-get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/settings-set.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/organization/settings-set.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/get-events.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/get-events.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/get-logs.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/get-logs.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/launch.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/launch.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/run/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/get-ticks.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/get-ticks.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/schedule/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/secret/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/secret/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/secret/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/secret/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/secret/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/secret/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/get-ticks.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/get-ticks.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/get.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/get.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/list.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/api/sensor/list.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/check.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/check.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/create-dagster.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/create-dagster.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/dev.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/dev.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/launch.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/launch.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list-components.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list-components.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list-defs.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list-defs.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/component-tree.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/component-tree.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/envs.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/envs.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/projects.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/list/projects.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/config/set.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/config/set.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/config/view.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/config/view.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/create/ci-api-token.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/create/ci-api-token.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/deploy/configure.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/deploy/configure.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/deploy/deploy.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/deploy/deploy.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/integrations/dbt.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/integrations/dbt.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/login.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/login.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/pull/env.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/plus/pull/env.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/scaffold/component.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/scaffold/component.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/scaffold/defs.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/scaffold/defs.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/utils/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/utils/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/utils/inspect-component.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/utils/inspect-component.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/utils/refresh-defs-state.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/cli/utils/refresh-defs-state.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/creating-components.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/creating-components.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/designing-component-integrations.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/designing-component-integrations.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/resolved-framework.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/resolved-framework.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/state-backed/creating.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/state-backed/creating.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/state-backed/using.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/state-backed/using.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/subclassing-components.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/subclassing-components.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/template-variables.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/components/template-variables.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/deployment/config-files.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/deployment/config-files.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/env-vars.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/env-vars.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-airbyte/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-airbyte/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-airlift/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-airlift/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-aws/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-aws/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-azure/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-azure/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-celery-docker/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-celery-docker/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-celery-k8s/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-celery-k8s/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-celery/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-celery/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-census/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-census/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dask/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dask/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-databricks/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-databricks/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-datadog/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-datadog/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-datahub/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-datahub/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/asset-checks.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/asset-checks.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/component-based-integration.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/component-based-integration.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/dbt-cloud.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/dbt-cloud.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/dependencies.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/dependencies.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/pythonic-integration.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/pythonic-integration.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/scaffolding.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dbt/scaffolding.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-deltalake-pandas/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-deltalake-pandas/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-deltalake-polars/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-deltalake-polars/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-deltalake/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-deltalake/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dlt/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-dlt/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-docker/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-docker/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb-pandas/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb-pandas/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb-polars/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb-polars/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb-pyspark/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb-pyspark/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-duckdb/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-fivetran/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-fivetran/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-gcp-pandas/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-gcp-pandas/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-gcp-pyspark/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-gcp-pyspark/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-gcp/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-gcp/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-github/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-github/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-great-expectations/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-great-expectations/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-hightouch/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-hightouch/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-iceberg/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-iceberg/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-jupyter/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-jupyter/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-k8s/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-k8s/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-looker/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-looker/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-mlflow/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-mlflow/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-msteams/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-msteams/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-mysql/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-mysql/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-omni/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-omni/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-openai/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-openai/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pagerduty/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pagerduty/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pandas/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pandas/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pandera/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pandera/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-papertrail/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-papertrail/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-polars/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-polars/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-polytomic/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-polytomic/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-postgres/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-postgres/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-powerbi/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-powerbi/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-prometheus/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-prometheus/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pyspark/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-pyspark/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-sigma/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-sigma/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-slack/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-slack/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-sling/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-sling/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake-pandas/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake-pandas/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake-polars/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake-polars/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake-pyspark/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake-pyspark/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-snowflake/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-spark/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-spark/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-ssh/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-ssh/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-tableau/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-tableau/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-twilio/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-twilio/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-wandb/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/integrations/dagster-wandb/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/migration/INDEX.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/migration/INDEX.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/migration/sensors-to-declarative-automation.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert/references/migration/sensors-to-declarative-automation.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster.md",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/dagster.md"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/template/dagster.yaml",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/template/dagster.yaml"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/template/definitions.py",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/template/definitions.py"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/template/escalate.py",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/template/escalate.py"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/template/fake_experiment.py",
+      "target": "skills/dag-it/repos/just-dag-it/skills/dag-it/references/template/fake_experiment.py"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/repos/just-dag-it/tests/test_template.py",
+      "target": "skills/dag-it/repos/just-dag-it/tests/test_template.py"
+    },
+    {
+      "source": "skills/public/engineering/dag-it/tests/run_tests.ts",
+      "target": "skills/dag-it/tests/run_tests.ts"
+    },
+    {
       "source": "skills/public/operations/dashboard/LICENSE.upstream",
       "target": "skills/dashboard/LICENSE.upstream"
     },

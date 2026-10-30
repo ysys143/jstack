@@ -422,6 +422,14 @@
       "aliases": []
     },
     {
+      "owner": "dag-it",
+      "name": "dag-it",
+      "visibility": "public",
+      "category": "engineering",
+      "purpose": "Decide whether repeated, deterministic runs should leave the agent's loop, and move them into a Dagster DAG that calls an agent only for design, additions, analysis, or exceptions.",
+      "aliases": []
+    },
+    {
       "owner": "sdlc",
       "name": "sdlc",
       "visibility": "public",
