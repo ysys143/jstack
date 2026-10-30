@@ -70,6 +70,7 @@ controlled by `../../contracts/skill-catalog.json`, not this source-owner map.
 | Report a jstack malfunction or review jstack failures as issue drafts | `issue-report` |
 | Check the Claude Code or Codex setup (skills, MCP servers, agents, listing budget) before or after installing jstack | `host-audit` |
 | Walk a product's install and onboarding as a new team in a clean environment, or make leak-gated docs screenshots | `journey-qa` |
+| Move a repeated, deterministic sweep, benchmark, or regression out of the agent's loop into a DAG | `dag-it` |
 | Route a situation to the right skill | `help` |
 
 ## Commands are explicit entry points

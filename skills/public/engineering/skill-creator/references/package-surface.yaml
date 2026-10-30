@@ -70,6 +70,8 @@ categories:
     - "skills/diagram/repos/diagram-design/**"
   vendored-journey-qa:
     - "skills/journey-qa/repos/journey-qa/**"
+  vendored-dag-it:
+    - "skills/dag-it/repos/just-dag-it/**"
   scheduler:
     - "skills/dashboard/vitest.config.ts"
 

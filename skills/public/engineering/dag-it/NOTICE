@@ -1,0 +1,51 @@
+# NOTICE — dag-it
+
+## Imported content
+
+`repos/just-dag-it/` is a pinned copy of the upstream project just-dag-it.
+
+| Field | Value |
+|---|---|
+| Upstream | https://github.com/ysys143/just-dag-it |
+| Pinned commit | 1dfc962d3c42564c872a11d750902b701adeb40f |
+| Branch | fix/consumer-boundary-verification-20261022 (two commits ahead of main `c407dfe`; not on the remote when copied on 2026-10-30) |
+| License | MIT (`repos/just-dag-it/LICENSE`, full text below) |
+| Files | 188 |
+| Tree digest (sha256) | c51a7957288ef6b31681b18d44a6391e41123506b98bac12f370324d5b2c0d6b |
+
+The digest covers every file in the copy: the paths in codepoint order, each followed by the sha256 of its content. The owning suite recomputes it, so a changed byte under `repos/just-dag-it/` fails the suite until the copy is replaced by a new pinned one.
+
+No upstream file was modified. Excluded from the copy: `.claude-plugin/` (the upstream marketplace and plugin manifests; inside jstack's package they would describe a second plugin).
+
+## Third-party material inside the copy
+
+`repos/just-dag-it/skills/dag-it/references/dagster-expert/` is the `dagster-expert` skill from https://github.com/dagster-io/skills (`plugins/dagster/skills/dagster-expert/`, commit `ed0248b1b6b70710a8785e3ff4880b44496c0f94`), Copyright 2025 Dagster Labs, Inc., licensed under the Apache License, Version 2.0. Its full text is that folder's `LICENSE`; its `UPSTREAM.md` records the changes just-dag-it made (`SKILL.md` renamed to `INDEX.md`, `LICENSE` and `UPSTREAM.md` added).
+
+## Added by jstack
+
+- `SKILL.md` in this directory: the jstack entry. Its description is a shortened routing line for the host listing budget; the full upstream description stays unchanged in `repos/just-dag-it/skills/dag-it/SKILL.md`.
+- This NOTICE and `tests/`.
+
+## License text
+
+MIT License
+
+Copyright (c) 2026 ysys143
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
