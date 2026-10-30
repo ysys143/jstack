@@ -22,6 +22,7 @@ No upstream file was modified, and nothing under `pstack/skills/statechart/` was
 - TLC is upstream's pin: `tla2tools.jar` 1.7.4 from https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar, sha256 `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`, with Java 11 or later.
 - The upstream tests import `fast-check` 4.5.3. `tests/environment/` locks it; the contract runner installs that lock with `npm ci` only in a disposable snapshot and the owning suite links it into a temporary copy of the tests.
 - The owning suite runs the upstream tests outside quick contracts with `JSTACK_STATECHART_NODE` (or the current Node when it can run TypeScript), `TLA2TOOLS` and `JAVA`, and fails when any of them is missing or any test is skipped. At the pinned commit, all 367 upstream tests passed on 2026-10-30 with Node 22.22.3, OpenJDK 17 and that jar.
+- Upstream's signal tests (`SIGINT`/`SIGTERM while the command writes its files`) race a busy-wait against the command's own writes. On 2026-10-30 they failed 1 time in 8 under CPU load and 0 times in 12 idle, and failed during full contract runs. The owning suite reruns only the top-level upstream tests that failed, once, by exact name, records the rerun in its evidence, and fails when any of them fails again. The upstream files are not changed.
 
 ## Added by jstack
 

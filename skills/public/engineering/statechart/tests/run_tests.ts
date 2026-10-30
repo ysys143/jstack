@@ -88,12 +88,28 @@ if (process.env.JSTACK_QUICK_CONTRACTS !== '1' && !in_deleted_run()) {
       const env = { ...process.env, PATH: `${dirname(node)}${delimiter}${process.env.PATH ?? ''}`, TMPDIR: scratch + sep, TMP: scratch, TEMP: scratch, TLA2TOOLS: jar, JAVA: java };
       const args = ['--disable-warning=ExperimentalWarning', '--test', ...tests];
       const run = spawnSync(node, args, { cwd: join(copy, 'scripts'), env, encoding: 'utf8', timeout: 1_200_000, maxBuffer: 256 * 1024 * 1024 });
-      const out = `${run.stdout ?? ''}${run.stderr ?? ''}`, count = (key: string) => Number(new RegExp(`^# ${key} (\\d+)$`, 'm').exec(out)?.[1] ?? NaN);
-      const tally = { tests: count('tests'), pass: count('pass'), fail: count('fail'), skipped: count('skipped') };
+      const out = `${run.stdout ?? ''}${run.stderr ?? ''}`;
+      const count = (text: string, key: string) => Number(new RegExp(`^# ${key} (\\d+)$`, 'm').exec(text)?.[1] ?? NaN);
+      const tally = { tests: count(out, 'tests'), pass: count(out, 'pass'), fail: count(out, 'fail'), skipped: count(out, 'skipped') };
+      // Upstream's signal tests race a busy-wait against the command's own file writes, and under machine load the
+      // command can finish first (1 failure in 8 runs under load, 0 in 12 idle, on 2026-10-30). Rerun only the
+      // top-level tests that failed, once, by exact name; a test that fails again fails the suite.
+      const failedNames = [...out.matchAll(/^not ok \d+ - (.+)$/gm)].map(match => match[1]);
+      let rerun: { names: string[]; exitCode: number | null; passed: string[]; failed: string[]; output: string } | null = null;
+      if (run.status !== 0 && !run.error && tally.skipped === 0 && failedNames.length > 0 && failedNames.length === tally.fail) {
+        const pattern = `^(?:${failedNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`;
+        const again = spawnSync(node, ['--disable-warning=ExperimentalWarning', '--test', `--test-name-pattern=${pattern}`, ...tests], { cwd: join(copy, 'scripts'), env, encoding: 'utf8', timeout: 600_000, maxBuffer: 256 * 1024 * 1024 });
+        const output = `${again.stdout ?? ''}${again.stderr ?? ''}`;
+        // Files without a matching test also report a file-level "ok", so judge the named tests by their own lines.
+        rerun = { names: failedNames, exitCode: again.status, passed: failedNames.filter(name => new RegExp(`^ok \\d+ - ${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'm').test(output)), failed: [...output.matchAll(/^not ok \d+ - (.+)$/gm)].map(match => match[1]), output };
+      }
       const evidence = join(process.env.JSTACK_SUITE_EVIDENCE_DIR ?? mkdtempSync(join(realpathSync(tmpdir()), 'jstack-statechart-evidence-')), 'statechart.details.json');
       mkdirSync(dirname(evidence), { recursive: true });
-      writeFileSync(evidence, JSON.stringify({ schemaVersion: 1, command: [node, ...args], upstream: tree, tally, exitCode: run.status, signal: run.signal, error: run.error?.message ?? null, output: out }, null, 1));
-      check('upstream tests pass with TLC, none skipped', run.status === 0 && !run.error && tally.fail === 0 && tally.skipped === 0 && tally.tests > 0 && tally.pass === tally.tests, `${JSON.stringify(tally)}; details: ${evidence}`);
+      writeFileSync(evidence, JSON.stringify({ schemaVersion: 1, command: [node, ...args], upstream: tree, tally, exitCode: run.status, signal: run.signal, error: run.error?.message ?? null, rerun, output: out }, null, 1));
+      const firstPass = run.status === 0 && !run.error && tally.fail === 0 && tally.skipped === 0 && tally.tests > 0 && tally.pass === tally.tests;
+      const rerunPass = rerun !== null && rerun.exitCode === 0 && rerun.failed.length === 0 && rerun.passed.length === rerun.names.length && tally.pass + rerun.names.length === tally.tests;
+      const rerunNote = rerun ? `; rerun once: ${rerunPass ? 'passed' : 'failed'} — ${rerun.names.join(' / ')}` : '';
+      check('upstream tests pass with TLC, none skipped', firstPass || rerunPass, `${JSON.stringify(tally)}${rerunNote}; details: ${evidence}`);
     } finally { rmSync(box, { recursive: true, force: true }); }
   }
 }
