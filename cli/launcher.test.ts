@@ -31,9 +31,15 @@ const run = (file: string, args: string[], path: string, env: Record<string, str
   spawnSync(file, args, { encoding: 'utf8', env: { PATH: path, ...env } });
 // A stand-in node that prints the CLI path it was given: these cases test where the launcher
 // looks, not node itself, and a real node start would dominate their time.
-// It is a link to the system echo, since every new executable file costs a first-run check on macOS.
+// On macOS it is a link to the system echo, since every new executable file costs a first-run
+// check there. Elsewhere it is a script: a multicall coreutils echo refuses to run as `node`.
 const standIn = join(f.box, 'stand-in node');
-if (!posixOnly.skip) { mkdirSync(standIn); symlinkSync('/bin/echo', join(standIn, 'node')); }
+if (!posixOnly.skip) {
+  mkdirSync(standIn);
+  const node = join(standIn, 'node');
+  if (process.platform === 'darwin') symlinkSync('/bin/echo', node);
+  else { writeFileSync(node, '#!/bin/sh\necho "$@"\n'); chmodSync(node, 0o755); }
+}
 const realMain = () => join(realpathSync(f.root), 'payload', 'cli', 'main.js');
 
 test('launcher passes arguments unchanged and preserves the exit code', posixOnly, () => {
