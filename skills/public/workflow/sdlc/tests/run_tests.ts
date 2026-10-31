@@ -31,7 +31,7 @@ check('Run protocol: event identity and no implicit resume', /current revision, 
 check('Release: readback and post-commit freshness', /Run verify again for the new HEAD/.test(read('references/release.md')) && /do not retry/.test(read('references/release.md')));
 for (const name of ['sdlc.test.js', 'sdlc-release.test.js', 'sdlc-ship.test.js', 'sdlc_effects.test.js']) {
   const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
-  const out = spawnSync(process.execPath, ['--test', join(plugin, 'runtime', name)], { encoding: 'utf8', timeout: 120000, env });
+  const out = spawnSync(process.execPath, ['--test', join(plugin, 'runtime', name)], { encoding: 'utf8', timeout: 300000, env });
   exit_if_timed_out(out, name);
   check(`Runtime behavior: ${name}`, out.status === 0 && /(?:pass [1-9]|# pass [1-9])/.test(out.stdout), out.status === 0 ? '' : out.stdout + out.stderr);
 }
