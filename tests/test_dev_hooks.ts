@@ -9,6 +9,7 @@ import {devNull} from 'node:os';
 import {runProcess} from '../runtime/os.js';
 import {DEPRECATED_MODELS,checkModelStatus} from '../scripts/models_database.js';
 import {truth,length,contains,repr,at,slice,strip,split,lines,search,match,findall,group,sorted,temporaryDirectory,removeTree} from '../skills/_suite_lib_native.js';
+import {exit_if_timed_out} from '../skills/_suite_lib.js';
 const ROOT=dirname(dirname(fileURLToPath(import.meta.url))),HOOKS=join(ROOT,'hooks'),SCRIPTS=join(ROOT,'scripts');
 const EMOJI='[\\u{1f300}-\\u{1faff}\\u2600-\\u27bf\\u2b00-\\u2bff\\ufe0f]';
 function isfile(path:string){try{return statSync(path).isFile();}catch{return false;}}
@@ -16,7 +17,7 @@ function pyStr(value:any):string{return typeof value==='string'?value:repr(value
 function toSet(value:any=[]):Set<any>{return new Set(value&&typeof value[Symbol.iterator]==='function'?value:Object.keys(value));}
 function globFiles(directory:string,pattern:string){return readdirSync(directory).filter(name=>name.endsWith(pattern.slice(1))&&!name.endsWith('.test.js')).map(name=>join(directory,name));}
 function env_with(extra:NodeJS.ProcessEnv={}):NodeJS.ProcessEnv{const inherited=Object.fromEntries(Object.entries(process.env).filter(([name])=>!name.startsWith('GIT_')));return {...inherited,JSTACK_SESSION_AUTOCOMMIT:'',GIT_AUTHOR_NAME:'probe',GIT_AUTHOR_EMAIL:'probe@example.invalid',GIT_COMMITTER_NAME:'probe',GIT_COMMITTER_EMAIL:'probe@example.invalid',GIT_CONFIG_GLOBAL:devNull,GIT_CONFIG_SYSTEM:devNull,...extra};}
-function subprocessRun(argv:string[],options:any={}){const result=runProcess(argv[0],argv.slice(1),{cwd:options.cwd,env:options.env??env_with(),input:options.input,timeout:120000});return {returncode:result.status,stdout:result.stdout,stderr:result.stderr};}
+function subprocessRun(argv:string[],options:any={}){const result=runProcess(argv[0],argv.slice(1),{cwd:options.cwd,env:options.env??env_with(),input:options.input,timeout:120000});exit_if_timed_out(result,argv.join(' '));return {returncode:result.status,stdout:result.stdout,stderr:result.stderr};}
 function git(root:string,...args:any[]){const options=typeof args.at(-1)==='object'?args.pop():{};return subprocessRun(['git',...args],{cwd:root,env:options.env??env_with()});}
 function temp_repo(){const root=temporaryDirectory();assert.equal(git(root,'init','-q','-b','main').returncode,0);writeFileSync(join(root,'seed.txt'),'seed\n');assert.equal(git(root,'add','-A').returncode,0);const committed=git(root,'commit','-q','-m','chore: seed');assert.equal(committed.returncode,0,committed.stderr);return root;}
 function commit_count(root:string){return Number(git(root,'rev-list','--count','HEAD').stdout.trim()||0);}

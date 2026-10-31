@@ -10,6 +10,7 @@ import {runProcess} from '../runtime/os.js';
 import {EXPECTED_ORDER} from '../scripts/check_hook_order.js';
 import {POLICIES} from '../hosts/claude/hooks/hook-policies.js';
 import {truth,length,contains,repr,at,slice,strip,split,lines,search,match,findall,group,sorted,temporaryDirectory,removeTree} from '../skills/_suite_lib_native.js';
+import {exit_if_timed_out} from '../skills/_suite_lib.js';
 const ROOT=dirname(dirname(fileURLToPath(import.meta.url))),HOOKS=join(ROOT,'hooks'),HOOK=join(HOOKS,'block_emoji.js'),DISPATCH=join(HOOKS,'dispatch.js'),GUARD=join(ROOT,'skills/hwpx/hooks/hwpx_guard.js'),CONTRACT=join(HOOKS,'CONTRACT.md'),HOOKS_JSON=join(HOOKS,'hooks.json'),CHECK_LOAD=join(ROOT,'scripts/check_hook_order.js');
 const CHAIN=['dispatch.js'],EMOJI='\u2705',HEAD_NS='http://www.hancom.co.kr/hwpml/2011/head',CLEAN_HEADER=`<hh:head xmlns:hh="${HEAD_NS}"/>`,BORDERED_HEADER=`<hh:head xmlns:hh="${HEAD_NS}"><hh:borderFill id="2"><hh:leftBorder type="SOLID"/></hh:borderFill><hh:charPr borderFillIDRef="2"/></hh:head>`;
 function isfile(path:string){try{return statSync(path).isFile();}catch{return false;}}
@@ -20,9 +21,9 @@ function hooks_document():any{return JSON.parse(readFileSync(HOOKS_JSON,'utf8'))
 function hookName(command:string):string{return command.match(/\/([^/"']+)["'](?:\s|$)/)?.[1]??command.split('/').at(-1)?.replace(/["']/g,'')??'';}
 function registeredHookNames():Set<string>{const names=new Set<string>();for(const groups of Object.values(hooks_document().hooks) as any[])for(const group of groups)for(const hook of group.hooks??[])names.add(hookName(hook.command));return names;}
 function fired_order():any{return Object.fromEntries(Object.entries(hooks_document().hooks).map(([event,entries]:[string,any])=>[event,entries.flatMap((entry:any)=>entry.hooks.map((hook:any)=>hookName(hook.command)))]));}
-function run(payload:any,script=HOOK,options:{raw?:string}={}){const result=runProcess(process.execPath,[script],{input:options.raw??JSON.stringify(payload),timeout:120000});return {returncode:result.status,stdout:result.stdout,stderr:result.stderr};}
+function run(payload:any,script=HOOK,options:{raw?:string}={}){const result=runProcess(process.execPath,[script],{input:options.raw??JSON.stringify(payload),timeout:120000});exit_if_timed_out(result,script);return {returncode:result.status,stdout:result.stdout,stderr:result.stderr};}
 function decision(result:any){return result.stdout.trim()?(JSON.parse(result.stdout).decision??null):null;}
-function blocked(payload:any){const result=runProcess(process.execPath,[DISPATCH,'PreToolUse'],{input:JSON.stringify(payload),timeout:120000});return result.status===0&&!!result.stdout.trim()&&JSON.parse(result.stdout).hookSpecificOutput?.permissionDecision==='deny';}
+function blocked(payload:any){const result=runProcess(process.execPath,[DISPATCH,'PreToolUse'],{input:JSON.stringify(payload),timeout:120000});exit_if_timed_out(result,'dispatch');return result.status===0&&!!result.stdout.trim()&&JSON.parse(result.stdout).hookSpecificOutput?.permissionDecision==='deny';}
 function guard_says_block(payload:any){return decision(run(payload,GUARD))==='block';}
 function write_hwpx(path:string,options:any={}){const {mimetype_first=true,stored=true,mimetype='application/hwp+zip',header=CLEAN_HEADER,section=true,preview=null}=options;const entries:any={};const mime=()=>{entries.mimetype=[Buffer.from(mimetype),{level:stored?0:6}];};if(mimetype_first)mime();if(header!==null)entries['Contents/header.xml']=Buffer.from(header);if(section)entries['Contents/section0.xml']=Buffer.from('<sec/>');if(preview!==null)entries['Preview/PrvImage.png']=preview;if(!mimetype_first)mime();writeFileSync(path,zipSync(entries));return path;}
 class Case{

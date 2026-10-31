@@ -35,6 +35,15 @@ export function _reach_collect(stdout:string):void{if(!process.env.JSTACK_REACH_
 export function reach_dump(liveNames:Iterable<string>):void{const out=process.env.JSTACK_REACH_OUT;if(!out)return;const live=sorted(liveNames),reached=live.filter(name=>[..._REACH_RED].some(line=>line===name||line.startsWith(name+' — ')));try{mkdirSync(dirname(out),{recursive:true});writeFileSync(out,JSON.stringify({live,reached}));}catch{}}
 export function skipped_names():string[]{return [..._SKIPPED_NAMES];}
 export function deletion_skipped():boolean{return process.env.JSTACK_SKIP_DELETION==='1';}
+/** A deletion copy reruns a whole suite; without a limit a slow machine shows up only as a silent job timeout. */
+const DELETION_RUN_TIMEOUT_MS=600000;
+/** Not 0, 1 or 2: a suite that ends this way measured nothing, so floors must not be compared. */
+export const UNMEASURED_EXIT=3;
+/** A step stopped by its time limit says how busy the machine was, not whether a contract holds. */
+export function exit_if_timed_out(result:{error?:Error},step:string):void{
+    if((result.error as NodeJS.ErrnoException|undefined)?.code!=='ETIMEDOUT')return;
+    process.stderr.write(`[unmeasured] ${step} hit its time limit; this suite measured nothing\n`);process.exit(UNMEASURED_EXIT);
+}
 export function _skip_named(...names:string[]):void{for(const name of names){_SKIPPED_NAMES.push(name);console.log(`[SKIP] ${name} — deletion regression skipped (measured in the control)`);}}
 export interface DeletionOptions {extra_strip?:string[];only?:string|null;runner?:string[]|null;extra_skip?:string[];}
 export interface DeletionResult {fails:number;ran:number;rc:number;crashed:boolean;stderr:string;stdout:string;}
@@ -189,7 +198,8 @@ function deletionExitCleanup():void{
 function installDeletionExitCleanup():void{if(!_DELETION_EXIT_HOOK_INSTALLED){_DELETION_EXIT_HOOK_INSTALLED=true;process.once('exit',deletionExitCleanup);}}
 function executionEnvironment():NodeJS.ProcessEnv{return{...process.env,[RECURSION_GUARD]:'1',PYTHONDONTWRITEBYTECODE:'1'};}
 function rawSpawn(command:string[],cwd:string,env:NodeJS.ProcessEnv):RawDeletionResult{
-    const result=spawnSync(command[0],command.slice(1),{cwd,env,encoding:'utf8',windowsHide:true,maxBuffer:64*1024*1024});const stdout=result.stdout??'',stderr=result.stderr??result.error?.message??'';
+    const limit=Number(process.env.JSTACK_DELETION_TIMEOUT_MS)||DELETION_RUN_TIMEOUT_MS;
+    const result=spawnSync(command[0],command.slice(1),{cwd,env,encoding:'utf8',windowsHide:true,maxBuffer:64*1024*1024,timeout:limit,killSignal:'SIGKILL'});const stdout=result.stdout??'',stderr=result.signal?`deletion run stopped by ${result.signal} after the ${limit} ms limit; nothing was measured\n`:result.stderr??result.error?.message??'';
     return{stdout,stderr,rc:result.status??-1,spawnError:!!result.error,signal:result.signal!==null,crashed:!!result.error||/Traceback \(most recent call last\)|\n\s+at .+\(.+:\d+:\d+\)|\n(?:Error|TypeError|ReferenceError|SyntaxError):/.test(stderr)};
 }
 function ordinaryDeletionRun(suiteFile:string,skillRoot:string,options:DeletionOptions,metrics:DeletionTiming):DeletionResult{

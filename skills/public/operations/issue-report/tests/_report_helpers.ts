@@ -9,6 +9,7 @@ import { atomicWrite } from '../../../../../runtime/os.js';
 import { main } from '../scripts/main.js';
 import { roots } from '../scripts/state.js';
 import { processTemporaryDirectory } from '../../../../../runtime/fixtures/process_tmp.js';
+import { exit_if_timed_out } from '../../../../_suite_lib.js';
 
 const MAIN = fileURLToPath(new URL('../scripts/main.js', import.meta.url));
 export const fixture = () => realpathSync(mkdtempSync(join(realpathSync(tmpdir()), 'jstack-report-')));
@@ -76,6 +77,7 @@ function isolatedEnv(home: string, path: string): NodeJS.ProcessEnv {
 export function spawnCli(home: string, args: string[], path = join(home, 'empty-bin')) {
   mkdirSync(path, { recursive: true });
   const result = spawnSync(process.execPath, [MAIN, ...args, '--home', home], { encoding: 'utf8', env: isolatedEnv(home, path), timeout: 120000 });
+  exit_if_timed_out(result, args.join(' '));
   return { code: result.status, out: result.stdout, err: result.stderr };
 }
 /** main in this process with the environment spawnCli gives a child, so a behavior test pays no node start-up. */
