@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "generated_by": "hooks/validate_pr_label.js",
+  "fingerprint": "2b9f44ed98eea28d7172e28c1cf41577",
+  "observed_prs": 3,
+  "declared_sources": [
+    "AGENTS.md"
+  ],
+  "phantom_labels": [],
+  "confidence": 1,
+  "enforced": true,
+  "rules": [
+    {
+      "group": "@",
+      "requirement": "at_least_one",
+      "allowed": [
+        "@agent",
+        "@docs",
+        "@infra"
+      ],
+      "observed_rate": 1,
+      "declared": false
+    },
+    {
+      "group": "_plain",
+      "requirement": "at_least_one",
+      "allowed": [
+        "accessibility",
+        "bug",
+        "dependencies",
+        "development",
+        "documentation",
+        "duplicate",
+        "enhancement",
+        "feature",
+        "from-report",
+        "good first issue",
+        "help wanted",
+        "ignore-for-release",
+        "invalid",
+        "performance",
+        "question",
+        "refactoring",
+        "remove",
+        "security",
+        "testing",
+        "upstream-patrol",
+        "wontfix"
+      ],
+      "observed_rate": 1,
+      "declared": false
+    }
+  ]
+}
