@@ -394,7 +394,7 @@
         "spdx_id": "MIT",
         "class": "MIT"
       },
-      "lastReviewed": "2026-10-22T19:17:51.823Z",
+      "lastReviewed": "2026-11-01T00:00:00.000Z",
       "state": "unreviewed",
       "reviews": [
         {
@@ -404,12 +404,20 @@
           ],
           "verdict": "absorb",
           "note": "Index corrected to the vendored commit: all 406 files under repos/journey-qa equal 8004bae (5 differ from the previously recorded ec4c16d, which is one commit older), matching the pin and tree digest in skills/public/workflow/journey-qa/NOTICE."
+        },
+        {
+          "date": "2026-11-01T00:00:00.000Z",
+          "scope": [
+            "."
+          ],
+          "verdict": "absorb",
+          "note": "Updated the snapshot from 8004bae to 6123dc8: persona perspective with emulation, per-step failed-request evidence, and independent persona sessions merged by reach. 25 files changed and 28 added; no local edits to re-apply."
         }
       ],
       "imports": [
         {
           "mode": "snapshot",
-          "pin": "8004bae076bbd9be3f2d7d88be14d7cc6f95d92d",
+          "pin": "6123dc863a551786792faec88b0bfe4dc998781f",
           "upstreamPaths": [
             "."
           ],
