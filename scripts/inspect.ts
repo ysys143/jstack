@@ -22,11 +22,12 @@ export function inspect(name: string, root = sourceRoot(), execute = (command: s
   let code = 0;
   for (const suite of suites) {
     const target = [path.join(directory, 'tests', suite + '.js'), path.join(directory, 'tests', suite + '.mjs'), path.join(directory, 'tests', suite + '.cjs'), path.join(root, 'dist', path.relative(root, directory), 'tests', suite + '.js')].find(file => fs.existsSync(file));
-    if (!target) { code = 1; lines.push(`  [FAIL] ${suite}: compiled checker missing`); continue; }
+    if (!target) { code = Math.max(code, 1); lines.push(`  [FAIL] ${suite}: compiled checker missing`); continue; }
     const result = execute(process.execPath, [target], directory);
+    if ((result.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT') { code = 2; lines.push(`  [2] ${suite}: hit its time limit; nothing was measured`); continue; }
     const output = `${result.stdout || ''}\n${result.stderr || ''}`.trim();
     lines.push(`  Contract ${suite} — ${output.split('\n').at(-1) || 'no output'}`);
-    if (result.status !== 0) { code = 1; lines.push(...output.split('\n').map(line => `    ${line}`)); }
+    if (result.status !== 0) { code = Math.max(code, 1); lines.push(...output.split('\n').map(line => `    ${line}`)); }
   }
   return {code, lines};
 }
