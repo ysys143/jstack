@@ -19,8 +19,8 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js" audit # selected suite only
 | 1 | One or more suites failed (failed checks are included) |
 | 2 | **No suite was available to run** |
 
-Code 2 is essential. Treating zero passing checks as 0 would report “verification
-success” even after the entire tree disappeared. A missing check did not pass.
+Code 2 is essential: without it the command would report “verification success”
+even after the entire tree disappeared. See the missing-check rule in `skills/verify/SKILL.md`.
 
 This command checks the plugin's own contract suites. Its target differs from
 `/validate`, which checks the format and content of user-created deliverables.

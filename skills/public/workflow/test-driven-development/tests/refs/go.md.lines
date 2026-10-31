@@ -1,4 +1,4 @@
-# blob:c9a1768169a6c4c30435d561ebc3215c5e411f75
+# blob:86ebfa1e4705729de0dfb4a81d4a4711579ff88c
 # TDD Guide: Go
 ## Framework
 - **Internal `testing` package** — No separate installation required, idiomatic Go patterns
@@ -173,7 +173,7 @@ go test -count=1 -cover ./... # ignore cache
 ```
 **Go Blog (Rob Pike) Statement:** Coverage is the starting point for finding untested code. The number itself is not a quality indicator. There is no official target percentage — focus on error paths and boundary condition coverage.
 ## diff coverage — gate only for new code
-If you set the absolute coverage % as a CI gate, **legacy debt becomes hostage**. A single PR cannot create 80% in the repository 43%, so the gate is turned off, and an off gate is no gate. Conversely, this change **newly added line** must already be covered by a test that failed in Phase 3. Therefore, the gate is based on the **diff**, not the whole thing. It does not conflict with Rob Pike's view ("the number itself is not a quality indicator")—because what is measured is **whether this change came without tests**, not the repository's report card.
+Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate), not an absolute CI threshold. It does not conflict with Rob Pike's view ("the number itself is not a quality indicator").
 The baseline is the merge point. If you set it to `origin/main..HEAD`, it calculates your diff up to the line of another branch, as much as it is behind.
 Requires Node.js 20+.
 ```bash

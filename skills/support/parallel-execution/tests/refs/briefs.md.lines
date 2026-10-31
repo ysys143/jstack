@@ -1,4 +1,4 @@
-# blob:901bbd6cf9021de2c8391a1f4217571fcee8b60c
+# blob:1dd67a1dd787c2c44510a42b48e89792c7dd3e59
 # Briefs — the fields, and what each one prevents
 ## The fields
 | Field | Prevents |
@@ -37,7 +37,7 @@ backed by the command or artefact it names. A worker that can prove a defect
 reports `ISSUES` and lists every defect it can prove, not only the first; the
 first one found is rarely the only one, and a second pass costs more than a
 longer first report. `BLOCKED` says what stopped the work and what would unblock
-it. A report with no verdict is a gap, not a pass.
+it. A report with no verdict falls under [the missing-check rule](../../verify/SKILL.md#a-missing-check-is-not-a-pass).
 ## Context, authority, and concurrency
 State whether the agent starts fresh or inherits a fork. A fresh brief includes
 all task-specific tool restrictions, read/write scope, prior decisions, completion

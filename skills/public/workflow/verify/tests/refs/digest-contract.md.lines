@@ -1,4 +1,4 @@
-# blob:0ca6a21768cf85ca08525d4c2a3b415f86e8fcee
+# blob:55a68270cca782265775d7a9c51815c773fea0ab
 # Digest contract
 `package_identity.js` computes identity for one package directory. The package
 is the unit, so an installed copy is checked from its own bytes and does not
@@ -108,7 +108,7 @@ also never authenticates its producer; current bytes must be read again.
 | Receipt passes after a package byte changed | Receipt was not recomputed against current bytes |
 | Installed package differs from native source | Non-deterministic path order or an unclassified file |
 | A package follows a user-owned file | Symlink or path escape was accepted |
-A check that did not run is not a passing check. Identity proves byte
+A check that did not run falls under [the missing-check rule](../SKILL.md#a-missing-check-is-not-a-pass). Identity proves byte
 correspondence within the declared scope; it does not prove runtime support,
 review quality, or provenance.
 ## Upstream reference

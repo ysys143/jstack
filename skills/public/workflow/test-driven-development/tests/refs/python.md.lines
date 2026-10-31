@@ -1,4 +1,4 @@
-# blob:15e497ee1067a060bb000f14f40247a882fa838b
+# blob:352bbc4b1dc4eb08657f89c48b8b54a0fcd6f9de
 # TDD Guide: Python
 ## Framework Selection
 **Use pytest** (JetBrains 2023 survey: used by more than 52% of Python developers; ranked first).
@@ -245,11 +245,7 @@ The second problem is scope. Only one of this skill's 7 language guides used `--
 The original intent itself is not wrong. The diminishing marginal utility that 98%→100% improvement pointed to is still within the description of the 3 range. What was discarded is **the leap that changed that observation into a single number that makes CI red**.
 Replace the discarded absolute threshold with the following diff-coverage gate.
 ## diff coverage — gate only for new code
-An absolute percentage gate **holds legacy debt hostage**. One PR cannot move a
-43% repository to 80%, so the gate gets disabled, and a disabled gate is no gate.
-Conversely, tests that visibly failed in Phase 3 should already cover every new
-line in the change. Apply the gate to the **diff**, not the repository. This
-preserves enforcement without holding existing debt hostage.
+Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate), not an absolute percentage.
 The baseline is the merge base. Using `origin/main..HEAD` instead counts other
 people's lines when the branch is behind main.
 Requires Node.js 20+.

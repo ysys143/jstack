@@ -214,7 +214,7 @@ go test -count=1 -cover ./...           # ignore cache
 
 ## diff coverage — gate only for new code
 
-If you set the absolute coverage % as a CI gate, **legacy debt becomes hostage**. A single PR cannot create 80% in the repository 43%, so the gate is turned off, and an off gate is no gate. Conversely, this change **newly added line** must already be covered by a test that failed in Phase 3. Therefore, the gate is based on the **diff**, not the whole thing. It does not conflict with Rob Pike's view ("the number itself is not a quality indicator")—because what is measured is **whether this change came without tests**, not the repository's report card.
+Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate), not an absolute CI threshold. It does not conflict with Rob Pike's view ("the number itself is not a quality indicator").
 
 The baseline is the merge point. If you set it to `origin/main..HEAD`, it calculates your diff up to the line of another branch, as much as it is behind.
 

@@ -130,7 +130,7 @@ for. A worker that has gone quiet is judged by its side effects (files written,
 commits pushed, output produced), not by its last status message, which says
 what it meant to do.
 
-A slice with no result is a gap, not a pass. When a report lacks the evidence
+A slice with no result falls under [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass). When a report lacks the evidence
 its brief asked for, respawn that worker once. A second miss is recorded in the
 final report as a gap. Never continue with N-1 results when the review was
 required: a missing required review blocks the claim until it has run.

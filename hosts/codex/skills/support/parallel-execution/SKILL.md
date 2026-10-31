@@ -119,7 +119,7 @@ fresh verification win.
 
 Every worker you start ends as done, replaced, or absorbed into another
 worker's slice. Judge a quiet worker by its side effects (files, commits,
-output), not its status text. A slice with no result is a gap, not a pass: when
+output), not its status text. A slice with no result falls under [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass): when
 a report lacks the evidence its brief asked for, respawn that worker once, and
 record a second miss as a gap. Never continue with N-1 results when the review
 was required. A worker that writes gets its own worktree or branch.

@@ -12,7 +12,7 @@ This skill is a pinned copy of an upstream project kept under `repos/journey-qa/
 ## Start
 
 1. Read `repos/journey-qa/SKILL.md`: the modes (explore, codify, run), the phase 0 checklist, the gate commands and the human gates. Every relative path it names (`docs/`, `gates/`, `runners/`, `scenarios/`, `fixtures/`, `capture/`, `templates/`, `adapters/`) is relative to `repos/journey-qa/` in this skill directory. Pass absolute paths to its tools.
-2. Check the tools before promising a run: Python 3.10+, `uv`, `tesseract`, `rsvg-convert`, the "DejaVu Sans Mono" font and Node.js 18+. Run mode also needs `ego-browser` or Playwright (`repos/journey-qa/docs/engines.md`), and terminal steps need `tmux` 3.2 or newer (`repos/journey-qa/docs/terminal.md`). Report what is missing instead of skipping the gates that need it; a gate that could not run is not a pass.
+2. Check the tools before promising a run: Python 3.10+, `uv`, `tesseract`, `rsvg-convert`, the "DejaVu Sans Mono" font and Node.js 18+. Run mode also needs `ego-browser` or Playwright (`repos/journey-qa/docs/engines.md`), and terminal steps need `tmux` 3.2 or newer (`repos/journey-qa/docs/terminal.md`). Report what is missing instead of skipping the gates that need it; [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass) applies to a gate.
 
 ## Where things live
 

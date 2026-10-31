@@ -243,7 +243,7 @@ The overall average including DTO inflates coverage — apply separate rules to 
 
 ## diff coverage — gate only for new code
 
-The BUNDLE rule (INSTRUCTION·BRANCH 0.70) is the **floor of the entire repository**, not the gate for this change. They answer different questions—the floor is "what level this codebase is at," and the gate is "whether this change came without testing." Combining them with a single threshold makes the legacy a hostage. Since one PR in module 0.43 cannot create 0.70, the team can turn off the rule or increase `<excludes>`, and at that moment, the gate disappears.
+The BUNDLE rule (INSTRUCTION·BRANCH 0.70) is the **floor of the entire repository**, not the gate for this change. They answer different questions—the floor is "what level this codebase is at," and the gate is "whether this change came without testing." Do not combine them: a module at 0.43 cannot reach 0.70 in one PR, so the team turns off the rule or grows `<excludes>`. Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate) for this change.
 
 So, leave the floor as is, and handle **diff coverage** separately. The JaCoCo XML report is per line (`<line nr="..." mi="..." ci="...">`) and becomes the input for the diff gate.
 

@@ -1,4 +1,4 @@
-# blob:47e887a1c471023dde614e78f683dda8e9c5a992
+# blob:23ca88ebdd3964325c8401c4b5af55387db82ff7
 # TDD Guide: TypeScript
 ## Framework Selection
 | Project | Recommendation | Reason |
@@ -121,8 +121,7 @@ Vitest/SWC do not perform type checking $\rightarrow$ tests pass even with type 
 "test:ci": "npm run type-check && vitest run --coverage"
 ```
 ## diff coverage — gate only for new code
-`thresholds` is the **floor of the entire repository**, and the floor holds the legacy hostage.
-Since one PR in the repository currently 42% cannot create 80%, the team will reduce the numbers, and the lowered numbers will not go back up. The area that requires a gate is **the line newly added by this change**.
+`thresholds` is the **floor of the entire repository**, not the gate for this change. Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate).
 As with `tsc --noEmit`, run it as a **separate step** in CI — creating the coverage report and judging by that report are different things.
 Requires Node.js 20+.
 ```bash

@@ -311,11 +311,7 @@ Replace the discarded absolute threshold with the following diff-coverage gate.
 
 ## diff coverage — gate only for new code
 
-An absolute percentage gate **holds legacy debt hostage**. One PR cannot move a
-43% repository to 80%, so the gate gets disabled, and a disabled gate is no gate.
-Conversely, tests that visibly failed in Phase 3 should already cover every new
-line in the change. Apply the gate to the **diff**, not the repository. This
-preserves enforcement without holding existing debt hostage.
+Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate), not an absolute percentage.
 
 The baseline is the merge base. Using `origin/main..HEAD` instead counts other
 people's lines when the branch is behind main.

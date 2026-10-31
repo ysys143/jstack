@@ -1,4 +1,4 @@
-# blob:3544aafe0a6d3c672485065895ec8e590ea014d9
+# blob:52e9d2655cf6797bc05984d2438dc01a14b7707b
 # Team — split what can be checked separately
 ## When parallelism is the right shape
 Parallel work pays when the pieces are **independent to check**, not merely
@@ -95,7 +95,7 @@ worker's slice. Do not report the task finished while one is still unaccounted
 for. A worker that has gone quiet is judged by its side effects (files written,
 commits pushed, output produced), not by its last status message, which says
 what it meant to do.
-A slice with no result is a gap, not a pass. When a report lacks the evidence
+A slice with no result falls under [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass). When a report lacks the evidence
 its brief asked for, respawn that worker once. A second miss is recorded in the
 final report as a gap. Never continue with N-1 results when the review was
 required: a missing required review blocks the claim until it has run.

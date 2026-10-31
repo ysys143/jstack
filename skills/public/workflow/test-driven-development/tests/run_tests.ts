@@ -18,8 +18,8 @@ function polarity(label:string,text:string,present:string[],forbidden:string[]):
 function split_fence(text:string):[string[],string[]]{let inside=false;const fenced:string[]=[],prose:string[]=[];for(const ln of lines(text)){if(ln.trimStart().startsWith('```')){inside=!inside;continue;}(inside?fenced:prose).push(ln);}return [fenced,prose];}
 function walk(root:string):[string,string[],string[]][]{const entries=readdirSync(root,{withFileTypes:true}),dirs=entries.filter(e=>e.isDirectory()).map(e=>e.name),files=entries.filter(e=>!e.isDirectory()).map(e=>e.name);return [[root,dirs,files],...dirs.flatMap(name=>walk(join(root,name)))];}
 const SKILL_FLOOR:any=4413;
-const [C_FLOOR, GO_FLOOR, JAVA_FLOOR, JS_FLOOR]:any=[7148, 7520, 8854, 6726];
-const [PY_FLOOR, RUST_FLOOR, TS_FLOOR, ANTI_FLOOR]:any=[9845, 7070, 7217, 7183];
+const [C_FLOOR, GO_FLOOR, JAVA_FLOOR, JS_FLOOR]:any=[7133, 7249, 8844, 6568];
+const [PY_FLOOR, RUST_FLOOR, TS_FLOOR, ANTI_FLOOR]:any=[9638, 7016, 7091, 7183];
 const PER_FILE:any={"SKILL.md": 47, "langs/c.md": 7, "langs/go.md": 6, "langs/java.md": 6, "langs/javascript.md": 6, "langs/python.md": 8, "langs/rust.md": 6, "langs/typescript.md": 6, "references/antipatterns.md": 10, "references/test-budget.md": 3, "references/test-portfolio.md": 3, "NOTICE": 1};
 const BODY_MIN:any=47;
 const GATE_MIN:any=29;
@@ -73,14 +73,14 @@ check("Gate: cites a mechanism for checking both approvals", (truth((contains(sk
 check("Gate: drafting and scratch probes proceed and are reported; building waits for approval", (contains(skill, "**What waits and what does not.**") && contains(skill, "local and reversible") && contains(skill, "say in your\nreply what you drafted or ran") && contains(skill, "ask first") && contains(skill, "Everything from Phase 3 on is built")));
 check("Bug fix: a cheap local test fails before the fix, otherwise the closest executable check with the reason", (contains(skill, "## Fixing a bug") && contains(skill, "watch it fail for the reason in the report") && contains(skill, "**No new test beats a bad one:**") && contains(skill, "say why there is no failing test") && contains(skill, "failing-before")));
 check("uv: no language guide or SKILL.md tells the reader to run pip or pipx", (!sorted(on_disk).some((f:string)=>/\bpipx?\s+install\b|\bpython3?\s+-m\s+pip\b/.test(read(join(LANGS,f)))) && !/\bpipx?\s+install\b/.test(skill)));
-check("Gate: cites diff coverage instead of an absolute threshold", (truth((contains(skill, "test_gates.js diff-coverage"))) && truth((contains(skill, "take legacy debt hostage"))) && truth((contains(skill, "lines this change added")))));
+check("Gate: cites diff coverage instead of an absolute threshold", (truth((contains(skill, "test_gates.js diff-coverage"))) && truth((contains(skill, "not an absolute threshold"))) && truth((contains(skill, "lines this change added"))) && truth((contains(skill, "../verify/SKILL.md#the-diff-coverage-gate")))));
 polarity("Polarity: prohibition on proceeding without approval has not reversed", skill, ["**Do not proceed without the user's approval.**", "**Scenario approval is a human step.** It is never automatic"], ["may proceed without the user", "Proceed without", "approval is optional", "approval is automatic", "proceed without waiting", "It is automatic", "approval when the scenarios are obvious"]);
 (n_all=count(skill, "proceed without the user's approval"));
 (n_neg=count(skill, "Do not proceed without the user's approval"));
 check("Polarity: every phrase about proceeding without approval occurs under negation", (truth((n_all === n_neg)) && truth((n_neg >= 1))), ("total " + repr(n_all) + " · negated " + repr(n_neg)));
 polarity("Polarity: requirement to observe red has not reversed", skill, ["**watch it fail**", "**A test whose failure you never saw is not a test.**"], ["watch it pass", "is still a test", "you never saw is a test", "Skipping the red step is acceptable", "seeing red is optional"]);
 check("Polarity: every occurrence of watch it is watch it fail", (count(skill, "watch it") === count(skill, "watch it fail")), ("total " + repr(count(skill, "watch it")) + " / fail " + repr(count(skill, "watch it fail"))));
-polarity("Polarity: diff-gate reference has not reversed into absolute-threshold advocacy", skill, ["Absolute coverage thresholds take legacy debt hostage", "**lines this change added** instead"], ["Absolute coverage thresholds are the", "Gate the whole repository", "absolute threshold instead", "Absolute coverage thresholds do not"]);
+polarity("Polarity: diff-gate reference has not reversed into absolute-threshold advocacy", skill, ["not an absolute threshold", "Gate the **lines this change added**"], ["Absolute coverage thresholds are the", "Gate the whole repository", "absolute threshold instead", "Absolute coverage thresholds do not"]);
 for (const [needle, why] of [["Batching tests afterwards", "batching tests afterwards"], ["Several scenarios in one test", "multiple scenarios in one test"], ["Mock overuse", "mock overuse"], ["Skipping the red step", "skipping red"]]) {
 check(("Failure example: documents " + repr(why)), (contains(skill, needle)));
 }

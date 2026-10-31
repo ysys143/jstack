@@ -15,7 +15,7 @@ const contracts: Record<string, [string, RegExp][]> = {
   'SKILL.md': [
     ['sends the reader to the pinned upstream procedure', /Read `repos\/just-dag-it\/skills\/dag-it\/SKILL\.md`/],
     ['upstream paths are relative to the pinned copy', /relative to `repos\/just-dag-it\/skills\/dag-it\/` in this skill directory/],
-    ['a check that could not run is not a pass', /a check that could not run is not a pass/],
+    ['a check that could not run follows the verify rule', /skipping a verification step; \[the missing-check rule\]/],
     ['a DAG is not the default rung', /say so and stop; a DAG is not the default/],
     ['a project DAG never lives under the skill directory', /Never build a project's DAG under this skill directory; a plugin update replaces it/],
     ['the pinned copy is not edited here', /Do not edit `repos\/just-dag-it\/`\. A fix belongs upstream/],

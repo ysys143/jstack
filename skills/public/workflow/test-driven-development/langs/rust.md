@@ -225,7 +225,7 @@ cargo llvm-cov --lcov --output-path lcov.info
 
 ## diff coverage — gate only for new code
 
-Rust does not assume an absolute coverage threshold. That is right, but without any gates, there is no machine to catch "code entered without testing." Absolute % holds legacy hostage, so (43%) crates cannot make 80% with a single PR — the gate is not on the whole thing but on the **diff** — we only look at the lines added in this change.
+Rust does not assume an absolute coverage threshold. That is right, but without any gates, there is no machine to catch "code entered without testing." Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate), which looks only at the lines this change added.
 
 The LCOV output of `cargo llvm-cov` is entered as is.
 

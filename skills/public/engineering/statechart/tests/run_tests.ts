@@ -18,7 +18,7 @@ const contracts: Record<string, [string, RegExp][]> = {
     ['sends the reader to the pinned upstream procedure', /Read `repos\/pstack\/skills\/statechart\/SKILL\.md`/],
     ['upstream paths and <skill dir> resolve to the pinned copy', /relative to `repos\/pstack\/skills\/statechart\/` in this skill directory, and `<skill dir>` in its commands is that directory/],
     ['names the TypeScript-capable runtimes and that jstack needs only Node 20', /Node 22\.18 to 22\.x, Node 23\.6 or later, Bun 1\.1\.5 or later, or Deno 2\.0 or later[\s\S]*jstack itself needs only Node 20/],
-    ['a check that could not run is not a pass', /instead of drawing a chart by hand; a check that could not run is not a pass/],
+    ['a check that could not run follows the verify rule', /instead of drawing a chart by hand; \[the missing-check rule\]/],
     ['the first-run mise install waits for the user', /first-run install of Java and TLC 1\.7\.4 with mise over the network\. Ask the user before that install\./],
     ['specs and views never live under the skill directory', /Never write them under this skill directory; a plugin update replaces it/],
     ['the pinned copy is not edited here', /Do not edit `repos\/pstack\/`\. A fix belongs upstream/],

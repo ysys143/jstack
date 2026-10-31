@@ -54,7 +54,7 @@ map, or a product regression, which you report and do not paper over in the docs
    spot-check is cheap work. Afterward run `git status`; a reader that changed a
    file is a defect to report.
 3. **Reconcile.** Every feature file must have a returned summary. A feature with
-   no result is a gap, not a pass: ask that reader once more, and if it still
+   no result falls under [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass): ask that reader once more, and if it still
    returns nothing, record the gap and do not mark that feature covered. Merge
    overlapping recipes into as few app states as practical. Spot-check the cited
    drift without re-proving the clean claims. Sweep recent changes for

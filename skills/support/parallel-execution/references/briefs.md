@@ -50,7 +50,7 @@ backed by the command or artefact it names. A worker that can prove a defect
 reports `ISSUES` and lists every defect it can prove, not only the first; the
 first one found is rarely the only one, and a second pass costs more than a
 longer first report. `BLOCKED` says what stopped the work and what would unblock
-it. A report with no verdict is a gap, not a pass.
+it. A report with no verdict falls under [the missing-check rule](../../verify/SKILL.md#a-missing-check-is-not-a-pass).
 
 
 ## Context, authority, and concurrency
