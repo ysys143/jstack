@@ -6,7 +6,7 @@ import {isDeepStrictEqual} from 'node:util';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {runProcess} from '../runtime/os.js';
-import {check_no_constant_assertions,check_total,check_skill_body,check_ref_contracts,split_frontmatter,check_body_deletion,check_contract_coverage,check_script_contracts,check_body_paths,content_bytes,in_deleted_run,type Result} from '../skills/_suite_lib.js';
+import {exit_if_timed_out,check_no_constant_assertions,check_total,check_skill_body,check_ref_contracts,split_frontmatter,check_body_deletion,check_contract_coverage,check_script_contracts,check_body_paths,content_bytes,in_deleted_run,type Result} from '../skills/_suite_lib.js';
 import {truth,length,contains,unique,sorted,repr,at,slice,strip,lstrip,rstrip,split,lines,count,starts,ends,lower,joinText,replace,findall,finditer,search,match,group,sub,isdir,isinstance,temporaryDirectory,removeTree,range,isdigit,enumerate} from '../skills/_suite_lib_native.js';
 const SUITE_FILE=fileURLToPath(import.meta.url),ROOT=dirname(dirname(SUITE_FILE)),SKILLS=join(ROOT,"skills"),HERE=dirname(SUITE_FILE);
 const results:Result[]=[],MISSING:string[]=[];
@@ -16,7 +16,7 @@ function read(path:string):string{try{return readFileSync(path,'utf8');}catch(er
 function regexSplit(pattern:string,text:string):string[]{let flags='';pattern=pattern.replace(/^\(\?([ims]+)\)/,(_,value)=>{flags=value;return '';});return text.split(new RegExp(pattern,flags));}
 function pyStr(value:any):string{return typeof value==='string'?value:repr(value);}
 function escapeRegex(text:string):string{return text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-function subprocessRun(argv:string[],options:any={}):any{const r=runProcess(argv[0],argv.slice(1),{cwd:options.cwd??ROOT,timeout:120000});return {returncode:r.status,stdout:r.stdout,stderr:r.stderr};}
+function subprocessRun(argv:string[],options:any={}):any{const r=runProcess(argv[0],argv.slice(1),{cwd:options.cwd??ROOT,timeout:120000});exit_if_timed_out(r,argv.join(' '));return {returncode:r.status,stdout:r.stdout,stderr:r.stderr};}
 function compare(a:any,b:any,op:string):boolean{if(a instanceof Set&&b instanceof Set){const sub=[...a].every(v=>b.has(v)),sup=[...b].every(v=>a.has(v));return op==='<='?sub:op==='>='?sup:op==='<'?sub&&a.size<b.size:sup&&a.size>b.size;}return op==='<='?a<=b:op==='>='?a>=b:op==='<'?a<b:a>b;}
 
 const CONTRACTS=join(ROOT, "contracts");

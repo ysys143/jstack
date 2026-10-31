@@ -12,7 +12,7 @@ This skill is a pinned copy of an upstream project kept under `repos/pstack/skil
 ## Start
 
 1. Read `repos/pstack/skills/statechart/SKILL.md`: writing the spec, the view module, reading the report, showing the chart and the hand-off. Every relative path it names (`scripts/statechart`, `scripts/statechart.ts`, `references/render.md`) is relative to `repos/pstack/skills/statechart/` in this skill directory, and `<skill dir>` in its commands is that directory. Pass absolute paths to its tools.
-2. Check the tools before promising a chart: a TypeScript-capable runtime (Node 22.18 to 22.x, Node 23.6 or later, Bun 1.1.5 or later, or Deno 2.0 or later), Java 11 or later, and TLC. jstack itself needs only Node 20, so the runtime may be missing even where jstack runs. Report what is missing instead of drawing a chart by hand; a check that could not run is not a pass.
+2. Check the tools before promising a chart: a TypeScript-capable runtime (Node 22.18 to 22.x, Node 23.6 or later, Bun 1.1.5 or later, or Deno 2.0 or later), Java 11 or later, and TLC. jstack itself needs only Node 20, so the runtime may be missing even where jstack runs. Report what is missing instead of drawing a chart by hand; [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass) applies.
 3. TLC comes from `TLA2TOOLS` (the path of `tla2tools.jar`) with `JAVA`, or, when they are unset, from a first-run install of Java and TLC 1.7.4 with mise over the network. Ask the user before that install.
 
 ## Where things live

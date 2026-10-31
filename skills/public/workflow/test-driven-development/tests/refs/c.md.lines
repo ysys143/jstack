@@ -1,4 +1,4 @@
-# blob:c784acea3d821cb6c5b001b5caf1671dd0a4736f
+# blob:3d78150628980ade6f7409c190f845cd359c2648
 # TDD Guide: C
 ## Why was this guide created so late
 `cleanup/references/lang-matrix.md` lists **seven** languages whose quality this
@@ -105,7 +105,7 @@ Tooling: `gcov -b` does not measure MC/DC. Use GCC 14+
 such as VectorCAST, LDRA, or Cantata. **Do not require MC/DC outside certification
 work**; its cost exceeds its benefit.
 ## diff coverage — gate only for new code
-C is the language where the gate absolutely collapses. Files that cannot be measured exist, and code from 20 years ago is mixed in. If you put a gate over the whole %, it increases the exclusion list, not the test for people. Therefore, the gate is not in the storage but in the **diff** — it only looks at the lines added in this change.
+C is the language where the gate absolutely collapses. Files that cannot be measured exist, and code from 20 years ago is mixed in. A gate over the whole % grows the exclusion list, not the tests. Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate), which looks only at the lines this change added.
 Requires Node.js 20+.
 ```bash
 git fetch origin main

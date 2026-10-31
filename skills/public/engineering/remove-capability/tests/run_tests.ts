@@ -41,7 +41,7 @@ check("traces: requires removing the red case set too", (skill.includes("red-sui
 check("traces: explains the one-commit bisect reason", (skill.includes("bisected through looks like")));
 check("verification: requires neighbor suites and path gates", ((skill.includes("run the suites of every skill that named")) && (skill.includes("path gate"))));
 check("verification: states that the gate finds stale references", (skill.includes("nothing else reads those paths")));
-check("verification: green caused by a vanished subject is not a pass", (skill.includes("A check that disappears is not a check that succeeded")));
+check("verification: green caused by a vanished subject is not a pass", (skill.includes("subject vanished falls under")));
 const inner=rows(lst, "## In the plugin tree");
 const outer=rows(lst, "## Outside the plugin tree");
 check("checklist: at least five in-tree traces", (inner.length >= 5), (String(inner.length) + " rows"));
@@ -109,7 +109,7 @@ const after=readdirSync(join(broken,'skills')).sort();
 check('runtime: changes nothing',isDeepStrictEqual(before,after),`${before} vs ${after}`);
 }finally{rmSync(tmp,{recursive:true,force:true});}
 
-check_skill_body(check, ROOT, {needles: ["still earn the space it occupies", "resolved by merge, not by deletion", "A check that disappears is not a check that succeeded", "worse than none", "path gate", "a scan that never happened are different facts", "cannot be aggregated by anything"], floor: 2892});
+check_skill_body(check, ROOT, {needles: ["still earn the space it occupies", "resolved by merge, not by deletion", "subject vanished falls under", "worse than none", "path gate", "a scan that never happened are different facts", "cannot be aggregated by anything"], floor: 2892});
 check_ref_contracts(check, ROOT, [["removal-checklist.md", "inside/outside traces, order, and exclusions", ["the only one people do", "is a false number, not zero", "Delete the directory last", "reads as \"not considered\""], 1232]]);
 const META=['자기검사:', '계약 커버리지:', '스크립트 계약:']; const live_ran=results.filter(r=>!META.some(prefix=>r[0].startsWith(prefix))).length;
 check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/prune.js": 12}, live_ran: live_ran});

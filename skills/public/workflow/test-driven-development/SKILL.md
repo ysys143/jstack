@@ -146,9 +146,9 @@ unable to tell which change broke what.
 
 ## Phase 6: gate the diff, then the next slice
 
-Absolute coverage thresholds take legacy debt hostage: a repository at 43% cannot
-be brought to 80 by one pull request, so the gate gets switched off. Gate the
-**lines this change added** instead — they are the ones a test just went red for.
+Gate the **lines this change added**, not an absolute threshold: they are the ones
+a test just went red for. The threshold and its reason live in
+[the diff coverage gate](../verify/SKILL.md#the-diff-coverage-gate).
 
 ```bash
 node ${JSTACK_PLUGIN_ROOT}/skills/tdd/scripts/test_gates.js diff-coverage \

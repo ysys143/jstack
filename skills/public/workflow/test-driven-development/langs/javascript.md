@@ -220,8 +220,7 @@ There is no meaning in comparing the threshold between the two providers.
 
 ## diff coverage — gate only for new code
 
-`thresholds` is the **floor of the entire repository**. The floor holds legacy hostage —
-Since a PR in the repository currently 42% cannot create 80%, the team escapes by lowering numbers or allowing negative values like `statements: -10`. The place that requires a gate is not the repository but **the line this change added**. Since tests that have already seen red must already cover those lines, 90% is not a harsh figure.
+`thresholds` is the **floor of the entire repository**, not the gate for this change. Under pressure teams lower it or allow negative values like `statements: -10`. Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate).
 
 We measure it with diff coverage from the lcov report.
 

@@ -16,7 +16,7 @@ const contracts: Record<string, [string, RegExp][]> = {
   'SKILL.md': [
     ['sends the reader to the pinned upstream procedure', /Read `repos\/journey-qa\/SKILL\.md`/],
     ['upstream paths are relative to the pinned copy', /relative to `repos\/journey-qa\/` in this skill directory/],
-    ['a gate that could not run is not a pass', /a gate that could not run is not a pass/],
+    ['a gate that could not run follows the verify rule', /\[the missing-check rule\]\(\.\.\/verify\/SKILL\.md#a-missing-check-is-not-a-pass\) applies to a gate/],
     ['product adapters never live under the skill directory', /Never add one under this skill directory; a plugin update replaces it/],
     ['the pinned copy is not edited here', /Do not edit `repos\/journey-qa\/`\. A fix belongs upstream/],
     ['neighbouring skills own completion checks and UI review', /\| Check that a code change is complete \| `verify` \|[\s\S]*\| Accessibility or design review of a page \| `web-interface` \|/],

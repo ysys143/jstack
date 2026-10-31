@@ -12,7 +12,7 @@ This skill is a pinned copy of an upstream project kept under `repos/just-dag-it
 ## Start
 
 1. Read `repos/just-dag-it/skills/dag-it/SKILL.md`: the decision rungs, the inventory, the build properties, the verification steps and how the agent behaves after the move. Every relative path it names (`references/dagster.md`, `references/template/`, `references/dagster-expert/INDEX.md`, `references/consumer-boundaries.md`) is relative to `repos/just-dag-it/skills/dag-it/` in this skill directory. Pass absolute paths to its tools.
-2. Check the tools before promising a DAG: Python 3.13 (the tested version), `uv`, and Dagster. The template was tested with Dagster 1.13.26; check `dagster --version` in the project and say when it differs. Report what is missing instead of skipping a verification step; a check that could not run is not a pass.
+2. Check the tools before promising a DAG: Python 3.13 (the tested version), `uv`, and Dagster. The template was tested with Dagster 1.13.26; check `dagster --version` in the project and say when it differs. Report what is missing instead of skipping a verification step; [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass) applies.
 3. Start from the decision. When the lightest rung that is enough is running the command directly or a script that skips finished outputs, say so and stop; a DAG is not the default.
 
 ## Where things live

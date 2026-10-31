@@ -139,7 +139,7 @@ repository quarantine list before interpreting failures.
 | GitHub event, permission, runner configuration | Relevant Actions job |
 
 Read existing project commands before running them. A required checker that is
-absent or collects unexpectedly zero checks leaves the claim unverified.
+absent or collects unexpectedly zero checks falls under [the missing-check rule](../SKILL.md#a-missing-check-is-not-a-pass).
 Use the progression that applies: reproducer → package and consumers → required
 integration → required CI. Preserve required gates and actual platform coverage;
 local success or cross-compilation does not prove another OS works.

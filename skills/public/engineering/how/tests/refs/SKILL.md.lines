@@ -1,4 +1,4 @@
-# blob:686e021c86acf7a3c2eb5300ab2ed11f2165a7c9
+# blob:82e3cf7b3bd1b926500f696969fa4489a3f7f1ab
 # how — explain the code so the reader can work in it
 Answer "how does X work?", "walk me through this before I change it", and
 placement questions such as "where should this live?", "which package owns
@@ -26,8 +26,8 @@ shape.
 a reader that changed a file is a defect to report.
 - Choose the tier by `model-selection` and say why. Tracing a call path that you
 will spot-check is cheap work. Do not pin a model name here.
-- Account for every reader. A slice with no result is a gap in the explanation,
-not a pass; ask once more, then say what stays unexplained.
+- Account for every reader. A slice with no result falls under [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass): ask once
+more, then say what stays unexplained.
 ## 3. Combine the findings yourself
 Writing the explanation is one judgment, so one context holds all of it. Do not
 split the writing across several workers. The readers' findings overlap and can

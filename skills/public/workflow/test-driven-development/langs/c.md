@@ -144,7 +144,7 @@ work**; its cost exceeds its benefit.
 
 ## diff coverage — gate only for new code
 
-C is the language where the gate absolutely collapses. Files that cannot be measured exist, and code from 20 years ago is mixed in. If you put a gate over the whole %, it increases the exclusion list, not the test for people. Therefore, the gate is not in the storage but in the **diff** — it only looks at the lines added in this change.
+C is the language where the gate absolutely collapses. Files that cannot be measured exist, and code from 20 years ago is mixed in. A gate over the whole % grows the exclusion list, not the tests. Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate), which looks only at the lines this change added.
 
 Requires Node.js 20+.
 

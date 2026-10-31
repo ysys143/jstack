@@ -14,7 +14,7 @@ const contracts: Record<string, [string, RegExp][]> = {
   'SKILL.md': [
     ['sends the reader to the pinned upstream procedure', /Read `repos\/pstack\/skills\/maintain-formal-verification-skill\/SKILL\.md`/],
     ['maps the pstack skills to the jstack create-formal and statechart skills by name', /use the jstack `create-formal-verification-skill` skill; for a TLA\+ check, read results with the jstack `statechart` skill/],
-    ['a check that could not run is reported as blocked, not as a pass', /A check that could not run is not a pass; report it as blocked with the reason\./],
+    ['a check that could not run is reported as blocked, not as a pass', /Report a check that could not run as blocked with the reason, under \[the missing-check rule\]/],
     ['the verify skill never lives under this skill directory', /Never write them under this skill directory; a plugin update replaces it/],
     ['the pinned copy is not edited here', /Do not edit `repos\/pstack\/`\. A fix belongs upstream/],
     ['neighbouring skills own creation, chart reading and completion', /\| Choose a target and create the first verify skill \| `create-formal-verification-skill` \|[\s\S]*\| Check that a code change is complete \| `verify` \|/],

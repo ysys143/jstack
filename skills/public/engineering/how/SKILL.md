@@ -38,8 +38,8 @@ findings, not edits, so it fits `parallel-execution`.
   a reader that changed a file is a defect to report.
 - Choose the tier by `model-selection` and say why. Tracing a call path that you
   will spot-check is cheap work. Do not pin a model name here.
-- Account for every reader. A slice with no result is a gap in the explanation,
-  not a pass; ask once more, then say what stays unexplained.
+- Account for every reader. A slice with no result falls under [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass): ask once
+  more, then say what stays unexplained.
 
 ## 3. Combine the findings yourself
 

@@ -135,7 +135,7 @@ also never authenticates its producer; current bytes must be read again.
 | Installed package differs from native source | Non-deterministic path order or an unclassified file |
 | A package follows a user-owned file | Symlink or path escape was accepted |
 
-A check that did not run is not a passing check. Identity proves byte
+A check that did not run falls under [the missing-check rule](../SKILL.md#a-missing-check-is-not-a-pass). Identity proves byte
 correspondence within the declared scope; it does not prove runtime support,
 review quality, or provenance.
 

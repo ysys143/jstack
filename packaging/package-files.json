@@ -1406,6 +1406,10 @@
       "target": "skills/_suite_lib_native.ts"
     },
     {
+      "source": "skills/_suite_lib_timeouts.test.ts",
+      "target": "skills/_suite_lib_timeouts.test.ts"
+    },
+    {
       "source": "skills/public/operations/agent-maintenance/NOTICE",
       "target": "skills/agent-maintenance/NOTICE"
     },

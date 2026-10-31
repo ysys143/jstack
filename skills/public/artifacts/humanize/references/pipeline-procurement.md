@@ -61,7 +61,7 @@ node ${JSTACK_PLUGIN_ROOT}/skills/humanize/scripts/req_coverage.js \
 - Exit 2: file error; check paths.
 
 Without a requirement list, skip this phase and record the skip in the Phase 5
-summary. Never report an unperformed check as a pass.
+summary, as [the missing-check rule](../../verify/SKILL.md#a-missing-check-is-not-a-pass) requires.
 
 If original and rewritten requirement data are available as JSON, also run:
 ```

@@ -22,8 +22,7 @@ Perform four steps for every claim. Skipping any step leaves the claim unverifie
 checks may disappear too; vanished checks do not fail. Compare counts with the
 previous run.
 
-Zero passing checks is not a pass either. Reporting an empty run as success can
-leave the whole tree missing while the result stays green.
+An empty run falls under the missing-check rule in `skills/verify/SKILL.md`.
 
 ## Wording
 

@@ -1,4 +1,4 @@
-# blob:fba8458da356b372cf0e5443d8e3d90802b254ef
+# blob:e67496658641f825061d556660da7b988e2b26a8
 # maintain-verification-skill — keep the feature map honest
 A feature map goes stale the day the app changes. This is the upkeep pass for a
 project-local verification skill, such as one written by
@@ -42,7 +42,7 @@ the tier by `model-selection` and say why: reading with citations that you
 spot-check is cheap work. Afterward run `git status`; a reader that changed a
 file is a defect to report.
 3. **Reconcile.** Every feature file must have a returned summary. A feature with
-no result is a gap, not a pass: ask that reader once more, and if it still
+no result falls under [the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass): ask that reader once more, and if it still
 returns nothing, record the gap and do not mark that feature covered. Merge
 overlapping recipes into as few app states as practical. Spot-check the cited
 drift without re-proving the clean claims. Sweep recent changes for

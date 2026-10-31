@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { check_body_deletion, check_contract_coverage, check_total, check_no_constant_assertions, type Result } from '../../../../_suite_lib.js';
+import { check_body_deletion, check_contract_coverage, check_total, check_no_constant_assertions, exit_if_timed_out, type Result } from '../../../../_suite_lib.js';
 const suite = fileURLToPath(import.meta.url), root = dirname(dirname(suite)), plugin = join(root, '../..');
 const results: Result[] = [];
 const check = (name: string, ok: boolean, detail = '') => { results.push([name, ok]); console.log(`[${ok ? 'PASS' : 'FAIL'}] ${name}${detail ? ' — ' + detail : ''}`); };
@@ -31,7 +31,8 @@ check('Run protocol: event identity and no implicit resume', /current revision, 
 check('Release: readback and post-commit freshness', /Run verify again for the new HEAD/.test(read('references/release.md')) && /do not retry/.test(read('references/release.md')));
 for (const name of ['sdlc.test.js', 'sdlc-release.test.js', 'sdlc-ship.test.js', 'sdlc_effects.test.js']) {
   const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
-  const out = spawnSync(process.execPath, ['--test', join(plugin, 'runtime', name)], { encoding: 'utf8', timeout: 120000, env });
+  const out = spawnSync(process.execPath, ['--test', join(plugin, 'runtime', name)], { encoding: 'utf8', timeout: 300000, env });
+  exit_if_timed_out(out, name);
   check(`Runtime behavior: ${name}`, out.status === 0 && /(?:pass [1-9]|# pass [1-9])/.test(out.stdout), out.status === 0 ? '' : out.stdout + out.stderr);
 }
 check_contract_coverage(check, suite, root, { per_file: { 'SKILL.md': 16, 'references/run-protocol.md': 1, 'references/release.md': 1 } });

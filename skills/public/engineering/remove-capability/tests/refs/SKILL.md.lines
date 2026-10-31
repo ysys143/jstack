@@ -1,4 +1,4 @@
-# blob:6f29a46875908844130e4bb98000e8d12cc6831c
+# blob:6c71a4e567adaba3e7a6dab535cebe885c5644ce
 # Prune — the decision is about cost, not usage
 ## What justifies removal
 A skill costs its name and description on **every turn of every session**,
@@ -35,8 +35,8 @@ two different defects.
 After the delete, run the suites of every skill that named the removed one, plus
 the path gate. The gate is what catches a reference left in a reference file,
 which is the trace most often missed — nothing else reads those paths.
-If a suite goes green only because its subject vanished, that is not a pass.
-A check that disappears is not a check that succeeded.
+A suite that goes green only because its subject vanished falls under
+[the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass).
 ## Measure the folder before you argue about it
 `scripts/prune.js` reads the installed skill folders and reports what is already
 broken there: dangling links, a directory whose name disagrees with its

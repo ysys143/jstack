@@ -118,8 +118,13 @@ or whole-package portability claim requires the full package and release gates.
 Record which scope applied and why; “affected” cannot be used to omit a known
 consumer, and “full” cannot be claimed from a local suite.
 
+### A missing check is not a pass
+
 **A check that does not exist is not a passing check.** If the repository has no
-test command, say so; do not report silence as success.
+test command, say so; do not report silence as success. The same holds for a check
+that could not run, an empty run, a check that vanished with its subject, and a
+worker or reader that returned no result. Report each one as a gap or as blocked,
+with the reason, never as a pass.
 
 ## Phase 2: run and read
 
@@ -183,7 +188,9 @@ Gate the **diff** instead. At least 90% of the lines this change adds or
 modifies must be executed by a test, the threshold the TDD gate script uses by
 default; untouched legacy files are outside the rule entirely. The
 enforcement survives because it is proportionate: a new untested branch fails on
-its first run, and nobody is punished for code they did not write.
+its first run, and nobody is punished for code they did not write. Tests that
+already went red cover those lines, so 90% is not a harsh figure. The number
+measures whether this change came without tests, not the repository's report card.
 
 | Language | Diff coverage command |
 |---|---|

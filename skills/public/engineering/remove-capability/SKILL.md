@@ -53,8 +53,8 @@ After the delete, run the suites of every skill that named the removed one, plus
 the path gate. The gate is what catches a reference left in a reference file,
 which is the trace most often missed — nothing else reads those paths.
 
-If a suite goes green only because its subject vanished, that is not a pass.
-A check that disappears is not a check that succeeded.
+A suite that goes green only because its subject vanished falls under
+[the missing-check rule](../verify/SKILL.md#a-missing-check-is-not-a-pass).
 
 ## Measure the folder before you argue about it
 

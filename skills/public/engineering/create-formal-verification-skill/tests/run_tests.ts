@@ -15,7 +15,7 @@ const contracts: Record<string, [string, RegExp][]> = {
     ['sends the reader to the pinned upstream procedure', /Read `repos\/pstack\/skills\/create-formal-verification-skill\/SKILL\.md`/],
     ['maps the pstack /statechart skill to the jstack statechart skill by name only', /use the jstack `statechart` skill\. Refer to it by name in the generated skill, as upstream says; copy none of its commands, options or paths\./],
     ['the upstream pointer to the maintain skill names the jstack skill', /Where it points the user at `\/maintain-formal-verification-skill`, name the jstack `maintain-formal-verification-skill` skill\./],
-    ['a check that could not run is not a pass', /instead of skipping the proof step; a check that could not run is not a pass/],
+    ['a check that could not run follows the verify rule', /instead of skipping the proof step; \[the missing-check rule\]/],
     ['the generated skill never lives under this skill directory', /Never write them under this skill directory; a plugin update replaces it/],
     ['the pinned copy is not edited here', /Do not edit `repos\/pstack\/`\. A fix belongs upstream/],
     ['neighbouring skills own chart reading, completion and tests', /\| Read a TLA\+ result as shortest bug paths and a statechart \| `statechart` \|[\s\S]*\| Check that a code change is complete \| `verify` \|/],

@@ -149,8 +149,7 @@ Vitest/SWC do not perform type checking $\rightarrow$ tests pass even with type 
 
 ## diff coverage — gate only for new code
 
-`thresholds` is the **floor of the entire repository**, and the floor holds the legacy hostage.
-Since one PR in the repository currently 42% cannot create 80%, the team will reduce the numbers, and the lowered numbers will not go back up. The area that requires a gate is **the line newly added by this change**.
+`thresholds` is the **floor of the entire repository**, not the gate for this change. Use [the diff coverage gate](../../verify/SKILL.md#the-diff-coverage-gate).
 
 As with `tsc --noEmit`, run it as a **separate step** in CI — creating the coverage report and judging by that report are different things.
 
