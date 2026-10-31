@@ -40,6 +40,9 @@ test('inspect discovers every suite and includes langs; missing suites never pas
   const seen: string[] = [];
   const result = inspect('example', root, ((_: string, args: string[]) => { seen.push(path.basename(args[0]!)); return {status: seen.length === 1 ? 1 : 0, stdout: 'fixture', stderr: ''}; }) as any);
   assert.equal(result.code, 1); assert.deepEqual(seen, ['first.js', 'second.js']); assert.match(result.lines.join('\n'), /langs\/ — 1 items/);
+  let calls = 0;
+  const stopped = inspect('example', root, (() => { calls++; return calls === 1 ? {status: 1, stdout: 'fixture', stderr: ''} : {status: null, stdout: '', stderr: '', error: Object.assign(new Error('timed out'), {code: 'ETIMEDOUT'})}; }) as any);
+  assert.equal(stopped.code, 2); assert.match(stopped.lines.join('\n'), /second: hit its time limit; nothing was measured/);
 });
 
 test('inspect fails closed for Python-only suites without invoking Python', t => {
