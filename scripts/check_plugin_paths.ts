@@ -9,6 +9,17 @@ import { sourcePath } from '../runtime/skill_catalog.js';
 
 type Rule=[string,string,string|null];
 export const IGNORE: Rule[] = [
+  ["^tests/test_[a-z_]+\\.py$|^scripts/check_floor_parity\\.py$", "Stable suite labels kept after the TypeScript migration; the runner discovers the compiled files", "^contracts/(?:contract-suite-dependencies|ts-migration/deletion-floors)\\.json$"],
+  ["^hooks/stack-viewer\\.tsx$", "File inside the imported mod, named from its floor reason", "^contracts/ts-migration/deletion-floors\\.json$"],
+  ["^scripts/korean_spell_check\\.py$|^skills/proof/tests/run_tests\\.py$", "Historical crosswalk of the Python suite that the native suite replaced", "^contracts/ts-migration/proof-suite-crosswalk\\.json$"],
+  ["^skills/[a-z-]+/scripts/[a-z_-]+\\.py$", "Historical migration record; the runtime reads only this file's features", "^contracts/ts-migration/specialists\\.json$"],
+  ["^\\.agents/skills/upstream-patrol/upstreams\\.json$", "Repository maintenance record that the notice names and the package does not ship", "^NOTICE\\.md$"],
+  ["^a/b\\.md$|^plugins/installed_plugins\\.json$", "A sample path and a path under the host's own config directory", "^mods/stack-viewer/hooks/stack\\.ts$"],
+  ["^hosts/claude/mods/stack-viewer\\.test\\.ts$", "Source test named by the mod test kit; tests are not packaged", "^mods/claude-code-testing\\.mjs$"],
+  ["^artifacts/(?:add-item|find-item)/|^features/README\\.md$", "Files the skill creates in the caller's project", "^skills/create-verification-skill/"],
+  ["^coverage/lcov\\.info$", "Coverage report in the caller's project", "^skills/verify/SKILL\\.md$"],
+  ["^references/(?:consumer-boundaries|dagster|dagster-expert/INDEX)\\.md$", "Named relative to the vendored dag-it skill folder, as the entry skill states", "^skills/dag-it/SKILL\\.md$"],
+  ["^references/render\\.md$|^scripts/statechart\\.ts$", "Named relative to the vendored statechart skill folder, as the entry skill states", "^skills/statechart/SKILL\\.md$"],
   ["^path/to/file\\.test\\.ts$|^/tmp/test\\.log$|^test/quarantine\\.txt$", "Setup examples refer to tests and logs in the caller's project", "^skills/setup/references/testing-guidance\\.md$"],
   ["^path/to/new\\.test\\.(?:ts|js)$|^tests/test_new\\.py$", "Flake diagnosis runs a caller's changed test file", "^skills/verify/references/flaky-tests\\.md$"],
   ["^test/test_helper\\.rb$", "Parallel test setup example belongs to the caller's Ruby project", "^skills/verify/references/test-parallelism\\.md$"],
@@ -430,6 +441,7 @@ export const IGNORE: Rule[] = [
   ]
 ];
 export const CMD_IGNORE: Rule[] = [
+  ["^(?:stack|context|statechart)$", "Slash commands of the optional stack-viewer mod and of a skill, not package commands", "^(?:(?:CAPABILITIES|CHANGELOG)\\.md|mods/stack-viewer/README\\.md|skills/create-formal-verification-skill/SKILL\\.md)$"],
   ["^(?:context|plugin|name)$", "Built-in host commands and an explicit command-name placeholder", "^skills/host-audit/SKILL\\.md$"],
   ["^sdlc$", "Explicit SDLC activation token documented by its owning procedure and contract", "^(?:contracts/sdlc\\.md|skills/sdlc/(?:SKILL\\.md|references/run-protocol\\.md))$"],
   ["^(?:plugin|plugins|hooks)$", "Built-in host management commands", "^(?:README\\.md|CHANGELOG\\.md|runtime/CLI-PATH\\.md|skills/disk-manager/references/installation\\.md)$"],
