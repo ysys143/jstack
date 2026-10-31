@@ -5,7 +5,8 @@
 - Class: <docs | product | UX>
 - Detail: <code from the table below>
 - Journey / step: <scenario id> / <step id>
-- Persona: <roster id> (<role>)
+- Reach: <n of N personas> (<ids>), for independent persona sessions
+- Persona: <roster id> (<role>); perspective: <the persona fields that exposed it, for example device mobile, assistive_tech keyboard-only>
 - Environment: <product version/commit, install path, browser/OS>
 
 ## Reproduction
@@ -22,6 +23,8 @@
 
 - Command and output: `evidence/...` (redacted transcript)
 - Screenshot: `shots/NN-slug.png` (sibling text `shots/NN-slug.png.txt`)
+- Per persona (independent persona sessions): `personas/<id>/evidence/...` for each persona that hit it
+- Failed requests: `network/<step>.json` (or `failure/<step>/network.json`), when the step shows a failing request
 
 ## Suggestion
 
@@ -42,8 +45,10 @@
 | PROD-LABEL | The name or label of a different object is shown |
 | PROD-DATA | A value is not stored or is always 0, or the screen is empty without a particular record |
 | PROD-LEAK | A background component keeps sending identity information |
+| PROD-REQUEST-FAILED | A request the page makes fails (HTTP status 400 or more, aborted, dropped) while the step looks successful |
 | UX-TRUNCATE | An email, name or path is truncated |
 | UX-STATE | A filter or state persists silently across pages |
 | UX-FORMAT | Date or number format differs from the locale, or a raw value is exposed |
 | UX-SECRET-LOOKALIKE | Fixed wording looks like a secret |
 | UX-DEFAULT-HIDES | A default hides the result the docs say to look at |
+| UX-BARRIER | A persona with an assistive technology, a device or a language constraint cannot reach, name, read or operate something the journey needs. Record the barrier met on the journey; checking screens against an accessibility standard is out of scope |

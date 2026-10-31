@@ -6,10 +6,12 @@
 // map and the adapter's hooks module. No model is called during a run.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, rm, rmdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import * as P from './page.mjs';
 import { writePrivate } from './files.mjs';
+import { resolveEmulation } from './emulation.mjs';
+import { failedRequestsProblem, notCollected, stepRecord } from './network.mjs';
 import { missingTool, reconnectProblem, renderTerminalShots, runTerminalStep, terminalEvidence } from './terminal.mjs';
 
 const WRONG_SELECTOR = '[data-jqa-injected-wrong-selector]';
@@ -66,6 +68,8 @@ export class Run {
     this.armed = false;
     this.terminal = new Map(); // terminal step id -> { kept, passed }
     this.d = null; // the browser backend; stays null in a terminal-only run
+    this.vp = scenario.determinism.viewport; // the viewport of the current persona (differs when its emulation changes it)
+    this.emulationSpecs = new Map((scenario.personas || []).map((p) => [p.ref, p.emulation]));
   }
 
   /** True when any step needs a browser engine (a browser step or an api request through the page). */
@@ -80,6 +84,14 @@ export class Run {
     if (tool) throw new ConfigError(tool);
     const rc = reconnectProblem(this);
     if (rc) throw new ConfigError(rc);
+    for (const [id, spec] of this.emulationSpecs) {
+      if (!spec) continue;
+      try {
+        this.emulation(id);
+      } catch (e) {
+        throw new ConfigError(`persona ${id}: ${e.message}`);
+      }
+    }
     for (const step of s.steps) {
       if (step.surface === 'terminal') continue;
       if (!BROWSER_ACTIONS.has(step.action)) throw new ConfigError(`step ${step.id}: action ${step.action} is not supported`);
@@ -242,6 +254,11 @@ export class Run {
 
   // ------------------------------------------------------------ personas
 
+  /** The emulation of one persona; `supports` is the backend's set once there is a backend. */
+  emulation(persona, supports) {
+    return resolveEmulation({ determinism: this.s.determinism, person: this.people.get(persona), spec: this.emulationSpecs.get(persona), supports });
+  }
+
   statePath(persona) {
     return join(this.statesDir, `state-${persona}.json`);
   }
@@ -259,14 +276,19 @@ export class Run {
       state = join(this.cfg.stateFrom, `state-${persona}.json`);
       this.notes.injectedState = [...(this.notes.injectedState || []), persona];
     }
-    await this.d.persona(persona, state);
+    const emu = this.emulation(persona, this.d.emulates);
+    await this.d.persona(persona, state, emu);
+    this.vp = emu.viewport;
+    if (this.emulationSpecs.get(persona)) {
+      this.notes.emulation = { ...(this.notes.emulation || {}), [persona]: { viewport: emu.viewport, applied: emu.applied, notApplied: emu.notApplied } };
+    }
     this.persona = persona;
   }
 
   // ------------------------------------------------------------ steps
 
   /** Run one unit of work with timing and failure handling. `always` units run after a failure too. */
-  async unit(id, persona, fn, { always = false, terminal = false } = {}) {
+  async unit(id, persona, fn, { always = false, terminal = false, network = false } = {}) {
     if (this.failed && !always) {
       this.steps.push({ id, persona, skipped: true });
       return;
@@ -274,6 +296,7 @@ export class Run {
     const rec = { id, persona, ok: false };
     const t = Date.now();
     this.current = id;
+    let net = null; // the step's failed-request record, taken before failure evidence can close the context
     try {
       rec.checks = (await fn()) ?? undefined;
       rec.ok = true;
@@ -284,11 +307,13 @@ export class Run {
         if (terminal) {
           terminalEvidence(this, rec, id); // the kept transcript is the evidence; a browser capture would show something else
         } else if (this.d) {
-          await this.collectEvidence(rec, join(this.cfg.out, 'failure', id));
+          if (network) net = await this.networkSnapshot({ drain: true });
+          await this.collectEvidence(rec, join(this.cfg.out, 'failure', id), net);
           this.persona = null; // evidence collection may close the context; the next unit starts fresh
         }
       }
     }
+    if (network && this.d) await this.recordNetwork(rec, net || await this.networkSnapshot({ drain: true }));
     rec.ms = Date.now() - t;
     this.current = null;
     this.steps.push(rec);
@@ -379,6 +404,55 @@ export class Run {
     for (const l of e.hidden || []) await this.waitFor(l, { hidden: true });
     for (const t of e.text || []) await this.waitText(await this.template(t), {});
     if (e.status !== undefined && checks.status !== e.status) throw new Error(`status ${checks.status}, expected ${e.status}`);
+    if (e.no_failed_requests) {
+      const problem = failedRequestsProblem(await this.networkSnapshot());
+      if (problem) throw new Error(problem);
+    }
+  }
+
+  // ------------------------------------------------------------ failed requests
+
+  /**
+   * The requests that failed since the last drain (status 400 or more, aborted, failed), or an explicit
+   * "not collected" when the backend has no request feed. Never an empty answer in place of "unknown".
+   */
+  async networkSnapshot({ drain = false } = {}) {
+    if (typeof this.d.network !== 'function') return this.d.networkReason || notCollected('the backend has no request feed');
+    try {
+      return await this.d.network({ drain });
+    } catch (err) {
+      return notCollected(`reading the request feed failed (${(err && err.name) || 'Error'})`);
+    }
+  }
+
+  /**
+   * Write the step's record to network/<step>.json, but only after capture/evidence.py redacted and gated it
+   * like failure evidence. The file is staged in its own directory so one rejected record never takes the
+   * others with it.
+   */
+  async recordNetwork(rec, snap) {
+    const summary = snap.collected
+      ? { collected: true, total: snap.total, in_flight: snap.in_flight, failed: snap.failed.length + (snap.omitted || 0) }
+      : { collected: false, reason: snap.reason };
+    const staging = join(this.cfg.out, 'network-pending', rec.id);
+    try {
+      await mkdir(staging, { recursive: true });
+      const record = stepRecord({ step: rec.id, persona: rec.persona, backend: this.d.engine, snap });
+      await writeFile(join(staging, `${rec.id}.json`), this.redact(JSON.stringify(record, null, 2)) + '\n');
+      const gate = await this.gateDir(staging);
+      if (gate.kept) {
+        await mkdir(join(this.cfg.out, 'network'), { recursive: true });
+        await rename(join(staging, `${rec.id}.json`), join(this.cfg.out, 'network', `${rec.id}.json`));
+        summary.file = `network/${rec.id}.json`;
+      } else {
+        summary.file = 'discarded: not proven free of secrets';
+      }
+    } catch (err) {
+      summary.file = 'discarded: not proven free of secrets';
+    }
+    await rm(staging, { recursive: true, force: true });
+    await rmdir(join(this.cfg.out, 'network-pending')).catch(() => {}); // only when no other record is staged
+    rec.network = summary;
   }
 
   // ------------------------------------------------------------ captures
@@ -414,8 +488,7 @@ export class Run {
     const dir = join(this.cfg.out, 'shots');
     await mkdir(dir, { recursive: true });
     const png = join(dir, file);
-    const vp = this.s.determinism.viewport;
-    const pointer = (this.hooks.capture && this.hooks.capture.pointer) || { x: 2, y: vp.height - 4 };
+    const pointer = (this.hooks.capture && this.hooks.capture.pointer) || { x: 2, y: this.vp.height - 4 };
     await this.d.mouseMove(pointer.x, pointer.y); // a pointer left over a chart opens a tooltip
     await this.d.evaluate(P.freezeMotion);
     await this.settle();
@@ -446,22 +519,17 @@ export class Run {
    * gate passes. Values still on the page (password inputs, an unmasked
    * one-time secret) are registered and scrubbed first.
    */
-  async collectEvidence(rec, dir) {
+  async collectEvidence(rec, dir, net = null) {
     try {
       const found = await this.d.evaluate(P.scrubDom, { mask: MASK, selectors: this.secretSelectors }).catch(() => null);
       // Masked in the DOM either way; values under 4 characters cannot be told apart from page text.
       for (const v of found || []) if (v.length >= 4) this.registerSecret(v);
       await this.registerSessionCookies();
       await this.d.failureEvidence(dir, { scrubbed: found !== null });
-      const argv = [join(this.cfg.repo, 'capture', 'evidence.py'), relative(this.cfg.out, dir), '--roster', this.cfg.rosterPath];
-      for (const d of this.cfg.denylists) argv.push('--denylist', d);
-      for (const p of this.cfg.policies) argv.push('--policy', p);
-      if (this.oneTime.length) argv.push('--secrets', await this.writeRunDenylist());
-      for (const g of this.d.evidenceDrop || []) argv.push('--drop', g);
-      argv.push('--ocr', this.cfg.evidenceOcr || 'require');
-      const res = spawnSync(this.cfg.python || 'python3', argv, { cwd: this.cfg.out, encoding: 'utf8' });
-      rec.evidenceGate = (res.stdout || '').split('\n').filter(Boolean);
-      rec.evidenceKept = res.status === 0;
+      if (net) await writeFile(join(dir, 'network.json'), JSON.stringify(stepRecord({ step: rec.id, persona: rec.persona, backend: this.d.engine, snap: net }), null, 2) + '\n');
+      const res = await this.gateDir(dir);
+      rec.evidenceGate = res.lines;
+      rec.evidenceKept = res.kept;
     } catch (err) {
       rec.evidenceKept = false;
       rec.evidenceError = this.redact(String(err && err.message ? err.message : err).slice(0, 200));
@@ -472,6 +540,18 @@ export class Run {
       await rm(dir, { recursive: true, force: true });
       rec.evidence = 'discarded: not proven free of secrets';
     }
+  }
+
+  /** Run capture/evidence.py on a directory: redact it, gate it, and delete it unless every gate passes. */
+  async gateDir(dir) {
+    const argv = [join(this.cfg.repo, 'capture', 'evidence.py'), relative(this.cfg.out, dir), '--roster', this.cfg.rosterPath];
+    for (const d of this.cfg.denylists) argv.push('--denylist', d);
+    for (const p of this.cfg.policies) argv.push('--policy', p);
+    if (this.oneTime.length) argv.push('--secrets', await this.writeRunDenylist());
+    for (const g of (this.d && this.d.evidenceDrop) || []) argv.push('--drop', g);
+    argv.push('--ocr', this.cfg.evidenceOcr || 'require');
+    const res = spawnSync(this.cfg.python || 'python3', argv, { cwd: this.cfg.out, encoding: 'utf8' });
+    return { kept: res.status === 0, lines: (res.stdout || '').split('\n').filter(Boolean) };
   }
 
   /**
@@ -530,7 +610,8 @@ export class Run {
   async execute(createBackend) {
     if (this.needsBrowser) {
       if (!createBackend) throw new ConfigError('this scenario has browser steps and no browser engine was selected');
-      this.d = await createBackend(this.cfg, { determinism: this.s.determinism, origins: this.origins(), engine: this.hooks.engine || {} });
+      const instanceByOrigin = new Map([...this.instances].map(([id, url]) => [new URL(url).origin, id]));
+      this.d = await createBackend(this.cfg, { determinism: this.s.determinism, origins: this.origins(), engine: this.hooks.engine || {}, instanceByOrigin });
     }
     const gates = new Map((this.s.human_gates || []).map((g) => [g.before_step, g]));
     let stoppedAt = null;
@@ -550,7 +631,7 @@ export class Run {
           break;
         }
         const terminal = step.surface === 'terminal';
-        await this.unit(step.id, step.persona, () => (terminal ? this.terminalStep(step) : this.step(step)), { terminal });
+        await this.unit(step.id, step.persona, () => (terminal ? this.terminalStep(step) : this.step(step)), { terminal, network: !terminal });
       }
       if (!this.failed) await renderTerminalShots(this);
     } finally {
@@ -561,6 +642,18 @@ export class Run {
       }
     }
     return this.finish(stoppedAt);
+  }
+
+  /** One line about the request records: how many steps have one, which saw failures, which could not be collected. */
+  networkSummary() {
+    const recs = this.steps.filter((s) => s.network);
+    if (!recs.length) return null;
+    return {
+      steps: recs.length,
+      stepsWithFailedRequests: recs.filter((s) => s.network.failed > 0).map((s) => s.id),
+      notCollected: recs.filter((s) => s.network.collected === false).map((s) => s.id),
+      discarded: recs.filter((s) => String(s.network.file || '').startsWith('discarded')).map((s) => s.id),
+    };
   }
 
   async finish(stoppedAt) {
@@ -583,6 +676,7 @@ export class Run {
       captures: this.captures,
       assertions,
       uncheckedAssertions: unchecked,
+      network: this.networkSummary(),
       notes: this.notes,
     };
     await mkdir(dirname(join(this.cfg.out, 'results.json')), { recursive: true });
