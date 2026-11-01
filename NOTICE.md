@@ -20,7 +20,7 @@ local path.
 | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | MIT, declared in its README and skill frontmatter; no license file | `063bee9` | `skills/public/engineering/react-performance/rules` |
 | [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines) | MIT | `e3d624b` | `skills/public/engineering/web-interface` |
 | [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | Apache-2.0 | `a86e346`, `aecd4c8` | `skills/public/engineering/repository-setup` |
-| [ysys143/journey-qa](https://github.com/ysys143/journey-qa) | MIT | `8004bae` | `skills/public/workflow/journey-qa/repos/journey-qa` |
+| [ysys143/journey-qa](https://github.com/ysys143/journey-qa) | MIT | `6123dc8` | `skills/public/workflow/journey-qa/repos/journey-qa` |
 | [ysys143/just-dag-it](https://github.com/ysys143/just-dag-it) | MIT | `1dfc962` | `skills/public/engineering/dag-it/repos/just-dag-it` |
 | [dagster-io/skills](https://github.com/dagster-io/skills), inside just-dag-it | Apache-2.0 | `ed0248b` | `skills/public/engineering/dag-it/repos/just-dag-it/skills/dag-it/references/dagster-expert` |
 | [cursor/plugins](https://github.com/cursor/plugins) (pstack, Lauren Tan) | MIT | `4dd1d05` | `skills/public/engineering/statechart/repos/pstack`, `skills/public/engineering/create-formal-verification-skill/repos/pstack`, `skills/public/engineering/maintain-formal-verification-skill/repos/pstack`; adapted into `benchmark-checklist`, `typescript-best-practices`, `how`, `create-verification-skill` and `maintain-verification-skill` |

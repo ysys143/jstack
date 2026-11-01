@@ -7066,8 +7066,20 @@
       "target": "skills/journey-qa/repos/journey-qa/runners/ego/backend.mjs"
     },
     {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/explore/merge_findings.py",
+      "target": "skills/journey-qa/repos/journey-qa/runners/explore/merge_findings.py"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/lib/emulation.mjs",
+      "target": "skills/journey-qa/repos/journey-qa/runners/lib/emulation.mjs"
+    },
+    {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/lib/files.mjs",
       "target": "skills/journey-qa/repos/journey-qa/runners/lib/files.mjs"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/lib/network.mjs",
+      "target": "skills/journey-qa/repos/journey-qa/runners/lib/network.mjs"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/lib/page.mjs",
@@ -7106,8 +7118,32 @@
       "target": "skills/journey-qa/repos/journey-qa/runners/selftest/app/login/index.html"
     },
     {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/app/network/index.html",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/app/network/index.html"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/app_server.py",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/app_server.py"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/controls.mjs",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/controls.mjs"
+    },
+    {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/hooks.mjs",
       "target": "skills/journey-qa/repos/journey-qa/runners/selftest/hooks.mjs"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/lib.sh",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/lib.sh"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/merge.sh",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/merge.sh"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/merge_controls.py",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/merge_controls.py"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/orchestrate.py",
@@ -7126,8 +7162,24 @@
       "target": "skills/journey-qa/repos/journey-qa/runners/selftest/selectors.json"
     },
     {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/smoke-emulation.json",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/smoke-emulation.json"
+    },
+    {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/smoke-injected.json",
       "target": "skills/journey-qa/repos/journey-qa/runners/selftest/smoke-injected.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/smoke-network-500.json",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/smoke-network-500.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/smoke-network-abort.json",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/smoke-network-abort.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/smoke-network.json",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/smoke-network.json"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/smoke.json",
@@ -7136,6 +7188,10 @@
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/smoke.sh",
       "target": "skills/journey-qa/repos/journey-qa/runners/selftest/smoke.sh"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/stub-backend.mjs",
+      "target": "skills/journey-qa/repos/journey-qa/runners/selftest/stub-backend.mjs"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/runners/selftest/terminal.sh",
@@ -7214,12 +7270,48 @@
       "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-duplicate-step.json"
     },
     {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-empty.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-empty.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-from-roster-false-only.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-from-roster-false-only.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-from-roster-no-perspective.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-from-roster-no-perspective.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-unknown-key.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-unknown-key.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-viewport-incomplete.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-viewport-incomplete.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-viewport-tiny.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-viewport-tiny.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-zoom-range.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-emulation-zoom-range.json"
+    },
+    {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-fill-without-value.json",
       "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-fill-without-value.json"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-missing-viewport.json",
       "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-missing-viewport.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-no-failed-requests-on-terminal.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-no-failed-requests-on-terminal.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-no-failed-requests-type.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-no-failed-requests-type.json"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/fail-selector-missing-arg.json",
@@ -7414,8 +7506,16 @@
       "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/fail-wait-without-target.json"
     },
     {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/pass-emulation.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/pass-emulation.json"
+    },
+    {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/pass-minimal.json",
       "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/pass-minimal.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/pass-no-failed-requests.json",
+      "target": "skills/journey-qa/repos/journey-qa/scenarios/selftest/pass-no-failed-requests.json"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/scenarios/selftest/pass-selectors.json",
@@ -7442,6 +7542,10 @@
       "target": "skills/journey-qa/repos/journey-qa/templates/decision-log.md"
     },
     {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/templates/examples/independent-personas.js",
+      "target": "skills/journey-qa/repos/journey-qa/templates/examples/independent-personas.js"
+    },
+    {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/templates/examples/workflow-phase.js",
       "target": "skills/journey-qa/repos/journey-qa/templates/examples/workflow-phase.js"
     },
@@ -7452,6 +7556,14 @@
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/templates/issue-draft.md",
       "target": "skills/journey-qa/repos/journey-qa/templates/issue-draft.md"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/templates/persona-findings.schema.json",
+      "target": "skills/journey-qa/repos/journey-qa/templates/persona-findings.schema.json"
+    },
+    {
+      "source": "skills/public/workflow/journey-qa/repos/journey-qa/templates/persona-session.schema.json",
+      "target": "skills/journey-qa/repos/journey-qa/templates/persona-session.schema.json"
     },
     {
       "source": "skills/public/workflow/journey-qa/repos/journey-qa/templates/prod-query.sql",

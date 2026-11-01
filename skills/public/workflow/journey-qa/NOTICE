@@ -7,10 +7,10 @@
 | Field | Value |
 |---|---|
 | Upstream | https://github.com/ysys143/journey-qa |
-| Pinned commit | 8004bae076bbd9be3f2d7d88be14d7cc6f95d92d |
+| Pinned commit | 6123dc863a551786792faec88b0bfe4dc998781f |
 | License | MIT (`repos/journey-qa/LICENSE`, full text below) |
-| Files | 406 |
-| Tree digest (sha256) | bb486c849f35b45243454c19971343cdad1f95b382a766a104d1fb6cd3722d90 |
+| Files | 434 |
+| Tree digest (sha256) | 29e20c45000e942b431f0bc5cf92836563c73b86ea18a9b101f5843196ba4401 |
 
 The digest covers every file in the copy: the paths in codepoint order, each followed by the sha256 of its content. The owning suite recomputes it, so a changed byte under `repos/journey-qa/` fails the suite until the copy is replaced by a new pinned one.
 

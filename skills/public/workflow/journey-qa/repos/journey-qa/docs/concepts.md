@@ -7,6 +7,8 @@ journey-qa is persona-journey acceptance QA. Fictitious personas start from a kn
 | Term | Meaning |
 |---|---|
 | Persona team | Fictitious people defined by a roster (`roster.json`). Names, emails and accounts are all newly invented values |
+| Independent persona session | One persona walking the journey from the beginning in an agent session, browser state, environment instance and run subdirectory of its own, acting only from its profile and the public docs. A merge step then counts, per defect, how many personas hit it (`docs/workflow.md`, "Explore") |
+| Perspective | Who is looking: the optional `persona` fields `experience`, `device`, `assistive_tech`, `reads_docs`, `language`, `goals`, `constraints`. The same journey walked from different perspectives meets different defects |
 | Journey | The ordered steps by which one or more personas reach a goal across surfaces (browser, terminal, API) |
 | Terminal driver | How a terminal step runs: `exec` (no interaction), `pty` (known prompts), `tmux` (the interactive session itself). Choice and pitfalls: `docs/terminal.md` |
 | Clean room | A fresh environment with no trace of the product, holding only the prerequisites the public docs state |
@@ -22,10 +24,31 @@ journey-qa is persona-journey acceptance QA. Fictitious personas start from a kn
 - Write values in the shape the product **stores**. A display string (such as a marketing plan name) will not match the keys that price tables and charts look up.
 - Identity invariants hold per provider. If a person holds external accounts, 1:1:1 (person : login email : account ID) must hold within each provider, because one person may legitimately hold accounts at two providers.
 - Give each person a different usage profile (volume, main features, tool setup) so that both the heavy and the light end of every chart appear.
+- Give each person a different perspective as well (below). Usage says how much a person uses the product; perspective says how they meet it. Two people who share every perspective field walk the same journey the same way.
 - Include one person with a non-ASCII name. Truncation, alignment and encoding defects show up there.
 - Validate the roster with `fixtures/roster_check.py`.
 - Which roles count as privileged is configurable. The roster's optional top-level `privileged_roles` (default `["admin"]`) names them; SQL assertions refer to those people as `privileged_handle`.
 - `accounts` (external accounts) and `projects[].cwd` (working directories) are optional roster extensions, not core invariants.
+
+## Perspective
+
+A journey is one path; people meet it differently. The roster's optional `persona` fields say how (`fixtures/roster.schema.json`; `fixtures/roster_check.py` rule PERSPECTIVE validates the values):
+
+| Field | Values | What it changes in a journey |
+|---|---|---|
+| `experience` | novice, intermediate, expert | Which steps are obvious, and whether a missing explanation blocks or is skipped past |
+| `device` | desktop, mobile, tablet | Screen size and input. Layouts, menus and tables that break below some width |
+| `assistive_tech` | list of screen-reader, keyboard-only, zoom, high-contrast, reduced-motion, voice-control | Whether a control can be reached, named, read or operated |
+| `reads_docs` | thorough, skims, skips | Which documented steps are performed as written and which are missed or reached by guessing |
+| `language` | BCP 47 tag, for example `en-US` | Which language of the docs and the product the person reads |
+| `goals` | list of outcomes | What counts as finished for this person |
+| `constraints` | list | What makes a step costly: time, network, permissions, tools already in use |
+
+Same journey, different perspective, different defects. A thorough reader finds the step the docs contradict; a skimmer finds the step the docs bury in a paragraph; a person who skips the docs finds the screen that needs an explanation it does not give. A narrow screen exposes the table that overflows, a keyboard-only person the control that cannot be focused, a screen-reader user the button with no text name. A roster whose people differ in perspective finds more defects per journey than the same number of people who share one.
+
+- A perspective is a lens, not a script. The person acts only from their profile and the public docs, as that person would, and does not use knowledge of how the product is built.
+- A barrier met on the journey is a defect of the journey. Record it like any other (class UX, detail `UX-BARRIER`), with the persona and the perspective field that exposed it. A dedicated accessibility audit, which checks screens against a standard or looks for barriers the journey never reached, is a different job and is out of scope (`SKILL.md`, "Not for").
+- Fields that run mode can act on become browser emulation. A scenario sets `personas[].emulation` (`scenarios/schema.json`); with `from_roster: true` the values come from the person: `device` mobile or tablet sets the viewport and touch input, `assistive_tech` reduced-motion sets reduced motion, zoom sets browser zoom (the CSS viewport shrinks by the factor and the pixel ratio grows by it). Explicit fields in the same object override them. Emulation a backend cannot apply is recorded under `notes.emulation` in `results.json`. Screen readers, keyboard-only use, high contrast and voice control are not emulated and are recorded the same way; they are exercised when a person or an agent drives the journey in explore mode.
 
 ## Journeys
 
@@ -66,7 +89,7 @@ The isolated clean environment may be a VM, a container or a fresh OS account.
 
 | Mode | What it does | Model calls |
 |---|---|---|
-| explore | An agent drives the browser and terminal to find the journey. Leaves defects, evidence and a first set of captures | Every step |
+| explore | An agent drives the browser and terminal to find the journey. Leaves defects, evidence and a first set of captures. One session plays every persona, or each persona runs in a session of its own and the findings are merged by reach | Every step (times the number of personas for independent sessions) |
 | codify | Turns an explore record into a scenario file and scripts: personas, steps with expected URLs, shot list (filter, scroll, wait selector), assertions | Once, at conversion |
 | run | Executes the script deterministically: seed, time anchor, viewport, locale and timezone pinned; waits on elements, not time; preparation that is not under test goes through an API | Only on a step failure or a visual difference against an approved baseline image |
 
@@ -79,6 +102,8 @@ Mode selection follows the routing table in `SKILL.md`. A new product starts wit
 | Defect list, report | run directory `report.md` (`templates/report.md`) | A human decides |
 | Issue drafts | run directory `issues/` (`templates/issue-draft.md`) | Filed after human approval |
 | Evidence (commands, real output, redacted transcripts) | run directory `evidence/` | No |
+| Independent persona sessions: findings, evidence and shots per persona | run directory `personas/<persona-id>/`, merged into `merged-findings.json` and `merged-findings.md` | No |
+| Failed-request records, one per browser step run in run mode | run directory `network/<step>.json` | No |
 | Screenshots and sibling text | run directory `shots/` | Images only, after the gates and human approval |
 | Decision log | run directory `decisions.md` (`templates/decision-log.md`) | No |
 | Secrets (run denylist, raw transcripts, production reference captures) | run directory `secrets/` (mode 700, files 600) | Never. Deleted at wrap-up |
