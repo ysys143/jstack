@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import {spawnSync} from 'node:child_process';
 import {profile_gaps,run_selected,render_evidence} from '../scripts/workflow.js';
 
 const req=(checks:any[])=>({'요구ID':'R1','관련파일':['a.js'],'명령':{'실행':'node t.js','기대종료':0},'반증':{'실행':'node r.js {RED_ROOT}','기대종료':0},'추가검사':checks});
@@ -27,7 +28,7 @@ test('a selected check runs over the requirement files and its mode decides the 
   }finally{if(saved===undefined)delete process.env.PROBE_RC;else process.env.PROBE_RC=saved;fs.rmSync(repo,{recursive:true,force:true});}
 });
 
-test('author separation is a gap until workflow can check it',()=>{
+test('author separation without a recorded brief is a gap',()=>{
   const repo=repoWith({schemaVersion:1,checks:{authorSplit:{}}});
   try{assert.equal(run_selected(repo,req([{'종류':'authorSplit','적용':'필요'}]))[0].outcome,'gap');}finally{fs.rmSync(repo,{recursive:true,force:true});}
 });
@@ -43,4 +44,41 @@ test('evidence lists passed checks as verified and reported or failed ones as no
   assert.match(text,/- R1 crap check: skipped — one-line function/);
   assert.match(text,/- R1 duplication check: `jscpd` exit 1, reported only \(mode report\)/);
   assert.match(text,/- R1 direction check: `depcruise` gap — the declared tool depcruise is not installed/);
+});
+
+const gitRepo=(profile:any)=>{const repo=repoWith(profile),git=(...args:string[])=>{const r=spawnSync('git',args,{cwd:repo,encoding:'utf8'});assert.equal(r.status,0,r.stderr);return r.stdout.trim();};
+  git('init','-q','-b','main');git('config','user.email','t@example.invalid');git('config','user.name','t');return {repo,git};};
+
+test('a holdout must exist and stay untracked, or preflight reports a gap',()=>{
+  const {repo,git}=gitRepo({schemaVersion:1,checks:{holdout:{dir:'hidden',command:'node {HOLDOUT}/h.js'}}});
+  const contract={'검증':[req([{'종류':'holdout','적용':'필요'}])]};
+  try{
+    assert.match(profile_gaps(repo,contract)[0]!,/holdout directory hidden does not exist/);
+    fs.mkdirSync(path.join(repo,'hidden'));fs.writeFileSync(path.join(repo,'hidden','h.js'),'process.exit(0);\n');
+    assert.deepEqual(profile_gaps(repo,contract),[]);
+    git('add','-A');git('commit','-qm','tracked');
+    assert.match(profile_gaps(repo,contract)[0]!,/is tracked by git/);
+  }finally{fs.rmSync(repo,{recursive:true,force:true});}
+});
+
+test('the holdout command receives the holdout directory',()=>{
+  const repo=repoWith({schemaVersion:1,checks:{holdout:{dir:'hidden',command:'node {HOLDOUT}/h.js'}}});
+  try{fs.mkdirSync(path.join(repo,'hidden'));fs.writeFileSync(path.join(repo,'hidden','h.js'),'process.exit(3);\n');
+    const [row]=run_selected(repo,req([{'종류':'holdout','적용':'필요'}]));
+    assert.deepEqual([row.kind,row.exitCode,row.outcome],['holdout',3,'reported']);
+  }finally{fs.rmSync(repo,{recursive:true,force:true});}
+});
+
+test('author separation fails when the implementer changes the tests after the brief',()=>{
+  const {repo,git}=gitRepo({schemaVersion:1,checks:{authorSplit:{mode:'fail'}}});
+  const split=req([{'종류':'authorSplit','적용':'필요'}]);split['관련파일']=['a.js','tests/'];
+  try{
+    fs.mkdirSync(path.join(repo,'tests'));fs.writeFileSync(path.join(repo,'tests','a.test.js'),'expect(1).toBe(1);\n');git('add','-A');git('commit','-qm','tests');
+    const baseline=git('rev-parse','HEAD');
+    fs.writeFileSync(path.join(repo,'a.js'),'module.exports=1;\n');
+    assert.equal(run_selected(repo,split,baseline)[0].outcome,'passed');
+    fs.writeFileSync(path.join(repo,'tests','a.test.js'),'expect(1).toBeDefined();\n');
+    const [row]=run_selected(repo,split,baseline);
+    assert.equal(row.outcome,'failed');assert.match(row.detail,/tests\/a\.test\.js/);
+  }finally{fs.rmSync(repo,{recursive:true,force:true});}
 });

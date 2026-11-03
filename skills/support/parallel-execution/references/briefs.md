@@ -69,6 +69,17 @@ the user, tracks owners and blockers, integrates results, and avoids duplicate
 investigations. One writer owns a file until an explicit handoff. A worker that writes
 gets its own worktree or branch, so two writers never share one checkout.
 
+When a requirement selects `authorSplit`, split the change from its tests on
+purpose. The test author receives the spec and the interface, never the
+implementation, and commits failing tests. Run `workflow.js brief` after that
+commit; it records the commit. The implementer receives the committed tests and
+the brief, not the test author's reasoning, and must not edit those tests:
+`workflow.js verify` fails or reports any test file in the requirement's files
+changed after the recorded commit. When the requirement selects `holdout`, the
+holdout directory stays untracked in the coordinator's checkout, so a worker's
+worktree never contains it; this is not an OS sandbox, so do not give a worker
+the coordinator's checkout path.
+
 Implementation teammates may exchange relevant discoveries directly when native
 messaging is available. Independent reviewers do not see one another's conclusions
 or the executor's reasoning before their own findings. Messaging does not turn

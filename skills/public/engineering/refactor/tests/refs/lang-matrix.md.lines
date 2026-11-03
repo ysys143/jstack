@@ -1,4 +1,4 @@
-# blob:df51f9aba2ad6998000a241c1f8be75861d9723c
+# blob:d4d59b73606e5be02df407835156a2f4de57f7b6
 # Language matrix — six properties across seven languages
 The axes in `quality-taxonomy.md` are stated as properties rather than as the
 tool that finds them. This file is the implementation layer under that decision:
@@ -97,3 +97,19 @@ Thirteen of forty-two cells name no detector, and two of those thirteen are empt
 by construction rather than unchecked. Thirteen is below twenty-one, so the
 redefinition survives its own test — but eleven *read* cells is the honest cost,
 and the report for a finding in one of them says which cell it came from.
+## Dependency direction — a profile check, not a seventh axis
+Whether high-level policy depends on IO-near modules is a design rule the
+project states, not a property a tool can find without being told the layers.
+It stays outside the six axes and their forty-two cells. A repository that writes
+the rule declares the `direction` check in its verification profile
+(`.jstack/verification.json`, see the verify skill), and the project's own tool
+enforces it:
+| Language | Rule tool |
+|---|---|
+| JavaScript, TypeScript | dependency-cruiser (`forbidden` rules) |
+| Python | import-linter (`layers`, `forbidden` contracts) |
+| Java | ArchUnit (`layeredArchitecture()` tests) |
+| Go | go-arch-lint |
+| Rust | read — cargo-modules draws the graph but does not enforce a rule |
+| C | read |
+jstack does not write the rules. A finding in a *read* language says so.

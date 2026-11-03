@@ -98,7 +98,7 @@ export function judgeReport(repo: string, kind: CheckKind, spec: CheckSpec, scop
 export function runCheck(repo: string, kind: CheckKind, spec: CheckSpec, files: string[], tokens: Record<string, string[]> = {}, timeoutSeconds = 600, scope: Scope = scopeFromFiles(files)): CheckResult {
   const command = spec.command ?? '';
   let argv: string[];
-  try { argv = splitCommand(command).flatMap(token => token === '{FILES}' ? files : tokens[token] ?? [token]); } catch (error) { return { kind, command, exitCode: null, mode: spec.mode, outcome: 'gap', detail: (error as Error).message }; }
+  try { argv = splitCommand(command).flatMap(token => token === '{FILES}' ? files : tokens[token] ?? [Object.entries(tokens).reduce((text, [key, values]) => values.length === 1 ? text.replaceAll(key, values[0]!) : text, token)]); } catch (error) { return { kind, command, exitCode: null, mode: spec.mode, outcome: 'gap', detail: (error as Error).message }; }
   if (!argv.length) return { kind, command, exitCode: null, mode: spec.mode, outcome: 'gap', detail: 'empty command' };
   const result = runProcess(argv[0]!, argv.slice(1), { cwd: repo, timeout: timeoutSeconds * 1000, maxBuffer: 64 * 1024 * 1024 });
   const tail = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim().split(/\r?\n/).slice(-3).join('\n');
