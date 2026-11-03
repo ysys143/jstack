@@ -120,6 +120,11 @@ export const IGNORE: Rule[] = [
     "^hooks/(?:CONTRACT(?:-dev)?\\.md|check_marketplace_versions\\.(?:py|js|ts)|check_readme_version\\.(?:py|js|ts))$"
   ],
   [
+    "^\\.jstack/verification\\.json$|^coverage/lcov\\.info$|^mutants\\.out/outcomes\\.json$|^target/pit-reports/mutations\\.xml$",
+    "Paths in the user's project that the verification profile and the test strength tools read; the package does not ship them",
+    "^skills/(?:verify/(?:SKILL\\.md|scripts/profile\\.js)|setup/SKILL\\.md|cleanup/references/lang-matrix\\.md|tdd/references/test-strength-tools\\.md)$"
+  ],
+  [
     "^/?\\.jstack/",
     "사용자 전용 프로필 또는 프로젝트 상태 경로 — 배포하지 않는다",
     "^(?:runtime/|skills/workspace/references/)"
