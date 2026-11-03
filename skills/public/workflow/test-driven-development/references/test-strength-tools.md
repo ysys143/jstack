@@ -34,8 +34,8 @@ could not be read or is not a supported format. A diff that adds no lines passes
 | Java | PIT | `target/pit-reports/mutations.xml` (`outputFormats: XML`) | `scmMutationCoverage` or `targetClasses` |
 | Rust | cargo-mutants | `mutants.out/outcomes.json` | `--in-diff <diff>` |
 | Go | gremlins | `--output gremlins.json` | `--diff <ref>` |
-| Python | mutmut | no line numbers in its results; not judged | `paths_to_mutate` |
-| C | mull | not supported yet | |
+| Python | mutmut | `mutants/<file>.meta`, one per source file; judged at the range of the mutated function because mutmut keeps no line numbers | `paths_to_mutate` |
+| C, C++ | mull | `mull-runner --reporters Elements --report-dir <dir>` (mutation-testing-elements JSON) | its git-diff filter (see the mull configuration docs) |
 
 Survived and uncovered mutants on judged lines are findings. A mutant that
 cannot change behavior (an equivalent mutant) also survives; record why and

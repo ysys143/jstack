@@ -12,9 +12,10 @@
  *   c = cyclomatic complexity from `lizard --csv`, coverage = covered share of the
  *   function's measured lines (lcov, Cobertura, JaCoCo, Go). Default threshold 30
  *   is the Crap4j original. A function with no measured line counts as uncovered.
- * mutation: surviving or uncovered mutants on judged lines. Reports: Stryker and
- *   other mutation-testing-elements JSON, PIT mutations.xml, cargo-mutants
- *   outcomes.json, gremlins JSON. mutmut reports carry no line numbers.
+ * mutation: surviving or uncovered mutants on judged lines. Reports: Stryker, mull
+ *   and other mutation-testing-elements JSON, PIT mutations.xml, cargo-mutants
+ *   outcomes.json, gremlins JSON, and mutmut `mutants/<file>.meta` (judged at the
+ *   range of the mutated function, read from <file> relative to the working directory).
  * duplication: jscpd clones with either fragment on judged lines.
  *
  * Exit codes: 0 no finding, 1 findings, 2 usage, unreadable or unsupported report.
@@ -73,7 +74,7 @@ export function crapScores(complexityCsv: string, coverageText: string, scope: S
 
 const SURVIVED = new Set(['Survived', 'NoCoverage', 'SURVIVED', 'NO_COVERAGE', 'LIVED', 'NOT COVERED', 'MissedMutant']);
 
-export function mutationSurvivors(reportText: string, scope: Scope): { format: string; findings: Finding[] } {
+export function mutationSurvivors(reportText: string, scope: Scope, options: { mutmutSource?: string; mutmutFile?: string } = {}): { format: string; findings: Finding[] } {
   const head = reportText.trimStart(), findings: Finding[] = [];
   const keep = (file: string, line: number, status: string, what: string) => { if (SURVIVED.has(status) && judged(scope, file, line)) findings.push({ file, line, detail: `${status}: ${what}` }); };
   if (head.startsWith('<')) {
@@ -99,7 +100,26 @@ export function mutationSurvivors(reportText: string, scope: Scope): { format: s
     for (const file of data.files) for (const m of file.mutations ?? []) keep(String(file.file_name), Number(m.line), String(m.status), String(m.type));
     return { format: 'gremlins', findings };
   }
-  throw new Error('unsupported mutation report (Stryker/mutation-testing-elements JSON, PIT mutations.xml, cargo-mutants outcomes.json, gremlins JSON); mutmut reports carry no line numbers');
+  if (data && typeof data.exit_code_by_key === 'object' && options.mutmutSource !== undefined) {
+    // mutmut 3 keeps no line numbers: judge each survivor at the range of its function.
+    const source = options.mutmutSource.split(/\r?\n/), file = options.mutmutFile!;
+    const range = (name: string): [number, number] | null => {
+      const start = source.findIndex(line => new RegExp(`^(\\s*)(?:async\\s+)?def\\s+${name}\\s*\\(`).test(line));
+      if (start < 0) return null;
+      const indent = /^\s*/.exec(source[start]!)![0].length;
+      let end = start;
+      for (let i = start + 1; i < source.length; i++) { const line = source[i]!; if (!line.trim()) continue; if (/^\s*/.exec(line)![0].length <= indent) break; end = i; }
+      return [start + 1, end + 1];
+    };
+    for (const [key, code] of Object.entries<any>(data.exit_code_by_key)) {
+      if (code !== 0) continue;
+      const name = /\.x[_ǁ]?(\w+?)__mutmut_\d+$/.exec(key)?.[1]?.replace(/^.*ǁ/, '');
+      const lines = name ? range(name) : null;
+      if (lines && judged(scope, file, lines[0], lines[1])) findings.push({ file, line: lines[0], detail: `survived: ${key} (function ${name}, lines ${lines[0]}-${lines[1]})` });
+    }
+    return { format: 'mutmut', findings };
+  }
+  throw new Error('unsupported mutation report (Stryker, mull and other mutation-testing-elements JSON, PIT mutations.xml, cargo-mutants outcomes.json, gremlins JSON, mutmut mutants/<file>.meta)');
 }
 
 export function duplicateClones(reportText: string, scope: Scope): Finding[] {
@@ -141,7 +161,8 @@ export function main(argv: string[]): number {
       label = `crap: ${scores.length} changed function(s), threshold ${threshold}`;
     } else if (command === 'mutation') {
       if (!options.report) { console.error(USAGE); return 2; }
-      const result = mutationSurvivors(read(options.report), scope);
+      const meta = /(?:^|\/)mutants\/(.+)\.meta$/.exec(options.report.replaceAll('\\', '/'));
+      const result = mutationSurvivors(read(options.report), scope, meta ? { mutmutFile: meta[1]!, mutmutSource: read(meta[1]!) } : {});
       findings = result.findings; label = `mutation (${result.format})`;
     } else {
       if (!options.report) { console.error(USAGE); return 2; }

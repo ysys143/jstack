@@ -90,7 +90,10 @@ export function judgeReport(repo: string, kind: CheckKind, spec: CheckSpec, scop
     const threshold = spec.threshold ?? 30, scores = crapScores(read(spec.complexity), read(spec.coverage), scope);
     return { label: `CRAP above ${threshold}`, findings: scores.filter(score => score.crap > threshold).map(score => ({ file: score.file, line: score.start, detail: `${score.name} CRAP ${score.crap}` })) };
   }
-  if (kind === 'mutation' && spec.report) return { label: 'surviving mutants', findings: mutationSurvivors(read(spec.report), scope).findings };
+  if (kind === 'mutation' && spec.report) {
+    const meta = /(?:^|\/)mutants\/(.+)\.meta$/.exec(spec.report.replaceAll('\\', '/'));
+    return { label: 'surviving mutants', findings: mutationSurvivors(read(spec.report), scope, meta ? { mutmutFile: meta[1]!, mutmutSource: read(meta[1]!) } : {}).findings };
+  }
   if (kind === 'duplication' && spec.report) return { label: 'clones', findings: duplicateClones(read(spec.report), scope) };
   return null;
 }

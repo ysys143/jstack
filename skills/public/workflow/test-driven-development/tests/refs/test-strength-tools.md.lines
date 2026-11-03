@@ -1,4 +1,4 @@
-# blob:fb6339e88dcc73f9ec12b1bae364e4a5d630341f
+# blob:c1f004eb992f98e1c9e5021d1590d993c5a205fc
 # Test strength tools
 Coverage says a line ran. These checks ask whether the tests would notice the
 line being wrong (mutation), whether a changed function is both complex and
@@ -28,8 +28,8 @@ could not be read or is not a supported format. A diff that adds no lines passes
 | Java | PIT | `target/pit-reports/mutations.xml` (`outputFormats: XML`) | `scmMutationCoverage` or `targetClasses` |
 | Rust | cargo-mutants | `mutants.out/outcomes.json` | `--in-diff <diff>` |
 | Go | gremlins | `--output gremlins.json` | `--diff <ref>` |
-| Python | mutmut | no line numbers in its results; not judged | `paths_to_mutate` |
-| C | mull | not supported yet | |
+| Python | mutmut | `mutants/<file>.meta`, one per source file; judged at the range of the mutated function because mutmut keeps no line numbers | `paths_to_mutate` |
+| C, C++ | mull | `mull-runner --reporters Elements --report-dir <dir>` (mutation-testing-elements JSON) | its git-diff filter (see the mull configuration docs) |
 Survived and uncovered mutants on judged lines are findings. A mutant that
 cannot change behavior (an equivalent mutant) also survives; record why and
 leave it, instead of writing a test that pins the implementation.

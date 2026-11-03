@@ -1,5 +1,5 @@
 /** TDD owning contracts: document polarity, actual approval/diff gates, and deletion floors. */
-import { readFileSync, writeFileSync, existsSync, readdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, mkdtempSync, rmSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,9 +23,9 @@ const [C_FLOOR, GO_FLOOR, JAVA_FLOOR, JS_FLOOR]:any=[7133, 7249, 8844, 6568];
 const [PY_FLOOR, RUST_FLOOR, TS_FLOOR, ANTI_FLOOR]:any=[9638, 7016, 7091, 7183];
 const PER_FILE:any={"SKILL.md": 47, "langs/c.md": 7, "langs/go.md": 6, "langs/java.md": 6, "langs/javascript.md": 6, "langs/python.md": 8, "langs/rust.md": 6, "langs/typescript.md": 6, "references/antipatterns.md": 10, "references/test-budget.md": 3, "references/test-portfolio.md": 3, "references/test-strength-tools.md": 3, "NOTICE": 1};
 const BODY_MIN:any=47;
-const GATE_MIN:any=40;
-const STRENGTH_MIN:any=10;
-const TOTAL:any=156;
+const GATE_MIN:any=42;
+const STRENGTH_MIN:any=11;
+const TOTAL:any=158;
 const TEST_BUDGET_FLOOR:any=4247;
 const TEST_PORTFOLIO_FLOOR:any=2393;
 const FAIL_UNDER:any="90";
@@ -276,6 +276,13 @@ const jscpd=put('jscpd.json',JSON.stringify({duplicates:[{firstFile:{name:'src/c
 check('strength duplication: a clone with a fragment in a judged file fails', rc===1&&out.includes('src/calc.js:1-6 = src/calc2.js:1-6'), out.slice(0,200));
 [rc,out]=sg('duplication','--diff',diff,'--report',jscpd);
 check('strength duplication: a clone outside the added lines is not judged', rc===0, out.slice(0,200));
+writeFileSync(join(dir,'calc.py'),'def other():\n    return 0\n\ndef grade(s):\n    if s >= 90:\n        return "A"\n    return "F"\n');
+const meta=join(dir,'mutants','calc.py.meta');mkdirSync(join(dir,'mutants'),{recursive:true});writeFileSync(meta,JSON.stringify({exit_code_by_key:{'calc.x_grade__mutmut_1':0,'calc.x_grade__mutmut_2':1,'calc.x_other__mutmut_1':1}}));
+[rc,out]=sg('mutation','--files','calc.py','--report',meta);
+check('strength mutation: a mutmut survivor is judged at its function range', rc===1&&out.includes('(mutmut)')&&out.includes('calc.py:4  survived: calc.x_grade__mutmut_1 (function grade, lines 4-7)')&&!out.includes('mutmut_2'), out.slice(0,240));
+writeFileSync(join(dir,'d2.diff'),'diff --git a/calc.py b/calc.py\n--- a/calc.py\n+++ b/calc.py\n@@ -1,0 +2 @@\n+    return 0\n');
+[rc,out]=sg('mutation','--diff',join(dir,'d2.diff'),'--report',meta);
+check('strength mutation: a mutmut survivor in an untouched function is not judged', rc===0, out.slice(0,200));
 [rc,out]=sg('mutation','--files','x','--report',csv);
 check('strength mutation: an unsupported report is an error, not a pass (rc 2)', rc===2, out.slice(0,200));
 [rc,out]=sg('mutation','--diff',put('none.diff',''),'--report',stryker);
