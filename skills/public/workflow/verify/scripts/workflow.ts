@@ -116,6 +116,28 @@ export async function verify(args:Arguments):Promise<number>{const repo=reposito
   const file=path.join(root,'receipts',utcnow().replaceAll(':','').replaceAll('-','')+'-'+randomUUID()+'.json');write_json(file,receipt);const state=read_json(path.join(root,'state.json'));Object.assign(state,{phase:passed?'complete':'blocked',needsVerification:!passed,updatedAt:utcnow(),latestReceipt:path.relative(root,file),latestReceiptSha256:digest_file(file)});write_json(path.join(root,'state.json'),state);print({task:args.task,verified:passed,receipt:path.relative(repo,file),missingReviews:missing,targetsStable:stable});return passed?0:1;
 }
 export function assess(repo:string,root:string,contract:any,contractHash:string):any{const state=read_json(path.join(root,'state.json')),problems:string[]=[];if(state.phase!=='complete'||state.needsVerification)problems.push('verification-required');const relative=state.latestReceipt;if(!relative)return {complete:false,problems:[...problems,'missing-receipt']};const file=path.resolve(root,relative);if(!inside(root,file))throw new Error('receipt path escapes task state');const receipt=read_json(file);if(digest_file(file)!==state.latestReceiptSha256)problems.push('receipt-digest');if(!receipt.passed)problems.push('receipt-failed');if(receipt.contractSha256!==contractHash)problems.push('contract-stale');if(!equal(receipt.repository,repo_identity(repo)))problems.push('repository-stale');if(!equal(receipt.coordinatorPackage,coordinator_identity()))problems.push('coordinator-package-stale');if(receipt.head!==run_git(repo,'rev-parse','HEAD'))problems.push('head-stale');if(receipt.gitStateSha256!==git_state_hash(repo,root))problems.push('git-state-stale');const preflightPath=path.join(root,'preflight.json');if(!isFile(preflightPath)||receipt.preflightSha256!==digest_file(preflightPath))problems.push('preflight-stale');const briefPath=path.join(root,'brief.json');if(contract['위임']==='필요'||receipt.briefSha256!==null&&receipt.briefSha256!==undefined)if(!isFile(briefPath)||receipt.briefSha256!==digest_file(briefPath))problems.push('brief-stale');if(!equal(receipt.targetsAfter,target_hashes(repo,contract)))problems.push('target-stale');try{const loaded=security_at(root,repo,contract);if(!equal(receipt.securityFingerprints,loaded?.fingerprints??null))problems.push('security-stale');if(loaded&&!receipt.security?.passed)problems.push('security-failed');}catch{problems.push('security-stale');}if(!equal(receipt.readiness?.toolFingerprints,tool_fingerprints(contract,repo)))problems.push('tool-stale');const[,missing]=review_evidence(repo,root,contract,contractHash);problems.push(...missing.map(value=>'review-stale:'+value));return {complete:!problems.length,problems,receipt:path.relative(repo,file)};}
+/** Render the latest receipt as a review-ready list of what was verified and what was not. */
+export function render_evidence(task:string,receipt:any,contract:any,problems:string[]):string[]{
+  const code=(text:string)=>'`'+String(text).replaceAll('`',"'")+'`',verified:string[]=[],open:string[]=[];
+  const rows=new Map<string,any>((receipt.requirements??[]).map((row:any)=>[row.requirementId,row]));
+  for(const req of requirements(contract)){const id=req['요구ID'],row=rows.get(id);
+    if(!row){open.push(`- ${id}: not run in this receipt`);continue;}
+    const pos=row.positive??{},neg=row.negativeControl??{},line=`${code(req['명령']['실행'])} exit ${pos.exitCode} (expected ${req['명령']['기대종료']}); RED ${code(req['반증']['실행'])} exit ${neg.exitCode} (expected ${req['반증']['기대종료']})`;
+    if(row.passed)verified.push(`- ${id}: ${line}`);else open.push(`- ${id}: failed${pos.timedOut||neg.timedOut?' (timed out)':''} — ${line}`);
+    for(const review of req['추가검토']??[])if(review['적용']==='생략')open.push(`- ${id} ${review['종류']} review: skipped — ${review['생략사유']??'no reason recorded'}`);}
+  for(const missing of receipt.missingReviews??[])open.push(`- ${missing} review: required, no passing review receipt`);
+  if(receipt.targetsStable===false)open.push('- target files changed while the checks ran');
+  if(receipt.security&&!receipt.security.passed)open.push('- security verification did not pass');
+  if(receipt.readiness&&receipt.readiness.passed===false)open.push('- readiness failed; requirement commands did not run');
+  for(const problem of problems)open.push(`- receipt is not current: ${problem}`);
+  return [`Verification evidence for task ${task} (HEAD ${String(receipt.head??'unknown').slice(0,12)}, recorded ${receipt.recordedAt??'unknown'})`,'',
+    'Verified',...(verified.length?verified:['- nothing']),'','Not verified',...(open.length?open:['- nothing recorded']),'',
+    'Scope: the requirements of this contract only. Checks outside the contract are not covered by this record.'];
+}
+export function evidence_report(args:Arguments):number{const repo=repository(),[root,,contract,hash]=open_task(repo,args.task),state=read_json(path.join(root,'state.json'));
+  if(!state.latestReceipt){process.stdout.write(`Verification evidence for task ${args.task}\n\nVerified\n- nothing\n\nNot verified\n- no receipt: workflow verify has not run for this task\n`);return 1;}
+  const file=path.resolve(root,state.latestReceipt);if(!inside(root,file))throw new Error('receipt path escapes task state');
+  const assessed=assess(repo,root,contract,hash);process.stdout.write(render_evidence(args.task,read_json(file),contract,assessed.problems??[]).join('\n')+'\n');return 0;}
 export function status(args:Arguments):number{const repo=repository();let result:any;try{const[root,,contract,hash]=open_task(repo,args.task);result=assess(repo,root,contract,hash);}catch(error){result={complete:false,problems:[(error as globalThis.Error).message]};}result.task=args.task;print(result);return result.complete?0:1;}
 export const USAGE=`usage: workflow <action> TASK [options]
 
@@ -126,6 +148,7 @@ actions:
   resume TASK
   verify TASK [--timeout-seconds N]
   status TASK
+  evidence TASK
   interrupt TASK --cursor-file FILE [--evidence FILE]...
   record-review TASK REQUIREMENT KIND --raw-output FILE --verdict pass|fail [--reviewed-file FILE]... [--review-mode broad|focused] [--review-id ID] [--blocking-findings FILE]
 
@@ -134,9 +157,10 @@ TASK is a task ID: letters, digits, '.', '_' and '-', at most 64 characters, sta
 -h, --help prints this usage on stdout and exits 0.
 Exit codes: 0 success, 1 the task is not complete or a check failed, 2 invalid arguments or an error (the reason is on stderr).
 status prints one JSON object on stdout; it takes no --json flag.
+evidence prints the latest receipt as Markdown: what was verified and what was not, for a PR or ship report. It exits 1 when no receipt exists.
 `;
 /** The options each action takes, as in the argparse subparsers of workflow.py. */
-const ACTION_OPTIONS:Record<string,string[]>={init:[],preflight:['--timeout-seconds'],brief:[],resume:[],verify:['--timeout-seconds'],status:[],interrupt:['--cursor-file','--evidence'],'record-review':['--raw-output','--reviewed-file','--verdict','--review-mode','--review-id','--blocking-findings']};
+const ACTION_OPTIONS:Record<string,string[]>={init:[],preflight:['--timeout-seconds'],brief:[],resume:[],verify:['--timeout-seconds'],status:[],evidence:[],interrupt:['--cursor-file','--evidence'],'record-review':['--raw-output','--reviewed-file','--verdict','--review-mode','--review-id','--blocking-findings']};
 const OPTIONS:Record<string,(args:Arguments,value:string)=>unknown>={'--timeout-seconds':(args,value)=>args.timeout_seconds=Number(value),'--cursor-file':(args,value)=>args.cursor_file=value,'--evidence':(args,value)=>args.evidence!.push(value),'--raw-output':(args,value)=>args.raw_output=value,'--reviewed-file':(args,value)=>(args.reviewed_file??=[]).push(value),'--verdict':(args,value)=>args.verdict=value,'--review-mode':(args,value)=>args.review_mode=value as 'broad'|'focused','--review-id':(args,value)=>args.review_id=value,'--blocking-findings':(args,value)=>args.blocking_findings=value};
 export type Parsed={help:true}|{error:string;usage?:true}|{args:Arguments};
 /** Decide what the command line asks for without touching the process, so every rejection can be tested in memory. */
@@ -158,6 +182,6 @@ export function parse_arguments(input:string[]):Parsed{
   return error===undefined?{args}:{error};
 }
 export async function main(input:string[]):Promise<number>{const parsed=parse_arguments(input);if('help' in parsed){process.stdout.write(USAGE);return 0;}if('error' in parsed){process.stderr.write(`workflow: ${parsed.error}\n${parsed.usage?USAGE:''}`);return 2;}const{args}=parsed,action=args.action!,task=args.task;
-  try{const actions:Record<string,(args:Arguments)=>number|Promise<number>>={init,preflight,brief,resume,verify,status,interrupt,'record-review':record_review};return await (action==='init'||action==='status'?actions[action]!(args):stateOperation(task_root(repository(),task),()=>actions[action]!(args)));}catch(error){console.error(`workflow: ${(error as globalThis.Error).message}`);return 2;}
+  try{const actions:Record<string,(args:Arguments)=>number|Promise<number>>={init,preflight,brief,resume,verify,status,evidence:evidence_report,interrupt,'record-review':record_review};return await (action==='init'||action==='status'||action==='evidence'?actions[action]!(args):stateOperation(task_root(repository(),task),()=>actions[action]!(args)));}catch(error){console.error(`workflow: ${(error as globalThis.Error).message}`);return 2;}
 }
 if(isMain(import.meta.url))process.exitCode=await main(process.argv.slice(2));

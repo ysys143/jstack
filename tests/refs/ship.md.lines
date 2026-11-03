@@ -1,4 +1,4 @@
-# blob:906513878e2e85dc0b39b4522ac74fa25d4c69b5
+# blob:4385ab51e54a069976d1213f84fdb7df20a17b50
 ---
 description: "Run pre-merge gates in order; stop on failure"
 ---
@@ -11,6 +11,10 @@ changes are not the subject of these checks.
 2. **Do the checks pass?** Run the repository's own check command (for this plugin, `scripts/run_suites.js`: `node "${CLAUDE_PLUGIN_ROOT}/scripts/run_suites.js"`). Zero passing checks is not a pass.
 3. **Can the change merge with the base?** Resolve conflicts at this gate.
 4. **Is there a rollback path?** Establish one first if absent.
+The verdict lists what was verified and, separately, what was not: checks that
+did not run, were skipped with a reason, or could not answer. For a version 2
+task, `node "${CLAUDE_PLUGIN_ROOT}/skills/verify/scripts/workflow.js" evidence <task-id>`
+renders both lists from the latest receipt.
 Each step matters **only when the preceding step is green**. Running step 2 after
 step 3 lets conflict resolution pass without being checked.
 ## On failure

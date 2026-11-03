@@ -39,6 +39,13 @@ Summary, and the verification row under Test plan. Keep SHAs, step-by-step logs,
 command output out of the body and link them instead, so the body stays a
 one-minute briefing.
 
+End Test plan with a `### Not verified` list, because an omitted row reads as a
+pass. For a version 2 task, paste the "Not verified" part of
+`node "${CLAUDE_PLUGIN_ROOT}/skills/verify/scripts/workflow.js" evidence <task-id>`.
+Otherwise list each check the verification marked NOT VERIFIED or INCONCLUSIVE,
+did not run, or skipped, with its reason. Write `- nothing recorded` only when
+that is true, and say what the verification covered.
+
 ## After the PR is open
 
 When the PR gets review comments (including bot comments) or a CI run fails, read
