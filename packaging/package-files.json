@@ -20754,6 +20754,10 @@
       "target": "skills/verify/scripts/preflight.ts"
     },
     {
+      "source": "skills/public/workflow/verify/scripts/profile.ts",
+      "target": "skills/verify/scripts/profile.ts"
+    },
+    {
       "source": "skills/public/workflow/verify/scripts/red_probe.ts",
       "target": "skills/verify/scripts/red_probe.ts"
     },
@@ -20828,6 +20832,10 @@
     {
       "source": "skills/public/workflow/verify/tests/fixtures/security/python/path_access_vulnerable.py",
       "target": "skills/verify/tests/fixtures/security/python/path_access_vulnerable.py"
+    },
+    {
+      "source": "skills/public/workflow/verify/tests/profile-workflow.test.ts",
+      "target": "skills/verify/tests/profile-workflow.test.ts"
     },
     {
       "source": "skills/public/workflow/verify/tests/refs/SKILL.md.lines",

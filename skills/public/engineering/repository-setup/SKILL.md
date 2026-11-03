@@ -150,6 +150,22 @@ priority is applied at random, so it has to be resolved in the project's file
 rather than left to the reader. `references/convention-conflicts.md` carries the
 resolutions and the clause-ownership transfers behind them.
 
+## The verification profile is the project's choice
+
+`.jstack/verification.json` declares which heavier checks a repository uses
+(mutation, CRAP, duplication, dependency direction, holdout, author separation).
+Offer it only when the user asks for stronger verification or the repository
+already runs one of those tools. Start from the draft and replace its commands
+with the ones the project actually runs:
+
+```bash
+node "${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/profile.js" draft
+```
+
+Write the file only after the user approves its content, then run
+`profile.js check`. Do not install the tools it names. A missing profile is a
+valid state: every optional check stays off.
+
 ## What setup does not own
 
 Project instruction maintenance belongs here. Preparing session history and
