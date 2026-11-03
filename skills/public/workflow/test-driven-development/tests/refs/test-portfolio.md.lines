@@ -1,4 +1,4 @@
-# blob:1f62384fc36d9686787788a921c93600d601de8c
+# blob:8a650f12d5da16a69e6cce5a6bdf679bb596c0c4
 # Test portfolio
 Which kinds of tests a repository keeps decides how fast and trustworthy its
 suite can be. Use this reference when choosing a test level, adding a new kind of
@@ -25,6 +25,8 @@ and, where tests already cover the code, use **diff-based mutation testing**:
 mutate only the changed lines, filter out uninteresting lines, and ask whether any
 test fails. It is especially useful for generated tests. The verify skill's
 `node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/red_probe.js` proves that one command can fail for one explicit mutation.
+To judge a mutation, CRAP, or duplication report on changed lines only, read
+[test strength tools](test-strength-tools.md).
 ## Adjacent techniques
 | Technique | Adopt when | How to keep it fast |
 |---|---|---|

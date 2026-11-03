@@ -31,7 +31,7 @@
     "skills/science": 8,
     "skills/secrets": 3,
     "skills/setup": 16,
-    "skills/tdd": 14,
+    "skills/tdd": 16,
     "skills/team": 10,
     "skills/ui": 47,
     "skills/upstream": 3,
@@ -112,7 +112,7 @@
       "suite": "skills/tdd",
       "baselineRecords": 11,
       "nativeRecords": 14,
-      "reason": "Absorbed test speed guidance adds the test-budget and test-portfolio references and NOTICE provenance, each with its own measured deletion axis."
+      "reason": "Absorbed test speed guidance adds the test-budget and test-portfolio references and NOTICE provenance, each with its own measured deletion axis. The strength_gates script and the test strength tools reference each add a measured deletion axis."
     },
     {
       "suite": "skills/plan",

@@ -53,6 +53,10 @@ Run its budget check before reporting a new test as done.
 `references/test-portfolio.md` — test sizes, the shape of the suite, oracle
 strength, and when to add property-based, fuzzing, snapshot, or mutation tests.
 
+`references/test-strength-tools.md` — judging mutation, CRAP, and duplication
+reports on changed lines with `scripts/strength_gates.js`, when a project's
+verification profile declares those checks.
+
 ## Phase 1: cut the slices (outer loop)
 
 A **thin vertical slice** runs end to end — from entry point to storage — in the

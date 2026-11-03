@@ -20206,6 +20206,14 @@
       "target": "skills/tdd/references/test-portfolio.md"
     },
     {
+      "source": "skills/public/workflow/test-driven-development/references/test-strength-tools.md",
+      "target": "skills/tdd/references/test-strength-tools.md"
+    },
+    {
+      "source": "skills/public/workflow/test-driven-development/scripts/strength_gates.ts",
+      "target": "skills/tdd/scripts/strength_gates.ts"
+    },
+    {
       "source": "skills/public/workflow/test-driven-development/scripts/test_gates.ts",
       "target": "skills/tdd/scripts/test_gates.ts"
     },
@@ -20332,6 +20340,10 @@
     {
       "source": "skills/public/workflow/test-driven-development/tests/refs/test-portfolio.md.lines",
       "target": "skills/tdd/tests/refs/test-portfolio.md.lines"
+    },
+    {
+      "source": "skills/public/workflow/test-driven-development/tests/refs/test-strength-tools.md.lines",
+      "target": "skills/tdd/tests/refs/test-strength-tools.md.lines"
     },
     {
       "source": "skills/public/workflow/test-driven-development/tests/refs/typescript.md.lines",

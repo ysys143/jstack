@@ -31,6 +31,8 @@ and, where tests already cover the code, use **diff-based mutation testing**:
 mutate only the changed lines, filter out uninteresting lines, and ask whether any
 test fails. It is especially useful for generated tests. The verify skill's
 `node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/red_probe.js` proves that one command can fail for one explicit mutation.
+To judge a mutation, CRAP, or duplication report on changed lines only, read
+[test strength tools](test-strength-tools.md).
 
 ## Adjacent techniques
 
