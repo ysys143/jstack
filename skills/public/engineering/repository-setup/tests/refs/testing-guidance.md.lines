@@ -1,4 +1,4 @@
-# blob:f8c1128f813d2d9fdd8b09fd4063f7e8ea0a2f12
+# blob:a3fb7f4275b9dc37ebaae67c5feb98960ba6c299
 # Testing guidance for a repository
 Use when setting up or repairing how people and agents run a repository's tests.
 For an agent, the suite is the feedback signal in its loop, the oracle that says
@@ -23,8 +23,10 @@ with full logs written to a file. Tool output given to an agent is truncated,
 and truncated or ambiguous output causes reruns.
 5. **Isolated**: tests pick their own temp dirs and ports, so several agents in
 separate worktrees can run suites at once.
-6. **Protected oracle**: CI flags diffs that delete, skip, or weaken tests; for
-autonomous runs, consider read-only test directories or a hidden holdout suite.
+6. **Protected oracle**: CI flags diffs that delete, skip, or weaken tests
+(`${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/oracle_guard.js --base <base>`
+does this from one `git diff`); for autonomous runs, consider read-only test
+directories or a hidden holdout suite.
 Also flag test-specific branches in product code and long edit-and-test
 cycles on one file.
 7. **Automatic gate**: a pre-push hook or a required CI check runs the complete

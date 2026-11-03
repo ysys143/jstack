@@ -35,7 +35,7 @@
     "skills/team": 10,
     "skills/ui": 47,
     "skills/upstream": 3,
-    "skills/verify": 34,
+    "skills/verify": 35,
     "skills/workspace": 17,
     "skills/wrapup": 0,
     "tests/test_contracts.py": 0,
@@ -106,7 +106,7 @@
       "suite": "skills/verify",
       "baselineRecords": 20,
       "nativeRecords": 33,
-      "reason": "Absorbed test speed guidance adds five references (test waits, parallelism, selection, flaky tests, evidence), the test_profile and test_smells scripts, and NOTICE provenance, each with its own measured deletion axis. The interactive CLI reference adds one more measured deletion axis, and the restored CI diagnosis reference adds another. The shared ship-gates reference adds a semantic and order deletion axis."
+      "reason": "Absorbed test speed guidance adds five references (test waits, parallelism, selection, flaky tests, evidence), the test_profile and test_smells scripts, and NOTICE provenance, each with its own measured deletion axis. The interactive CLI reference adds one more measured deletion axis, and the restored CI diagnosis reference adds another. The shared ship-gates reference adds a semantic and order deletion axis. The oracle_guard script adds its own measured deletion axis."
     },
     {
       "suite": "skills/tdd",

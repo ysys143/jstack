@@ -1,4 +1,4 @@
-# blob:7a654fdc0ab81103eaa84d7b9141dcfc721afa8d
+# blob:31eb446c2999f9927a69c9824a71f95a14a3cecd
 # Verify — is it actually done
 For task requests and corrections, follow the shared [request continuity protocol](../../runtime/TASKS.md) once per session.
 For a CI failure or stale run investigation, read the [CI diagnosis procedure](references/ci-diagnosis.md); it does not verify current code.
@@ -91,6 +91,18 @@ requires every consumer suite named by that contract. A release, publication,
 or whole-package portability claim requires the full package and release gates.
 Record which scope applied and why; “affected” cannot be used to omit a known
 consumer, and “full” cannot be claimed from a local suite.
+### A change must not weaken the tests that check it
+When the change touches a test file, run the protected-oracle check against the
+base before trusting the tests that pass:
+```bash
+node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/oracle_guard.js --base origin/main
+```
+It reports a deleted test file, an added skip or focus marker, and fewer
+assertion calls in a test file. An unexplained finding is NOT VERIFIED. A
+deliberate change states why in a `Test-Change-Reason:` commit trailer, or with
+`--reason` before committing; the reason goes into the report. It costs one
+`git diff` and stops at once when no test file changed. It is a line heuristic:
+an assertion replaced by a weaker one on the same line still needs reading.
 ### A missing check is not a pass
 **A check that does not exist is not a passing check.** If the repository has no
 test command, say so; do not report silence as success. The same holds for a check
@@ -234,10 +246,11 @@ instruction in that file overrides it.
 | `scripts/package_check.js` | Before release — CHANGELOG top must equal the manifest `version` |
 | `scripts/package_identity.js` | Binding runtime, test, asset, metadata, and raw-tree identities without relying on Git |
 | `scripts/red_probe.js` | Proving a verification command can actually fail |
+| `scripts/oracle_guard.js` | Finding a change that deletes, skips, focuses, or removes assertions from the tests that check it |
 | `scripts/test_profile.js` | Measuring wall against CPU time per test unit, the long pole, and budgets for new or changed tests |
 | `scripts/test_smells.js` | Finding sleeps, fixed ports and paths, real network calls, retries, serial settings, and focused tests |
 | `scripts/security_contract.js` | Validating optional security scope and observed oracle results; workflow owns execution |
-| `scripts/workflow.js` | Connecting one version 2 task contract to readiness, delegation, interruption recovery, reviews, and fresh receipts |
+| `scripts/workflow.js` | Connecting one version 2 task contract to readiness, delegation, interruption recovery, reviews, and fresh receipts; `evidence` renders what the latest receipt verified and what it did not |
 | `scripts/ci_diagnosis.js` | Read-only cross-check of a captured CI failure against the current checkout |
 ## Boundaries
 | Task | Owner |
