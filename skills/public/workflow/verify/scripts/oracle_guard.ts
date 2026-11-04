@@ -9,8 +9,9 @@
  *
  * Kinds, per test file: deleted-test (deleted, not renamed), skip-added and
  * focus-added (more markers added than removed), assertions-reduced (fewer
- * assertion calls than before). This is a line heuristic, not a parser: an
- * assertion replaced by a weaker one on the same line is not seen.
+ * assertion calls than before). Markers inside string literals are test data and
+ * are not counted. This is a line heuristic, not a parser: an assertion replaced
+ * by a weaker one on the same line is not seen.
  *
  * A finding is accepted when the change states why: a `Test-Change-Reason:`
  * trailer in a commit of REF...HEAD, or --reason for uncommitted work.
@@ -31,6 +32,11 @@ export interface FileChange { path: string; deleted: boolean; added: string[]; r
 const SKIP = /\b(?:describe|it|test|context|suite)\.skip\(|\bx(?:it|describe|test)\(|\btest\.todo\(|@pytest\.mark\.(?:skip|skipif|xfail)\b|\bpytest\.skip\(|@unittest\.skip|\bself\.skipTest\(|\bt\.Skip(?:f|Now)?\(|#\[ignore\]|@Disabled\b|@Ignore\b|\bskip\s*:\s*(?:true\b|['"`])/g;
 const FOCUS = /\b(?:describe|it|test|context)\.only\(|\bf(?:it|describe)\(|@pytest\.mark\.only\b|\bonly\s*:\s*true\b/g;
 const ASSERT = /^\s*assert\s|\bassert(?:_\w+|[A-Z]\w*)?!?\s*[(.!]|\bexpect\s*\(|\.should\b|\brequire\.\w+\(|\bt\.(?:Error|Errorf|Fatal|Fatalf|Fail|FailNow)\(|\bcheck\s*\(/g;
+
+/** Blank the inside of string literals so a marker quoted as test data is not counted. */
+export function code(line: string): string {
+  return line.replace(/(["'`])(?:\\.|(?!\1)[^\\])*\1/g, quote => quote[0] + ' '.repeat(Math.max(0, quote.length - 2)) + quote[0]);
+}
 
 function count(lines: string[], pattern: RegExp): number {
   let total = 0;
@@ -73,7 +79,8 @@ export function findWeakening(changes: FileChange[]): { tests: string[]; finding
       continue;
     }
     const net = (pattern: RegExp) => count(change.added, pattern) - count(change.removed, pattern);
-    const skips = net(SKIP), focus = net(FOCUS), asserts = net(ASSERT);
+    const markers = (pattern: RegExp) => count(change.added.map(code), pattern) - count(change.removed.map(code), pattern);
+    const skips = markers(SKIP), focus = markers(FOCUS), asserts = net(ASSERT);
     if (skips > 0) findings.push({ file: change.path, kind: 'skip-added', detail: skips + ' more skip marker(s)' });
     if (focus > 0) findings.push({ file: change.path, kind: 'focus-added', detail: focus + ' more focus marker(s); the rest of the suite stops running' });
     if (asserts < 0) findings.push({ file: change.path, kind: 'assertions-reduced', detail: -asserts + ' fewer assertion call(s)' });
