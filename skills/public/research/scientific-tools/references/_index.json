@@ -120,6 +120,12 @@
     "bytes": 789
   },
   {
+    "domain": "Business Data Analysis (Anthropic)",
+    "file": "business-data-analysis-anthropic.md",
+    "count": 2,
+    "bytes": 626
+  },
+  {
     "domain": "Electronic Lab Notebooks (ELN)",
     "file": "electronic-lab-notebooks-eln.md",
     "count": 2,
