@@ -58,6 +58,7 @@ categories:
   vendored-science:
     - "skills/science/repos/academic/**"
     - "skills/science/repos/gdm/**"
+    - "skills/science/repos/kwp/**"
     - "skills/science/repos/kdense/*"
     - "skills/science/repos/kdense/skills/*/SKILL.md"
     - "skills/science/repos/kdense/skills/*/references/**"
