@@ -1,0 +1,99 @@
+# Choosing a research problem
+
+This is a local procedure, not an imported skill. It is written for this router
+from the problem-selection stages of `TaewiKim/autoresearchlab` @ `80c5d21`
+(MIT). It was rewritten, not copied: the upstream implements these stages in a Rust
+harness (`native/researchlab-harness/src/labdirector/problem_selection/`, files
+`mod.rs`, `strategies.rs`, `panel.rs`, `novelty.rs`, `feasibility.rs`).
+
+Use it after ideas exist and one problem must be chosen to work on. For running
+an ideation session, read `repos/kdense/skills/scientific-brainstorming/SKILL.md`
+first. That skill generates ideas and screens them; this procedure picks one.
+
+**Limit.** The upstream reports no published result made with this procedure.
+Its stated motive is one failure it recorded (cycle `cycle-b-20260919`): a single
+agent, with the available instruments in view, wrote one candidate. That candidate
+was the problem it could run that night, not the problem worth running. Treat the
+stages as checks on that failure, not as a validated method.
+
+## 1. List the field's beliefs
+
+Write the assumptions the field can be shown to hold, each with a source that
+holds it. A result is interesting when it denies or sharply qualifies an assumption
+its audience holds (Davis 1971, "That's Interesting!", *Philosophy of the Social
+Sciences* 1(4):309-344). Confirming what is known is dull. Denying what nobody
+believes is irrelevant.
+
+## 2. Write candidates without looking at the instruments
+
+Write several candidates before looking at the available code, data, models or
+lab equipment. Seeing what can run tonight makes it look like what is worth
+running. Spread the slate across at least two of four origins:
+
+| Origin | When it fits | Each candidate states |
+|---|---|---|
+| Belief denial | The field holds a named assumption | The belief from step 1 that it would deny |
+| Untried mechanism | The subfield is immature and performance still matters | Why the mechanism is new, not a refinement of a published approach |
+| Imported concept | A named bottleneck whose published attacks have stalled | The bottleneck, the attacks already tried, and the discipline the concept comes from |
+| Unnamed bottleneck | Papers work around, assume or leave unmeasured something | The papers that show the workaround |
+
+A single candidate is not a slate: nothing competes with it.
+
+## 3. Score with a sealed, independent panel
+
+Use four or five reviewers, each from a different subfield. Each reviewer scores
+every candidate in a separate context and sees no other reviewer's scores until
+every reviewer has submitted. Each reviewer gives, per candidate:
+
+- `p`: the probability that the hypothesis holds;
+- `impact` (0-1): how much the reviewer's own research would change if it did;
+- `soundness` (0-1): whether the planned test could settle it;
+- the closest prior work the reviewer knows.
+
+Per reviewer, `value = impact × (1 − |2p − 1|) × soundness`. The middle term is 1
+at `p = 0.5` and 0 at `p = 0` or `1`: a reviewer who can already call the outcome
+is saying the result is not new. A candidate's value is the mean over reviewers.
+
+Report disagreement instead of averaging it away:
+
+- **contested**: the spread of `p` is 0.4 or more, or the population standard
+  deviation of the reviewers' values is 0.2 or more;
+- **predictable**: the mean of `1 − |2p − 1|` is below 0.2, whatever the impact.
+
+These thresholds are the upstream's choices, not established values. Write them
+down if you change them.
+
+## 4. Try to refute novelty, for the idea, not the topic
+
+For the best-valued candidates, search for the core idea itself in the last 12-18
+months, starting from the prior work the reviewers named. Run at least two
+searches covering at least two sources (the upstream uses Semantic Scholar and
+arXiv). Give one verdict per candidate:
+
+- `novel`;
+- `partially_anticipated`: record what remains open;
+- `anticipated`: cite the anticipating work by title and an identifier or URL.
+
+Strike an `anticipated` candidate. This stage only removes candidates; it never
+reorders the panel's ranking. An empty search is `novel` within that search, not
+proof of novelty (see `scientific-brainstorming`, step 8).
+
+## 5. Check feasibility as pass or fail
+
+Now look at the instruments. Each surviving candidate passes or fails; it gets no
+score. A pass requires a **reproduction anchor**: one number from a source paper,
+reproduced here before the new experiment. A host that cannot reproduce the
+baseline cannot test the claim. Record the licences of the code, data and
+checkpoints that the candidate builds on.
+
+## 6. A person chooses
+
+Show the survivors with their values, disagreement flags, novelty verdicts and
+feasibility. A person picks one, or rejects the slate and the procedure starts
+again from step 2. Record the pick and the reason.
+
+## Record
+
+Keep the belief list, the slate, every sealed score, the novelty audit with its
+queries and dates, the feasibility result and the pick. Without the record, the
+choice cannot be checked later.

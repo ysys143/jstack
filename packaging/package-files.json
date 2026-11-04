@@ -8482,6 +8482,10 @@
       "target": "skills/science/references/preclinical-research-animal-welfare.md"
     },
     {
+      "source": "skills/public/research/scientific-tools/references/problem-selection.md",
+      "target": "skills/science/references/problem-selection.md"
+    },
+    {
       "source": "skills/public/research/scientific-tools/references/protein-engineering-design.md",
       "target": "skills/science/references/protein-engineering-design.md"
     },

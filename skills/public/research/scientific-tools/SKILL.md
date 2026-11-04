@@ -85,13 +85,14 @@ supplements it where the last column says so.
 
 ## Local decisions: three overrides to upstream guidance
 
-The imported material belongs to its authors and is mostly sound, but three areas
-require overrides. In the following situations, read the local reference
+The imported material belongs to its authors and is mostly sound, but four areas
+require overrides or additions. In the following situations, read the local reference
 **before reading the upstream SKILL.md**.
 
 | When | Read | What it overrides |
 |---|---|---|
 | Group comparisons, post-hoc tests, or Bayesian t-tests | `references/stats-corrections.md` | Four errors in upstream `statistical-analysis`: remove variance-pretest branching (always default to Welch); describe Mann-Whitney U as stochastic superiority; remove the omnibus gate; use Kruschke BEST for Bayesian t-tests. The same rules apply to the `kwp` copy |
+| Choosing a research problem or experiment topic, after brainstorming | `references/problem-selection.md` | No imported skill picks one problem from many: `scientific-brainstorming` generates and screens ideas. This reference adds instrument-blind candidates, a sealed independent panel, and novelty refutation of the idea itself |
 | Handing off or substantiating an analysis | `references/reproducibility.md` | None of the 203 imported skills is dedicated to reproducibility. This reference supplies procedures for seeds, a transitive lockfile, data snapshots, and a manifest |
 | Deciding which child skills to keep readily available | `references/tier-a-verdicts.md` | Tier A promotion was category-wide. Individual assessment of 15 skills retains only 5–6 and excludes five that directly overlap with local skills |
 

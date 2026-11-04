@@ -56,3 +56,11 @@ every user's machine. Team members installing the plugin do not have those files
 The cost is 38M of additional repository content and **manual tracking of upstream updates**. Upstream used `git pull` followed by `rebuild-index.py`; the import no
 longer supports that path. The `scripts/` directory is preserved, so clone upstream
 again and run the scripts when needed.
+
+## Rewritten, not imported: problem selection
+
+`references/problem-selection.md` is local text. It restates, in new words, the
+problem-selection stages of `TaewiKim/autoresearchlab` @
+`80c5d2180094cade4446c32d35a2fb60fdedb105` (MIT, Copyright (c) 2026 Taewi Kim),
+read from `native/researchlab-harness/src/labdirector/problem_selection/`. No code
+or prompt text was copied, so nothing from that repository is under `repos/`.
