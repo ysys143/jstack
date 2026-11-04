@@ -113,6 +113,27 @@ with pm.Model() as best:
 | Post-hoc pairwise comparisons | omnibus p < .05 gate | **Tukey HSD without a gate** |
 | Bayesian two-group comparison | Shared sigma, normal likelihood | **Group-specific sigma, StudentT (BEST)** |
 
+---
+
+## The same rules for `kwp` `statistical-analysis`
+
+`repos/kwp/data/skills/statistical-analysis/SKILL.md`, section "Common Tests"
+(lines 177-181 at `d900840`), is a business-metrics table with the same root cause.
+It picks the two-group test by the shape of the data: an independent t-test for
+"Normal data" and Mann-Whitney U for "Non-normal data", "Skewed metrics". It names
+plain ANOVA for three or more groups and never names Welch.
+
+| Upstream row | Local rule |
+|---|---|
+| Two group means: "t-test (independent)", "Normal data" | **Always Welch** (correction 1). Do not choose between t-test and MWU after looking at normality |
+| Three or more group means: "ANOVA" | **Welch ANOVA**; post-hoc comparisons as in correction 3 |
+| "Non-normal data, two groups": Mann-Whitney U | MWU answers a different question, not a robust mean test. Use it only when stochastic superiority is the planned estimand, and report it as in correction 2. For a skewed business metric whose mean matters (revenue per user), keep Welch on the mean or use a bootstrap CI for the mean difference |
+
+The rest of the kwp file holds: reporting mean and median together, effect size
+with a confidence interval, practical against statistical significance, and its
+cautions on multiple comparisons, Simpson's paradox and survivorship bias.
+`validate-data` has no test-selection rule and needs no correction.
+
 **This document takes precedence over upstream.** If it conflicts with the
 `statistical-analysis` SKILL.md, follow this document. Do not edit the imported
 upstream text: `repos/` belongs to the original authors, and local decisions belong
