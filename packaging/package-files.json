@@ -20738,6 +20738,10 @@
       "target": "skills/verify/scripts/ci_diagnosis.ts"
     },
     {
+      "source": "skills/public/workflow/verify/scripts/oracle_guard.ts",
+      "target": "skills/verify/scripts/oracle_guard.ts"
+    },
+    {
       "source": "skills/public/workflow/verify/scripts/package_check.ts",
       "target": "skills/verify/scripts/package_check.ts"
     },
@@ -20772,6 +20776,10 @@
     {
       "source": "skills/public/workflow/verify/tests/ci-diagnosis.test.ts",
       "target": "skills/verify/tests/ci-diagnosis.test.ts"
+    },
+    {
+      "source": "skills/public/workflow/verify/tests/evidence.test.ts",
+      "target": "skills/verify/tests/evidence.test.ts"
     },
     {
       "source": "skills/public/workflow/verify/tests/fixtures/security/canary.txt",

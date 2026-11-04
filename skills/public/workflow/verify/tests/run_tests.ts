@@ -25,6 +25,7 @@ function compare(a:any,b:any,op:string):boolean{if(a instanceof Set&&b instanceo
 const PREFLIGHT=join(ROOT, "scripts", "preflight.js");
 const PACKAGE_CHECK=join(ROOT, "scripts", "package_check.js");
 const RED_PROBE=join(ROOT, "scripts", "red_probe.js");
+const ORACLE_GUARD=join(ROOT, "scripts", "oracle_guard.js");
 const PACKAGE_IDENTITY=join(ROOT, "scripts", "package_identity.js");
 const WORKFLOW=join(ROOT, "scripts", "workflow.js");
 const WORKFLOW_TEST=join(HERE, "workflow-migration.test.js");
@@ -41,13 +42,14 @@ const SELF_CHECK_MIN=5;
 const PREFLIGHT_FLOOR=23;
 const PKGCHECK_FLOOR=9;
 const REDPROBE_FLOOR=12;
+const ORACLE_GUARD_FLOOR=10;
 const PACKAGE_IDENTITY_FLOOR=48;
 const PACKAGE_IDENTITY_COVERAGE_FLOOR=48;
 const WORKFLOW_FLOOR=3;
-const TEST_WAITS_FLOOR=7595,TEST_PARALLELISM_FLOOR=7878,TEST_SELECTION_FLOOR=8029,FLAKY_TESTS_FLOOR=5266,TEST_EVIDENCE_FLOOR=22917,TEST_PROFILE_FLOOR=9,TEST_SMELLS_FLOOR=2;
+const TEST_WAITS_FLOOR=7595,TEST_PARALLELISM_FLOOR=7878,TEST_SELECTION_FLOOR=8029,FLAKY_TESTS_FLOOR=5266,TEST_EVIDENCE_FLOOR=22917,TEST_PROFILE_FLOOR=9,TEST_SMELLS_FLOOR=12;
 const INTERACTIVE_CLI_FLOOR=6302;
 const CI_DIAGNOSIS_FLOOR=3047;
-const TOTAL=230;
+const TOTAL=241;
 const CLAIM_ANCHORS=["# Claim labels — what the evidence covers", "| Verification grade | Who settles it |", "## The four labels", "| `verified` | The evidence covers the whole claim.", "| `unsupported` | Only the preconditions are supported;", "## The four rules", "**1. `verified` never exceeds the review input scope or the evidence timestamp.**", "**2. Filename correspondence is not evidence.**", "**3. Preconditions only means `unsupported` or `insufficient-coverage`", "**4. Scope-limited `verified` is allowed.**", "## Decision tree", "1. Did any evidence run at all", "6. Otherwise -> verified", "## Worked examples", "## Writing the label in a report", "## What this does not do"];
 const DIGEST_ANCHORS=["# Digest contract", "## Three digests, never one", "**Do not merge these into one.**", "## Canonicalization v2", "**1. Codepoint order.**", "**2. NUL framing.**", "**3. mtime and mode are excluded.**", "**4. `metadata.version` becomes `@VERSION@`.**", "## Reporting a digest", "## Failure modes seen", "| Cache not invalidated after a real behaviour change | One digest doing three jobs |"];
 const MERGE_ANCHORS=["# Merge worktree", "## Current context", "## Instructions", "### Phase 1: Validation", "**Verify worktree**", "**Clean working tree**", "### Phase 2: Research", "### Phase 3: Target branch preparation", "### Phase 4: Squash merge", "**stop and report**", "### Phase 5: Craft commit message and commit", "Trailers are not written here", "### Phase 6: Verification", "## Important notes", "Never skip pre-commit hooks"];
@@ -289,6 +291,37 @@ check("red_probe: unexpected baseline is unexecutable (rc 2)", (isDeepStrictEqua
 ([rc, out, _]=run(RED_PROBE,"--tree",tree,"--command",real,"--json"));
 check("red_probe: missing mutation is unexecutable (rc 2)", (isDeepStrictEqual(rc,2)), ("rc=" + pyStr(rc)));
 check("red_probe: original tree remains unchanged", ((contains(read(join(tree, "impl.cjs")), "return 1"))));
+}
+function oracle_guard_checks(tmp:string):void{
+const dir=join(tmp,"oracle"),diffOf=(name:string,text:string):string=>{const file=join(dir,name+".diff");write(file,text);return file;};
+const hunk=(path:string,removed:string[],added:string[])=>`diff --git a/${path} b/${path}\n--- a/${path}\n+++ b/${path}\n@@ -1 +1 @@\n`+removed.map(l=>"-"+l+"\n").join("")+added.map(l=>"+"+l+"\n").join("");
+const guard=(file:string,...extra:string[])=>{const [rc,out]=run(ORACLE_GUARD,"--diff",file,"--json",...extra);return [rc,as_json(out)];};
+const kinds=(report:any)=>(report.findings??[]).map((f:any)=>f.kind);
+let [rc,out]=run(ORACLE_GUARD,"--diff",diffOf("src-only",hunk("src/a.ts",["return 1"],["return 2"])));
+check("oracle_guard: a diff without test files passes at once", rc===0&&contains(out,"no test files changed"), "rc="+pyStr(rc));
+let [code,report]=guard(diffOf("fewer",hunk("tests/a.test.ts",["expect(f()).toBe(1); expect(g()).toBe(2);"],["expect(f()).toBe(1);"])));
+check("oracle_guard: fewer assertion calls in a test file fail (rc 1)", code===1&&isDeepStrictEqual(kinds(report),["assertions-reduced"])&&report.verdict==="weakened", "rc="+pyStr(code)+" "+repr(kinds(report)));
+[code,report]=guard(diffOf("fewer",hunk("tests/a.test.ts",["expect(f()).toBe(1); expect(g()).toBe(2);"],["expect(f()).toBe(1);"])),"--reason","merged duplicate checks");
+check("oracle_guard: a stated reason accepts the same weakening (rc 0)", code===0&&report.verdict==="accepted"&&isDeepStrictEqual(report.reasons,["merged duplicate checks"]), "rc="+pyStr(code));
+[code,report]=guard(diffOf("skip",hunk("tests/test_b.py",["def test_x():"],["@pytest.mark.skip","def test_x():"])+hunk("pkg/x_test.go",["func TestX(t *testing.T) {"],["func TestX(t *testing.T) { t.Skip()"])+hunk("tests/r.rs",["#[test]"],["#[test]","#[ignore]"])));
+check("oracle_guard: skip markers are found in Python, Go and Rust tests", code===1&&kinds(report).filter((k:string)=>k==="skip-added").length===3, repr(kinds(report)));
+[code,report]=guard(diffOf("focus",hunk("tests/a.spec.ts",["it('x', () => {"],["it.only('x', () => {"])));
+check("oracle_guard: an added focus marker fails", code===1&&isDeepStrictEqual(kinds(report),["focus-added"]), repr(kinds(report)));
+[code,report]=guard(diffOf("deleted","diff --git a/tests/test_b.py b/tests/test_b.py\ndeleted file mode 100644\n--- a/tests/test_b.py\n+++ /dev/null\n@@ -1,2 +0,0 @@\n-def test_x():\n-    assert 1 == 1\n"));
+check("oracle_guard: a deleted test file fails with its removed assertions counted", code===1&&isDeepStrictEqual(kinds(report),["deleted-test"])&&contains(report.findings[0].detail,"1 assertion"), repr(report.findings));
+[code,report]=guard(diffOf("moved",hunk("tests/a.test.ts",["expect(f()).toBe(1);"],["  expect(f()).toBe(1);"])));
+check("oracle_guard: a reindented assertion is not a weakening", code===0&&report.verdict==="pass", "rc="+pyStr(code));
+const repo=join(dir,"repo"),git=(...args:string[])=>runProcess("git",args,{cwd:repo,encoding:"utf8"});
+write(join(repo,"tests","test_b.py"),"def test_x():\n    assert 1 == 1\n");
+git("init","-q","-b","main");git("config","user.email","t@example.invalid");git("config","user.name","t");git("add","-A");git("commit","-qm","init");
+git("switch","-qc","topic");git("mv","tests/test_b.py","tests/test_c.py");git("commit","-qm","rename");
+let guarded=runProcess(process.execPath,[ORACLE_GUARD,"--base","main","--head","HEAD"],{cwd:repo,encoding:"utf8"});
+check("oracle_guard: a renamed test file is not reported as deleted", guarded.status===0&&contains(guarded.stdout,"no weakening found"), (guarded.stdout||"")+(guarded.stderr||""));
+git("rm","-q","tests/test_c.py");git("commit","-qm","drop test","-m","Test-Change-Reason: runner retired");
+guarded=runProcess(process.execPath,[ORACLE_GUARD,"--base","main","--head","HEAD"],{cwd:repo,encoding:"utf8"});
+check("oracle_guard: a Test-Change-Reason trailer accepts a committed deletion", guarded.status===0&&contains(guarded.stdout,"runner retired"), (guarded.stdout||"")+(guarded.stderr||""));
+[rc,out]=run(ORACLE_GUARD,"--base","main","--diff",join(dir,"fewer.diff"));
+check("oracle_guard: --base with --diff is a usage error (rc 2)", rc===2, "rc="+pyStr(rc));
 }
 function preflight_hardening(tmp:any):any{
 let _:any,brk:any,esc:any,escaped:any,hollow:any,i:any,ig_path:any,ig_tree:any,installed:any,k:any,kinds:any,leaked:any,many:any,named:any,noskill:any,origin_ex:any,origin_fb:any,out:any,out_a:any,out_b:any,out_ex:any,out_fb:any,outside:any,payload:any,polluted:any,rc:any,rc_a:any,rc_b:any,rc_ex:any,rc_fb:any,rel:any,s:any,src_tree:any,strays:any,tree:any,unc:any,v:any,vs:any,why:any;
@@ -535,6 +568,7 @@ package_check_checks(tmp);
 package_check_hardening(tmp);
 red_probe_checks(tmp);
 red_probe_hardening(tmp);
+oracle_guard_checks(tmp);
 package_identity_checks(tmp);
 test_speed_script_checks(tmp);}finally{removeTree(tmp, {ignore_errors: true});}
 // The full workflow and timeout cases run in the integration lane. Quick
@@ -555,7 +589,7 @@ check("Extra review: unavailable reviewers leave review incomplete and cannot re
  selfCheck.includes("Never replace a required human review with a model review."));
 (ENV_DEPENDENT=["자기검사:", "계약 커버리지:", "스크립트 계약:"]);
 (live_ran=(Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ENV_DEPENDENT)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
-check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/preflight.js": PREFLIGHT_FLOOR, "scripts/package_check.js": PKGCHECK_FLOOR, "scripts/package_identity.js": PACKAGE_IDENTITY_FLOOR, "scripts/red_probe.js": REDPROBE_FLOOR, "scripts/workflow.js": WORKFLOW_FLOOR, "scripts/test_profile.js": TEST_PROFILE_FLOOR, "scripts/test_smells.js": TEST_SMELLS_FLOOR}, live_ran: live_ran});
+check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/preflight.js": PREFLIGHT_FLOOR, "scripts/package_check.js": PKGCHECK_FLOOR, "scripts/package_identity.js": PACKAGE_IDENTITY_FLOOR, "scripts/red_probe.js": REDPROBE_FLOOR, "scripts/oracle_guard.js": ORACLE_GUARD_FLOOR, "scripts/workflow.js": WORKFLOW_FLOOR, "scripts/test_profile.js": TEST_PROFILE_FLOOR, "scripts/test_smells.js": TEST_SMELLS_FLOOR}, live_ran: live_ran});
 check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": SKILL_MIN, "references/claim-labels.md": CLAIM_MIN, "references/digest-contract.md": DIGEST_MIN, "references/merge.md": MERGE_MIN, "references/self-check.md": SELF_CHECK_MIN, "references/local-feedback.md": 3, "references/validation-cost.md": 4, "references/test-waits.md": 4, "references/test-parallelism.md": 4, "references/test-selection.md": 4, "references/flaky-tests.md": 4, "references/test-evidence.md": 4, "references/interactive-cli.md": 4, "references/ci-diagnosis.md": 4, "references/pr-feedback.md": 4, "references/ship-gates.md": 2, "NOTICE": 1, "scripts/test_profile.js": TEST_PROFILE_FLOOR, "scripts/test_smells.js": TEST_SMELLS_FLOOR, "references/security-verification.md": 4, "references/defending-code-upstream.md": 4, "scripts/preflight.js": PREFLIGHT_FLOOR, "scripts/package_check.js": PKGCHECK_FLOOR, "scripts/package_identity.js": PACKAGE_IDENTITY_COVERAGE_FLOOR, "scripts/red_probe.js": REDPROBE_FLOOR, "scripts/workflow.js": WORKFLOW_FLOOR}, live_ran: live_ran});
 check_body_deletion(check, SUITE_FILE, ROOT, {minimum: SKILL_MIN, live_ran: live_ran});
 check_no_constant_assertions(check, SUITE_FILE);

@@ -1,4 +1,4 @@
-# blob:86148a20e3b9f918bb9dc0ac06ffb330da5dc7f8
+# blob:452aefbac4ef8fb099ea8bd5e6d0c91b16c32886
 ---
 description: Open a PR that explains why, after self-review
 ---
@@ -32,6 +32,12 @@ Answer the why, rejected-alternatives, left-out, and touched-area rows under
 Summary, and the verification row under Test plan. Keep SHAs, step-by-step logs, and long
 command output out of the body and link them instead, so the body stays a
 one-minute briefing.
+End Test plan with a `### Not verified` list, because an omitted row reads as a
+pass. For a version 2 task, paste the "Not verified" part of
+`node "${CLAUDE_PLUGIN_ROOT}/skills/verify/scripts/workflow.js" evidence <task-id>`.
+Otherwise list each check the verification marked NOT VERIFIED or INCONCLUSIVE,
+did not run, or skipped, with its reason. Write `- nothing recorded` only when
+that is true, and say what the verification covered.
 ## After the PR is open
 When the PR gets review comments (including bot comments) or a CI run fails, read
 `${CLAUDE_PLUGIN_ROOT}/skills/verify/references/pr-feedback.md`. It classifies each

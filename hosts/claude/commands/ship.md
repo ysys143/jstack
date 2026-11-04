@@ -15,6 +15,11 @@ ship contract used by both hosts.
 3. **Can the change merge with the base?** Resolve conflicts at this gate.
 4. **Is there a rollback path?** Establish one first if absent.
 
+The verdict lists what was verified and, separately, what was not: checks that
+did not run, were skipped with a reason, or could not answer. For a version 2
+task, `node "${CLAUDE_PLUGIN_ROOT}/skills/verify/scripts/workflow.js" evidence <task-id>`
+renders both lists from the latest receipt.
+
 Each step matters **only when the preceding step is green**. Running step 2 after
 step 3 lets conflict resolution pass without being checked.
 

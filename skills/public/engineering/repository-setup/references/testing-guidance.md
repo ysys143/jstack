@@ -25,8 +25,10 @@ add cost without improving success.
    and truncated or ambiguous output causes reruns.
 5. **Isolated**: tests pick their own temp dirs and ports, so several agents in
    separate worktrees can run suites at once.
-6. **Protected oracle**: CI flags diffs that delete, skip, or weaken tests; for
-   autonomous runs, consider read-only test directories or a hidden holdout suite.
+6. **Protected oracle**: CI flags diffs that delete, skip, or weaken tests
+   (`${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/oracle_guard.js --base <base>`
+   does this from one `git diff`); for autonomous runs, consider read-only test
+   directories or a hidden holdout suite.
    Also flag test-specific branches in product code and long edit-and-test
    cycles on one file.
 7. **Automatic gate**: a pre-push hook or a required CI check runs the complete
