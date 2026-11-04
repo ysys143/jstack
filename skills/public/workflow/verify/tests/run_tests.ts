@@ -42,16 +42,16 @@ const MERGE_MIN=4;
 const SELF_CHECK_MIN=5;
 const PREFLIGHT_FLOOR=23;
 const PKGCHECK_FLOOR=9;
-const REDPROBE_FLOOR=21;
+const REDPROBE_FLOOR=24;
 const ORACLE_GUARD_FLOOR=14;
-const PROFILE_FLOOR=12;
-const PACKAGE_IDENTITY_FLOOR=57;
-const PACKAGE_IDENTITY_COVERAGE_FLOOR=57;
+const PROFILE_FLOOR=15;
+const PACKAGE_IDENTITY_FLOOR=60;
+const PACKAGE_IDENTITY_COVERAGE_FLOOR=60;
 const WORKFLOW_FLOOR=3;
 const TEST_WAITS_FLOOR=7595,TEST_PARALLELISM_FLOOR=7878,TEST_SELECTION_FLOOR=8029,FLAKY_TESTS_FLOOR=5266,TEST_EVIDENCE_FLOOR=22917,TEST_PROFILE_FLOOR=9,TEST_SMELLS_FLOOR=16;
 const INTERACTIVE_CLI_FLOOR=6302;
 const CI_DIAGNOSIS_FLOOR=3047;
-const TOTAL=252;
+const TOTAL=255;
 const CLAIM_ANCHORS=["# Claim labels — what the evidence covers", "| Verification grade | Who settles it |", "## The four labels", "| `verified` | The evidence covers the whole claim.", "| `unsupported` | Only the preconditions are supported;", "## The four rules", "**1. `verified` never exceeds the review input scope or the evidence timestamp.**", "**2. Filename correspondence is not evidence.**", "**3. Preconditions only means `unsupported` or `insufficient-coverage`", "**4. Scope-limited `verified` is allowed.**", "## Decision tree", "1. Did any evidence run at all", "6. Otherwise -> verified", "## Worked examples", "## Writing the label in a report", "## What this does not do"];
 const DIGEST_ANCHORS=["# Digest contract", "## Three digests, never one", "**Do not merge these into one.**", "## Canonicalization v2", "**1. Codepoint order.**", "**2. NUL framing.**", "**3. mtime and mode are excluded.**", "**4. `metadata.version` becomes `@VERSION@`.**", "## Reporting a digest", "## Failure modes seen", "| Cache not invalidated after a real behaviour change | One digest doing three jobs |"];
 const MERGE_ANCHORS=["# Merge worktree", "## Current context", "## Instructions", "### Phase 1: Validation", "**Verify worktree**", "**Clean working tree**", "### Phase 2: Research", "### Phase 3: Target branch preparation", "### Phase 4: Squash merge", "**stop and report**", "### Phase 5: Craft commit message and commit", "Trailers are not written here", "### Phase 6: Verification", "## Important notes", "Never skip pre-commit hooks"];
@@ -308,6 +308,10 @@ profile({duplication:{command:"node probe.js {FILES}",apply:"change",mode:"fail"
 r=runProcess(process.execPath,[PROFILE,"run","--base","main"],{cwd:repo,encoding:"utf8",env:{...process.env,PROBE_RC:"1"}});check("profile: a failing check in fail mode exits 1", r.status===1&&contains(r.stdout,"failed"), r.stdout||"");
 profile({duplication:{command:"node probe.js {FILES}",apply:"change"}});r=runProcess(process.execPath,[PROFILE,"run","--base","main"],{cwd:repo,encoding:"utf8",env:{...process.env,PROBE_RC:"1"}});check("profile: report mode records a failure without failing (rc 0)", r.status===0&&contains(r.stdout,"reported"), r.stdout||"");
 profile({duplication:{command:"no-such-tool-for-jstack {FILES}",apply:"change"}});r=cli("run","--base","main");check("profile: a declared tool that cannot start is a gap (rc 1)", r.status===1&&contains(r.stdout,"gap"), r.stdout||"");
+write(join(repo,"old-report.json"),JSON.stringify({duplicates:[]}));runProcess("touch",["-t","202001010000",join(repo,"old-report.json")]);
+profile({duplication:{command:"node probe.js {FILES}",report:"old-report.json",apply:"change"}});r=cli("run","--base","main");check("profile: a declared report this run did not write is a gap, not a pass", r.status===1&&contains(r.stdout,"gap")&&contains(r.stdout,"did not write old-report.json"), r.stdout||"");
+profile({duplication:{command:"node probe.js {FILES_CSV}",apply:"change"}});write(join(repo,"c.js"),"3\n");r=cli("run","--base","main");check("profile: {FILES_CSV} passes the changed files as one comma-separated argument", r.status===0&&contains(r.stdout,"saw b.js,c.js"), r.stdout||"");
+profile({duplication:{command:"node probe.js {FILES}",include:["*.md"],apply:"change"}});r=cli("run","--base","main");check("profile: include limits the files a check receives", r.status===0&&contains(r.stdout,"no changed file matches include"), r.stdout||"");
 profile({mutation:{command:"node probe.js {FILES}"}});r=cli("run","--base","main");check("profile: a requirement check does not run on a plain change", r.status===0&&contains(r.stdout,"no check applies"), r.stdout||"");
 }
 function oracle_guard_checks(tmp:string):void{

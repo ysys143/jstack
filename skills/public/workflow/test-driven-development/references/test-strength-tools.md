@@ -30,7 +30,7 @@ could not be read or is not a supported format. A diff that adds no lines passes
 
 | Language | Tool | Report | Run only the change |
 |---|---|---|---|
-| JavaScript, TypeScript | Stryker | `reports/mutation/mutation.json` (`jsonReporter`) | `--mutate <files>`, `incremental: true` |
+| JavaScript, TypeScript | Stryker | `reports/mutation/mutation.json` (`jsonReporter`) | `--mutate {FILES_CSV}` (one comma-separated argument), `incremental: true` |
 | Java | PIT | `target/pit-reports/mutations.xml` (`outputFormats: XML`) | `scmMutationCoverage` or `targetClasses` |
 | Rust | cargo-mutants | `mutants.out/outcomes.json` | `--in-diff <diff>` |
 | Go | gremlins | `--output gremlins.json` | `--diff <ref>` |
