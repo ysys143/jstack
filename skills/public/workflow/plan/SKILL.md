@@ -192,6 +192,23 @@ runs this linter before reading earlier task claims or executing any check.
 Small local work may set `위임: 불필요`; it still gets fresh verification, while
 the delegation brief and agent operations are skipped.
 
+When a requirement needs a stronger check than its RED command, select it under
+`추가검사` with the same `적용: 필요 | 생략` and `생략사유` rules: `mutation`,
+`crap`, `duplication`, `direction`, `holdout`, or `authorSplit`. Select one only
+when the repository's verification profile declares it; preflight stops on a
+selected check the profile lacks, so nothing heavier runs by accident. The
+profile is described in [the verify skill](../verify/SKILL.md#optional-checks-the-project-chose).
+
+With a version 2 contract, start each acceptance criterion in `spec.md` with the
+requirement ID that proves it (`ADD-1: Return the sum…`), or end it with
+`생략: reason`. Then check the link:
+
+```bash
+node "${JSTACK_PLUGIN_ROOT}/skills/plan/scripts/contract_lint.js" --spec spec.md contract.yaml
+```
+
+A criterion without a requirement or a reason is the test nobody wrote.
+
 ## Phase 3: check it against the whole (zoom-out)
 
 Step back from the implementation and look at three things.

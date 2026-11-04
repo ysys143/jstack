@@ -134,6 +134,38 @@ deliberate change states why in a `Test-Change-Reason:` commit trailer, or with
 `git diff` and stops at once when no test file changed. It is a line heuristic:
 an assertion replaced by a weaker one on the same line still needs reading.
 
+### Optional checks the project chose
+
+A repository may commit `.jstack/verification.json` to declare heavier checks it
+wants: `mutation`, `crap`, `duplication`, `direction`, `holdout`, `authorSplit`.
+Without the file none of them runs. Each entry names the project's own command
+(`{FILES}` expands to the files in scope), `mode: report | fail` (default
+`report`), and `apply: requirement | change` (default `requirement`). jstack runs
+the declared command; it does not install a tool or choose a threshold.
+
+- `requirement`: a version 2 requirement selects it under `추가검사`, and
+  `workflow.js verify` runs it over that requirement's `관련파일`.
+- `change`: run it over the changed files of any change:
+
+```bash
+node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/profile.js run --base origin/main
+```
+
+When an entry also names its output (`report` for mutation and duplication;
+`complexity` and `coverage` for CRAP, with an optional `threshold`), the report
+is evaluated on the lines in scope only; the formats are listed in
+the `tdd` skill's test strength tools reference.
+A declared tool that cannot start is a gap, not a pass. A `report` result that
+exits nonzero is listed as not verified without failing.
+
+Two kinds change who sees what instead of measuring code. `holdout` names an
+untracked `dir` and a `command`; `{HOLDOUT}` expands to that directory, and
+preflight reports a gap when the directory is missing or tracked by git.
+`authorSplit` checks that no test file in the requirement's files changed after
+the commit `workflow.js brief` recorded; the delegation procedure is in the
+`parallel-execution` worker brief rules. Neither is an OS sandbox: a worker that
+can read the coordinator's checkout can read the holdout.
+
 ### A missing check is not a pass
 
 **A check that does not exist is not a passing check.** If the repository has no
@@ -312,6 +344,7 @@ instruction in that file overrides it.
 | `scripts/package_check.js` | Before release — CHANGELOG top must equal the manifest `version` |
 | `scripts/package_identity.js` | Binding runtime, test, asset, metadata, and raw-tree identities without relying on Git |
 | `scripts/red_probe.js` | Proving a verification command can actually fail |
+| `scripts/profile.js` | Validating `.jstack/verification.json`, printing a draft, and running the checks it declares over a change |
 | `scripts/oracle_guard.js` | Finding a change that deletes, skips, focuses, or removes assertions from the tests that check it |
 | `scripts/test_profile.js` | Measuring wall against CPU time per test unit, the long pole, and budgets for new or changed tests |
 | `scripts/test_smells.js` | Finding sleeps, fixed ports and paths, real network calls, retries, serial settings, and focused tests |

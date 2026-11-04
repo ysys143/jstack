@@ -21,8 +21,8 @@ const SKILL_FLOOR=59;
 const SLICE_SHAPE_CONTRACTS=7;
 const BRAINSTORMING_CONTRACTS=16;
 const CONSENSUS_CONTRACTS=16;
-const SCRIPT_FLOOR=43;
-const TOTAL=162;
+const SCRIPT_FLOOR=49;
+const TOTAL=169;
 function pyStr(value:any):string{return typeof value==='string'?value:repr(value);}
 function subprocessRun(argv:string[],options:any={}):any{const {capture_output,text,...native}=options;const result=runProcess(argv[0],argv.slice(1),native);return {...result,returncode:result.status};}
 function fileHandle(path:string,mode:string){if(mode==='w')writeFileSync(path,'');return{write:(text:string)=>mode==='a'||mode==='w'?appendFileSync(path,text):(()=>{throw Error('File is not writable');})(),read:()=>readFileSync(path,'utf8')};}
@@ -225,6 +225,19 @@ check("Slice: recutting is triggered by finishing a level", ((contains(_slice, "
 check("Slice: discriminating conclusion contains no inserted negation", ((value:any)=>truth(value)?((!contains(_slice, "not horizontal no matter how"))):value)(((contains(_slice, "horizontal no matter how it is labelled.")))));
 check_skill_body(check, ROOT, {needles: ["In verifiable sentences", "Do not proceed while ambiguous", "Stop when the urge is to start coding", "If it is more than needed, cut it"], floor: 4514});
 (META=["자기검사:", "계약 커버리지:", "스크립트 계약:"]);
+{const td=temporaryDirectory();try{
+const base=(checks:string)=>"계약버전: 2\n작업ID: add-fix\n발동: 사용자\n위임: 불필요\n준비:\n  - 도구: node\n    확인명령: node --version\n산출:\n  - 경로: add.js\n    형식: JavaScript\n검증:\n  - 요구ID: ADD-1\n    사용자행동: Return the sum\n    관련파일: [add.js]\n    등급: 기계\n    명령:\n      실행: node t.js\n      기대종료: 0\n    반증:\n      실행: node r.js {RED_ROOT}\n      기대종료: 0\n    인간검토: 불필요\n"+checks;
+const put=(name:string,text:string)=>{const file=join(td,name);writeFileSync(file,text);return file;};
+const good=put("good.yaml",base("    추가검사:\n      - 종류: mutation\n        적용: 필요\n      - 종류: crap\n        적용: 생략\n        생략사유: one-line function\n"));
+let r=lint(good);check("Optional checks: a selected and a reasoned skip pass the linter", r.returncode===0, (r.stderr||"").slice(0,200));
+r=lint(put("kind.yaml",base("    추가검사:\n      - 종류: coverage\n        적용: 필요\n")));check("Optional checks: an unknown kind is a violation", r.returncode===1&&contains(r.stderr,"추가검사[0].`종류` is invalid"), (r.stderr||"").slice(0,200));
+r=lint(put("skip.yaml",base("    추가검사:\n      - 종류: mutation\n        적용: 생략\n")));check("Optional checks: a skip without 생략사유 is a violation", r.returncode===1&&contains(r.stderr,"추가검사[0] is missing `생략사유`"), (r.stderr||"").slice(0,200));
+const spec=(body:string)=>put("spec.md","# Spec\n\n## Acceptance criteria\n\n"+body+"\n## Edge cases\n\n- not a criterion\n");
+r=lint("--spec",spec("- ADD-1: returns the sum\n- Runs offline (생략: the platform guarantees it)\n"),good);check("Spec link: criteria naming a requirement or a reason pass", r.returncode===0&&contains(r.stdout,"every acceptance criterion names a requirement"), (r.stderr||"").slice(0,200));
+r=lint("--spec",spec("- ADD-1: returns the sum\n- Fast enough\n- ADD-9: unknown\n"),good);check("Spec link: a criterion without an ID and an unknown ID both fail", r.returncode===1&&contains(r.stderr,"criterion 2 has no 요구ID")&&contains(r.stderr,"criterion 3 names ADD-9"), (r.stderr||"").slice(0,300));
+r=lint("--spec",put("empty.md","# Spec\n\nNo criteria here.\n"),good);check("Spec link: zero criteria is not a pass", r.returncode===1&&contains(r.stderr,"zero criteria is not a pass"), (r.stderr||"").slice(0,200));
+r=lint("--spec",spec("- ADD-1: sum\n"),good,good);check("Spec link: --spec with two contracts is a usage error (rc 2)", r.returncode===2, "rc="+r.returncode);
+}finally{removeTree(td,{ignore_errors:true});}}
 (live_ran=(Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), META)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": SKILL_FLOOR, "references/slice-shape.md": SLICE_SHAPE_CONTRACTS, "references/security-scope.md": 3, "references/pre-mortem.md": 3, "references/migration-verification.md": 4, "references/brainstorming.md": BRAINSTORMING_CONTRACTS, "references/consensus-plan.md": CONSENSUS_CONTRACTS, "NOTICE": 3, "scripts/contract_lint.js": SCRIPT_FLOOR}, live_ran: live_ran});
 check_body_deletion(check, SUITE_FILE, ROOT, {minimum: SKILL_FLOOR, live_ran: live_ran});

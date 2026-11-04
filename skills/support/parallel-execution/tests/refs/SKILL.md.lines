@@ -1,4 +1,4 @@
-# blob:52e9d2655cf6797bc05984d2438dc01a14b7707b
+# blob:fa0140a48b5ac8bf4129f85fdd3cc0f1dd84ad3a
 # Team — split what can be checked separately
 ## When parallelism is the right shape
 Parallel work pays when the pieces are **independent to check**, not merely
@@ -7,7 +7,7 @@ merge you have to re-derive, which costs more than doing it once.
 | Split it | Keep it whole |
 | --- | --- |
 | The same transformation over many files | One design whose parts constrain each other |
-| Independent searches over different areas | A change and the tests that lock its intent |
+| Independent searches over different areas | A change and the tests that lock its intent, unless the requirement selects `authorSplit` (see the worker brief rules) |
 | Several perspectives reviewing one artefact | A sequence where each step needs the last step's result |
 | Gathering from many sources | The synthesis of what was gathered |
 Row three is worth naming: several agents reviewing **the same thing** from

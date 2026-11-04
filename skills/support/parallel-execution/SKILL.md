@@ -14,7 +14,7 @@ merge you have to re-derive, which costs more than doing it once.
 | Split it | Keep it whole |
 | --- | --- |
 | The same transformation over many files | One design whose parts constrain each other |
-| Independent searches over different areas | A change and the tests that lock its intent |
+| Independent searches over different areas | A change and the tests that lock its intent, unless the requirement selects `authorSplit` (see the worker brief rules) |
 | Several perspectives reviewing one artefact | A sequence where each step needs the last step's result |
 | Gathering from many sources | The synthesis of what was gathered |
 

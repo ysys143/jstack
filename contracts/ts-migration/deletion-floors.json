@@ -31,11 +31,11 @@
     "skills/science": 8,
     "skills/secrets": 3,
     "skills/setup": 16,
-    "skills/tdd": 14,
+    "skills/tdd": 16,
     "skills/team": 10,
     "skills/ui": 47,
     "skills/upstream": 3,
-    "skills/verify": 35,
+    "skills/verify": 36,
     "skills/workspace": 17,
     "skills/wrapup": 0,
     "tests/test_contracts.py": 0,
@@ -106,13 +106,13 @@
       "suite": "skills/verify",
       "baselineRecords": 20,
       "nativeRecords": 33,
-      "reason": "Absorbed test speed guidance adds five references (test waits, parallelism, selection, flaky tests, evidence), the test_profile and test_smells scripts, and NOTICE provenance, each with its own measured deletion axis. The interactive CLI reference adds one more measured deletion axis, and the restored CI diagnosis reference adds another. The shared ship-gates reference adds a semantic and order deletion axis. The oracle_guard script adds its own measured deletion axis."
+      "reason": "Absorbed test speed guidance adds five references (test waits, parallelism, selection, flaky tests, evidence), the test_profile and test_smells scripts, and NOTICE provenance, each with its own measured deletion axis. The interactive CLI reference adds one more measured deletion axis, and the restored CI diagnosis reference adds another. The shared ship-gates reference adds a semantic and order deletion axis. The oracle_guard script adds its own measured deletion axis, and the verification profile script adds another."
     },
     {
       "suite": "skills/tdd",
       "baselineRecords": 11,
       "nativeRecords": 14,
-      "reason": "Absorbed test speed guidance adds the test-budget and test-portfolio references and NOTICE provenance, each with its own measured deletion axis."
+      "reason": "Absorbed test speed guidance adds the test-budget and test-portfolio references and NOTICE provenance, each with its own measured deletion axis. The strength_gates script and the test strength tools reference each add a measured deletion axis."
     },
     {
       "suite": "skills/plan",

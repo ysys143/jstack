@@ -26,6 +26,7 @@ const PREFLIGHT=join(ROOT, "scripts", "preflight.js");
 const PACKAGE_CHECK=join(ROOT, "scripts", "package_check.js");
 const RED_PROBE=join(ROOT, "scripts", "red_probe.js");
 const ORACLE_GUARD=join(ROOT, "scripts", "oracle_guard.js");
+const PROFILE=join(ROOT, "scripts", "profile.js");
 const PACKAGE_IDENTITY=join(ROOT, "scripts", "package_identity.js");
 const WORKFLOW=join(ROOT, "scripts", "workflow.js");
 const WORKFLOW_TEST=join(HERE, "workflow-migration.test.js");
@@ -41,15 +42,16 @@ const MERGE_MIN=4;
 const SELF_CHECK_MIN=5;
 const PREFLIGHT_FLOOR=23;
 const PKGCHECK_FLOOR=9;
-const REDPROBE_FLOOR=12;
-const ORACLE_GUARD_FLOOR=10;
-const PACKAGE_IDENTITY_FLOOR=48;
-const PACKAGE_IDENTITY_COVERAGE_FLOOR=48;
+const REDPROBE_FLOOR=21;
+const ORACLE_GUARD_FLOOR=13;
+const PROFILE_FLOOR=12;
+const PACKAGE_IDENTITY_FLOOR=57;
+const PACKAGE_IDENTITY_COVERAGE_FLOOR=57;
 const WORKFLOW_FLOOR=3;
-const TEST_WAITS_FLOOR=7595,TEST_PARALLELISM_FLOOR=7878,TEST_SELECTION_FLOOR=8029,FLAKY_TESTS_FLOOR=5266,TEST_EVIDENCE_FLOOR=22917,TEST_PROFILE_FLOOR=9,TEST_SMELLS_FLOOR=12;
+const TEST_WAITS_FLOOR=7595,TEST_PARALLELISM_FLOOR=7878,TEST_SELECTION_FLOOR=8029,FLAKY_TESTS_FLOOR=5266,TEST_EVIDENCE_FLOOR=22917,TEST_PROFILE_FLOOR=9,TEST_SMELLS_FLOOR=15;
 const INTERACTIVE_CLI_FLOOR=6302;
 const CI_DIAGNOSIS_FLOOR=3047;
-const TOTAL=241;
+const TOTAL=251;
 const CLAIM_ANCHORS=["# Claim labels — what the evidence covers", "| Verification grade | Who settles it |", "## The four labels", "| `verified` | The evidence covers the whole claim.", "| `unsupported` | Only the preconditions are supported;", "## The four rules", "**1. `verified` never exceeds the review input scope or the evidence timestamp.**", "**2. Filename correspondence is not evidence.**", "**3. Preconditions only means `unsupported` or `insufficient-coverage`", "**4. Scope-limited `verified` is allowed.**", "## Decision tree", "1. Did any evidence run at all", "6. Otherwise -> verified", "## Worked examples", "## Writing the label in a report", "## What this does not do"];
 const DIGEST_ANCHORS=["# Digest contract", "## Three digests, never one", "**Do not merge these into one.**", "## Canonicalization v2", "**1. Codepoint order.**", "**2. NUL framing.**", "**3. mtime and mode are excluded.**", "**4. `metadata.version` becomes `@VERSION@`.**", "## Reporting a digest", "## Failure modes seen", "| Cache not invalidated after a real behaviour change | One digest doing three jobs |"];
 const MERGE_ANCHORS=["# Merge worktree", "## Current context", "## Instructions", "### Phase 1: Validation", "**Verify worktree**", "**Clean working tree**", "### Phase 2: Research", "### Phase 3: Target branch preparation", "### Phase 4: Squash merge", "**stop and report**", "### Phase 5: Craft commit message and commit", "Trailers are not written here", "### Phase 6: Verification", "## Important notes", "Never skip pre-commit hooks"];
@@ -291,6 +293,22 @@ check("red_probe: unexpected baseline is unexecutable (rc 2)", (isDeepStrictEqua
 ([rc, out, _]=run(RED_PROBE,"--tree",tree,"--command",real,"--json"));
 check("red_probe: missing mutation is unexecutable (rc 2)", (isDeepStrictEqual(rc,2)), ("rc=" + pyStr(rc)));
 check("red_probe: original tree remains unchanged", ((contains(read(join(tree, "impl.cjs")), "return 1"))));
+}
+function profile_checks(tmp:string):void{
+const repo=join(tmp,"profile-repo"),git=(...args:string[])=>runProcess("git",args,{cwd:repo,encoding:"utf8"}),cli=(...args:string[])=>runProcess(process.execPath,[PROFILE,...args],{cwd:repo,encoding:"utf8",env:{...process.env,PROBE_RC:"0"}});
+write(join(repo,"a.js"),"1\n");write(join(repo,"probe.js"),"console.log('saw '+process.argv.slice(2).join(' '));process.exit(Number(process.env.PROBE_RC));\n");
+git("init","-q","-b","main");git("config","user.email","t@example.invalid");git("config","user.name","t");git("add","-A");git("commit","-qm","init");
+let r=cli("check");check("profile: no profile means every optional check is off (rc 0)", r.status===0&&contains(r.stdout,"every optional check is off"), (r.stdout||"")+(r.stderr||""));
+r=runProcess(process.execPath,[PROFILE,"draft"],{encoding:"utf8"});check("profile: draft prints a valid starting profile", r.status===0&&as_json(r.stdout).schemaVersion===1, (r.stdout||"").slice(0,80));
+const profile=(checks:any)=>write(join(repo,".jstack","verification.json"),JSON.stringify({schemaVersion:1,checks}));
+profile({coverage:{command:"x"}});r=cli("check");check("profile: an unknown kind is rejected (rc 2)", r.status===2&&contains(r.stderr,"checks.coverage is not a known kind"), r.stderr||"");
+profile({mutation:{mode:"fail"}});r=cli("check");check("profile: a command kind without a command is rejected", r.status===2&&contains(r.stderr,"checks.mutation.command is required"), r.stderr||"");
+write(join(repo,"b.js"),"2\n");
+profile({duplication:{command:"node probe.js {FILES}",apply:"change",mode:"fail"}});r=cli("run","--base","main");check("profile: a change check sees changed and untracked files", r.status===0&&contains(r.stdout,"saw b.js")&&!contains(r.stdout,".jstack"), r.stdout||"");
+r=runProcess(process.execPath,[PROFILE,"run","--base","main"],{cwd:repo,encoding:"utf8",env:{...process.env,PROBE_RC:"1"}});check("profile: a failing check in fail mode exits 1", r.status===1&&contains(r.stdout,"failed"), r.stdout||"");
+profile({duplication:{command:"node probe.js {FILES}",apply:"change"}});r=runProcess(process.execPath,[PROFILE,"run","--base","main"],{cwd:repo,encoding:"utf8",env:{...process.env,PROBE_RC:"1"}});check("profile: report mode records a failure without failing (rc 0)", r.status===0&&contains(r.stdout,"reported"), r.stdout||"");
+profile({duplication:{command:"no-such-tool-for-jstack {FILES}",apply:"change"}});r=cli("run","--base","main");check("profile: a declared tool that cannot start is a gap (rc 1)", r.status===1&&contains(r.stdout,"gap"), r.stdout||"");
+profile({mutation:{command:"node probe.js {FILES}"}});r=cli("run","--base","main");check("profile: a requirement check does not run on a plain change", r.status===0&&contains(r.stdout,"no check applies"), r.stdout||"");
 }
 function oracle_guard_checks(tmp:string):void{
 const dir=join(tmp,"oracle"),diffOf=(name:string,text:string):string=>{const file=join(dir,name+".diff");write(file,text);return file;};
@@ -569,6 +587,7 @@ package_check_hardening(tmp);
 red_probe_checks(tmp);
 red_probe_hardening(tmp);
 oracle_guard_checks(tmp);
+profile_checks(tmp);
 package_identity_checks(tmp);
 test_speed_script_checks(tmp);}finally{removeTree(tmp, {ignore_errors: true});}
 // The full workflow and timeout cases run in the integration lane. Quick
@@ -589,7 +608,7 @@ check("Extra review: unavailable reviewers leave review incomplete and cannot re
  selfCheck.includes("Never replace a required human review with a model review."));
 (ENV_DEPENDENT=["자기검사:", "계약 커버리지:", "스크립트 계약:"]);
 (live_ran=(Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), ENV_DEPENDENT)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
-check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/preflight.js": PREFLIGHT_FLOOR, "scripts/package_check.js": PKGCHECK_FLOOR, "scripts/package_identity.js": PACKAGE_IDENTITY_FLOOR, "scripts/red_probe.js": REDPROBE_FLOOR, "scripts/oracle_guard.js": ORACLE_GUARD_FLOOR, "scripts/workflow.js": WORKFLOW_FLOOR, "scripts/test_profile.js": TEST_PROFILE_FLOOR, "scripts/test_smells.js": TEST_SMELLS_FLOOR}, live_ran: live_ran});
+check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/preflight.js": PREFLIGHT_FLOOR, "scripts/package_check.js": PKGCHECK_FLOOR, "scripts/package_identity.js": PACKAGE_IDENTITY_FLOOR, "scripts/red_probe.js": REDPROBE_FLOOR, "scripts/oracle_guard.js": ORACLE_GUARD_FLOOR, "scripts/profile.js": PROFILE_FLOOR, "scripts/workflow.js": WORKFLOW_FLOOR, "scripts/test_profile.js": TEST_PROFILE_FLOOR, "scripts/test_smells.js": TEST_SMELLS_FLOOR}, live_ran: live_ran});
 check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": SKILL_MIN, "references/claim-labels.md": CLAIM_MIN, "references/digest-contract.md": DIGEST_MIN, "references/merge.md": MERGE_MIN, "references/self-check.md": SELF_CHECK_MIN, "references/local-feedback.md": 3, "references/validation-cost.md": 4, "references/test-waits.md": 4, "references/test-parallelism.md": 4, "references/test-selection.md": 4, "references/flaky-tests.md": 4, "references/test-evidence.md": 4, "references/interactive-cli.md": 4, "references/ci-diagnosis.md": 4, "references/pr-feedback.md": 4, "references/ship-gates.md": 2, "NOTICE": 1, "scripts/test_profile.js": TEST_PROFILE_FLOOR, "scripts/test_smells.js": TEST_SMELLS_FLOOR, "references/security-verification.md": 4, "references/defending-code-upstream.md": 4, "scripts/preflight.js": PREFLIGHT_FLOOR, "scripts/package_check.js": PKGCHECK_FLOOR, "scripts/package_identity.js": PACKAGE_IDENTITY_COVERAGE_FLOOR, "scripts/red_probe.js": REDPROBE_FLOOR, "scripts/workflow.js": WORKFLOW_FLOOR}, live_ran: live_ran});
 check_body_deletion(check, SUITE_FILE, ROOT, {minimum: SKILL_MIN, live_ran: live_ran});
 check_no_constant_assertions(check, SUITE_FILE);

@@ -1,4 +1,4 @@
-# blob:f9cff7f12cec8832547229ba28b4cdeba620f7ce
+# blob:7c5dc14412b133dc80451afdab9f823f50914d0d
 # TDD — test first
 ## Why incremental is folded in here
 **Slicing the work and building each slice test-first happen at the same moment.**
@@ -35,6 +35,9 @@ check for new or changed test files, and how to review a test someone else wrote
 Run its budget check before reporting a new test as done.
 `references/test-portfolio.md` — test sizes, the shape of the suite, oracle
 strength, and when to add property-based, fuzzing, snapshot, or mutation tests.
+`references/test-strength-tools.md` — judging mutation, CRAP, and duplication
+reports on changed lines with `scripts/strength_gates.js`, when a project's
+verification profile declares those checks.
 ## Phase 1: cut the slices (outer loop)
 A **thin vertical slice** runs end to end — from entry point to storage — in the
 smallest form that works. Do not slice by layer; "model first, controller later"
