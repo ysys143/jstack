@@ -18378,6 +18378,10 @@
       "target": "skills/science/tests/refs/SKILL.md.lines"
     },
     {
+      "source": "skills/public/research/scientific-tools/tests/refs/problem-selection.md.lines",
+      "target": "skills/science/tests/refs/problem-selection.md.lines"
+    },
+    {
       "source": "skills/public/research/scientific-tools/tests/refs/reproducibility.md.lines",
       "target": "skills/science/tests/refs/reproducibility.md.lines"
     },

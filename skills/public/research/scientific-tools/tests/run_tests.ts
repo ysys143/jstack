@@ -29,8 +29,8 @@ const REFS=join(ROOT, "references");
 const moduleRoster=await import(new URL('./test_tier_a_roster.js',import.meta.url).href);
 const moduleGenerator=await import(new URL('../scripts/rebuild-index.js',import.meta.url).href);
 const REPOS=join(ROOT, "repos");
-const REF_BYTES={"_kdense-catalog.md": 108185, "academic-paper-pipeline.md": 710, "agent-frameworks.md": 304, "analysis-methodology.md": 2170, "autonomous-research-optimization-frameworks.md": 371, "bioinformatics-genomics.md": 3208, "biological-databases-deepmind.md": 6051, "cheminformatics-drug-discovery.md": 1277, "clinical-documentation-decision-support.md": 736, "cloud-platforms-for-genomics-biomedical-data.md": 398, "data-analysis-visualization.md": 1400, "data-management-infrastructure.md": 645, "decision-scenario-analysis.md": 662, "document-processing-conversion.md": 629, "electronic-lab-notebooks-eln.md": 523, "engineering-simulation.md": 1066, "healthcare-ai-clinical-machine-learning.md": 377, "laboratory-automation-equipment-control.md": 379, "laboratory-automation.md": 544, "laboratory-information-management-systems-lims-r-d-platforms.md": 418, "machine-learning-deep-learning.md": 2531, "materials-science-chemistry.md": 609, "medical-imaging-digital-pathology.md": 751, "microscopy-bio-image-data.md": 377, "neuroscience-electrophysiology.md": 658, "pharmacology-pharmacometrics.md": 374, "phylogenetics-evolutionary-biology.md": 532, "preclinical-research-animal-welfare.md": 400, "protein-engineering-design.md": 893, "proteomics-mass-spectrometry.md": 423, "protocol-management-sharing.md": 390, "regulatory-standards-evidence-preparation.md": 592, "research-methodology-proposal-writing.md": 1114, "scientific-communication-publishing.md": 1877, "scientific-databases-data-access.md": 1562, "tool-discovery-computational-resources.md": 552, "uncategorized.md": 354, "web-search-information-retrieval.md": 491, "workflow-platforms-cloud-execution.md": 647};
-const OWN_REFS={"stats-corrections.md": [["**Always default to Welch without a pretest.**", "MWU's null is `P(X > Y) = P(Y > X)`, not equality of medians.", "Tukey HSD **already controls familywise error (FWER)** through the studentized range distribution and needs no preliminary gate."], 6524], "tier-a-verdicts.md": [["**The tier A roster lists skill names, and each name directly consumes the top-level budget.**", "**That description is true for five and false for seven.**", "**존치 6 · 배제 10.**"], 6380], "reproducibility.md": [["**None of the 159 imported skills is dedicated to reproducibility.**", "These pins are a dated direct-dependency snapshot, not a transitive lockfile.", "**Direct dependency pins do not establish reproducibility.**"], 4643]};
+const REF_BYTES={"_kdense-catalog.md": 108185, "academic-paper-pipeline.md": 710, "agent-frameworks.md": 304, "analysis-methodology.md": 2170, "autonomous-research-optimization-frameworks.md": 371, "bioinformatics-genomics.md": 3208, "biological-databases-deepmind.md": 6051, "cheminformatics-drug-discovery.md": 1277, "clinical-documentation-decision-support.md": 736, "cloud-platforms-for-genomics-biomedical-data.md": 398, "data-analysis-visualization.md": 1400, "data-management-infrastructure.md": 645, "decision-scenario-analysis.md": 662, "document-processing-conversion.md": 629, "electronic-lab-notebooks-eln.md": 523, "engineering-simulation.md": 1066, "healthcare-ai-clinical-machine-learning.md": 377, "laboratory-automation-equipment-control.md": 379, "laboratory-automation.md": 544, "laboratory-information-management-systems-lims-r-d-platforms.md": 418, "machine-learning-deep-learning.md": 2531, "materials-science-chemistry.md": 609, "medical-imaging-digital-pathology.md": 751, "microscopy-bio-image-data.md": 377, "neuroscience-electrophysiology.md": 658, "pharmacology-pharmacometrics.md": 374, "phylogenetics-evolutionary-biology.md": 532, "preclinical-research-animal-welfare.md": 400, "protein-engineering-design.md": 893, "proteomics-mass-spectrometry.md": 423, "protocol-management-sharing.md": 390, "regulatory-standards-evidence-preparation.md": 592, "research-methodology-proposal-writing.md": 1114, "scientific-communication-publishing.md": 1877, "scientific-databases-data-access.md": 1562, "tool-discovery-computational-resources.md": 552, "uncategorized.md": 354, "web-search-information-retrieval.md": 491, "workflow-platforms-cloud-execution.md": 647, "business-data-analysis-anthropic.md": 519};
+const OWN_REFS={"stats-corrections.md": [["**Always default to Welch without a pretest.**", "MWU's null is `P(X > Y) = P(Y > X)`, not equality of medians.", "Tukey HSD **already controls familywise error (FWER)** through the studentized range distribution and needs no preliminary gate."], 7634], "tier-a-verdicts.md": [["**The tier A roster lists skill names, and each name directly consumes the top-level budget.**", "**That description is true for five and false for seven.**", "**존치 6 · 배제 10.**"], 6380], "problem-selection.md": [["Per reviewer, `value = impact × (1 − |2p − 1|) × soundness`.", "This stage only removes candidates; it never", "**Limit.** The upstream reports no published result made with this procedure."], 3973], "reproducibility.md": [["**None of the 159 imported skills is dedicated to reproducibility.**", "These pins are a dated direct-dependency snapshot, not a transitive lockfile.", "**Direct dependency pins do not establish reproducibility.**"], 4643]};
 const NOTICE_FLOOR=1628;
 const STATS_SUMMARY=[["Two-group mean comparison", "Welch only after significant Levene", "**Always Welch**"], ["Three or more groups", "ANOVA, then Welch ANOVA if equal variance is violated", "**Always Welch ANOVA**"], ["Nonparametric two-group comparison", "MWU followed by median reporting", "**Stochastic superiority + rank-biserial**"], ["Post-hoc pairwise comparisons", "omnibus p < .05 gate", "**Tukey HSD without a gate**"], ["Bayesian two-group comparison", "Shared sigma, normal likelihood", "**Group-specific sigma, StudentT (BEST)**"]];
 const STATS_VERDICTS=["**Always default to Welch without a pretest.**", "**Describe stochastic superiority.**", "**Delete the gate.**", "**Use BEST as the default example.**"];
@@ -235,7 +235,7 @@ count_errors.push(at(row, "file"));}
 }
 check("Index: files exist and recorded bytes match the catalogs", ((value:any)=>truth(value)?!truth(byte_errors):value)(truth(valid)), pyStr(byte_errors));
 check("Index: per-domain skill counts match catalog entry counts", ((value:any)=>truth(value)?!truth(count_errors):value)(truth(valid)), pyStr(count_errors));
-(counts=Array.from(["academic", "gdm", "kdense"]).map((tag: any) => (((sources[tag] ?? {})["skill_count"] ?? null))));
+(counts=Array.from(["academic", "gdm", "kdense", "kwp"]).map((tag: any) => (((sources[tag] ?? {})["skill_count"] ?? null))));
 check("Index: total entries match pinned per-source skill counts", ((value:any)=>truth(value)?((value:any)=>truth(value)?(isDeepStrictEqual((Array.from(rows).map((r: any) => (at(r, "count")))).reduce((total:number,value:any)=>total+Number(value),0),(counts).reduce((total:number,value:any)=>total+Number(value),0))):value)((Array.from(counts).map((n: any) => (((value:any)=>truth(value)?(compare(n,0,">")):value)(Number.isInteger(n))))).every((value:any)=>truth(value))):value)(truth(valid)));
 check("Index: rows are sorted by descending count and domain name", ((value:any)=>truth(value)?(isDeepStrictEqual(rows,[...rows].sort((a:any,b:any)=>b.count-a.count||a.domain.localeCompare(b.domain,"en")))):value)(truth(valid)));
 }
@@ -263,7 +263,7 @@ check("Accounting: routing-table total exactly matches disk", (isDeepStrictEqual
 for (let [where, text, needle] of declarations) {
 check(("Accounting: " + pyStr(where) + " declared total matches disk"), (where === "description" ? (!/\b\d+ science and research skills/.test(text) || text.includes(needle)) : text.includes(needle)), ((pyStr(total) + " missing — ") + joinText(", ", sorted(new Set(findall("\\b(\\d{3})", text))))));
 }
-for (let tag of ["academic", "gdm", "kdense"]) {
+for (let tag of ["academic", "gdm", "kdense", "kwp"]) {
 if(truth(((!contains(src, tag))))) {
 check(("Accounting: NOTICE " + pyStr(tag) + " skill count matches disk"), false, "source missing from _sources.json");
 continue;
@@ -387,6 +387,19 @@ check("References: catalogs retain source attribution", !truth(no_src), (pyStr(s
 check("References: declared counts match entry counts", !truth(count_off), (pyStr(slice(count_off, 0, 4))));
 check("References: every referenced SKILL.md exists", !truth(dead_path), (pyStr(slice(dead_path, 0, 4))));
 }
+function check_kwp_import(check:any,skill:any,notice:any):any{
+const base=join(REPOS, "kwp"), manifest=join(base, "UPSTREAM.sha256");
+const rows=(existsSync(manifest) ? read(manifest) : "").split(/\r?\n/).filter((line:string)=>/^[0-9a-f]{64}  /.test(line)).map((line:string)=>[line.slice(0, 64), line.slice(66)]);
+const want=["LICENSE", "data/skills/statistical-analysis/SKILL.md", "data/skills/validate-data/SKILL.md"];
+check("kwp: hash manifest names the license and the two imported skills", isDeepStrictEqual(rows.map((row:any)=>row[1]).sort(), want), pyStr(rows.map((row:any)=>row[1])));
+const bad=rows.filter(([hash, rel]:any)=>!existsSync(join(base, rel)) || createHash("sha256").update(readFileSync(join(base, rel))).digest("hex")!==hash).map((row:any)=>row[1]);
+check("kwp: imported files are byte-identical to the fetched upstream", truth(rows.length) && !truth(bad), pyStr(bad));
+check("kwp: NOTICE records the partial import and its commit", contains(notice, "only `data/skills/validate-data/SKILL.md`") && contains(notice, "d900840716eb262e1feb17c6f4406c9ce0e06bcf"));
+const corrections=existsSync(join(REFS, "stats-corrections.md")) ? read(join(REFS, "stats-corrections.md")) : "";
+check("kwp: stats-corrections applies Welch to the kwp test table", contains(corrections, "repos/kwp/data/skills/statistical-analysis/SKILL.md") && contains(corrections, "**Welch ANOVA**"));
+check("Routing: problem selection has an override row naming its reference", /^\|[^|\n]*research problem[^|\n]*\|\s*`references\/problem-selection\.md`\s*\|/m.test(skill));
+check("Routing: problem selection credits the rewritten source in NOTICE", contains(notice, "TaewiKim/autoresearchlab") && contains(notice, "No code\nor prompt text was copied"));
+}
 function check_own_refs(check:any):any{
 let floor:any,fn:any,fp:any,needles:any;
 
@@ -426,16 +439,16 @@ let NAME:any,_:any,_OFF:any,_ROSTER_OFF:any,_SRC_AXES:any,_TAGS:any,_t:any,_w:an
 check("Routing: unclear domain greps the K-Dense catalog instead of re-reading the routing table", contains(skill_all, "grep `references/_kdense-catalog.md` for the request's") && !contains(skill_all, "browse the full catalog in `references/_index.json`"));
 check("Name: frontmatter matches roster (science)", ((search("(?m)^name:\\s*science\\s*$", fm) !== null)), (truth(((contains(fm, "name:")))) ? (search("(?m)^name:\\s*(.+)$", fm)?.[1]??"missing") : "missing"));
 (src={});
-(_TAGS=["academic", "gdm", "kdense"]);
-(_SRC_AXES=["출처: _sources.json contains all three repositories"]);
+(_TAGS=["academic", "gdm", "kdense", "kwp"]);
+(_SRC_AXES=["출처: _sources.json contains all four repositories"]);
 for (let _t of _TAGS) {
 _SRC_AXES.push(...([("출처: repos/" + pyStr(_t) + " exists"), ("출처: " + pyStr(_t) + " complete license text is imported"), ("출처: " + pyStr(_t) + " pinned commit is recorded"), ("출처: NOTICE identifies the " + pyStr(_t) + " repository")]));
 }
-for (let [_t, _w] of [["kdense", "MIT"], ["gdm", "Apache-2.0"], ["academic", "CC BY-NC 4.0"]]) {
+for (let [_t, _w] of [["kdense", "MIT"], ["gdm", "Apache-2.0"], ["academic", "CC BY-NC 4.0"], ["kwp", "Apache-2.0"]]) {
 _SRC_AXES.push(("라이선스: " + pyStr(_t) + " matches " + pyStr(_w) + " across _sources and NOTICE"));
 }
 section(check, results, ..._SRC_AXES).run(()=>{(src=JSON.parse(read(join(REFS, "_sources.json"))));
-check("출처: _sources.json contains all three repositories", (isDeepStrictEqual(new Set(Object.keys(src)),new Set(["kdense", "gdm", "academic"]))), (pyStr(sorted(src))));
+check("출처: _sources.json contains all four repositories", (isDeepStrictEqual(new Set(Object.keys(src)),new Set(["kdense", "gdm", "academic", "kwp"]))), (pyStr(sorted(src))));
 for (let [tag, meta] of sorted(Object.entries(src))) {
 (d=join(REPOS, tag));
 check(("출처: repos/" + pyStr(tag) + " exists"), isdir(d));
@@ -444,7 +457,7 @@ check(("출처: " + pyStr(tag) + " complete license text is imported"), ((value:
 check(("출처: " + pyStr(tag) + " pinned commit is recorded"), truth((meta["commit"] ?? null)), (meta["commit"] ?? "missing"));
 check(("출처: NOTICE identifies the " + pyStr(tag) + " repository"), ((contains(notice, (meta["repo"] ?? "\u0000")))), (meta["repo"] ?? ""));
 }
-for (let [tag, want] of [["kdense", "MIT"], ["gdm", "Apache-2.0"], ["academic", "CC BY-NC 4.0"]]) {
+for (let [tag, want] of [["kdense", "MIT"], ["gdm", "Apache-2.0"], ["academic", "CC BY-NC 4.0"], ["kwp", "Apache-2.0"]]) {
 (got=((src[tag] ?? {})["license"] ?? ""));
 check(("라이선스: " + pyStr(tag) + " matches " + pyStr(want) + " across _sources and NOTICE"), ((value:any)=>truth(value)?((contains(notice, want))):value)(((contains(got, at(split(want), 0))))), ("_sources=" + pyStr(got)));
 }});
@@ -452,6 +465,7 @@ check("NC: NOTICE says academic prohibits commercial use", ((contains(notice, "N
 check("NC: NOTICE requires assessment before paid work such as procurement", ((contains(notice, "Assess this before using them for paid work"))));
 check("NC: NOTICE says the other two sources lack that restriction", ((contains(notice, "do not have that restriction"))));
 (lic=read(join(REPOS, "academic", "LICENSE")));
+check_kwp_import(check, skill, notice);
 check("NC: complete academic LICENSE identifies CC BY-NC", ((value:any)=>truth(value)?((contains(lic, "Creative Commons"))):value)(((contains(lic, "NonCommercial")))));
 (rows=findall("(?m)^\\|\\s*`([a-z0-9_.-]+\\.md)`\\s*\\|\\s*(\\d+)\\s*\\|", skill));
 check("Routing: file rows were parsed from the table", (compare(length(rows),20,">=")), (pyStr(length(rows)) + " rows"));
@@ -498,7 +512,7 @@ check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"NOTICE": 18, "refe
 check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"tests/test_tier_a_roster.js": 9}, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), _ROSTER_OFF)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0), extra_skip: ["스크립트 계약:", "tier A: ", "tier A 로스터:"]});
 check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 18, live_ran: (Array.from(results).filter((r: any) => truth(!truth(starts(at(r, 0), _OFF)))).map((r: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0)});
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 140);
+check_total(check, results, 154);
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any) => truth(ok)).map(([_name, ok, _detail]: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + pyStr(passed) + "/" + pyStr(length(results)) + " 통과"));
 return (truth((isDeepStrictEqual(passed,length(results)))) ? 0 : 1);
