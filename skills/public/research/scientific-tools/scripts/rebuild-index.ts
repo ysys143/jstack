@@ -46,11 +46,11 @@ export function rebuild(root: string, catalog: string) {
     if (item && (level3 || level2)) domains.set(item[1], level3 || level2!);
   }
   const rows: Row[] = [];
-  for (const repo of ['kdense', 'gdm', 'academic']) for (const path of skill_files(join(root, 'repos', repo))) {
+  for (const repo of ['kdense', 'gdm', 'academic', 'kwp']) for (const path of skill_files(join(root, 'repos', repo))) {
     const front = readFileSync(path, 'utf8').match(/^---\n(.*?)\n---\n/s); if (!front) continue;
     let data: any; try { data = parse(front[1], { schema: 'yaml-1.1', merge: true }) || {}; } catch { data = {}; }
     const slug = basename(dirname(path));
-    const group = repo === 'kdense' ? domains.get(slug) ?? 'Uncategorized' : repo === 'gdm' ? 'Biological Databases (DeepMind)' : 'Academic Paper Pipeline';
+    const group = repo === 'kdense' ? domains.get(slug) ?? 'Uncategorized' : repo === 'gdm' ? 'Biological Databases (DeepMind)' : repo === 'kwp' ? 'Business Data Analysis (Anthropic)' : 'Academic Paper Pipeline';
     rows.push([group, slug, one_line(data.description ?? ''), relative(root, path).split(sep).join('/'), repo]);
   }
   const sources = JSON.parse(readFileSync(join(referenceRoot, '_sources.json'), 'utf8')) as Record<string, Source>;

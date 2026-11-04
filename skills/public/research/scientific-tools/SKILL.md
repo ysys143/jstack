@@ -5,14 +5,16 @@ description: "Route science tasks to specialist skills: biology, chemistry, medi
 
 # Science & Research Skill Router
 
-Organizes 201 child skills hierarchically. Child skills are not registered in the
+Organizes 203 child skills hierarchically. Child skills are not registered in the
 skill list, so overlapping names do not collide.
 
 **[local] Boundaries within this plugin.** Some child skills produce documents,
 but dedicated skills own those outputs: `office` handles Office documents, `hwpx`
 handles HWPX, `deck` handles slide typesetting, and `diagram` handles diagrams.
 Use this router for **domain-specific scientific tools**: biological, chemical,
-and medical databases, simulations, and experimental design.
+and medical databases, simulations, and experimental design. The `kwp` domain
+file adds one business case: checking a product or business data analysis before
+it is shared (`validate-data`).
 
 ## Procedure
 
@@ -61,6 +63,7 @@ supplements it where the last column says so.
 | `materials-science-chemistry.md` | 3 | Materials Science & Chemistry |
 | `neuroscience-electrophysiology.md` | 3 | Neuroscience & Electrophysiology |
 | `workflow-platforms-cloud-execution.md` | 3 | Workflow Platforms & Cloud Execution |
+| `business-data-analysis-anthropic.md` | 2 | Business Data Analysis (Anthropic) |
 | `electronic-lab-notebooks-eln.md` | 2 | Electronic Lab Notebooks (ELN) |
 | `laboratory-automation.md` | 2 | Laboratory Automation |
 | `phylogenetics-evolutionary-biology.md` | 2 | Phylogenetics & Evolutionary Biology |
@@ -88,8 +91,8 @@ require overrides. In the following situations, read the local reference
 
 | When | Read | What it overrides |
 |---|---|---|
-| Group comparisons, post-hoc tests, or Bayesian t-tests | `references/stats-corrections.md` | Four errors in upstream `statistical-analysis`: remove variance-pretest branching (always default to Welch); describe Mann-Whitney U as stochastic superiority; remove the omnibus gate; use Kruschke BEST for Bayesian t-tests |
-| Handing off or substantiating an analysis | `references/reproducibility.md` | None of the 201 imported skills is dedicated to reproducibility. This reference supplies procedures for seeds, a transitive lockfile, data snapshots, and a manifest |
+| Group comparisons, post-hoc tests, or Bayesian t-tests | `references/stats-corrections.md` | Four errors in upstream `statistical-analysis`: remove variance-pretest branching (always default to Welch); describe Mann-Whitney U as stochastic superiority; remove the omnibus gate; use Kruschke BEST for Bayesian t-tests. The same rules apply to the `kwp` copy |
+| Handing off or substantiating an analysis | `references/reproducibility.md` | None of the 203 imported skills is dedicated to reproducibility. This reference supplies procedures for seeds, a transitive lockfile, data snapshots, and a manifest |
 | Deciding which child skills to keep readily available | `references/tier-a-verdicts.md` | Tier A promotion was category-wide. Individual assessment of 15 skills retains only 5–6 and excludes five that directly overlap with local skills |
 
 `tests/test_tier_a_roster.js` checks roster consistency against actual files under
@@ -99,7 +102,7 @@ require overrides. In the following situations, read the local reference
 
 **[local] The imports cannot be updated with `git pull`.** Their `.git`
 directories were removed during import (38M, 2681 files). To follow upstream
-updates, clone the three repositories again, rebuild the index, and replace the
+updates, clone the four repositories again, rebuild the index, and replace the
 imported content in this skill with the result.
 
 ```bash
@@ -107,10 +110,19 @@ imported content in this skill with the result.
 git clone --depth 1 https://github.com/K-Dense-AI/scientific-agent-skills /tmp/u/kdense
 git clone --depth 1 https://github.com/google-deepmind/science-skills        /tmp/u/gdm
 git clone --depth 1 https://github.com/Imbad0202/academic-research-skills    /tmp/u/academic
+git clone --depth 1 https://github.com/anthropics/knowledge-work-plugins     /tmp/u/kwp
 
 # 2) Rebuild the index using the imported scripts/
 node ${JSTACK_PLUGIN_ROOT}/skills/science/scripts/rebuild-index.js
 ```
+
+**[local] Check the generator output before committing it.** It deletes every
+reference that carries the `<!-- sources -->` marker but is not a generated domain
+file, which includes the hand-written `stats-corrections.md`, `reproducibility.md`
+and `tier-a-verdicts.md`, and it writes "N items" headers where the committed files
+say "N skills". Restore those files from Git after regenerating. For `kwp` only
+`data/skills/validate-data` and `data/skills/statistical-analysis` are imported;
+copy those two and check `repos/kwp/UPSTREAM.sha256`.
 
 After updating, run `tests/run_tests.js`. It fails if the routing table diverges
 from the actual references. Update the pinned commits in `NOTICE` as well.
@@ -126,12 +138,14 @@ content belongs to the original authors. This skill adds only the router
 | `kdense` | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | 159 | `36d8f13` (2026-08-24) | MIT |
 | `gdm` | [google-deepmind/science-skills](https://github.com/google-deepmind/science-skills) | 38 | `0b42509` (2026-07-07) | Apache-2.0 |
 | `academic` | [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) | 4 | `9469fc4` (2026-08-27) | CC BY-NC 4.0 |
+| `kwp` | [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) | 2 | `d900840` (2026-11-03) | Apache-2.0 |
 
 The full original license texts are preserved in each repository:
 
 - `repos/kdense/LICENSE.md`
 - `repos/gdm/LICENSE`
 - `repos/academic/LICENSE`
+- `repos/kwp/LICENSE`
 
 GitHub did not recognize `repos/academic` as having a standard license, but reading
 its complete `LICENSE` confirmed **CC BY-NC 4.0** (Copyright (c) 2026 Cheng-I Wu).
@@ -140,6 +154,6 @@ NC prohibits commercial use; assess this before using it for paid work. See
 
 `repos/academic/skills/<name>` entries are **directory symlinks** to `../<name>`.
 Do not count symlinks as additional skills: there are four actual skills, bringing
-the total to 201.
+the total with `kwp`'s two to 203.
 
 Machine-readable source metadata is in `references/_sources.json`.

@@ -8394,6 +8394,10 @@
       "target": "skills/science/references/biological-databases-deepmind.md"
     },
     {
+      "source": "skills/public/research/scientific-tools/references/business-data-analysis-anthropic.md",
+      "target": "skills/science/references/business-data-analysis-anthropic.md"
+    },
+    {
       "source": "skills/public/research/scientific-tools/references/cheminformatics-drug-discovery.md",
       "target": "skills/science/references/cheminformatics-drug-discovery.md"
     },
@@ -18336,6 +18340,22 @@
     {
       "source": "skills/public/research/scientific-tools/repos/kdense/skills/zarr-python/references/v3_migration.md",
       "target": "skills/science/repos/kdense/skills/zarr-python/references/v3_migration.md"
+    },
+    {
+      "source": "skills/public/research/scientific-tools/repos/kwp/LICENSE",
+      "target": "skills/science/repos/kwp/LICENSE"
+    },
+    {
+      "source": "skills/public/research/scientific-tools/repos/kwp/UPSTREAM.sha256",
+      "target": "skills/science/repos/kwp/UPSTREAM.sha256"
+    },
+    {
+      "source": "skills/public/research/scientific-tools/repos/kwp/data/skills/statistical-analysis/SKILL.md",
+      "target": "skills/science/repos/kwp/data/skills/statistical-analysis/SKILL.md"
+    },
+    {
+      "source": "skills/public/research/scientific-tools/repos/kwp/data/skills/validate-data/SKILL.md",
+      "target": "skills/science/repos/kwp/data/skills/validate-data/SKILL.md"
     },
     {
       "source": "skills/public/research/scientific-tools/scripts/rebuild-index.ts",
