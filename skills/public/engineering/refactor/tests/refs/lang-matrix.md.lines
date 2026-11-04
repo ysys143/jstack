@@ -1,4 +1,4 @@
-# blob:d4d59b73606e5be02df407835156a2f4de57f7b6
+# blob:f819c8d4f25225ec7478b372d0727cb7c88b52bb
 # Language matrix — six properties across seven languages
 The axes in `quality-taxonomy.md` are stated as properties rather than as the
 tool that finds them. This file is the implementation layer under that decision:
@@ -35,7 +35,7 @@ from one nobody filled in, and the two mean opposite things.
 ### duplication
 | Go | Rust | Python | JavaScript | TypeScript | Java | C |
 |---|---|---|---|---|---|---|
-| `dupl`, PMD CPD | read | `pylint --enable=duplicate-code` | `jscpd` | `jscpd` | PMD CPD | PMD CPD |
+| `dupl`, PMD CPD | `jscpd` | `pylint --enable=duplicate-code` | `jscpd` | `jscpd` | PMD CPD | PMD CPD |
 ### unused — *definitions nothing can reach*
 Defined by the property, not by what `knip` catches. A tool-shaped definition
 makes the tool's blind spot into non-existence.
@@ -89,13 +89,13 @@ redefined: **if more than half of the forty-two cells have no detector, the
 redefinition renamed things and changed nothing.**
 | Cell state | Count |
 |---|---|
-| Detector named | 29 |
-| read (occurs, no standard detector) | 11 |
+| Detector named | 30 |
+| read (occurs, no standard detector) | 10 |
 | empty set (cannot occur) | 2 |
 | **Total** | **42** |
-Thirteen of forty-two cells name no detector, and two of those thirteen are empty
-by construction rather than unchecked. Thirteen is below twenty-one, so the
-redefinition survives its own test — but eleven *read* cells is the honest cost,
+Twelve of forty-two cells name no detector, and two of those twelve are empty
+by construction rather than unchecked. Twelve is below twenty-one, so the
+redefinition survives its own test — but ten *read* cells is the honest cost,
 and the report for a finding in one of them says which cell it came from.
 ## Dependency direction — a profile check, not a seventh axis
 Whether high-level policy depends on IO-near modules is a design rule the
