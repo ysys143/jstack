@@ -139,7 +139,9 @@ an assertion replaced by a weaker one on the same line still needs reading.
 A repository may commit `.jstack/verification.json` to declare heavier checks it
 wants: `mutation`, `crap`, `duplication`, `direction`, `holdout`, `authorSplit`.
 Without the file none of them runs. Each entry names the project's own command
-(`{FILES}` expands to the files in scope), `mode: report | fail` (default
+(`{FILES}` expands to the files in scope as separate arguments, `{FILES_CSV}` to one
+comma-separated argument such as Stryker's `--mutate`), an optional `include` list
+of globs that limits those files to the ones the tool can read,, `mode: report | fail` (default
 `report`), and `apply: requirement | change` (default `requirement`). jstack runs
 the declared command; it does not install a tool or choose a threshold.
 
@@ -153,7 +155,8 @@ node ${JSTACK_PLUGIN_ROOT}/skills/verify/scripts/profile.js run --base origin/ma
 
 When an entry also names its output (`report` for mutation and duplication;
 `complexity` and `coverage` for CRAP, with an optional `threshold`), the report
-is evaluated on the lines in scope only; the formats are listed in
+is evaluated on the lines in scope only, and only when this run wrote it: a
+report left from an earlier run is a gap even when the command exits 0; the formats are listed in
 the `tdd` skill's test strength tools reference.
 A declared tool that cannot start is a gap, not a pass. A `report` result that
 exits nonzero is listed as not verified without failing.

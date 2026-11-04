@@ -11,7 +11,9 @@
  * HEAD, working tree included; checks with `apply: "requirement"` run only when a
  * version 2 requirement selects them (workflow.js).
  *
- * A command token `{FILES}` expands to the changed files. A declared check whose
+ * A command token `{FILES}` expands to the changed files as separate arguments,
+ * `{FILES_CSV}` to one comma-separated argument (Stryker's --mutate). A declared
+ * report this run did not write is a gap, whatever the exit code. A declared check whose
  * tool cannot start is a gap, not a pass. Mode "report" records a nonzero exit
  * without failing; mode "fail" fails. Exit codes: 0 every check passed or only
  * reported, 1 a check failed or a declared tool is missing, 2 an invalid profile,
@@ -22,6 +24,7 @@ import * as path from 'node:path';
 import { runProcess } from '../../../../../runtime/os.js';
 import { isMain } from '../../../../../runtime/entry.js';
 import { splitCommand } from './red_probe.js';
+import { glob_to_regex } from '../../plan/scripts/contract_lint.js';
 import { crapScores, mutationSurvivors, duplicateClones, scopeFromFiles, scopeFromDiff, type Scope, type Finding } from '../../test-driven-development/scripts/strength_gates.js';
 
 export const PROFILE_PATH = '.jstack/verification.json';
@@ -29,7 +32,7 @@ export const KINDS = ['mutation', 'crap', 'duplication', 'direction', 'holdout',
 export type CheckKind = typeof KINDS[number];
 /** Kinds run as a command over files; holdout and authorSplit change who sees what instead. */
 export const COMMAND_KINDS: CheckKind[] = ['mutation', 'crap', 'duplication', 'direction'];
-export interface CheckSpec { command?: string; report?: string; complexity?: string; coverage?: string; threshold?: number; dir?: string; mode: 'report' | 'fail'; apply: 'requirement' | 'change' }
+export interface CheckSpec { include?: string[]; command?: string; report?: string; complexity?: string; coverage?: string; threshold?: number; dir?: string; mode: 'report' | 'fail'; apply: 'requirement' | 'change' }
 export interface Profile { schemaVersion: 1; checks: Partial<Record<CheckKind, CheckSpec>> }
 
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -48,6 +51,7 @@ export function validate(data: unknown): { profile?: Profile; problems: string[]
     if (mode !== 'report' && mode !== 'fail') problems.push(`checks.${kind}.mode must be "report" or "fail"`);
     if (apply !== 'requirement' && apply !== 'change') problems.push(`checks.${kind}.apply must be "requirement" or "change"`);
     for (const field of ['command', 'report', 'complexity', 'coverage', 'dir'] as const) if (raw[field] !== undefined && (typeof raw[field] !== 'string' || !(raw[field] as string).trim())) problems.push(`checks.${kind}.${field} must be a nonempty string`);
+    if (raw.include !== undefined && (!Array.isArray(raw.include) || !raw.include.length || !raw.include.every(item => typeof item === 'string' && item.trim()))) problems.push(`checks.${kind}.include must be a nonempty list of glob patterns`);
     if (raw.threshold !== undefined && (typeof raw.threshold !== 'number' || !Number.isFinite(raw.threshold) || raw.threshold < 0)) problems.push(`checks.${kind}.threshold must be a number of at least 0`);
     if (COMMAND_KINDS.includes(kind as CheckKind) && typeof raw.command !== 'string') problems.push(`checks.${kind}.command is required: jstack runs the project's tool, it does not choose one`);
     if (kind === 'crap' && typeof raw.report === 'string') problems.push('checks.crap reads `complexity` (lizard --csv) and `coverage`, not `report`');
@@ -75,7 +79,7 @@ export function loadProfile(repo: string): { profile: Profile | null; problems: 
 export const DRAFT: Profile = {
   schemaVersion: 1,
   checks: {
-    mutation: { command: 'npx stryker run --mutate {FILES}', report: 'reports/mutation/mutation.json', mode: 'report', apply: 'requirement' },
+    mutation: { include: ['src/**/*.ts', 'src/**/*.js'], command: 'npx stryker run --mutate {FILES_CSV}', report: 'reports/mutation/mutation.json', mode: 'report', apply: 'requirement' },
     duplication: { command: 'npx jscpd --reporters json --output reports/jscpd {FILES}', report: 'reports/jscpd/jscpd-report.json', mode: 'report', apply: 'change' },
   },
 };
@@ -83,6 +87,12 @@ export const DRAFT: Profile = {
 export interface CheckResult { kind: CheckKind; command: string; exitCode: number | null; mode: 'report' | 'fail'; outcome: 'passed' | 'reported' | 'failed' | 'gap'; detail: string }
 
 /** Run one declared command check over the given files. */
+/** Report files a check is judged from; empty when it is judged by exit code. */
+export function reportPaths(kind: CheckKind, spec: CheckSpec): string[] {
+  if (kind === 'crap') return spec.complexity && spec.coverage ? [spec.complexity, spec.coverage] : [];
+  return (kind === 'mutation' || kind === 'duplication') && spec.report ? [spec.report] : [];
+}
+
 /** Judge a report the declared command wrote; null when the kind or profile names no report. */
 export function judgeReport(repo: string, kind: CheckKind, spec: CheckSpec, scope: Scope): { findings: Finding[]; label: string } | null {
   const read = (rel: string) => fs.readFileSync(path.resolve(repo, rel), 'utf8');
@@ -98,23 +108,38 @@ export function judgeReport(repo: string, kind: CheckKind, spec: CheckSpec, scop
   return null;
 }
 
+/** Files a check covers: every file, or those matching its include globs. */
+export function inScope(spec: CheckSpec, files: string[]): string[] {
+  if (!spec.include) return files;
+  const patterns = spec.include.map(glob_to_regex);
+  return files.filter(file => patterns.some(pattern => pattern.test(file)));
+}
+
 export function runCheck(repo: string, kind: CheckKind, spec: CheckSpec, files: string[], tokens: Record<string, string[]> = {}, timeoutSeconds = 600, scope: Scope = scopeFromFiles(files)): CheckResult {
   const command = spec.command ?? '';
+  files = inScope(spec, files);
+  if (!files.length) return { kind, command, exitCode: null, mode: spec.mode, outcome: 'passed', detail: 'no changed file matches include' };
   let argv: string[];
-  try { argv = splitCommand(command).flatMap(token => token === '{FILES}' ? files : tokens[token] ?? [Object.entries(tokens).reduce((text, [key, values]) => values.length === 1 ? text.replaceAll(key, values[0]!) : text, token)]); } catch (error) { return { kind, command, exitCode: null, mode: spec.mode, outcome: 'gap', detail: (error as Error).message }; }
+  try { argv = splitCommand(command).flatMap(token => token === '{FILES}' ? files : token === '{FILES_CSV}' ? [files.join(',')] : tokens[token] ?? [Object.entries(tokens).reduce((text, [key, values]) => values.length === 1 ? text.replaceAll(key, values[0]!) : text, token)]); } catch (error) { return { kind, command, exitCode: null, mode: spec.mode, outcome: 'gap', detail: (error as Error).message }; }
   if (!argv.length) return { kind, command, exitCode: null, mode: spec.mode, outcome: 'gap', detail: 'empty command' };
+  const reports = reportPaths(kind, spec), started = Date.now() - 1000;
   const result = runProcess(argv[0]!, argv.slice(1), { cwd: repo, timeout: timeoutSeconds * 1000, maxBuffer: 64 * 1024 * 1024 });
   const tail = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim().split(/\r?\n/).slice(-3).join('\n');
   if (result.error) {
     const code = (result.error as NodeJS.ErrnoException).code;
     return { kind, command, exitCode: null, mode: spec.mode, outcome: 'gap', detail: code === 'ENOENT' ? `the declared tool ${argv[0]} is not installed` : code === 'ETIMEDOUT' ? `timed out after ${timeoutSeconds} s` : result.error.message };
   }
-  if (result.status === 0) {
+  if (reports.length) {
+    // A declared report is the evidence: judge it only when this run wrote it, whatever the exit code.
+    const stale = reports.filter(rel => { try { return fs.statSync(path.resolve(repo, rel)).mtimeMs < started; } catch { return true; } });
+    if (stale.length) return { kind, command, exitCode: result.status, mode: spec.mode, outcome: 'gap', detail: `this run did not write ${stale.join(', ')} (exit ${result.status})${tail ? '\n' + tail : ''}` };
+  }
+  if (result.status === 0 || reports.length) {
     let judged: ReturnType<typeof judgeReport>;
-    try { judged = judgeReport(repo, kind, spec, scope); } catch (error) { return { kind, command, exitCode: 0, mode: spec.mode, outcome: 'gap', detail: `the report could not be judged: ${(error as Error).message}` }; }
-    if (!judged || !judged.findings.length) return { kind, command, exitCode: 0, mode: spec.mode, outcome: 'passed', detail: judged ? `no ${judged.label} on judged lines` : tail };
+    try { judged = judgeReport(repo, kind, spec, scope); } catch (error) { return { kind, command, exitCode: result.status, mode: spec.mode, outcome: 'gap', detail: `the report could not be judged: ${(error as Error).message}` }; }
+    if (!judged || !judged.findings.length) return { kind, command, exitCode: result.status, mode: spec.mode, outcome: 'passed', detail: judged ? `no ${judged.label} on judged lines` : tail };
     const shown = judged.findings.slice(0, 5).map(finding => `${finding.file}:${finding.line} ${finding.detail}`).join('\n');
-    return { kind, command, exitCode: 0, mode: spec.mode, outcome: spec.mode === 'fail' ? 'failed' : 'reported', detail: `${judged.findings.length} ${judged.label} on judged lines\n${shown}` };
+    return { kind, command, exitCode: result.status, mode: spec.mode, outcome: spec.mode === 'fail' ? 'failed' : 'reported', detail: `${judged.findings.length} ${judged.label} on judged lines\n${shown}` };
   }
   if (result.status === 127) return { kind, command, exitCode: 127, mode: spec.mode, outcome: 'gap', detail: 'the declared tool could not start (exit 127)' };
   return { kind, command, exitCode: result.status, mode: spec.mode, outcome: spec.mode === 'fail' ? 'failed' : 'reported', detail: tail };
