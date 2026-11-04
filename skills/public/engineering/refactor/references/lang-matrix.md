@@ -47,7 +47,7 @@ from one nobody filled in, and the two mean opposite things.
 
 | Go | Rust | Python | JavaScript | TypeScript | Java | C |
 |---|---|---|---|---|---|---|
-| `dupl`, PMD CPD | read | `pylint --enable=duplicate-code` | `jscpd` | `jscpd` | PMD CPD | PMD CPD |
+| `dupl`, PMD CPD | `jscpd` | `pylint --enable=duplicate-code` | `jscpd` | `jscpd` | PMD CPD | PMD CPD |
 
 ### unused — *definitions nothing can reach*
 
@@ -121,14 +121,14 @@ redefinition renamed things and changed nothing.**
 
 | Cell state | Count |
 |---|---|
-| Detector named | 29 |
-| read (occurs, no standard detector) | 11 |
+| Detector named | 30 |
+| read (occurs, no standard detector) | 10 |
 | empty set (cannot occur) | 2 |
 | **Total** | **42** |
 
-Thirteen of forty-two cells name no detector, and two of those thirteen are empty
-by construction rather than unchecked. Thirteen is below twenty-one, so the
-redefinition survives its own test — but eleven *read* cells is the honest cost,
+Twelve of forty-two cells name no detector, and two of those twelve are empty
+by construction rather than unchecked. Twelve is below twenty-one, so the
+redefinition survives its own test — but ten *read* cells is the honest cost,
 and the report for a finding in one of them says which cell it came from.
 
 ## Dependency direction — a profile check, not a seventh axis
