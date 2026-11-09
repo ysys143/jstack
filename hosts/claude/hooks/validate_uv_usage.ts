@@ -23,6 +23,10 @@ catch {
 } }
 export function extractExecutableCommands(command: string): string { return command.replace(/<<-?\s*['"]?(\w+)['"]?.*?(?:^|\n)\1(?:\s|$)/gs, ' __HEREDOC__ ').replace(/\$\([^)]*<<[^)]*\)/gs, ' __SUBSHELL__ ').replace(/'[^']*'/g, ' __SQUOTE__ ').replace(/"[^"]*"/g, ' __DQUOTE__ '); }
 const alternatives: Record<string, string[]> = { install: ['uv add', 'uv pip install'], uninstall: ['uv remove', 'uv pip uninstall'], list: ['uv pip list'], freeze: ['uv pip freeze'], show: ['uv pip show'], check: ['uv pip check'], download: ['uv pip download'], wheel: ['uv pip wheel'], cache: ['uv cache'], config: ['uv pip config'] };
+// pip's global options may sit between `pip` and its subcommand (`pip -q install`). Options that
+// take a separate value are listed so that the value is not read as the subcommand.
+const PIP_OPTION = /(?:-(?:i|f)\s+\S+|--(?:index-url|extra-index-url|find-links|log|proxy|retries|timeout|exists-action|trusted-host|cert|client-cert|cache-dir|keyring-provider)\s+\S+|-{1,2}[A-Za-z][\w-]*(?:=\S+)?)/.source;
+const PIP_OPTIONS = `(?:\\s+${PIP_OPTION})*`;
 export interface Detected {
     original: string;
     alternatives: string[];
@@ -33,15 +37,15 @@ export function findPipCommands(command: string): Detected[] {
         return [];
     const text = extractExecutableCommands(command);
     const found: Detected[] = [];
-    const module = /\b(python3?)\s+-m\s+pip\s+(\w+)/i.exec(text);
+    const module = new RegExp(`\\b(python[\\d.]*)\\s+-m\\s+pip${PIP_OPTIONS}\\s+(\\w+)`, 'i').exec(text);
     if (module) {
         const sub = module[2].toLowerCase();
         found.push({ original: `${module[1]} -m pip ${sub}`, alternatives: alternatives[sub] ?? ['uv pip ' + sub], type: 'python_module' });
     }
     for (const [sub, alts] of Object.entries(alternatives)) {
-        for (const match of text.matchAll(new RegExp(`(?<![a-zA-Z])(pip3?)\\s+${sub}\\b`, 'gi'))) {
+        for (const match of text.matchAll(new RegExp(`(?<![a-zA-Z])(pip[\\d.]*)${PIP_OPTIONS}\\s+${sub}\\b`, 'gi'))) {
             if (!text.slice(Math.max(0, match.index! - 4), match.index).toLowerCase().includes('uv '))
-                found.push({ original: `${match[1]} ${sub}`, alternatives: alts, type: 'direct_pip' });
+                found.push({ original: match[0].replace(/\s+/g, ' '), alternatives: alts, type: 'direct_pip' });
         }
     }
     const pipx = /\bpipx\s+(\w+)/i.exec(text);
@@ -52,6 +56,13 @@ export function findPipCommands(command: string): Detected[] {
     const bare = /(?<![a-zA-Z])(pip3?)\s+(--\w+)/i.exec(text);
     if (bare)
         found.push({ original: `${bare[1]} ${bare[2]}`, alternatives: [`uv pip ${bare[2]}`], type: 'bare_pip' });
+    // Virtual environments are created with uv, not with the stdlib venv module or virtualenv.
+    const venvModule = /\bpython[\d.]*\s+-m\s+(venv|virtualenv)\b/i.exec(text);
+    const virtualenv = /(?:^|[;&|(]\s*)(?:\S*\/)?virtualenv\b/im.exec(text);
+    if (venvModule)
+        found.push({ original: venvModule[0].replace(/\s+/g, ' '), alternatives: ['uv venv'], type: 'venv' });
+    else if (virtualenv)
+        found.push({ original: 'virtualenv', alternatives: ['uv venv'], type: 'venv' });
     return found;
 }
 export function handle(input: HookInput): HookResult {
@@ -60,7 +71,7 @@ export function handle(input: HookInput): HookResult {
     const command = input.tool_input?.command ?? '';
     const detected = findPipCommands(command);
     if (detected.length)
-        return { decision: 'block', reason: '[WARN] pip/pip3/pipx are prohibited - use uv\n\nAlternative commands:\n' + detected.map(d => `- ${d.original}: ${d.alternatives.join(' or ')}`).join('\n') + '\n\n[DOC] https://docs.astral.sh/uv/' };
+        return { decision: 'block', reason: '[WARN] pip/pip3/pipx and python -m venv/virtualenv are prohibited - use uv\n\nAlternative commands:\n' + detected.map(d => `- ${d.original}: ${d.alternatives.join(' or ')}`).join('\n') + '\n\n[DOC] https://docs.astral.sh/uv/' };
     if (!disabled('enforce_venv_check')) {
         const sub = /\buv\s+pip\s+(\w+)/i.exec(extractExecutableCommands(command))?.[1].toLowerCase();
         let venv = false;

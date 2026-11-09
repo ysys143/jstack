@@ -502,8 +502,11 @@ Requires `uv` instead of `pip`.
 ```contract
 matcher:   Bash
 fail-open: exceptions pass; ordinary validation failures follow the exit contract
-block when: command invokes pip, pip3, or pipx; also when it invokes `uv pip`
-            without a .venv (a separate check disabled through venv_check)
+block when: command invokes pip, pip3, or pipx, including with options before the
+            subcommand (`pip -q install`, `python -m pip -U install`); also
+            `python -m venv`, `python -m virtualenv`, or `virtualenv` (use `uv venv`);
+            also when it invokes `uv pip` without a .venv (a separate check disabled
+            through venv_check)
 exit contract: exit 0 + stdout JSON {"decision":"block"}
 output:    blocked pip command + corresponding uv command
 verify:    node scripts/run_suites.js tests/test_dev_hooks.js
