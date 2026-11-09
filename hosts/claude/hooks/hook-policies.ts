@@ -102,7 +102,7 @@ export const POLICIES: readonly Policy[] = [
     },
     {
         id: 'uv', replaces: ['hooks/validate_uv_usage.js'], events: ['PreToolUse'], kinds: ['shell'], failClosed: false, expensive: false,
-        prefilter: event => shellOnly(event, /\bpip|\bpipx\b/i),
+        prefilter: event => shellOnly(event, /\bpip|\bpipx\b|\bvenv\b|\bvirtualenv\b/i),
         async run(event) {
             const { handle } = await import('./validate_uv_usage.js');
             return legacyInputs(event).flatMap(input => fromResult('uv', handle(input)));

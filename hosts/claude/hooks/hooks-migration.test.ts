@@ -36,6 +36,16 @@ test('uv command detection preserves legacy decisions without ambient project co
 finally {
     rmSync(temp, { recursive: true, force: true });
 } });
+test('uv hook blocks pip flags before the subcommand and venv creation, but not unrelated text', () => { const temp = mkdtempSync(join(tmpdir(), 'jstack-hooks-')); try {
+    for (const command of ['./venv/bin/pip -q install a', 'pip -U --quiet install a', 'pip3 --index-url https://example.invalid/simple install a', 'pip --timeout 5 -q install a', 'python -m pip -q install a', 'python3.12 -m pip -q install a', 'python3 -m venv venv', 'python3.12 -m venv .v', 'python -m virtualenv v', 'virtualenv v', 'cd x && virtualenv v', 'cd x && ./venv/bin/pip -q install a 2>&1 | tail -2']) {
+        assert.ok(findPipCommands(command).length > 0, command);
+    }
+    for (const command of ['uv venv', 'uv venv .venv', 'uv tool install virtualenv', 'echo "python3 -m venv v"', 'grep -n pip requirements.txt', 'uv run python script.py']) {
+        assert.equal(findPipCommands(command).length, 0, command);
+    }
+    assert.equal(node('validate_uv_usage', { tool_name: 'Bash', tool_input: { command: './venv/bin/pip -q install a' } }, temp).decision, 'block');
+    assert.match(node('validate_uv_usage', { tool_name: 'Bash', tool_input: { command: 'python3 -m venv venv' } }, temp).reason, /uv venv/);
+} finally { rmSync(temp, { recursive: true, force: true }); } });
 test('README and marketplace checks reject mismatches and accept coherent versions', () => { const temp = mkdtempSync(join(tmpdir(), 'jstack-hooks-')); try {
     mkdirSync(join(temp, 'plugins', 'sample', '.claude-plugin'), { recursive: true });
     mkdirSync(join(temp, '.claude-plugin'));

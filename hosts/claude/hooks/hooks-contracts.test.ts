@@ -146,6 +146,17 @@ test('ai-attribution is selected for git and gh option forms and for no other co
         assert.equal(ids('Bash', { command }).includes('ai-attribution'), false, command);
     assert.equal(ids('Write', { file_path: 'a.txt', content: 'git commit' }).includes('ai-attribution'), false);
 });
+test('uv policy is selected for pip flags and venv creation and denies them, not unrelated shell', async () => {
+    const cwd = process.cwd();
+    const event = (command: string) => normalize({ tool_name: 'Bash', tool_input: { command }, cwd }, 'PreToolUse', 'claude');
+    const uvOnly = (command: string) => applicable(event(command), {}).filter(policy => policy.id === 'uv');
+    for (const command of ['./venv/bin/pip -q install a', 'python3 -m venv venv', 'virtualenv v']) {
+        assert.equal(uvOnly(command).length, 1, command);
+        const verdicts = await evaluate(event(command), {}, uvOnly(command));
+        assert.ok(verdicts.some(verdict => verdict.action === 'deny' && verdict.policy === 'uv'), command);
+    }
+    assert.deepEqual(uvOnly('ls -la'), []);
+});
 test('dispatcher denies AI attribution in commits and PR bodies on both hosts', async () => {
     const cwd = mkdtempSync(join(tmpdir(), 'jstack-attribution-'));
     // The project lane is a separate policy; switching it off keeps the clean-commit assertions about this policy alone.
