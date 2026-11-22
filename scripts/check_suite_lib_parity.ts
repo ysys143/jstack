@@ -4,7 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { sourceRoot } from './doctor-work.js';
-export const CANONICAL: Record<string, string> = {'skills/_suite_lib.ts':'skills/_suite_lib.ts','scripts/run_suites.ts':'scripts/run_suites.ts','hosts/claude/hooks/block_emoji.ts':'hooks/block_emoji.ts'};
+export const CANONICAL: Record<string, string> = {'skills/_suite_lib.ts':'skills/_suite_lib.ts','scripts/run_suites.ts':'scripts/run_suites.ts','hosts/claude/hooks/block_emoji.ts':'hooks/block_emoji.ts','hosts/claude/hooks/emoji-pattern.ts':'hooks/emoji-pattern.ts'};
 export function check(root = sourceRoot(), canonical = CANONICAL): string[] {
   const problems: string[] = []; let rows: {source?: string; target?: string}[];
   try {rows = JSON.parse(fs.readFileSync(path.join(root, 'packaging/package-files.json'), 'utf8')).files; if (!Array.isArray(rows)) throw new Error('files must be an array');}

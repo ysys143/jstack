@@ -1,9 +1,15 @@
 ---
 name: emoji-policy
-description: The No-Emoji rule for this organization — what it covers, what it deliberately over-blocks, and how to clear emoji out of files that already have them. Triggers — "이모지 제거", "emoji 지워", "이모지 빼줘", "remove emoji", "strip emoji", "이모지 왜 막혀", "이모지 정책", "체크마크 안 써져", "훅이 막는다".
+description: Conditional support for emoji rules, user-requested emoji and removal; read the path in a blocked write.
 ---
 
 # Emoji — the rule, and cleaning up after it
+
+This is conditional support, not a native skill: its description does not trigger
+host discovery. When a write is blocked, read the JSON-quoted absolute path after
+`Read support file:` in the hook message, then the section "When the user asked
+for emoji" below. That path identifies this installed body without searching
+user skill folders or resolving the package-relative path from the tool's cwd.
 
 ## Two halves, one rule
 

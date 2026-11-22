@@ -37,6 +37,12 @@
   home file win, the reverse of what the skill said. It now takes the first key from
   the shell environment, the working directory's `.env`, then
   `~/.claude/.env.nanobanana`, and the probe reports the same source.
+- Emoji write blocks now identify the support procedure with a JSON-quoted
+  absolute path, including relocated installations and unrelated working
+  directories, and name an existing file when the skill catalog is missing or
+  malformed. The dispatcher prefilter now loads only the import-free emoji
+  pattern module. The conditional support description no longer advertises native
+  triggers; the user-request procedure and literal hook enforcement are unchanged.
 
 ## 0.0.1 — 2026-10-22
 

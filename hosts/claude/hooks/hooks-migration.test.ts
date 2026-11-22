@@ -1,9 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, writeFileSync, rmSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { catalogRoot } from '../../../runtime/catalog_cli.js';
+import { sourcePath } from '../../../runtime/skill_catalog.js';
 import { handle as emoji, bashWritesAFile } from './block_emoji.js';
 import { findPipCommands, projectRoot } from './validate_uv_usage.js';
 import { checkPluginVersion } from './check_readme_version.js';
@@ -19,9 +22,54 @@ test('emoji block message keeps its prefix and points at the user-request exempt
     assert.ok(reason.startsWith('Emoji detected in content: \u{1f4a1} (\\U0001f4a1), \u{1f4cc} (\\U0001f4cc). '), reason);
     const tail = reason.slice(reason.indexOf('. Default:') + 2);
     assert.match(tail, /^Default: remove all emoji characters and retry with ASCII alternatives like \[O\], \[X\], \[INFO\], \[WARN\], ->, <- instead\. /);
-    assert.match(tail, /If the user explicitly asked for these emoji, this is a policy exemption: read payload\/skills\/emoji\/SKILL\.md in the installed jstack package \(section "When the user asked for emoji"\)/);
-    assert.match(tail, /do not retry the same call unchanged\.$/);
-    assert.equal(/[^\x00-\x7f]/.test(tail), false, 'the guidance itself stays ASCII');
+    assert.match(tail, /If the user explicitly asked for these emoji, this is a policy exemption\. Read support file: "/);
+    // The absolute path takes precedence; the package-relative name is context, not a second instruction.
+    assert.match(tail, /\. Use that absolute path first; in the installed jstack package it is payload\/skills\/emoji\/SKILL\.md, and a contributor build may name the same body differently\. /);
+    assert.match(tail, /Follow its section "When the user asked for emoji" and do not retry the same call unchanged\.$/);
+    const guide = /Read support file: ("(?:\\.|[^"\\])*")\. /.exec(tail);
+    assert.ok(guide, reason);
+    const file: string = JSON.parse(guide[1]);
+    assert.equal(isAbsolute(file), true);
+    assert.match(readFileSync(file, 'utf8'), /## When the user asked for emoji/);
+    assert.equal(/[^\x00-\x7f]/.test(tail.replace(guide[1], '"PATH"')), false, 'fixed guidance stays ASCII; the path may contain Unicode');
+});
+test('emoji guidance follows the installed body from unrelated cwd and Unicode paths without weakening a block', () => {
+    // Canonical temp path: the hook's import.meta.url is resolved through symlinks such as macOS /var.
+    const temp = realpathSync(mkdtempSync(join(tmpdir(), 'jstack-emoji-guide-')));
+    const root = catalogRoot(), relocated = join(temp, '설치 경로 with spaces'), cwd = join(temp, 'unrelated');
+    const hook = fileURLToPath(new URL('./block_emoji.js', import.meta.url));
+    const body = sourcePath(root, 'skills/emoji/SKILL.md');
+    const target = (file: string) => join(relocated, relative(root, file));
+    try {
+        mkdirSync(cwd, { recursive: true });
+        for (const file of [hook, fileURLToPath(new URL('./emoji-pattern.js', import.meta.url)), fileURLToPath(new URL('../../../runtime/entry.js', import.meta.url)), fileURLToPath(new URL('../../../runtime/catalog_cli.js', import.meta.url)), fileURLToPath(new URL('../../../runtime/skill_catalog.js', import.meta.url)), join(root, 'contracts/skill-catalog.json'), body]) {
+            mkdirSync(dirname(target(file)), { recursive: true }); cpSync(file, target(file));
+        }
+        if (relative(root, body).split(sep).join('/').startsWith('skills/support/')) mkdirSync(join(relocated, 'skills/public'), { recursive: true });
+        writeFileSync(join(relocated, 'package.json'), '{"type":"module"}');
+        const payload = JSON.stringify({ tool_name: 'Write', tool_input: { content: String.fromCodePoint(0x1f4a1) } });
+        const run = () => {
+            const result = spawnSync(process.execPath, [target(hook)], { cwd, input: payload, encoding: 'utf8', timeout: 5000 });
+            assert.ifError(result.error); assert.equal(result.status, 0, result.stderr);
+            const verdict = JSON.parse(result.stdout); assert.equal(verdict.decision, 'block'); return verdict.reason as string;
+        };
+        const named = (reason: string) => {
+            const quoted = /Read support file: ("(?:\\.|[^"\\])*")\. /.exec(reason);
+            assert.ok(quoted, reason); return JSON.parse(quoted[1]) as string;
+        };
+        const path = named(run());
+        assert.equal(path, target(body)); assert.equal(readFileSync(path, 'utf8'), readFileSync(body, 'utf8'));
+        // Missing/malformed discovery metadata must not turn a literal emoji write into a pass,
+        // and the static fallback must still name the body that exists in this layout.
+        writeFileSync(join(relocated, 'contracts/skill-catalog.json'), '{');
+        const malformed = run();
+        assert.match(malformed, /Emoji detected in content:/);
+        assert.equal(named(malformed), target(body)); assert.equal(existsSync(named(malformed)), true);
+        rmSync(join(relocated, 'contracts/skill-catalog.json'));
+        const missing = run();
+        assert.match(missing, /Emoji detected in content:/);
+        assert.equal(named(missing), target(body)); assert.equal(existsSync(named(missing)), true);
+    } finally { rmSync(temp, { recursive: true, force: true }); }
 });
 test('uv command detection preserves legacy decisions without ambient project config', () => { const temp = mkdtempSync(join(tmpdir(), 'jstack-hooks-')); try {
     for (const command of ['pip install a', 'python3 -m pip freeze', 'pipx run a', 'echo "pip install a"', 'cat <<EOF\npip install a\nEOF', 'uv pip list', 'uv pip install a', 'uv add a', 'uv pip list && pip install a']) {

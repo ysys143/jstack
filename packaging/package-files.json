@@ -722,6 +722,10 @@
       "target": "hooks/dispatch.ts"
     },
     {
+      "source": "hosts/claude/hooks/emoji-pattern.ts",
+      "target": "hooks/emoji-pattern.ts"
+    },
+    {
       "source": "hosts/claude/hooks/ensure-statusline.mjs",
       "target": "hooks/ensure-statusline.mjs"
     },
