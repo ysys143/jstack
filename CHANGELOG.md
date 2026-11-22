@@ -29,12 +29,26 @@
 - `evals/regression/research-evidence-needs` is an added eval fixture for that check: an
   exhaustive list over a supplied log, a withdrawn amendment, and no whole-population
   claim. It is a case definition, not a measured quality result.
+- Linux disk-manager status, explicit category scans and SQLite snapshot/history/diff
+  with narrow XDG cache defaults, sequential one-filesystem du, shared collection
+  locking, total deadlines and honest partial/unknown results.
+- Opt-in systemd user timers alongside macOS launchd, with delayed first collection,
+  no boot/catch-up scan, resource controls and no root/cron fallback.
 
 ### Changed
 
 - `image-generation` treats nanobanana as a paid path too: each run needs the same
   approval as the openai path. The skill carries a dated price snapshot for all three
   paths and checks that it names the Gemini model the script calls.
+- macOS `jst disk scan` output gains `schemaVersion` 2, `skipped`, `complete`,
+  `enumerationComplete`, `elapsedMs` and `deadlineMs`; `totalChildren` is null
+  when enumeration is incomplete, and an older scan cache is replaced by one fresh
+  scan. A fresh scan now takes `snapshot.lock`, so it refuses to run beside a
+  snapshot; cached reads take no lock. macOS scan still exits 0 for an incomplete
+  result; only Linux exits 1.
+- macOS `jst disk snapshot` output gains `runTimeoutSeconds`, null unless the
+  profile sets a total collection deadline; without one, macOS keeps only the
+  per-category `snapshotTimeoutSeconds` limit as before.
 
 ### Fixed
 

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { openHistory, record } from '../scripts/history.js';
 import { fixture, native, sample, seedNative } from './_fixtures.js';
 
-test('diff and history name a legacy database that a jstack history has not imported', { skip: process.platform === 'win32' ? 'HOME does not select the Windows home' : false }, async () => {
+test('diff and history name a legacy database that a jstack history has not imported', { skip: process.platform !== 'darwin' ? 'macOS legacy collector detection' : false }, async () => {
   const home = fixture(), cli = fileURLToPath(new URL('../scripts/main.js', import.meta.url)), legacy = join(home, '.disk_cache/disk_history.db');
   mkdirSync(dirname(legacy)); writeFileSync(legacy, '');
   try {

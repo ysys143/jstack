@@ -4894,6 +4894,10 @@
       "target": "skills/disk-manager/references/installation.md"
     },
     {
+      "source": "skills/public/operations/disk-manager/references/linux.md",
+      "target": "skills/disk-manager/references/linux.md"
+    },
+    {
       "source": "skills/public/operations/disk-manager/references/macos.md",
       "target": "skills/disk-manager/references/macos.md"
     },
@@ -4950,6 +4954,10 @@
       "target": "skills/disk-manager/tests/history.test.ts"
     },
     {
+      "source": "skills/public/operations/disk-manager/tests/linux.test.ts",
+      "target": "skills/disk-manager/tests/linux.test.ts"
+    },
+    {
       "source": "skills/public/operations/disk-manager/tests/measure.test.ts",
       "target": "skills/disk-manager/tests/measure.test.ts"
     },
@@ -4960,6 +4968,10 @@
     {
       "source": "skills/public/operations/disk-manager/tests/snapshot.test.ts",
       "target": "skills/disk-manager/tests/snapshot.test.ts"
+    },
+    {
+      "source": "skills/public/operations/disk-manager/tests/systemd.test.ts",
+      "target": "skills/disk-manager/tests/systemd.test.ts"
     },
     {
       "source": "skills/public/operations/disk-manager/tests/worktree-audit.test.ts",

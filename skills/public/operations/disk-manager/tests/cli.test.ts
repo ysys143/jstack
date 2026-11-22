@@ -31,7 +31,7 @@ test('CLI context reads the memory another process recorded', async () => {
     assert.match(restored.memory.guidance, /not permission/);
   } finally { rmSync(root, { recursive: true }); }
 });
-test('history without a new database points at a detected legacy database', { skip: process.platform === 'win32' ? 'HOME does not select the Windows home' : false }, () => {
+test('history without a new database points at a detected legacy database', { skip: process.platform !== 'darwin' ? 'macOS legacy collector detection' : false }, () => {
   const home = fixture(), cli = fileURLToPath(new URL('../scripts/main.js', import.meta.url)), legacy = join(home, '.disk_cache/disk_history.db');
   mkdirSync(dirname(legacy)); writeFileSync(legacy, '');
   try {
