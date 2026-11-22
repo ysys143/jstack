@@ -43,6 +43,16 @@ private conversation content. The output file
 must be new. Review the selected profiles, project paths, and file counts before
 applying. Existing authorization to migrate those exact profiles is sufficient.
 
+Codex account-scoped sessions retain their original account identity by default;
+the target account's filtered session list may therefore omit them. To make an
+explicit cross-account import visible in the destination account, add
+`--target-owner-thread ID` to `plan`, using the ID of an existing session known
+to belong to that destination account. The engine rebinds both the imported
+session metadata and its indexed owner to that account, remaps history offsets,
+and retains the original source. It rejects a missing destination identity,
+inconsistent source ownership, and destination identity changes after planning.
+Do not choose an owner thread merely by recency when multiple accounts are present.
+
 ## Apply and verify
 
 ```bash

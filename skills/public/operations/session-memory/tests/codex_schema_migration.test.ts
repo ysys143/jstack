@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
-import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SqliteDatabase } from '../../../../../runtime/sqlite.js';
 import { apply, codex, createPlan, rollback, verify } from '../scripts/migrate_sessions.js';
+import { records } from '../scripts/session_migration/common.js';
 import type { Host, MigrationOptions, MigrationPlan } from '../scripts/session_migration/types.js';
 
 const nativeRoot = fileURLToPath(new URL('../../../../../native/sqlite3', import.meta.url));
@@ -20,7 +21,7 @@ class Fixture {
   options: MigrationOptions = { ...native, noWriter: () => undefined };
   constructor(t: TestContext) { for (const path of [this.project, this.source, this.destination]) mkdirSync(path); t.after(() => rmSync(this.root, { recursive: true, force: true })); }
   receipt(name = 'receipt') { return join(this.root, name); }
-  transcript() { return Buffer.from(JSON.stringify({ type: 'session_meta', payload: { id: 'child', session_id: 'parent', cwd: this.old } }) + '\n' + JSON.stringify({ type: 'response_item', payload: { text: `Historical command: cd ${this.old}` } }) + '\n'); }
+  transcript() { return Buffer.from(JSON.stringify({ type: 'session_meta', payload: { id: 'child', session_id: 'parent', cwd: this.old, account_scoped: true, creator_user_id: 'source-user', creator_account_id: 'source-account' } }) + '\n' + JSON.stringify({ type: 'response_item', payload: { text: `Historical command: cd ${this.old}` } }) + '\n'); }
   async connection(profile: string, kind = 'state') { return SqliteDatabase.open(join(profile, kind === 'history' ? 'thread_history_1.sqlite' : 'state_5.sqlite'), { ...native, readonly: false }); }
   async sql(profile: string, sql: string, kind = 'state') { const db = await this.connection(profile, kind); try { await db.exec(sql); } finally { await db.close(); } }
   async initialize(profile: string) {
@@ -92,5 +93,37 @@ test('unknown Codex state schema without artifacts or attachments is rejected', 
   const f = new Fixture(t); await f.codex();
   await f.sql(f.source, 'DROP TABLE thread_artifacts');
   await assert.rejects(f.plan('codex'), /missing artifacts and attachments/);
+});
+
+test('explicit destination owner is applied to session metadata and database with history offsets preserved', async t => {
+  const f = new Fixture(t); const source = await f.codex();
+  for (const profile of [f.source, f.destination]) await f.sql(profile, 'ALTER TABLE threads ADD COLUMN creator_user_id TEXT; ALTER TABLE threads ADD COLUMN creator_account_id TEXT');
+  await f.sql(f.source, "UPDATE threads SET creator_user_id='source-user',creator_account_id='source-account' WHERE id='child'");
+  await f.sql(f.destination, "UPDATE threads SET creator_user_id='destination-user-long',creator_account_id='destination-account-long' WHERE id='parent'");
+  const before = readFileSync(source);
+  const plan = await createPlan('codex', [f.source], f.destination, f.old, f.project, { ...f.options, targetOwnerThread: 'parent' });
+  await f.run(plan);
+  const target = readFileSync(plan.files[0]!.target), metadata = records(target)[0]!.payload;
+  assert.equal(metadata.creator_user_id, 'destination-user-long'); assert.equal(metadata.creator_account_id, 'destination-account-long');
+  const state = await codex.snapshot(plan.database!.path, ['child'], f.options);
+  assert.equal(state.threads![0]!.creator_account_id, metadata.creator_account_id);
+  const history = await codex.snapshot(plan.history!.path, ['child'], f.options);
+  assert.equal(history.thread_turns![0]!.rollout_byte_offset, target.indexOf(10) + 1);
+  assert.equal(history.thread_history_projection_state![0]!.next_rollout_byte_offset, target.length);
+  assert.equal((await verify(f.receipt(), f.options)).status, 'verified');
+  await rollback(f.receipt(), f.options); assert.deepEqual(readFileSync(source), before);
+});
+
+test('destination account changes and inconsistent source ownership block rebinding', async t => {
+  const f = new Fixture(t); await f.codex();
+  for (const profile of [f.source, f.destination]) await f.sql(profile, 'ALTER TABLE threads ADD COLUMN creator_user_id TEXT; ALTER TABLE threads ADD COLUMN creator_account_id TEXT');
+  await f.sql(f.source, "UPDATE threads SET creator_user_id='source-user',creator_account_id='source-account' WHERE id='child'");
+  await f.sql(f.destination, "UPDATE threads SET creator_user_id='dest-user',creator_account_id='dest-account' WHERE id='parent'");
+  const options = { ...f.options, targetOwnerThread: 'parent' };
+  const plan = await createPlan('codex', [f.source], f.destination, f.old, f.project, options);
+  await f.sql(f.destination, "UPDATE threads SET creator_account_id='changed' WHERE id='parent'");
+  await assert.rejects(f.run(plan), /Plan no longer matches/);
+  await f.sql(f.source, "UPDATE threads SET creator_user_id='different' WHERE id='child'");
+  await assert.rejects(createPlan('codex', [f.source], f.destination, f.old, f.project, options), /Source ownership differs/);
 });
 
