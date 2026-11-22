@@ -331,7 +331,7 @@ function direct(t: any, req = 'REQ-1') {
   return (log: string, need: any, report: string, path = 'a.log') => {
     if (path === 'a.log') writeFileSync(join(dir, path), log);
     const r = check_evidence({ schema: 'jstack-evidence-needs/1', sources: { S1: { path, sha256: sha(log) } }, needs: [{ requirement: req, requirementSha256: requirementSha('x'), ...need }] }, dir, [report], bindings, 'requirements-file');
-    return { result: r.mechanicalResult, kinds: r.findings.map(x => x.kind), dir };
+    return { result: r.mechanicalResult, kinds: r.findings.map(x => x.kind), dir, report: r };
   };
 }
 const TWO = 'INC-1 database failover cost 3000 won\nINC-2 cache outage cost 5500 won\n';
@@ -429,6 +429,43 @@ test('a source path that leaves the needs directory or passes through a linked d
   writeFileSync(join(dir, '..', 'outside.log'), log);
   assert.ok(check(log, lookup, 'REQ-1 상태\n- ITEM-A approved', '../outside.log').kinds.includes('SOURCE_MISSING'), 'a path outside the needs directory is refused');
   assert.ok(check(log, lookup, 'REQ-1 상태\n- ITEM-A approved', join(dir, '..', 'outside.log')).kinds.includes('SOURCE_MISSING'), 'an absolute path outside the needs directory is refused');
+});
+test('a need ID used twice is a defect, never a second independent check', async t => {
+  const f = fixture(t);
+  const twice = await f.run(m => { m.needs.push({ ...m.needs[0] }); });
+  assert.equal(twice.code, 1, twice.out);
+  assert.deepEqual(kinds(twice), ['DUPLICATE_NEED']);
+  assert.deepEqual(twice.json.evidence.needs.map((n: any) => [n.id, n.status]), [['N1', 'consistent'], ['N2', 'consistent'], ['N3', 'consistent'], ['N1', 'defective']]);
+});
+test('a boundary ID with many rows keeps only its first two, so a later row never grounds a quote', t => {
+  const check = direct(t);
+  const need = { id: 'N1', type: 'enumerate', boundary: { source: 'S1', linePrefix: 'A-' }, items: [{ id: 'A-1', source: 'S1', quote: 'A-1 x 3' }] };
+  const r = check('A-1 x 1\nA-1 x 2\nA-1 x 3\n', need, 'REQ-1\n- A-1');
+  assert.deepEqual(r.kinds, ['AMBIGUOUS_ROW', 'QUOTE_NOT_SUPPORTED']);
+  assert.deepEqual(r.report.review, [], 'the third row was not kept, so its quote reaches no review pair');
+});
+test('whole-token ID matching compiles no pattern per ID, even at the item limit', t => {
+  const check = direct(t);
+  const ids = Array.from({ length: LIMITS.items }, (_, i) => `§${i}.x${i}`), log = ids.map(id => `${id} cost 1 won\n`).join('');
+  const need = { id: 'N1', type: 'enumerate', boundary: { source: 'S1', linePrefix: '§' }, items: ids.map(id => ({ id, source: 'S1', quote: `${id} cost` })) };
+  const report = 'REQ-1\n' + ids.map(id => `- ${id}`).join('\n');
+  const Real = globalThis.RegExp; let built = 0, result = '';
+  globalThis.RegExp = new Proxy(Real, {
+    construct(target, args, newTarget) { built++; return Reflect.construct(target, args, newTarget); },
+    apply(target, self, args) { built++; return Reflect.apply(target, self, args); },
+  });
+  try { result = check(log, need, report).result; } finally { globalThis.RegExp = Real; }
+  assert.equal(built, 0, `${built} patterns were compiled during the check`);
+  assert.equal(result, 'consistent');
+});
+test('a sum over a duplicated item is not computed, so the duplicate cannot be counted once or twice silently', t => {
+  const check = direct(t);
+  const items = [...twoSum.items, { ...twoSum.items[0]! }];
+  for (const claimed of ['8500', '11500']) {
+    const r = check(TWO, { ...twoSum, claimed, items }, `REQ-1 비용\n- INC-1 3,000\n- INC-2 5,500\n합계 ${claimed}`);
+    assert.deepEqual(r.kinds, ['DUPLICATE_ITEM'], claimed);
+    assert.equal(r.report.needs[0]!.computed, undefined, `${claimed}: no total is recomputed over a duplicated item`);
+  }
 });
 test('a spawned process runs the same opt-in path and exit codes', t => {
   const f = fixture(t); const m = f.base(); writeFileSync(f.needsPath, JSON.stringify(m));
