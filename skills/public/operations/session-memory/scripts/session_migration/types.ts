@@ -7,6 +7,7 @@ export interface MigrationPlan {
   schemaVersion: 1; host: Host; oldProject: string; project: string; profiles: string[]; destination: string;
   sourceGuards: Record<string, string>; sourceDatabases: Record<string, Record<string, Rows>>; files: FileAction[];
   targetOwnerThread?: string;
+  sessionId?: string;
   database?: DatabaseBlock; history?: DatabaseBlock;
   index?: { path: string; before: string | null; entries: Record<string, any>[] };
 }
@@ -14,6 +15,7 @@ export interface MigrationReceipt { schemaVersion: 1; status: 'prepared' | 'appl
 export interface MigrationOptions extends NativeOptions {
   /** Explicit destination session whose account owns the imported Codex session. */
   targetOwnerThread?: string;
+  sessionId?: string;
   /** Fixture/host-integration adapter; CLI always uses the native fail-closed detector. */
   noWriter?: (path: string) => void;
   /** Fault injection at durable phase boundaries; never exposed as a CLI flag. */

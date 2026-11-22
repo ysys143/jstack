@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SqliteDatabase } from '../../../../../runtime/sqlite.js';
 import { apply, codex, createPlan, rollback, verify } from '../scripts/migrate_sessions.js';
-import { records } from '../scripts/session_migration/common.js';
+import { records, transform } from '../scripts/session_migration/common.js';
 import type { Host, MigrationOptions, MigrationPlan } from '../scripts/session_migration/types.js';
 
 const nativeRoot = fileURLToPath(new URL('../../../../../native/sqlite3', import.meta.url));
@@ -21,7 +21,7 @@ class Fixture {
   options: MigrationOptions = { ...native, noWriter: () => undefined };
   constructor(t: TestContext) { for (const path of [this.project, this.source, this.destination]) mkdirSync(path); t.after(() => rmSync(this.root, { recursive: true, force: true })); }
   receipt(name = 'receipt') { return join(this.root, name); }
-  transcript() { return Buffer.from(JSON.stringify({ type: 'session_meta', payload: { id: 'child', session_id: 'parent', cwd: this.old, account_scoped: true, creator_user_id: 'source-user', creator_account_id: 'source-account' } }) + '\n' + JSON.stringify({ type: 'response_item', payload: { text: `Historical command: cd ${this.old}` } }) + '\n'); }
+  transcript() { return Buffer.from(JSON.stringify({ type: 'session_meta', payload: { id: 'child', session_id: 'parent', cwd: this.old, runtime_workspace_roots: [this.old, '/other'], account_scoped: true, creator_user_id: 'source-user', creator_account_id: 'source-account' } }) + '\n' + JSON.stringify({ type: 'response_item', payload: { text: `Historical command: cd ${this.old}` } }) + '\n'); }
   async connection(profile: string, kind = 'state') { return SqliteDatabase.open(join(profile, kind === 'history' ? 'thread_history_1.sqlite' : 'state_5.sqlite'), { ...native, readonly: false }); }
   async sql(profile: string, sql: string, kind = 'state') { const db = await this.connection(profile, kind); try { await db.exec(sql); } finally { await db.close(); } }
   async initialize(profile: string) {
@@ -125,5 +125,30 @@ test('destination account changes and inconsistent source ownership block rebind
   await assert.rejects(f.run(plan), /Plan no longer matches/);
   await f.sql(f.source, "UPDATE threads SET creator_user_id='different' WHERE id='child'");
   await assert.rejects(createPlan('codex', [f.source], f.destination, f.old, f.project, options), /Source ownership differs/);
+});
+
+test('explicit session ID changes only the selected in-place project and rolls back', async t => {
+  const f = new Fixture(t); const source = await f.codex(); f.destination = f.source;
+  await f.sql(f.source, 'DELETE FROM thread_spawn_edges');
+  const other = join(f.source, 'sessions/2026/01/01/other.jsonl');
+  const raw = Buffer.from(JSON.stringify({ type: 'session_meta', payload: { id: 'other', cwd: f.old } }) + '\n'); writeFileSync(other, raw);
+  const db = await f.connection(f.source);
+  try { await db.execute('INSERT INTO threads VALUES (?,?,?,?,?,?,?)', ['other', f.old, other, 'Other', 100, null, null]); } finally { await db.close(); }
+  const original = readFileSync(source), options = { ...f.options, sessionId: 'child' };
+  const plan = await createPlan('codex', [f.source], f.destination, f.old, f.project, options);
+  assert.equal(plan.files.length, 1); assert.deepEqual(plan.database!.ids, ['child']);
+  await f.run(plan); assert.equal(records(readFileSync(source))[0]!.payload.cwd, f.project);
+  assert.deepEqual(records(readFileSync(source))[0]!.payload.runtime_workspace_roots, [f.project, '/other']);
+  assert.deepEqual(readFileSync(other), raw);
+  assert.equal((await codex.snapshot(plan.database!.path, ['other'], f.options)).threads![0]!.cwd, f.old);
+  assert.equal((await verify(f.receipt(), f.options)).status, 'verified');
+  await rollback(f.receipt(), f.options); assert.deepEqual(readFileSync(source), original);
+  await assert.rejects(createPlan('codex', [f.source], f.destination, f.old, f.project, { ...f.options, sessionId: 'missing' }), /No sessions matched/);
+});
+
+test('stale workspace roots are corrected when cwd already names the destination', () => {
+  const raw = Buffer.from(JSON.stringify({ type: 'session_meta', payload: { cwd: '/new', runtime_workspace_roots: ['/old', '/other'] } }) + '\n');
+  const metadata = records(transform(raw, 'codex', '/old', '/new'))[0]!.payload;
+  assert.equal(metadata.cwd, '/new'); assert.deepEqual(metadata.runtime_workspace_roots, ['/new', '/other']);
 });
 
