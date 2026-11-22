@@ -218,3 +218,63 @@ test('macOS scan keeps exit status 0 for an incomplete result while Linux fails 
     await locked(root, async () => { const cached = await scan(root, p, 'tiny'); assert.equal(cached.complete, false); assert.equal(cached.schemaVersion, 2); }, { lock: 'snapshot.lock' });
   } finally { rmSync(root, { recursive: true }); }
 });
+test('children not started before the scan deadline are reported as total-deadline skips, never lstat or measured', { skip: process.platform === 'win32' ? 'POSIX platform fixture' : false }, async () => {
+  const root = fixture(), target = join(root, 'tiny'), children = ['a', 'b', 'c'].map(name => join(target, name)); mkdirSync(target);
+  for (const child of children) writeFileSync(child, 'fixture');
+  const p = { ...defaultProfile(root, 'darwin'), filesystem: root, categories: { selected: target } };
+  const originalLstat = fs.lstatSync, lstatDescriptor = Object.getOwnPropertyDescriptor(fs, 'lstatSync')!;
+  let tick = 0, onLstat = () => {}; const inspected: string[] = [];
+  Object.defineProperty(fs, 'lstatSync', { ...lstatDescriptor, value: (...args: Parameters<typeof fs.lstatSync>) => {
+    if (children.includes(String(args[0]))) { inspected.push(String(args[0])); onLstat(); }
+    return originalLstat(...args);
+  } });
+  syncBuiltinESMExports();
+  try {
+    // No symlink child: every skip below can only come from the deadline. The fake clock passes the deadline at a
+    // chosen point: after the first du (before the next child is inspected), or during the first child's lstat.
+    for (const scenario of ['after first du', 'during first lstat'] as const) {
+      tick = 0; inspected.length = 0; onLstat = scenario === 'during first lstat' ? () => { tick = 10; } : () => {};
+      const measured: string[] = [];
+      const result = await scan(root, p, 'selected', true, { totalMs: 10, clock: () => tick, measureFn: (category, path, capturedAt) => { measured.push(path); tick = 10; return { category, path, capturedAt, bytes: 1024, error: null, method: 'fixture' }; } });
+      const skippedPaths = result.skipped.map((row: { path: string }) => row.path);
+      assert.equal(result.enumerationComplete, true, scenario); assert.equal(result.totalChildren, 3, scenario);
+      assert.deepEqual(result.skipped.map((row: { reason: string }) => row.reason), scenario === 'after first du' ? ['total-deadline', 'total-deadline'] : ['total-deadline', 'total-deadline', 'total-deadline'], scenario);
+      assert.deepEqual([...measured, ...skippedPaths].sort(), [...children].sort(), scenario);
+      // No du ran for a skipped child; once the deadline passed, no further child was even inspected.
+      assert.equal(measured.length, scenario === 'after first du' ? 1 : 0, scenario);
+      if (scenario === 'after first du') assert.deepEqual(inspected, measured, scenario); else assert.equal(inspected.length, 1, scenario);
+      assert.equal(result.truncated, true, scenario); assert.equal(result.complete, false, scenario);
+    }
+  } finally { Object.defineProperty(fs, 'lstatSync', lstatDescriptor); syncBuiltinESMExports(); rmSync(root, { recursive: true }); }
+});
+test('Linux scan without a CATEGORY refuses instead of scanning home, even when the profile defines home', { skip: process.platform === 'win32' ? 'POSIX platform fixture' : false }, async () => {
+  const { main } = await import('../scripts/main.js');
+  const root = fixture(), home = join(root, 'home'); mkdirSync(home);
+  mkdirSync(join(root, 'profiles'), { mode: 0o700 });
+  writeFileSync(paths(root).profile, JSON.stringify({ schemaVersion: 1, filesystem: root, categories: { home }, protectedPaths: [], retentionDays: 90, intervalSeconds: 3600 }), { mode: 0o600 });
+  const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform')!, write = process.stdout.write, writeError = process.stderr.write;
+  let output = '', errors = '';
+  try {
+    Object.defineProperty(process, 'platform', { ...platformDescriptor, value: 'linux' });
+    process.stdout.write = ((chunk: string) => { output += chunk; return true; }) as typeof process.stdout.write;
+    process.stderr.write = ((chunk: string) => { errors += chunk; return true; }) as typeof process.stderr.write;
+    const code = await main(['scan', '--fresh', '--root', root]);
+    process.stdout.write = write; process.stderr.write = writeError;
+    assert.equal(code, 1); assert.equal(output, '');
+    assert.match(JSON.parse(errors).error, /Linux scan requires an explicit CATEGORY/);
+    assert.equal(existsSync(join(paths(root).cache, 'home.json')), false);
+  } finally { process.stdout.write = write; process.stderr.write = writeError; Object.defineProperty(process, 'platform', platformDescriptor); rmSync(root, { recursive: true }); }
+});
+test('a macOS fresh scan takes the shared snapshot.lock and refuses while it is held', { skip: process.platform === 'win32' ? 'POSIX platform fixture' : false }, async () => {
+  const root = fixture(), data = join(root, 'tiny'); mkdirSync(data);
+  const p = { ...defaultProfile(root, 'darwin'), filesystem: root, categories: { tiny: data } };
+  const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform')!;
+  try {
+    Object.defineProperty(process, 'platform', { ...platformDescriptor, value: 'darwin' });
+    await locked(root, async () => {
+      await assert.rejects(scan(root, p, 'tiny', true), /locked/);
+      assert.equal(existsSync(join(paths(root).cache, 'tiny.json')), false);
+    }, { lock: 'snapshot.lock' });
+    assert.equal((await scan(root, p, 'tiny', true)).complete, true);
+  } finally { Object.defineProperty(process, 'platform', platformDescriptor); rmSync(root, { recursive: true }); }
+});

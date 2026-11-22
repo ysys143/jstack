@@ -157,3 +157,53 @@ test('a FragmentPath spelled through a linked directory or a doubled slash is th
     assert.equal(existsSync(f.timer), true); assert.equal(existsSync(f.service), true);
   } finally { rmSync(f.root, { recursive: true }); }
 });
+test('enable and disable verify the FragmentPath of the timer and of the service separately', { skip: posix }, () => {
+  const f = setup(), other = join(f.root, 'other config/systemd/user');
+  // Only one unit is reported from another real file; the other keeps jstack's own path.
+  const oneElsewhere = (suffix: '.timer' | '.service'): Runner => args => {
+    const result = f.runner(args);
+    if (args[1] !== 'show' || !args[2].endsWith(suffix) || !result.stdout) return result;
+    return { ...result, stdout: result.stdout.replace(/^FragmentPath=(.+)$/m, (_, file: string) => { const copy = join(other, file.slice(f.directory.length + 1)); writeFileSync(copy, readFileSync(file)); return `FragmentPath=${copy}`; }) };
+  };
+  mkdirSync(other, { recursive: true });
+  try {
+    for (const suffix of ['.timer', '.service'] as const) {
+      f.calls.length = 0;
+      assert.throws(() => schedule('enable', f.root, 300, f.cli, { ...f.options, runner: oneElsewhere(suffix) }), /did not load the units just written/, suffix);
+      assert.equal(existsSync(f.timer), false, suffix); assert.equal(existsSync(f.service), false, suffix);
+      assert.equal(f.calls.some(args => ['enable', 'disable'].includes(args[1])), false, suffix);
+    }
+    schedule('enable', f.root, 300, f.cli, f.options);
+    const timerText = readFileSync(f.timer, 'utf8'), serviceText = readFileSync(f.service, 'utf8');
+    for (const suffix of ['.timer', '.service'] as const) {
+      f.calls.length = 0;
+      assert.throws(() => schedule('disable', f.root, 300, undefined, { ...f.options, runner: oneElsewhere(suffix) }), /another location/, suffix);
+      // The loaded unit is another program's: nothing is stopped or disabled and jstack's own files stay in place.
+      assert.equal(f.calls.some(args => ['stop', 'disable', 'daemon-reload'].includes(args[1])), false, suffix);
+      assert.equal(readFileSync(f.timer, 'utf8'), timerText, suffix); assert.equal(readFileSync(f.service, 'utf8'), serviceText, suffix);
+    }
+  } finally { rmSync(f.root, { recursive: true }); }
+});
+test('disable without jstack unit files refuses a unit the user manager still loads', { skip: posix }, () => {
+  const f = setup();
+  try {
+    for (const suffix of ['.timer', '.service']) {
+      // A loaded unit with no fragment file under this directory is not jstack-managed here.
+      const runner: Runner = args => args[1] === 'show' && args[2].endsWith(suffix) ? { status: 0, stdout: 'LoadState=loaded\nActiveState=inactive\nUnitFileState=\nFragmentPath=\nDropInPaths=\n' } : f.runner(args);
+      f.calls.length = 0;
+      assert.throws(() => schedule('disable', f.root, 300, undefined, { ...f.options, runner }), /not jstack-managed at this location/, suffix);
+      assert.equal(f.calls.some(args => ['stop', 'disable', 'daemon-reload'].includes(args[1])), false, suffix);
+    }
+    assert.deepEqual(schedule('disable', f.root, 300, undefined, f.options), { registered: false, historyPreserved: true });
+  } finally { rmSync(f.root, { recursive: true }); }
+});
+test('a relative or empty XDG_CONFIG_HOME is ignored for the unit directory, as the XDG specification requires', { skip: posix }, () => {
+  const f = setup();
+  try {
+    for (const value of ['relative/config', '']) {
+      const status = schedule('status', f.root, 300, undefined, { ...f.options, env: { XDG_CONFIG_HOME: value, XDG_CACHE_HOME: f.cache } }) as { file: string; serviceFile: string };
+      assert.equal(status.file, join(f.home, '.config/systemd/user', systemdUnit + '.timer'), JSON.stringify(value));
+      assert.equal(status.serviceFile, join(f.home, '.config/systemd/user', systemdUnit + '.service'), JSON.stringify(value));
+    }
+  } finally { rmSync(f.root, { recursive: true }); }
+});
