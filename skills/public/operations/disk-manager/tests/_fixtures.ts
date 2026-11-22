@@ -1,20 +1,35 @@
 /** Shared fixtures for the disk-manager test files: temporary roots, the SQLite addon cache and history samples. */
 
-import { linkSync, mkdirSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { linkSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { preparedNative } from '../../../../../runtime/sqlite-native.js';
+import { atomicWrite, privateDir } from '../../../../../runtime/os.js';
+import { lockedBinary, nativePlatform, preparedNative, validateNativeManifest } from '../../../../../runtime/sqlite-native.js';
 import type { Sample } from '../scripts/storage.js';
 
 const nativeRoot = fileURLToPath(new URL('../../../../../native/sqlite3', import.meta.url));
 // Every SQLite open lists the cache root's parent to rule out case collisions, and the system temp directory can hold
 // thousands of entries. The cache therefore sits inside a directory of its own.
+const ownCache = !process.env.JSTACK_DISK_TEST_CACHE;
 const cacheRoot = process.env.JSTACK_DISK_TEST_CACHE ?? join(mkdtempSync(join(realpathSync(tmpdir()), 'jstack-disk-native-')), 'sqlite3');
-after(() => { if (process.platform !== 'win32' && !process.env.JSTACK_DISK_TEST_CACHE) rmSync(dirname(cacheRoot), { recursive: true, force: true }); });
+after(() => { if (process.platform !== 'win32' && ownCache) rmSync(dirname(cacheRoot), { recursive: true, force: true }); });
+/**
+ * A process's own cache is deleted when it ends, so its addon skips the disk sync that preparedNative gives the lasting
+ * user cache; on CI disks that sync made SQLite test files mostly wait. preparedNative still verifies its size and hash.
+ */
+let seeded = !ownCache;
+const seed = () => {
+  if (seeded) return; seeded = true;
+  const asset = validateNativeManifest(readFileSync(join(nativeRoot, 'manifest.json'))).assets.find(row => row.key === nativePlatform());
+  if (!asset) return;
+  const target = join(cacheRoot, asset.binarySha256);
+  privateDir(cacheRoot); privateDir(target);
+  atomicWrite(join(target, 'node_sqlite3.node'), lockedBinary(readFileSync(join(nativeRoot, `${asset.key}.tar.gz`)), asset), true, false);
+};
 /** One prepared SQLite addon per test process, or the owning suite's shared cache. */
-export const native = { nativeRoot, cacheRoot };
+export const native = { nativeRoot, get cacheRoot() { seed(); return cacheRoot; } };
 export const fixture = () => mkdtempSync(join(realpathSync(tmpdir()), 'jstack-disk-'));
 /**
  * A spawned CLI prepares SQLite under its own state root. A hard link to the verified test addon spares it unpacking a
