@@ -81,6 +81,7 @@ export async function createPlan(host: Host, requestedProfiles: string[], reques
     actions.set(target, { target, source, sourceSha256: digest(data), before: existing === null ? null : digest(existing), after: digest(incoming), data: incoming });
   }
   if (!actions.size) throw new MigrationError('No sessions matched the explicit project paths and profiles');
+  if (options.targetOwnerThread && identities.has(options.targetOwnerThread)) throw new MigrationError('Destination owner thread cannot be an imported session');
   const plan: MigrationPlan = { schemaVersion: 1, host, oldProject: old, project, profiles, destination, sourceGuards: guards, sourceDatabases: dbGuards, files: [] };
   if (options.targetOwnerThread) plan.targetOwnerThread = options.targetOwnerThread;
   if (host === 'codex') {
@@ -234,6 +235,11 @@ export async function apply(plan: MigrationPlan, requestedReceipt: string, optio
           await db.execute('ATTACH DATABASE ? AS history', [plan.history!.path]);
           await db.transaction(async () => {
             for (const [block, schema] of [[plan.database!, 'main'], [plan.history!, 'history']] as const) if (!rowsEqual(await codex.snapshot(block.path, block.ids, options, { connection: db, schema }), block.before)) throw new MigrationError('Destination database changed during apply');
+            if (plan.targetOwnerThread) {
+              const owner = (await db.query('SELECT creator_user_id,creator_account_id FROM threads WHERE id=?', [plan.targetOwnerThread]))[0];
+              const imported = plan.database!.after.threads![0]!;
+              if (!owner || owner.creator_user_id !== imported.creator_user_id || owner.creator_account_id !== imported.creator_account_id) throw new MigrationError('Destination account identity changed during apply');
+            }
             await options.fault?.('before-state-write');
             await codex.replaceRows(db, plan.database!.ids, plan.database!.after);
             await options.fault?.('before-history-write');
