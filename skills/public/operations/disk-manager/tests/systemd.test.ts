@@ -1,6 +1,6 @@
 /** No systemctl is executed: user timer lifecycle tests use a command runner and private temporary unit directories. */
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { schedule, systemdUnit, systemdUnits, type Runner } from '../scripts/scheduler.js';
@@ -126,5 +126,34 @@ test('status reports a masked or broken unit instead of failing, and changes ref
       assert.throws(() => schedule('disable', f.root, 300, undefined, { ...f.options, runner }), /Unexpected systemd unit state/);
       assert.equal(existsSync(f.timer), false);
     }
+  } finally { rmSync(f.root, { recursive: true }); }
+});
+test('the collector service keeps its CPU and memory pressure limits and never names a user or group to run as', () => {
+  const { service, timer } = systemdUnits('/apps/jst.js', '/state', 300, '/cache');
+  // Values from references/linux.md: CPUWeight 10 and MemoryHigh 256M, each its own exact line.
+  assert.match(service, /^CPUWeight=10$/m); assert.match(service, /^MemoryHigh=256M$/m);
+  // A user unit already runs as the invoking user; any User= or Group= line would ask the manager to switch identity.
+  for (const unit of [service, timer]) assert.doesNotMatch(unit, /^(?:User|Group|DynamicUser)=/m);
+});
+test('a FragmentPath spelled through a linked directory or a doubled slash is the same unit; another real file is not', { skip: posix }, () => {
+  const f = setup(), alias = join(f.root, 'config alias'), other = join(f.root, 'other config/systemd/user');
+  symlinkSync(f.config, alias);
+  const reported = (spell: (file: string) => string): Runner => args => { const result = f.runner(args); return args[1] === 'show' && result.stdout ? { ...result, stdout: result.stdout.replace(/^FragmentPath=(.+)$/m, (_, file: string) => `FragmentPath=${spell(file)}`) } : result; };
+  const spellings: [string, (file: string) => string][] = [['linked directory', file => file.replace(f.config, alias)], ['doubled slash', file => file.replace('/systemd/user/', '/systemd//user/')]];
+  try {
+    for (const [name, spell] of spellings) {
+      const runner = reported(spell);
+      assert.equal(schedule('enable', f.root, 300, f.cli, { ...f.options, runner }).registered, true, name);
+      assert.equal(schedule('disable', f.root, 300, undefined, { ...f.options, runner }).registered, false, name);
+      assert.equal(existsSync(f.timer), false, name); assert.equal(existsSync(f.service), false, name);
+    }
+    // A unit file that really lives elsewhere, even with identical contents and name, is refused by enable and disable.
+    mkdirSync(other, { recursive: true });
+    const elsewhere = reported(file => { const copy = join(other, file.slice(f.directory.length + 1)); if (existsSync(file)) writeFileSync(copy, readFileSync(file)); return copy; });
+    assert.throws(() => schedule('enable', f.root, 300, f.cli, { ...f.options, runner: elsewhere }), /did not load the units just written/);
+    assert.equal(existsSync(f.timer), false); assert.equal(existsSync(f.service), false);
+    schedule('enable', f.root, 300, f.cli, f.options);
+    assert.throws(() => schedule('disable', f.root, 300, undefined, { ...f.options, runner: elsewhere }), /another location/);
+    assert.equal(existsSync(f.timer), true); assert.equal(existsSync(f.service), true);
   } finally { rmSync(f.root, { recursive: true }); }
 });
