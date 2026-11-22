@@ -61,6 +61,12 @@ class Fixture {
     } finally { await history.close(); }
     return path;
   }
+  async modernSchema(profile: string) {
+    await this.sql(profile, `DROP TABLE thread_artifacts;
+      CREATE TABLE thread_attachments(id TEXT PRIMARY KEY,thread_id TEXT REFERENCES threads(id),payload TEXT);
+      CREATE TABLE thread_read_receipts(thread_id TEXT PRIMARY KEY,revision TEXT);
+      CREATE TABLE session_model_ids(session_id TEXT,kind TEXT,PRIMARY KEY(session_id,kind));`);
+  }
   plan(host: Host = 'claude', profiles = [this.source]) { return createPlan(host, profiles, this.destination, this.old, this.project, this.options); }
   async run(plan: MigrationPlan, name = 'receipt', options = this.options) { return apply(plan, this.receipt(name), options); }
 }
@@ -133,6 +139,35 @@ test('Codex preserves IDs, parent edges, arbitrary int64 and indexed history wit
   assert.ok(Object.values(await codex.snapshot(join(f.destination, 'thread_history_1.sqlite'), ['child'], f.options)).every(rows => rows.length === 0));
   assert.ok(rowsEqual(await codex.snapshot(join(f.source, 'thread_history_1.sqlite'), ['child'], f.options), originalHistory));
   assert.equal((await codex.snapshot(join(f.destination, 'thread_history_1.sqlite'), ['unrelated'], f.options)).thread_history_projection_state!.length, 1);
+});
+
+test('modern Codex schema migrates and rolls back attachments, receipts and model IDs', async t => {
+  const f = new Fixture(t); await f.codex();
+  await f.modernSchema(f.source); await f.modernSchema(f.destination);
+  await f.sql(f.source, "INSERT INTO thread_attachments VALUES ('a','child','attachment'); INSERT INTO thread_read_receipts VALUES ('child','revision'); INSERT INTO session_model_ids VALUES ('child','model')");
+  const plan = await f.plan('codex'); await f.run(plan);
+  const rows = await codex.snapshot(plan.database!.path, ['child'], f.options);
+  assert.equal(rows.thread_attachments![0]!.payload, 'attachment');
+  assert.equal(rows.thread_read_receipts![0]!.revision, 'revision');
+  assert.equal(rows.session_model_ids![0]!.kind, 'model');
+  assert.equal((await verify(f.receipt(), f.options)).status, 'verified');
+  await f.sql(f.destination, "UPDATE thread_read_receipts SET revision='later' WHERE thread_id='child'");
+  await assert.rejects(rollback(f.receipt(), f.options), /newer changes/);
+  await f.sql(f.destination, "UPDATE thread_read_receipts SET revision='revision' WHERE thread_id='child'");
+  await rollback(f.receipt(), f.options);
+  assert.ok(Object.values(await codex.snapshot(plan.database!.path, ['child'], f.options)).every(entries => entries.length === 0));
+});
+
+test('different optional Codex state tables fail before mutation', async t => {
+  const f = new Fixture(t); await f.codex(); await f.modernSchema(f.source);
+  await assert.rejects(f.plan('codex'), /schemas differ/);
+  assert.equal(existsSync(join(f.destination, 'sessions')), false);
+});
+
+test('unknown Codex state schema without artifacts or attachments is rejected', async t => {
+  const f = new Fixture(t); await f.codex();
+  await f.sql(f.source, 'DROP TABLE thread_artifacts');
+  await assert.rejects(f.plan('codex'), /missing artifacts and attachments/);
 });
 
 test('Codex source index names survive, and rollback retains unrelated later threads and index appends', async t => {

@@ -78,6 +78,7 @@ export async function createPlan(host: Host, requestedProfiles: string[], reques
     }
     const existingIds = new Set(before.threads!.map(row => row.id));
     for (const [table, key] of Object.entries(codex.RELATED)) {
+      if (!Object.hasOwn(before, table)) continue;
       const retained = after[table]!.filter(row => existingIds.has(row[key]!));
       if (!equal(before[table]!.map(stable).sort(), retained.map(stable).sort())) throw new MigrationError('Existing destination session dependencies differ; no automatic overwrite');
     }
