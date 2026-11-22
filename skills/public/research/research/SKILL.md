@@ -118,6 +118,20 @@ The checker detects `MISSING` requirements, `THIN` responses, and `ORPHAN` IDs
 absent from the list. **A person assesses substantive fulfillment**; `--pairs`
 exports every pair for that review too.
 
+### Check every item and total (only when the request needs it)
+
+When a current requirement asks for **every item of a set**, a **count** or a **total**,
+type each information need (`enumerate`, `count`, `compute`, `lookup`; `compare` and
+`judge` stay manual) from that requirement and the Phase 2 subquestion, and add
+`--needs needs.json` with `--task TASK` (or `--req`). The checker hashes the source
+bytes, measures completeness only against a declared line boundary, recomputes sums
+exactly, and requires each item and value on its own report row. Missing or empty
+evidence, stale sources, and revised or withdrawn requirements fail. Simple questions
+and edits skip this. Input format and limits: `references/evidence-needs.md`.
+
+Passing is mechanical consistency. It does not prove the source is the whole
+population, that a quote means what the item claims, or that anything was authorized.
+
 ## Phase 5: expand with hyperresearch (optional)
 
 Use the upstream pipeline for a sweep of 55-80 sources.

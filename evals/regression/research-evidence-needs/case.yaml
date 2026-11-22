@@ -1,0 +1,5 @@
+schema_version: "1.0"
+name: research-evidence-needs
+description: Does research check an exhaustive item list and an exact sum against the supplied log, keep a withdrawn requirement inactive, and avoid a whole-population claim?
+runs: 5
+tags: [regression, research]

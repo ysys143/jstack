@@ -16,6 +16,19 @@
   the Codex path lacks, such as `xhigh` and `max` quality tiers or an exact size. Its
   images are billed to the API key rather than a subscription, so each run needs the
   user's approval of the model, quality, size, count, and an estimated cost.
+- `research` gains an opt-in check for exhaustive and numeric requests:
+  `coverage_matrix.js --needs FILE (--task ID | --req FILE)`. Typed information needs
+  (`enumerate`, `count`, `compute` as an exact sum, `lookup`; `compare` and `judge` stay
+  manual) bind to current requirement IDs and revisions from `jst task` (or to the
+  current requirements file), check quotes against hash-checked source bytes and a
+  declared line boundary, recompute sums with exact decimals, and require each item and
+  value on its own report row. Missing or empty evidence, stale sources, revised or
+  withdrawn requirements, changed constraints and an empty `--cover` set cannot pass,
+  and a pass means mechanical consistency only. Adapted in idea from qera4mgln (MIT,
+  see the research NOTICE). Without `--needs` the command is unchanged.
+- `evals/regression/research-evidence-needs` is an added eval fixture for that check: an
+  exhaustive list over a supplied log, a withdrawn amendment, and no whole-population
+  claim. It is a case definition, not a measured quality result.
 
 ### Changed
 

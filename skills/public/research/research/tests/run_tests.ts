@@ -1,5 +1,6 @@
 /** Research owning contracts; deployed Node checkers execute against isolated fixtures. */
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -44,6 +45,101 @@ writeFileSync(prop, (("# 제안\n\nREQ-001 " + "가".repeat(300)) + "\n\nREQ-002
 check("Self-contained: coverage_matrix rejects an invalid deliverable", (rc2 === 1), ("rc=" + repr(rc2)));
 for (const [kind, why] of [["MISSING", "Missing requirement"], ["THIN", "Response too short"], ["ORPHAN", "ID absent from list"]]) {
 check(("Self-contained: coverage_matrix detects " + repr(kind) + " (" + repr(why) + ")"), (contains(out2, ("[" + repr(kind) + "]"))));
+}
+// Evidence needs: the opt-in typed checks through the real coverage_matrix CLI, bound to a requirements file.
+{
+const evLog=join(tmp,"ev.log"), evReq=join(tmp,"ev-req.txt"), evRep=join(tmp,"ev-report.md"), evNeeds=join(tmp,"ev-needs.json");
+const evText="INC-1 database failover cost 3000 won\nINC-2 cache outage cost 5500 won\n";
+writeFileSync(evLog, evText);
+writeFileSync(evReq, "REQ-001  Every incident is listed\nREQ-002  Total the cost\n");
+writeFileSync(evRep, "# 보고\n\nREQ-001 목록: 총 2건\n- INC-1 database failover\n- INC-2 cache outage\n\nREQ-002 합계 8,500\n- INC-1 3,000\n- INC-2 5,500\n\n## 출처\n\n[1] 로그 — https://example.org/log\n");
+const sha=(v:string)=>createHash("sha256").update(v).digest("hex"), folded=(v:string)=>sha(v.normalize("NFKC").replace(/\s+/gu," ").trim());
+const boundary={source:"S1",linePrefix:"INC-"};
+const items=(withValue:boolean)=>[["INC-1","database failover","3000"],["INC-2","cache outage","5500"]].map(([id,what,value])=>({id,source:"S1",quote:withValue?`${id} ${what} cost ${value}`:`${id} ${what}`,...(withValue?{value}:{})}));
+const manifest=():any=>({schema:"jstack-evidence-needs/1",sources:{S1:{path:evLog,sha256:sha(evText)}},needs:[
+  {id:"N1",type:"enumerate",requirement:"REQ-001",requirementSha256:folded("Every incident is listed"),boundary,items:items(false)},
+  {id:"N2",type:"compute",operation:"sum",requirement:"REQ-002",requirementSha256:folded("Total the cost"),claimed:"8500",reportPrefix:"합계",boundary,items:items(true)}]});
+const evRun=(edit:(m:any)=>void=()=>{},...extra:string[]):[number,string]=>{const m=manifest();edit(m);writeFileSync(evNeeds,JSON.stringify(m));return run(COV,"--req",evReq,"--report",evRep,"--needs",evNeeds,"--min-chars","10",...extra);};
+let evOut:string; let evRc:number;
+([evRc, evOut]=evRun());
+check("Evidence needs: a consistent exhaustive set and exact sum pass through the CLI", (evRc === 0 && contains(evOut, "mechanical result: consistent")), ("rc=" + repr(evRc) + " " + evOut.slice(-200)));
+check("Evidence needs: a pass says it does not prove source completeness", contains(evOut, "does not show that the source is the whole population"));
+for (const [label, kind, edit] of [
+  ["an omitted boundary item", "OMITTED", (m:any)=>{m.needs[0].items.pop();}],
+  ["a duplicate item", "DUPLICATE_ITEM", (m:any)=>{m.needs[0].items.push({...m.needs[0].items[0]});}],
+  ["a model-supplied total that differs from the items", "ARITHMETIC_MISMATCH", (m:any)=>{m.needs[1].claimed="9000";}],
+  ["an empty needs list", "EMPTY_EVIDENCE", (m:any)=>{m.needs=[];}],
+  ["an item without evidence", "EMPTY_EVIDENCE", (m:any)=>{m.needs[0].items=[];}],
+  ["an invented quote", "QUOTE_NOT_SUPPORTED", (m:any)=>{m.needs[0].items[1].quote="INC-2 cache meltdown";}],
+  ["a value from another row", "VALUE_NOT_IN_QUOTE", (m:any)=>{m.needs[1].items[0].value="5500";}],
+  ["a requirement changed since the manifest", "STALE_REQUIREMENT", (m:any)=>{m.needs[0].requirementSha256=folded("Every incident is listed before October");}],
+  ["a requirement with no need", "NO_NEED", (m:any)=>{m.needs.pop();}],
+  ["a requirement missing from the list", "UNKNOWN_REQUIREMENT", (m:any)=>{m.needs[0].requirement="REQ-009";}],
+  ["a missing boundary", "UNMEASURED", (m:any)=>{delete m.needs[0].boundary;}],
+  ["a judge need", "MANUAL", (m:any)=>{m.needs.push({id:"N9",type:"judge",requirement:"REQ-002",requirementSha256:folded("Total the cost")});}],
+] as [string,string,(m:any)=>void][]) {
+  const [rcN, outN]=evRun(edit);
+  check(("Evidence needs: " + label + " fails closed as " + repr(kind)), (rcN === 1 && contains(outN, "[" + kind + "]")), ("rc=" + repr(rcN)));
+}
+writeFileSync(evLog, evText + "INC-3 late arrival cost 1 won\n");
+([evRc, evOut]=run(COV,"--req",evReq,"--report",evRep,"--needs",evNeeds,"--min-chars","10"));
+check("Evidence needs: a source changed after its hash was recorded cannot pass", (evRc === 1 && contains(evOut, "[STALE_SOURCE]")), ("rc=" + repr(evRc)));
+writeFileSync(evLog, evText);
+check("Evidence needs: an empty --cover selection is refused", (evRun(()=>{}, "--cover", "")[0] === 2));
+check("Evidence needs: a narrowed --cover names what stays outside the check", contains(evRun((m:any)=>{m.needs.pop();}, "--cover", "REQ-001")[1], "outside this check: REQ-002"));
+check("Evidence needs: --pairs is refused with --needs so inputs are never overwritten", (evRun(()=>{}, "--pairs", join(tmp,"ev-pairs.jsonl"))[0] === 2 && !existsSync(join(tmp,"ev-pairs.jsonl"))));
+check("Evidence needs: a JSON number claim is refused", (() => { const [rcN, outN]=evRun((m:any)=>{m.needs[1].claimed=8500;}); return rcN === 1 && contains(outN, "[INVALID_NEED]"); })());
+check("Evidence needs: typed options require --needs", (run(COV,"--req",evReq,"--report",evRep,"--task","t")[0] === 2));
+// A numeric span is read whole: a prefix of `1,23` or `3e3` never grounds a value; grouped, decimal and negative values still pass.
+const numRun=(row:string,value:string,quoteEnd:string=row,reportBody?:string,prefix:string="합계"):[number,string]=>{
+  const log=`ROW-A cost ${row} dollars\n`, numLog=join(tmp,"num.log"), numReq=join(tmp,"num-req.txt"), numRep=join(tmp,"num-report.md"), numNeeds=join(tmp,"num-needs.json");
+  writeFileSync(numLog, log); writeFileSync(numReq, "REQ-001  Total the cost\n");
+  writeFileSync(numRep, `# 보고\n\nREQ-001 ${reportBody ?? `합계 ${value}\n- ROW-A ${value}`}\n\n## 출처\n\n[1] x — https://example.org\n`);
+  writeFileSync(numNeeds, JSON.stringify({schema:"jstack-evidence-needs/1",sources:{S1:{path:numLog,sha256:sha(log)}},needs:[{id:"N1",type:"compute",operation:"sum",requirement:"REQ-001",requirementSha256:folded("Total the cost"),claimed:value,...(prefix?{reportPrefix:prefix}:{}),boundary:{source:"S1",linePrefix:"ROW-"},items:[{id:"ROW-A",source:"S1",quote:`ROW-A cost ${quoteEnd}`,value}]}]}));
+  return run(COV,"--req",numReq,"--report",numRep,"--needs",numNeeds,"--min-chars","10");
+};
+for (const [row, value] of [["1,23","1"],["3e3","3"],["1.2.3","1"],["1_000","1"]]) {
+  const [rcN, outN]=numRun(row, value);
+  check(("Evidence needs: number notation " + repr(row) + " is never read as its prefix " + repr(value)), (rcN === 1 && contains(outN, "[MALFORMED_NUMBER]")), ("rc=" + repr(rcN)));
+}
+for (const [row, quoteEnd, value] of [["3000","3","3"],["1,23","1","1"],["3000","000","0"],["-3000","3000","3000"]]) {
+  const [rcN, outN]=numRun(row, value, quoteEnd);
+  check(("Evidence needs: a quote ending " + repr(quoteEnd) + " inside source number " + repr(row) + " is refused"), (rcN === 1 && contains(outN, "[QUOTE_NOT_SUPPORTED]")), ("rc=" + repr(rcN)));
+}
+for (const [row, value] of [["3000","3000"],["1,234","1,234"],["0.5","0.5"],["-3.5","-3.5"]]) {
+  const [rcN, outN]=numRun(row, value);
+  check(("Evidence needs: valid control " + repr(row) + " passes"), (rcN === 0 && contains(outN, "mechanical result: consistent")), ("rc=" + repr(rcN) + " " + outN.slice(-160)));
+}
+// A total is read from one declared report line; item rows and other labelled numbers never stand in for it.
+for (const [label, kind, body, prefix] of [
+  ["a wrong Total beside a component row and a Budget line", "AGGREGATE_MISMATCH", "ledger\n- ROW-A 7\nBudget 7\nTotal cost 99", "Total cost"],
+  ["only the component row repeating the claimed value", "NOT_IN_REPORT", "ledger\n- ROW-A 7\nBudget 7", "Total cost"],
+  ["a missing reportPrefix", "PREFIX_MISSING", "ledger\n- ROW-A 7\nTotal cost 7", ""],
+] as [string,string,string,string][]) {
+  const [rcN, outN]=numRun("7","7","7",body,prefix);
+  check(("Evidence needs: " + label + " fails closed as " + repr(kind)), (rcN === 1 && contains(outN, "[" + kind + "]")), ("rc=" + repr(rcN)));
+}
+{ const [rcN, outN]=numRun("7","7","7","ledger\n- ROW-A 7\nBudget 99\nTotal cost 7","Total cost");
+  check("Evidence needs: the declared Total line passes beside other labelled numbers", (rcN === 0 && contains(outN, "mechanical result: consistent")), ("rc=" + repr(rcN) + " " + outN.slice(-120))); }
+// Values and claims are exact JSON strings: blanks, structures and JSON numbers never ground a lookup.
+const lkRun=(row:string,value:unknown,claimed:unknown):[number,string]=>{
+  const log=`ROW-A cost ${row} dollars\n`, lkLog=join(tmp,"lk.log"), lkReq=join(tmp,"lk-req.txt"), lkRep=join(tmp,"lk-report.md"), lkNeeds=join(tmp,"lk-needs.json");
+  writeFileSync(lkLog, log); writeFileSync(lkReq, "REQ-001  Look up the cost\n");
+  writeFileSync(lkRep, `# 보고\n\nREQ-001 조회\n- ROW-A ${row}\n\n## 출처\n\n[1] x — https://example.org\n`);
+  writeFileSync(lkNeeds, JSON.stringify({schema:"jstack-evidence-needs/1",sources:{S1:{path:lkLog,sha256:sha(log)}},needs:[{id:"N1",type:"lookup",requirement:"REQ-001",requirementSha256:folded("Look up the cost"),claimed,items:[{id:"ROW-A",source:"S1",quote:`ROW-A cost ${row}`,value}]}]}));
+  return run(COV,"--req",lkReq,"--report",lkRep,"--needs",lkNeeds,"--min-chars","10");
+};
+for (const bad of ["", "  ", [], ["approved"], true, null, 5500, 9007199254740993]) {
+  const [rcN, outN]=lkRun("5500", bad, bad);
+  check(("Evidence needs: lookup value and claim " + repr(JSON.stringify(bad)) + " is refused"), (rcN === 1 && contains(outN, "[INVALID_ITEM]")), ("rc=" + repr(rcN)));
+}
+{ const [rcN, outN]=lkRun("9007199254740993", "9007199254740993", "9007199254740993");
+  check("Evidence needs: an exact 16-digit string value passes", (rcN === 0 && contains(outN, "mechanical result: consistent")), ("rc=" + repr(rcN) + " " + outN.slice(-120)));
+  const [rcR, outR]=lkRun("9007199254740993", 9007199254740993, "9007199254740993");
+  check("Evidence needs: the same value as a rounded JSON number is refused", (rcR === 1 && contains(outR, "[INVALID_ITEM]")), ("rc=" + repr(rcR))); }
+const skillText=read(join(ROOT,"SKILL.md")), evRef=read(join(ROOT,"references","evidence-needs.md"));
+check("Evidence needs: SKILL.md keeps the check opt-in and bounded", (["--needs","references/evidence-needs.md","only when the request needs","does not prove"].every((n:string)=>contains(skillText,n))));
+check("Evidence needs: the reference states the boundary, manual types and authority limits", (["linePrefix","MANUAL","UNMEASURED","constraintsRevision","not authorization","whole population"].every((n:string)=>contains(evRef,n))));
 }
 (cite_src=read(CITE));
 for (const banned of ["sample_rate", "keep_every"]) {
@@ -156,7 +252,7 @@ check("Provenance: NOTICE identifies MIT and the version", (truth((contains(noti
 check("grades: SKILL.md heading and description agree on general source-backed research", contains(skill_all, "# Research — source-backed deep research with verified citations") && !contains(skill_all, "deep research for procurement") && contains(skill_all, "### Map requirements to responses (procurement proposals)"));
 check("grades: four evidence grades and the because rule", ["**Quoted**", "**Converging evidence**", "**Inferred**", "**Unknown**"].every(g => contains(skill_all, g)) && contains(skill_all, "Use \"because\", \"the reason is\", or \"이유는\" only for Quoted and Converging claims.") && contains(skill_all, "An empty search is a\nfinding"));
 check_skill_body(check, ROOT, {needles: ["| **자립** | `기본` |", "checking an unknown half cannot establish reliability of the rest", "profile tuning is vibes", "나라장터", "deliverables/", "cite_check.js", "coverage_matrix.js", "references/tier-profile.md"], floor: 4076});
-check_ref_contracts(check, ROOT, [["kr-sources.md", "Korean primary-source tiers and access rules", ["나라장터", "DART", "KCI", "grep 0", "notice or project IDs", "Research for Korean procurement proposals must consult 나라장터", "Do not replace higher-tier evidence with lower-tier material; disclose any\nsubstitution", "Do not cite figures without a reference date"], 2919], ["tier-profile.md", "jstack-lite profile and rationale for restored axes", ["Light skips every step 12 critic, including instruction-critic", "Structural blind spots shared\nby an all-opus panel can pass all four reviews", "Light's source_target of 15-25 falls below the draft-orchestrator contract of\n20-50", "Our use is exactly CJK, yet this was absent from the inheritance list", "char_targets_no_word_boundary", "must_read_note_ids", "HANDOFF.md:438"], 3641], ["cite-check.md", "Full verification and upstream stepwise behavior", ["round(1 / sample_rate)", "two on/off levels", "every pair", "Machine"], 2086]]);
+check_ref_contracts(check, ROOT, [["kr-sources.md", "Korean primary-source tiers and access rules", ["나라장터", "DART", "KCI", "grep 0", "notice or project IDs", "Research for Korean procurement proposals must consult 나라장터", "Do not replace higher-tier evidence with lower-tier material; disclose any\nsubstitution", "Do not cite figures without a reference date"], 2919], ["tier-profile.md", "jstack-lite profile and rationale for restored axes", ["Light skips every step 12 critic, including instruction-critic", "Structural blind spots shared\nby an all-opus panel can pass all four reviews", "Light's source_target of 15-25 falls below the draft-orchestrator contract of\n20-50", "Our use is exactly CJK, yet this was absent from the inheritance list", "char_targets_no_word_boundary", "must_read_note_ids", "HANDOFF.md:438"], 3641], ["cite-check.md", "Full verification and upstream stepwise behavior", ["round(1 / sample_rate)", "two on/off levels", "every pair", "Machine"], 2086], ["evidence-needs.md", "Opt-in typed evidence needs: boundary, bindings, report rows and limits", ["linePrefix", "MANUAL", "UNMEASURED", "constraintsRevision", "not authorization", "whole population", "jstack-evidence-needs/1", "Item ID format"], 9743]]);
 (_tp=read(join(ROOT, "references", "tier-profile.md")));
 (_crit=Array.from(lines(_tp)).filter((ln: any) => truth((truth(starts(ln, "|")) && truth((contains(ln, "critic"))) && truth((truth((contains(ln, "Skipped"))) || truth((contains(ln, "Retained")))))))).map((ln: any) => ln));
 check("Profile: four critic rows have skipped/retained columns", (length(_crit) === 4), (repr(length(_crit)) + " rows"));
@@ -166,11 +262,11 @@ check("Tier: sentence directs citation of higher-tier evidence", (contains(_kr2,
 (_OFF=["자기검사:", "계약 커버리지:", "스크립트 계약:"]);
 // All three deletion axes count the same final live population; no later judgments create slack.
 const live_ran=results.filter(([name])=>!_OFF.some((prefix:string)=>name.startsWith(prefix))).length;
-check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 22, "NOTICE": 1, "wrapper_contract.json": 14, "references/kr-sources.md": 19, "references/cite-check.md": 3, "references/tier-profile.md": 23}, live_ran});
-check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 22, live_ran});
-check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/cite_check.js": 6, "scripts/ensure_research.js": 3, "scripts/coverage_matrix.js": 4}, live_ran, extra_skip: ["스크립트 계약:"]});
+check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 23, "NOTICE": 1, "wrapper_contract.json": 14, "references/kr-sources.md": 19, "references/cite-check.md": 3, "references/tier-profile.md": 23, "references/evidence-needs.md": 4}, live_ran});
+check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 23, live_ran});
+check_script_contracts(check, SUITE_FILE, ROOT, {scripts: {"scripts/cite_check.js": 55, "scripts/ensure_research.js": 3, "scripts/coverage_matrix.js": 51, "scripts/evidence_needs.js": 49}, live_ran, extra_skip: ["스크립트 계약:"]});
 check_no_constant_assertions(check, SUITE_FILE);
-check_total(check, results, 110 + Number(up));
+check_total(check, results, 162 + Number(up));
 removeTree(tmp, {ignore_errors: true});
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any[]) => truth(ok)).map(([_name, ok, _detail]: any[]) => 1)).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + repr(passed) + "/" + repr(length(results)) + " 통과"));

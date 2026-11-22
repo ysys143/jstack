@@ -1,4 +1,4 @@
-# blob:03d802e3bfcf368021e226364aab6dfa5e1ec647
+# blob:65ab54fd17e54eb1d85846075e56b99b3b939c2f
 # Plan — decide before building
 For task requests and corrections, follow the shared [request continuity protocol](../../runtime/TASKS.md) once per session.
 For security requests (vulnerability discovery, reproduction, or fix verification),
@@ -167,6 +167,12 @@ requirement ID that proves it (`ADD-1: Return the sum…`), or end it with
 node "${JSTACK_PLUGIN_ROOT}/skills/plan/scripts/contract_lint.js" --spec spec.md contract.yaml
 ```
 A criterion without a requirement or a reason is the test nobody wrote.
+When a requirement asks for every item of a set, a count or a total from supplied
+sources, write its acceptance criterion as one typed information need bound to that
+requirement ID and revision, with the source and the item-ID format it will be checked
+against. The opt-in check is described in
+`${JSTACK_PLUGIN_ROOT}/skills/research/references/evidence-needs.md`.
+Ordinary criteria need no such need.
 ## Phase 3: check it against the whole (zoom-out)
 Step back from the implementation and look at three things.
 1. **Does it overlap something that exists** — if so, changing that is usually better

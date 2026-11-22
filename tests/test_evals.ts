@@ -65,7 +65,7 @@ test('evals: complete population, answer placement, and anti-constant contracts 
   const check = (label: string, ok: boolean, detail = '') => { results.push([label, ok, detail]); console.log(`[${ok ? 'PASS' : 'FAIL'}] ${label}${detail && !ok ? ' — ' + detail : ''}`); };
   check_eval_cases(check, ROOT, ROOT, yamlTags, { tag: TAG, discriminating: DISCRIMINATING, answer_tokens: ANSWER_TOKENS });
   check_no_constant_assertions(check, fileURLToPath(import.meta.url));
-  check_total(check, results, 129);
+  check_total(check, results, 133);
   const passed = results.filter(row => row[1]).length;
   console.log(`\n${passed}/${results.length} 통과`);
   assert.equal(passed, results.length, results.filter(row => !row[1]).map(row => row.join(' — ')).join('\n'));

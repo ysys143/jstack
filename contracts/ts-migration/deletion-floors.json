@@ -27,7 +27,7 @@
     "skills/prune": 5,
     "skills/react": 7,
     "skills/recall": 8,
-    "skills/research": 10,
+    "skills/research": 12,
     "skills/science": 8,
     "skills/secrets": 3,
     "skills/setup": 16,
@@ -191,6 +191,12 @@
       "baselineRecords": 6,
       "nativeRecords": 7,
       "reason": "LICENSE.vercel-agent-skills records the upstream MIT declaration and has its own provenance contract."
+    },
+    {
+      "suite": "skills/research",
+      "baselineRecords": 10,
+      "nativeRecords": 12,
+      "reason": "The opt-in evidence-needs check adds its reference and its evidence_needs script as measured deletion axes (floors 4 and 49), and coverage_matrix now imports cite_check and the new module, raising their measured floors from 6 to 55 and 4 to 51; SKILL.md rises from 22 to 23. Every earlier assertion stays."
     },
     {
       "suite": "skills/setup",

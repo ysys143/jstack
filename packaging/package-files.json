@@ -630,6 +630,22 @@
       "target": "evals/regression/humanize-taxonomy-recall/prompt.md"
     },
     {
+      "source": "evals/regression/research-evidence-needs/case.yaml",
+      "target": "evals/regression/research-evidence-needs/case.yaml"
+    },
+    {
+      "source": "evals/regression/research-evidence-needs/graders/criteria.md",
+      "target": "evals/regression/research-evidence-needs/graders/criteria.md"
+    },
+    {
+      "source": "evals/regression/research-evidence-needs/graders/skill_fired.md",
+      "target": "evals/regression/research-evidence-needs/graders/skill_fired.md"
+    },
+    {
+      "source": "evals/regression/research-evidence-needs/prompt.md",
+      "target": "evals/regression/research-evidence-needs/prompt.md"
+    },
+    {
       "source": "evals/regression/sdlc-clarification/case.yaml",
       "target": "evals/regression/sdlc-clarification/case.yaml"
     },
@@ -8306,6 +8322,10 @@
       "target": "skills/research/references/cite-check.md"
     },
     {
+      "source": "skills/public/research/research/references/evidence-needs.md",
+      "target": "skills/research/references/evidence-needs.md"
+    },
+    {
       "source": "skills/public/research/research/references/kr-sources.md",
       "target": "skills/research/references/kr-sources.md"
     },
@@ -8326,12 +8346,24 @@
       "target": "skills/research/scripts/ensure_research.ts"
     },
     {
+      "source": "skills/public/research/research/scripts/evidence_needs.ts",
+      "target": "skills/research/scripts/evidence_needs.ts"
+    },
+    {
+      "source": "skills/public/research/research/tests/evidence_needs.test.ts",
+      "target": "skills/research/tests/evidence_needs.test.ts"
+    },
+    {
       "source": "skills/public/research/research/tests/refs/SKILL.md.lines",
       "target": "skills/research/tests/refs/SKILL.md.lines"
     },
     {
       "source": "skills/public/research/research/tests/refs/cite-check.md.lines",
       "target": "skills/research/tests/refs/cite-check.md.lines"
+    },
+    {
+      "source": "skills/public/research/research/tests/refs/evidence-needs.md.lines",
+      "target": "skills/research/tests/refs/evidence-needs.md.lines"
     },
     {
       "source": "skills/public/research/research/tests/refs/kr-sources.md.lines",
