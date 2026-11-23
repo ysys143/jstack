@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as os from 'node:os';
 import { npmShimTarget, removeTreeSync, runProcess } from './os.js';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 test('npm shim resolves a Node entrypoint without cmd argument interpolation', t => {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-shim-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-shim-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const entry = path.join(root, 'node_modules', 'fixture', 'main.js'); fs.mkdirSync(path.dirname(entry), { recursive: true }); fs.writeFileSync(entry, '');
   const shim = path.join(root, 'fixture.cmd'); fs.writeFileSync(shim, '@ECHO off\nSET "_prog=node"\n"%_prog%" "%dp0%\\node_modules\\fixture\\main.js" %*\n'); assert.equal(npmShimTarget(shim), entry);
   fs.writeFileSync(shim, '@echo off\nnode "%dp0%\\..\\outside.js" %*'); assert.throws(() => npmShimTarget(shim), /escapes/);
@@ -18,7 +18,7 @@ test('process arguments retain Unicode and shell metacharacters literally', () =
 test('recovery preserves live and unknown owners and recovers a proven terminated writer', async t => {
   const { spawn } = await import('node:child_process');
   const { recoverLock, withLock, privateDir, atomicWrite } = await import('./os.js');
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-recover-')));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-recover-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const file = path.join(root, 'state.lock');
   withLock(file, () => assert.throws(() => recoverLock(file), /still active/));
@@ -44,7 +44,7 @@ test('recovery preserves live and unknown owners and recovers a proven terminate
 
 test('private state creation and replacement preserve ownership checks', async t => {
   const { privateDir, atomicWrite, checkOwned } = await import('./os.js');
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-private-')));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-private-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const directory = path.join(root, 'state'), file = path.join(directory, 'state.json');
   privateDir(directory); privateDir(directory); checkOwned(directory, true);
@@ -56,7 +56,7 @@ test('private state creation and replacement preserve ownership checks', async t
 
 test('a shared parent may be 0755 but never writable by group or others, linked, or not a directory', { skip: process.platform === 'win32' }, async t => {
   const { sharedParent, privateDir } = await import('./os.js');
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-shared-')));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-shared-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const created = path.join(root, 'created');
   sharedParent(created); assert.equal(fs.statSync(created).mode & 0o777, 0o700);
@@ -77,7 +77,7 @@ test('a shared parent may be 0755 but never writable by group or others, linked,
 
 test('Windows ACL checks ignore incompatible inherited PowerShell modules and reject public access', { skip: process.platform !== 'win32' }, async t => {
   const { privateDir, checkOwned } = await import('./os.js');
-  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-acl-modules-')));
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-acl-modules-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const modules = path.join(root, 'modules'), module = path.join(modules, 'Microsoft.PowerShell.Security');
   fs.mkdirSync(module, { recursive: true });
@@ -95,7 +95,7 @@ test('Windows ACL checks ignore incompatible inherited PowerShell modules and re
 
 test('exclusive private state creation never replaces a lock or file', async t => {
   const { privateDir, createPrivateFile, checkOwned } = await import('./os.js');
-  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-exclusive-')));
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-exclusive-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const lock = path.join(root, 'lock'); privateDir(lock, { exclusive: true }); checkOwned(lock, true);
   fs.writeFileSync(path.join(lock, 'marker'), 'first owner');
@@ -109,7 +109,7 @@ test('exclusive private state creation never replaces a lock or file', async t =
 
 
 test('owned Unicode trees are removed without following outside junctions', t => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-remove-tree-'));
+  const root = fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-remove-tree-'));
   t.after(() => removeTreeSync(root));
   const target = path.join(root, '한글 tree'), outside = path.join(root, 'outside');
   fs.mkdirSync(path.join(target, 'nested'), { recursive: true }); fs.mkdirSync(outside);

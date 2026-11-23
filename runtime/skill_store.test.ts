@@ -2,11 +2,11 @@ import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { Placement, treeDigest, verifyOwnershipDigest } from './skill_store.js';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 function fixture(t: TestContext) {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-placement-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-placement-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const project = path.join(root, '한글 project'); const source = path.join(root, 'source'); fs.mkdirSync(project); fs.mkdirSync(source);
   assert.equal(spawnSync('git', ['init', '-q', project]).status, 0); fs.writeFileSync(path.join(source, 'SKILL.md'), '---\nname: example\ndescription: Fixture skill\n---\nContent\n', { mode: 0o644 });
   return { root, project, source, placement: new Placement('example', 'project', { project }) };

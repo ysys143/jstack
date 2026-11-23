@@ -6,8 +6,9 @@ import * as os from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
 import { Store, accountEnv, discover, jsonBytes, sendMail, validate, verifySnapshot, type MetadataReader } from './profiles.js';
 import { atomicWrite, privateDir, removeTreeSync, withLock } from './os.js';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 function fixture(t: TestContext) {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-profiles-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-profiles-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new Store(path.join(root, '한글 state')); const ws = { schemaVersion: 1, configDir: root, account: 'fixture-account' }; const report = { schemaVersion: 1, subjectName: 'Test' }; return { root, store, ws, report };
 }
 test('empty inspect and missing named profile do not create state', t => { const { store } = fixture(t); assert.deepEqual(store.inspect(), { configured: false, profiles: [] }); assert.throws(() => store.load('missing')); assert.equal(fs.existsSync(store.root), false); });

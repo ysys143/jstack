@@ -1,14 +1,14 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
-import * as os from 'node:os';
 import * as path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { Store } from './profiles.js';
 import { DEFAULT_CONVENTIONS, ConventionsError, choicePath, describeConflict, effectiveConventions, loadConventions, observeLanguage, recordChoice } from './conventions.js';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 
 function fixture(t: TestContext) {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new Store(path.join(root, 'state')), repo = path.join(root, 'repo'); fs.mkdirSync(repo);
   spawnSync('git', ['init', '-q'], { cwd: repo });
   return { root, store, repo, env: { HOME: root } as NodeJS.ProcessEnv };

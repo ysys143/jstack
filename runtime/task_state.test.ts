@@ -2,15 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { context, capture, observe, assess, status, resume, load, selectTask } from './task_state.js';
 import { stateOperation, writeState } from './workflow_state.js';
 import { main as taskMain, HELP } from './task_cli.js';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 
 function fixture(t: any) {
-  const home = fs.realpathSync(fs.mkdtempSync(path.join(tmpdir(), 'jstack-task-')));
+  const home = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-task-')));
   t.after(() => fs.rmSync(home, { recursive: true, force: true }));
   const root = path.join(home, 'work'); fs.mkdirSync(root);
   const c = { ...context(root, home, 'session-a'), now: 1000 };

@@ -2,10 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdirSync,mkdtempSync,writeFileSync,readFileSync,rmSync,symlinkSync,unlinkSync,appendFileSync,existsSync,lstatSync,readdirSync,statSync } from 'node:fs';
 import { join,resolve } from 'node:path';
-import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import * as lib from './_suite_lib.js';
-function temporary(callback:(root:string)=>void):void{const root=mkdtempSync(join(tmpdir(),'jstack-suite-lib-'));try{callback(root);}finally{rmSync(root,{recursive:true,force:true});}}
+import { memoryTemporaryRoot } from '../runtime/fixtures/memory_tmp.js';
+// Deletion runs copy whole plugin trees into the process temp directory, so on Linux that directory moves to the memory
+// filesystem with the fixtures; a busy CI disk otherwise made this file mostly wait.
+if(process.platform==='linux')process.env.TMPDIR=memoryTemporaryRoot();
+function temporary(callback:(root:string)=>void):void{const root=mkdtempSync(join(memoryTemporaryRoot(),'jstack-suite-lib-'));try{callback(root);}finally{rmSync(root,{recursive:true,force:true});}}
 function collect():{results:lib.Result[];check:lib.Check}{const results:lib.Result[]=[];return{results,check:(name,ok,detail='')=>results.push([name,ok,detail])};}
 function env(values:Record<string,string|undefined>,callback:()=>void):void{const saved=Object.fromEntries(Object.keys(values).map(key=>[key,process.env[key]]));try{for(const[key,value]of Object.entries(values)){if(value===undefined)delete process.env[key];else process.env[key]=value;}callback();}finally{for(const[key,value]of Object.entries(saved)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}}
 function git(root:string,...args:string[]):string{const result=spawnSync('git',['-c','core.autocrlf=false','-c','user.email=validation@example.invalid','-c','user.name=jstack Test',...args],{cwd:root,encoding:'utf8'});assert.equal(result.status,0,result.stderr);return result.stdout.trim();}
