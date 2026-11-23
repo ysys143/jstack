@@ -3726,6 +3726,10 @@
       "target": "skills/diagram/UPSTREAM.sha256"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/UPSTREAM.stack-diagram.json",
+      "target": "skills/diagram/UPSTREAM.stack-diagram.json"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/UPSTREAM.v2.6.22.json",
       "target": "skills/diagram/UPSTREAM.v2.6.22.json"
     },
@@ -4776,6 +4780,78 @@
     {
       "source": "skills/public/artifacts/svg-diagram/repos/diagram-design/skills/diagram-design/scripts/self_check.py",
       "target": "skills/diagram/repos/diagram-design/skills/diagram-design/scripts/self_check.py"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/LICENSE",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/LICENSE"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/SKILL.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/SKILL.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/Geist.woff2",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/Geist.woff2"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/JetBrainsMono.woff2",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/JetBrainsMono.woff2"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-Geist.txt",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-Geist.txt"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-JetBrainsMono.txt",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-JetBrainsMono.txt"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/README.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/README.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/browser.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/browser.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/device.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/device.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/internet.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/internet.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/server.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/server.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/user.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/user.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/template.html",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/template.html"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/references/geometry.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/references/geometry.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/references/tsx.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/references/tsx.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/scripts/build.py",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/build.py"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/scripts/fetch_icons.py",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/fetch_icons.py"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/scripts/render_png.py",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/render_png.py"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/scripts/check_effective_size.ts",

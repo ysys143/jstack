@@ -39,6 +39,7 @@ export const IGNORE: Rule[] = [
   ["^(?:rules/comment-intent\\.js|tests/comment-intent\\.test\\.js)$", "Comment-governance guide examples describe files in the target project", "^skills/setup/references/comment-convention-governance\\.md$"],
 
   ["^(?:skills/diagram-design/|scripts/|commands/|prompts/)", "Pinned upstream source paths map beneath skills/diagram/repos/diagram-design; the owning suite checks exact population and hashes", "^skills/diagram/UPSTREAM\\.v2\\.6\\.22\\.json$"],
+  ["^skills/stack-diagram/", "Pinned upstream source paths map beneath skills/diagram/repos/stack-diagram; the excluded gallery client is recorded but not shipped; the owning suite checks exact population and hashes", "^skills/diagram/UPSTREAM\\.stack-diagram\\.json$"],
   ["^/absolute/check-output\\.txt$", "Routing result example points to caller-created verification evidence", "^runtime/ROUTING\\.md$"],
   ["^E/(?:timeout|step-[0-9]+)\\.txt$", "Interactive CLI recipe saves screens in the caller's disposable evidence directory", "^skills/verify/references/interactive-cli\\.md$"],
   ["^/absolute/ci-evidence\\.json$", "Caller-owned CI evidence output example", "^skills/verify/references/ci-diagnosis\\.md$"],
