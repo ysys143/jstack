@@ -232,7 +232,7 @@
       "suite": "skills/diagram",
       "baselineRecords": 25,
       "nativeRecords": 27,
-      "reason": "2026-11-23: The stack-diagram import adds references/official-icons.md and references/delivery-formats.md, each with one measured deletion record (declared 3, measured 3), increasing the population from 25 to 27. Existing per-file thresholds and the SKILL.md deletion minimum (96, measured 96) are unchanged."
+      "reason": "2026-11-23: The stack-diagram import adds skills/public/artifacts/svg-diagram/references/official-icons.md and skills/public/artifacts/svg-diagram/references/delivery-formats.md, each with one measured deletion record (declared 3, measured 3), increasing the population from 25 to 27. Existing per-file thresholds and the SKILL.md deletion minimum (96, measured 96) are unchanged."
     }
   ]
 }
