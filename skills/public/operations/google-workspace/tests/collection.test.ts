@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -7,13 +7,29 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dateValue, localDate, makeScope, scopeList, shiftDate } from '../scripts/collection-common.js';
 import { collect as collectMtime } from '../scripts/collect_by_mtime.js';
+import { memoryTemporaryRoot } from '../../../../../runtime/fixtures/memory_tmp.js';
 
 const entry = (name: string) => fileURLToPath(new URL(name, new URL('../scripts/', import.meta.url)));
+// Profile writes keep their disk syncs; on Linux they go to the memory filesystem, which also allows the fake tools to run.
+const temporary = memoryTemporaryRoot(realpathSync(tmpdir()));
+/**
+ * macOS checks every newly written executable on its first run, which took 250-600 ms per fake tool and left this file
+ * mostly waiting. Each process therefore writes one fake tool program; a fixture's tools are symbolic links to it, and
+ * each link records its call under its own name and then runs the body that the fixture last saved for that name.
+ */
+let program: string | undefined;
+after(() => { if (program) rmSync(dirname(program), { recursive: true, force: true }); });
+const fakeProgram = () => {
+  if (program) return program;
+  program = join(mkdtempSync(join(temporary, 'jstack-workspace-tool-')), 'fake-tool');
+  writeFileSync(program, `#!${process.execPath}\nconst fs = require('node:fs'), path = require('node:path'); const name = path.basename(process.argv[1]); const body = fs.readFileSync(path.join(path.dirname(process.argv[1]), '..', 'fake-bodies', name + '.js'), 'utf8'); let input = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data', s => input += s); process.stdin.on('end', () => { fs.appendFileSync(process.env.LOG, JSON.stringify({ name, args: process.argv.slice(2), input, accountConfig: process.env.GOOGLE_WORKSPACE_CLI_CONFIG_DIR }) + '\\n'); eval(body); });\n`);
+  chmodSync(program, 0o755); return program;
+};
 function fixture() {
-  const root = mkdtempSync(join(realpathSync(tmpdir()), 'jstack-workspace-')), home = join(root, 'home'), projects = join(root, 'projects'), bin = join(root, 'bin'), calls = join(root, 'calls.jsonl');
-  for (const path of [home, projects, bin]) mkdirSync(path, { mode: 0o700 });
+  const root = mkdtempSync(join(temporary, 'jstack-workspace-')), home = join(root, 'home'), projects = join(root, 'projects'), bin = join(root, 'bin'), bodies = join(root, 'fake-bodies'), calls = join(root, 'calls.jsonl');
+  for (const path of [home, projects, bin, bodies]) mkdirSync(path, { mode: 0o700 });
   const env = { ...process.env, HOME: home, USERPROFILE: home, PATH: bin, GITHUB_DIR: projects, JSTACK_PROFILE: 'fixture', SCRUM_REPOS: '', SCRUM_EXCLUDE: '', SCRUM_LOG_DIR: '', SCRUM_MAIL_TO: '', SCRUM_SHEET_URL: '', LOG: calls, GIT_COLLECT_AUTHOR: '' };
-  const fake = (name: string, body: string) => { const path = join(bin, name); writeFileSync(path, `#!${process.execPath}\nconst fs = require('node:fs'); let input = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data', s => input += s); process.stdin.on('end', () => { fs.appendFileSync(process.env.LOG, JSON.stringify({ name: ${JSON.stringify(name)}, args: process.argv.slice(2), input, accountConfig: process.env.GOOGLE_WORKSPACE_CLI_CONFIG_DIR }) + '\\n'); ${body} });\n`); chmodSync(path, 0o755); };
+  const fake = (name: string, body: string) => { writeFileSync(join(bodies, `${name}.js`), body); const path = join(bin, name); if (!existsSync(path)) symlinkSync(fakeProgram(), path); };
   const run = (name: string, args: string[], overrides: NodeJS.ProcessEnv = {}) => spawnSync(process.execPath, [entry(name), ...args], { cwd: root, env: { ...env, ...overrides }, encoding: 'utf8', timeout: 15_000 });
   const records = () => existsSync(calls) ? readFileSync(calls, 'utf8').trim().split('\n').map(row => JSON.parse(row)) : [];
   const write = (file: string, value = 'fixture') => { const path = join(projects, file); mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, value); return path; };

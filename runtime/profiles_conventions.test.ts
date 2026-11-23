@@ -2,12 +2,12 @@ import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as os from 'node:os';
 import { Store, jsonBytes, validateConventions, verifySnapshot } from './profiles.js';
 import { atomicWrite } from './os.js';
 import { spawnSync } from 'node:child_process';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 function fixture(t: TestContext) {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-profile-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-profile-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new Store(path.join(root, 'state')); const ws = { schemaVersion: 1, configDir: root, account: 'fixture-account' }; const report = { schemaVersion: 1, subjectName: 'Test' }; return { root, store, ws, report };
 }
 

@@ -9,10 +9,13 @@ import { atomicWrite } from '../../../../../runtime/os.js';
 import { main } from '../scripts/main.js';
 import { roots } from '../scripts/state.js';
 import { processTemporaryDirectory } from '../../../../../runtime/fixtures/process_tmp.js';
+import { memoryTemporaryRoot } from '../../../../../runtime/fixtures/memory_tmp.js';
 import { exit_if_timed_out } from '../../../../_suite_lib.js';
 
 const MAIN = fileURLToPath(new URL('../scripts/main.js', import.meta.url));
-export const fixture = () => realpathSync(mkdtempSync(join(realpathSync(tmpdir()), 'jstack-report-')));
+// Report state keeps its disk syncs; on Linux it goes to the memory filesystem, where the gh stub may still run.
+const temporary = memoryTemporaryRoot(realpathSync(tmpdir()));
+export const fixture = () => realpathSync(mkdtempSync(join(temporary, 'jstack-report-')));
 // Credential-shaped fixtures are assembled at runtime so the package never ships a token-shaped literal.
 const token = (prefix: string, body: string) => prefix + body;
 export const GH_TOKEN = token('gh' + 'p_', 'A1b2C3d4E5f6G7h8I9j0K1l2M3n4');
@@ -36,7 +39,7 @@ export const cleanupGh = () => { if (ghBin) rmSync(dirname(ghBin), { recursive: 
 export function stubGh(home: string, mode: 'ok' | 'unauth' | 'noaccess' | 'duplicate'): string {
   writeFileSync(join(home, 'gh.mode'), mode);
   if (ghBin) return ghBin;
-  const bin = join(processTemporaryDirectory('jstack-report-'), 'bin'); mkdirSync(bin, { recursive: true });
+  const bin = join(processTemporaryDirectory('jstack-report-', temporary), 'bin'); mkdirSync(bin, { recursive: true });
   const script = `#!${process.execPath}
 const fs = require('node:fs'), path = require('node:path'); const args = process.argv.slice(2);
 fs.appendFileSync(path.join(process.env.HOME, 'gh.log'), args.map(arg => arg + '\\x1f').join('') + '\\n');

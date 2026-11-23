@@ -914,6 +914,14 @@
       "target": "packaging/catalog.test.ts"
     },
     {
+      "source": "packaging/catalog_fixture.ts",
+      "target": "packaging/catalog_fixture.ts"
+    },
+    {
+      "source": "packaging/catalog_layout.test.ts",
+      "target": "packaging/catalog_layout.test.ts"
+    },
+    {
       "source": "packaging/check_public.test.ts",
       "target": "packaging/check_public.test.ts"
     },
@@ -1044,6 +1052,10 @@
     {
       "source": "runtime/entry.ts",
       "target": "runtime/entry.ts"
+    },
+    {
+      "source": "runtime/fixtures/memory_tmp.ts",
+      "target": "runtime/fixtures/memory_tmp.ts"
     },
     {
       "source": "runtime/fixtures/process_tmp.ts",
@@ -8374,12 +8386,20 @@
       "target": "skills/recall/scripts/session_migration/types.ts"
     },
     {
+      "source": "skills/public/operations/session-memory/tests/_fixtures.ts",
+      "target": "skills/recall/tests/_fixtures.ts"
+    },
+    {
       "source": "skills/public/operations/session-memory/tests/claude_project_encoding.test.ts",
       "target": "skills/recall/tests/claude_project_encoding.test.ts"
     },
     {
       "source": "skills/public/operations/session-memory/tests/migrate_sessions.test.ts",
       "target": "skills/recall/tests/migrate_sessions.test.ts"
+    },
+    {
+      "source": "skills/public/operations/session-memory/tests/migrate_sessions_codex.test.ts",
+      "target": "skills/recall/tests/migrate_sessions_codex.test.ts"
     },
     {
       "source": "skills/public/operations/session-memory/tests/refs/SKILL.md.lines",

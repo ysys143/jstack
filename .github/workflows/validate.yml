@@ -16,6 +16,7 @@ on:
       - 'contracts/**'
       - 'evals/**'
       - 'README.md'
+      - 'CHANGELOG.md'
       - 'CAPABILITIES.md'
       - 'NOTICE.md'
       - 'AGENTS.md'
@@ -35,6 +36,7 @@ on:
       - 'contracts/**'
       - 'evals/**'
       - 'README.md'
+      - 'CHANGELOG.md'
       - 'CAPABILITIES.md'
       - 'NOTICE.md'
       - 'AGENTS.md'
@@ -139,6 +141,17 @@ jobs:
       - name: Gate the skill listing size
         if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: node dist/packaging/run_contracts.js --output "$RUNNER_TEMP/jstack-listing-gate" host-audit
+      # The path-reference check needs a built package, and the minimal lane skips the contract step that runs it.
+      # A reference to a file the package does not ship (a comment, the changelog) then first failed in a full run.
+      - name: Check path references
+        if: (github.event_name == 'pull_request' || github.event_name == 'push') && env.JSTACK_MINIMAL_LANE == '1'
+        env:
+          JSTACK_RUNTIME_ROOT: ${{ runner.temp }}/jstack-paths/jstack
+          JSTACK_PACKAGE_ROOT: ${{ runner.temp }}/jstack-paths/package
+        run: |
+          node dist/packaging/build.js build --source . --output "$JSTACK_PACKAGE_ROOT"
+          cp -R "$JSTACK_PACKAGE_ROOT/payload" "$JSTACK_RUNTIME_ROOT"
+          node dist/scripts/check_paths_regression.js
       - name: Prepare isolated specialist test dependencies
         if: env.JSTACK_MINIMAL_LANE != '1'
         env:

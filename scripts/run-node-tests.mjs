@@ -55,10 +55,14 @@ const migrationPath = join('dist', 'skills', 'support', 'runtime-adaptation', 't
 const migrationTests = selected.filter(path => relative(root, path) === migrationPath);
 const ordinaryTests = selected.filter(path => relative(root, path) !== migrationPath);
 const env = { ...process.env, PATH: dirname(process.execPath) + delimiter + process.env.PATH };
+// A test that never ends used to run until the job was cancelled at its time limit, with no name for the stuck test.
+// --test-timeout fails it with its name instead; Node before 20.11 and 21.0 to 21.1 do not have the option.
+const [major, minor] = process.versions.node.split('.').map(Number);
+const testTimeout = major >= 22 || (major === 21 && minor >= 2) || (major === 20 && minor >= 11) ? ['--test-timeout=900000'] : [];
 let failed = false;
 for (const group of [ordinaryTests, migrationTests]) {
   if (group.length === 0) continue;
-  const result = spawnSync(process.execPath, ['--test', ...group], { cwd: root, stdio: 'inherit', env });
+  const result = spawnSync(process.execPath, ['--test', ...testTimeout, ...group], { cwd: root, stdio: 'inherit', env });
   if (result.error) console.error(result.error.message);
   if (result.error || result.status !== 0) failed = true;
 }
