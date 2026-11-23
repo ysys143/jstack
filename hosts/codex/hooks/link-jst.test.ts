@@ -181,6 +181,23 @@ test('build metadata never flips the link, and an unreadable own manifest never 
   } finally { w.dispose(); }
 });
 
+test('a link that does not read as a link while a concurrent start swaps it is looked at again, a bounded number of times', posixOnly, () => {
+  const w = world();
+  try {
+    const ours = w.plugin('0.9.8'), older = w.plugin('0.9.7'), olderLauncher = join(older, 'payload', 'bin', 'jst');
+    w.placeLink(olderLauncher);
+    let reads = 0;
+    const flaky = (path: string) => { if (reads++ < 2) throw Object.assign(new Error('EINVAL: invalid argument, readlink'), { code: 'EINVAL' }); return readlinkSync(path); };
+    const swapped = linkJst({ ...w.input(ours), readLink: flaky });
+    assert.equal(swapped.state, 'replaced'); assert.equal(reads, 3);
+    rmSync(w.link); w.placeLink(olderLauncher);
+    let looks = 0;
+    const broken = () => { looks++; throw Object.assign(new Error('EINVAL: invalid argument, readlink'), { code: 'EINVAL' }); };
+    const failed = linkJst({ ...w.input(ours), readLink: broken });
+    assert.equal(failed.state, 'failed'); assert.match(failed.message, /EINVAL/); assert.equal(looks, 5);
+  } finally { w.dispose(); }
+});
+
 test('concurrent session starts never report a false failure', posixOnly, async () => {
   const w = world();
   try {
