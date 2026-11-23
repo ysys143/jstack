@@ -20,6 +20,7 @@ rules:
     when_changed:
       - hooks/hooks.json
       - hooks/block_emoji.js
+      - hooks/emoji-pattern.js
       - hooks/check_model_versions.js
       - hooks/validate_uv_usage.js
       - hooks/validate_pr_label.js

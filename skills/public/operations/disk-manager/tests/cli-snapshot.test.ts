@@ -1,4 +1,4 @@
-/** The snapshot CLI with real du (macOS): exit status by completeness and measurements kept when recording fails. */
+/** The snapshot CLI with real du (macOS/Linux): exit status by completeness and measurements kept when recording fails. */
 
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -10,7 +10,7 @@ import { differences, openHistory } from '../scripts/history.js';
 import { defaultProfile, paths } from '../scripts/storage.js';
 import { fixture, native, seedNative } from './_fixtures.js';
 
-test('snapshot writes isolated history and returns failure for an incomplete scan', { skip: process.platform !== 'darwin' }, async () => {
+test('snapshot writes isolated history and returns failure for an incomplete scan', { skip: !['darwin', 'linux'].includes(process.platform) }, async () => {
   const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
   const root = fixture(), cli = fileURLToPath(new URL('../scripts/main.js', import.meta.url));
   const data = join(root, 'data'), unreadable = join(root, 'locked'), mixed = join(root, 'mixed'), hidden = join(mixed, 'hidden'); mkdirSync(data); writeFileSync(join(data, 'file'), 'fixture'); mkdirSync(unreadable);
@@ -37,14 +37,22 @@ test('snapshot writes isolated history and returns failure for an incomplete sca
         assert.equal(run.status, expected.status, run.stderr || run.stdout); output = JSON.parse(run.stdout);
       } else { output = await snapshot(state, p, undefined, { native }); assert.equal(output.exitCode, expected.status); }
       assert.equal(output.complete, expected.complete);
-      assert.deepEqual(output.unmeasured.map((entry: Record<string, unknown>) => entry.reason), expected.reason ? [expected.reason] : []);
-      assert.deepEqual(output.partial.map((entry: Record<string, unknown>) => entry.category), expected.partial);
+      // BSD can omit an unreadable operand's total; GNU/uutils can still count its directory blocks.
+      // Both are incomplete: unknown when there is no total, or an explicit lower bound when one exists.
+      const protectedTotal = expected.name === 'protected' && output.samples.find((row: {category: string}) => row.category === 'locked')?.bytes !== null;
+      assert.deepEqual(output.unmeasured.map((entry: Record<string, unknown>) => entry.reason), protectedTotal ? [] : expected.reason ? [expected.reason] : []);
+      assert.deepEqual(output.partial.map((entry: Record<string, unknown>) => entry.category), protectedTotal ? ['locked'] : expected.partial);
+      if (protectedTotal) assert.ok(output.partial[0].lowerBoundBytes >= 0);
       assert.equal(existsSync(paths(state).db), true);
       // The diff CLI is spawned by the history tests; here the recorded rows are compared in process.
       const db = await openHistory(state, false, native);
       try {
         assert.ok((await differences(db, 24)).every(row => row.deltaBytes === null));
-        if (expected.name === 'protected') assert.deepEqual((await db.query("SELECT category, bytes FROM measurements WHERE error LIKE 'permission-denied:%'")).map(row => [row.category, row.bytes]), [['locked', null]]);
+        if (expected.name === 'protected') {
+          const [row] = await db.query("SELECT bytes,error FROM measurements WHERE category='locked'");
+          assert.equal(row.bytes, output.samples.find((sample: {category: string}) => sample.category === 'locked').bytes);
+          assert.match(String(row.error), protectedTotal ? /^partial-permission-denied:/ : /^permission-denied:/);
+        }
         if (expected.name === 'partly-readable') { const [row] = await db.query("SELECT category, bytes FROM measurements WHERE error LIKE 'partial-permission-denied:%'"); assert.equal(row.category, 'mixed'); assert.ok(Number(row.bytes) > 0); }
       } finally { await db.close(); }
     }

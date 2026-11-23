@@ -49,7 +49,9 @@ State is shared across hosts under `~/.jstack` (or explicit `--root DIR`):
   inspect defaults; create the profile with private permissions only when needed.
   Use absolute category paths, protectedPaths, filesystem, retentionDays,
   intervalSeconds and snapshotTimeoutSeconds (per-category du limit for
-  snapshot, 1 to 3600, default 300); unknown fields are rejected. Older profiles
+  snapshot, 1 to 3600, default 300), and runTimeoutSeconds (total collection
+  deadline, 1 to 3600; Linux applies 120 when it is absent, macOS applies no
+  total deadline unless it is set); unknown fields are rejected. Older profiles
   without snapshotTimeoutSeconds stay valid. Without this file, snapshot lists
   default categories absent from the machine under `notPresent` instead of
   failing, or records one with earlier samples or named explicitly as 0 bytes;
@@ -60,9 +62,15 @@ State is shared across hosts under `~/.jstack` (or explicit `--root DIR`):
 - `cache/disk-manager/`: timestamped directory scans. Reading a cache reports
   whether it is stale. Explicit `--fresh` replaces it after measuring; no hidden
   background scan is started by reading a cache.
-  Scans have a 30-second total measurement budget and a five-second per-child
+  Scans have a 30-second total collection deadline and a five-second per-child
   timeout. They examine at most 256 immediate children and do not follow child symlinks;
-  `truncated`, `scannedChildren` and `totalChildren` expose omissions. Narrow the
+  `truncated`, `scannedChildren`, `skipped` and `totalChildren` expose omissions;
+  `totalChildren` is null when enumeration is incomplete. The result also
+  carries `schemaVersion` 2, `complete`, `enumerationComplete`, `elapsedMs` and
+  `deadlineMs`; a cache written by an earlier release is replaced by one fresh
+  scan. On macOS `scan` still exits 0 and reports these omissions only in its
+  output; on Linux an incomplete scan exits 1. A cached result is read without
+  taking `snapshot.lock`. Narrow the
   selected directory when truncated; do not claim the largest files were found
   across an incompletely scanned directory.
 - `logs/disk-manager/collector.log`: scheduler diagnostics. Treat these as private.
@@ -70,11 +78,16 @@ State is shared across hosts under `~/.jstack` (or explicit `--root DIR`):
 The DB and code survive cache deletion. Snapshots prune only their own history
 older than retentionDays (default 90), never filesystem content. Repeated snapshot
 timestamps or locks fail instead of silently replacing another collection. A
-running snapshot holds `snapshot.lock` while du runs, up to snapshotTimeoutSeconds
-per category; it refuses only another snapshot. The state lock `collection.lock`
+running scan or snapshot holds `snapshot.lock` while du runs and refuses another
+scan or snapshot. When a runTimeoutSeconds collection deadline applies (always on
+Linux, on macOS only when the profile sets it), it caps snapshotTimeoutSeconds per
+category; final state writes and blocked OS calls can outlast it. Without one,
+each category keeps only its own snapshotTimeoutSeconds. Deadlines do not guarantee resource utilization. The state lock `collection.lock`
 guards writes: `remember`, import and schedule changes take it briefly. A
 snapshot takes it before du to check the history and after du to record, and
-waits up to a minute only while a running process on this machine holds it. A
+waits up to a minute only while a running process on this machine holds it; the
+wait before du is also capped by the remaining collection deadline, and the wait
+to record is not, so a run whose du spent the deadline still records. A
 lock whose recorded owner on this machine has exited, such as a collector killed
 at logout, is recovered by the next command. A live owner, another host or an
 owner that cannot be verified keeps the lock, and a snapshot then fails before
@@ -85,6 +98,9 @@ uses UTC daily latest samples and GiB and marks a lower bound with `>=`;
 filesystem totals never add overlapping category measurements.
 
 ## Import an existing installation
+
+This migration applies to macOS; Linux does not auto-detect `.disk_cache` or
+launchd files. Explicit `import-legacy` remains available for an approved backup.
 
 Start with `jst disk context`: it can read the existing `~/.disk_cache/disk_history.db`
 in place when the new DB is absent, without forcing an import or a fresh scan.
@@ -134,7 +150,9 @@ or removing a legacy skill; preserve the original as evidence.
    and restore the previous scheduler; keep both old data and the new DB for review.
 
 No schedule is enabled by plugin installation. One user-level launchd label serves
-both hosts. The registration calls a stable CLI location rather than a versioned
+both hosts on macOS. Linux uses an explicit opt-in systemd user timer with XDG
+unit paths, a delayed first run, no catch-up or boot scan, resource controls and
+no cron/root fallback; see [Linux](./linux.md). Windows collection is unsupported. The registration calls a stable CLI location rather than a versioned
 plugin payload. Removal preserves history; a failed bootstrap removes only the
 new plist. Collection does not invoke cleanup or install external dependencies.
 

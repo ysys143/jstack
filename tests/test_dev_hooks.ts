@@ -1,8 +1,8 @@
 /** Original development hook cases executed with Node and isolated Git fixtures. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,writeFileSync,copyFileSync,mkdirSync,existsSync,statSync,readdirSync,chmodSync} from 'node:fs';
-import {dirname,basename,join,delimiter} from 'node:path';
+import {readFileSync,writeFileSync,copyFileSync,mkdirSync,existsSync,statSync,readdirSync,chmodSync,realpathSync} from 'node:fs';
+import {dirname,basename,isAbsolute,join,delimiter,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {isDeepStrictEqual} from 'node:util';
 import {devNull} from 'node:os';
@@ -151,6 +151,47 @@ let text:any;
 
 (text=readFileSync(join(HOOKS,"validate_uv_usage.js"),"utf8"));
 this.assertRegex(text, "\\[(WARN|HINT|NOTE|DOC|BLOCK|OK|FAIL)\\]");
+}
+}
+function support_file(result:any):string{const reason=JSON.parse(result.stdout).reason??'';const quoted=/Read support file: ("(?:\\.|[^"\\])*")\. /.exec(reason);assert.ok(quoted,reason);return JSON.parse(quoted[1]);}
+class TestTheEmojiBlockNamesAnExistingSupportFile extends Case {
+test_the_block_message_names_an_existing_absolute_path():any{
+const cwd=temporaryDirectory();try{
+const result=run_hook("block_emoji.js", write("x = 1  # "+String.fromCodePoint(0x1f4a1)), {cwd});
+this.assertEqual(decision(result), "block");
+const file=support_file(result);
+this.assertTrue(isAbsolute(file), file);
+this.assertTrue(isfile(file), file);
+this.assertIn("## When the user asked for emoji", readFileSync(file,"utf8"));}finally{removeTree(cwd);}
+}
+test_the_installed_layout_fallback_names_the_payload_body_without_a_catalog():any{
+const temp=temporaryDirectory();try{
+// Canonical temp path: the hook's import.meta.url is resolved through symlinks such as macOS /var.
+const relocated=join(realpathSync(temp),"설치 경로 with spaces");
+for (const rel of ["hooks/block_emoji.js","hooks/emoji-pattern.js","runtime/entry.js","runtime/catalog_cli.js","runtime/skill_catalog.js","skills/emoji/SKILL.md"]) {mkdirSync(dirname(join(relocated,rel)),{recursive:true});copyFileSync(join(ROOT,rel),join(relocated,rel));}
+writeFileSync(join(relocated,"package.json"),'{"type":"module"}');
+// No contracts/skill-catalog.json: the hook must still block and name the payload body through its static fallback.
+const result=subprocessRun([process.execPath,join(relocated,"hooks/block_emoji.js")],{cwd:temp,input:JSON.stringify(write(String.fromCodePoint(0x1f4a1)))});
+this.assertEqual(result.returncode, 0);
+this.assertEqual(decision(result), "block");
+const file=support_file(result);
+this.assertEqual(file, join(relocated,"skills/emoji/SKILL.md"));
+this.assertTrue(isfile(file), file);}finally{removeTree(temp);}
+}
+test_an_installed_payload_never_names_a_file_outside_its_plugin_root():any{
+const temp=temporaryDirectory();try{
+// Three levels deep, so the contributor source URL from hooks/ lands on a decoy at the temp root.
+const base=realpathSync(temp),relocated=join(base,"a","b","plugin");
+for (const rel of ["hooks/block_emoji.js","hooks/emoji-pattern.js","runtime/entry.js","runtime/catalog_cli.js","runtime/skill_catalog.js"]) {mkdirSync(dirname(join(relocated,rel)),{recursive:true});copyFileSync(join(ROOT,rel),join(relocated,rel));}
+writeFileSync(join(relocated,"package.json"),'{"type":"module"}');
+const decoy=join(base,"skills/support/emoji-policy/SKILL.md");mkdirSync(dirname(decoy),{recursive:true});writeFileSync(decoy,"## When the user asked for emoji\n");
+// No catalog and no payload body: the fallback stays a pointer inside this plugin root, never the decoy.
+const result=subprocessRun([process.execPath,join(relocated,"hooks/block_emoji.js")],{cwd:temp,input:JSON.stringify(write(String.fromCodePoint(0x1f4a1)))});
+this.assertEqual(result.returncode, 0);
+this.assertEqual(decision(result), "block");
+const file=support_file(result);
+this.assertEqual(file, join(relocated,"skills/emoji/SKILL.md"));
+this.assertTrue(file.startsWith(relocated+sep), file);}finally{removeTree(temp);}
 }
 }
 class TestTheModelCheckerStillJudges extends Case {
@@ -715,6 +756,9 @@ test('TestTheHooksArrived.test_session_start_only_fires_on_startup',()=>{const c
 test('TestTheHooksArrived.test_every_hook_has_a_contract_block',()=>{const c=new TestTheHooksArrived();c.test_every_hook_has_a_contract_block();});
 test('TestNoEmojiSurvivedTheMigration.test_no_hook_emits_an_emoji',()=>{const c=new TestNoEmojiSurvivedTheMigration();c.test_no_hook_emits_an_emoji();});
 test('TestNoEmojiSurvivedTheMigration.test_the_signal_survived_as_a_word',()=>{const c=new TestNoEmojiSurvivedTheMigration();c.test_the_signal_survived_as_a_word();});
+test('TestTheEmojiBlockNamesAnExistingSupportFile.test_the_block_message_names_an_existing_absolute_path',()=>{const c=new TestTheEmojiBlockNamesAnExistingSupportFile();c.test_the_block_message_names_an_existing_absolute_path();});
+test('TestTheEmojiBlockNamesAnExistingSupportFile.test_the_installed_layout_fallback_names_the_payload_body_without_a_catalog',()=>{const c=new TestTheEmojiBlockNamesAnExistingSupportFile();c.test_the_installed_layout_fallback_names_the_payload_body_without_a_catalog();});
+test('TestTheEmojiBlockNamesAnExistingSupportFile.test_an_installed_payload_never_names_a_file_outside_its_plugin_root',()=>{const c=new TestTheEmojiBlockNamesAnExistingSupportFile();c.test_an_installed_payload_never_names_a_file_outside_its_plugin_root();});
 test('TestTheModelCheckerStillJudges.test_a_retired_model_is_blocked',()=>{const c=new TestTheModelCheckerStillJudges();c.test_a_retired_model_is_blocked();});
 test('TestTheModelCheckerStillJudges.test_the_four_series_boundary_holds',()=>{const c=new TestTheModelCheckerStillJudges();c.test_the_four_series_boundary_holds();});
 test('TestTheModelCheckerStillJudges.test_the_latest_gemini_passes',()=>{const c=new TestTheModelCheckerStillJudges();c.test_the_latest_gemini_passes();});

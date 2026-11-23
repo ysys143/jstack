@@ -16,12 +16,39 @@
   the Codex path lacks, such as `xhigh` and `max` quality tiers or an exact size. Its
   images are billed to the API key rather than a subscription, so each run needs the
   user's approval of the model, quality, size, count, and an estimated cost.
+- `research` gains an opt-in check for exhaustive and numeric requests:
+  `coverage_matrix.js --needs FILE (--task ID | --req FILE)`. Typed information needs
+  (`enumerate`, `count`, `compute` as an exact sum, `lookup`; `compare` and `judge` stay
+  manual) bind to current requirement IDs and revisions from `jst task` (or to the
+  current requirements file), check quotes against hash-checked source bytes and a
+  declared line boundary, recompute sums with exact decimals, and require each item and
+  value on its own report row. Missing or empty evidence, stale sources, revised or
+  withdrawn requirements, changed constraints and an empty `--cover` set cannot pass,
+  and a pass means mechanical consistency only. Adapted in idea from qera4mgln (MIT,
+  see the research NOTICE). Without `--needs` the command is unchanged.
+- `evals/regression/research-evidence-needs` is an added eval fixture for that check: an
+  exhaustive list over a supplied log, a withdrawn amendment, and no whole-population
+  claim. It is a case definition, not a measured quality result.
+- Linux disk-manager status, explicit category scans and SQLite snapshot/history/diff
+  with narrow XDG cache defaults, sequential one-filesystem du, shared collection
+  locking, total deadlines and honest partial/unknown results.
+- Opt-in systemd user timers alongside macOS launchd, with delayed first collection,
+  no boot/catch-up scan, resource controls and no root/cron fallback.
 
 ### Changed
 
 - `image-generation` treats nanobanana as a paid path too: each run needs the same
   approval as the openai path. The skill carries a dated price snapshot for all three
   paths and checks that it names the Gemini model the script calls.
+- macOS `jst disk scan` output gains `schemaVersion` 2, `skipped`, `complete`,
+  `enumerationComplete`, `elapsedMs` and `deadlineMs`; `totalChildren` is null
+  when enumeration is incomplete, and an older scan cache is replaced by one fresh
+  scan. A fresh scan now takes `snapshot.lock`, so it refuses to run beside a
+  snapshot; cached reads take no lock. macOS scan still exits 0 for an incomplete
+  result; only Linux exits 1.
+- macOS `jst disk snapshot` output gains `runTimeoutSeconds`, null unless the
+  profile sets a total collection deadline; without one, macOS keeps only the
+  per-category `snapshotTimeoutSeconds` limit as before.
 
 ### Fixed
 
@@ -37,6 +64,12 @@
   home file win, the reverse of what the skill said. It now takes the first key from
   the shell environment, the working directory's `.env`, then
   `~/.claude/.env.nanobanana`, and the probe reports the same source.
+- Emoji write blocks now identify the support procedure with a JSON-quoted
+  absolute path, including relocated installations and unrelated working
+  directories, and name an existing file when the skill catalog is missing or
+  malformed. The dispatcher prefilter now loads only the import-free emoji
+  pattern module. The conditional support description no longer advertises native
+  triggers; the user-request procedure and literal hook enforcement are unchanged.
 
 ## 0.0.1 — 2026-10-22
 

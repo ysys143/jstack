@@ -41,6 +41,7 @@ local path.
 | [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) | MIT | `7b8fece` | `verify`, `plan` and `skill-creator` references |
 | [OWASP/CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries) | CC BY-SA 4.0 | `6b6a66b` | `skills/public/workflow/review/references/owasp-cheatsheet-map.md` |
 | hyperresearch | MIT | — | `skills/public/research/research` references and wrapper contract |
+| [4mGLn/qera4mgln](https://github.com/4mGLn/qera4mgln) | MIT, copyright 2026 qera4mgln contributors | `8722202` | `skills/public/research/research` evidence-needs checks: typed information needs, item-set, quote and arithmetic audit, adapted as native TypeScript (see that skill's NOTICE) |
 | benelog, "클로드 문체 없애기 지침" (gist) | No license; principles restated in original wording, no text copied | — | `humanize` taxonomy |
 
 `hwpx-document` started from the `hwpx-skill` plugin by stevechoi0222; 26 of its

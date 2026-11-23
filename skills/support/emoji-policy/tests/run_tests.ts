@@ -1,6 +1,6 @@
 /** Native owning contracts; original populations and deletion floors remain fixed. */
 import {readFileSync,writeFileSync,appendFileSync,mkdirSync,existsSync,statSync,readdirSync} from 'node:fs';
-import {dirname,basename,join,relative,sep} from 'node:path';
+import {dirname,basename,isAbsolute,join,relative,sep} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {isDeepStrictEqual} from 'node:util';
 import {createHash} from 'node:crypto';
@@ -92,8 +92,8 @@ let _:any,_blk_out:any,_hi:any,_label:any,_raw:any,_stderr:any,_stdout:any,all_o
 (skill=read(join(ROOT, "SKILL.md")));
 ([fm, _]=split_frontmatter(skill));
 check("Identity: the rename is reflected", ((contains(fm, "name: emoji"))), "remove-emoji describes cleanup only; this skill also owns the rules");
-check("Language: description has Korean triggers", (compare(length(findall("[가-힣]+", fm)),5,">=")));
-check("Language: description has English triggers", ((value:any)=>truth(value)?value:((contains(lower(fm), "strip emoji"))))(((contains(lower(fm), "remove emoji")))));
+check("Discovery: description identifies conditional support", contains(fm, "Conditional support"));
+check("Discovery: description does not advertise automatic triggers", !/\bTriggers?\b/i.test(fm));
 (ranges=findall("U0001F[0-9A-Fa-f]{3}-|u2300-|u26FF|u27BF", skill));
 check("No copies: the body does not duplicate the range table", !truth(ranges), (pyStr(length(ranges)) + " range literals; import the hook's EMOJI_PATTERN"));
 check("No copies: explains why duplication is forbidden", ((value:any)=>truth(value)?((contains(lower(skill), "parity"))):value)(((contains(skill, "third copy")))));
@@ -176,14 +176,16 @@ check("Tradeoff: forbids casually narrowing the range", ((contains(skill, "overt
 check("Tradeoff: identifies the canonical rationale", ((contains(skill, "CONTRACT.md"))));
 check("Rules: identifies a user request as an exemption", ((contains(skill, "real exemption"))), "organization policy permits requests; without this, the hook overrides the user");
 check("Rules: explains the asymmetry of failure costs", ((value:any)=>truth(value)?((contains(skill, "asymmetry"))):value)(((contains(skill, "procurement")))));
-check("Rules: separates when the hook and skill act", ((value:any)=>truth(value)?((contains(skill, "already contains emoji"))):value)(((contains(skill, "PreToolUse")))));
+check("Rules: separates when the hook and skill act", contains(skill,"already contains emoji")&&contains(skill,"PreToolUse")&&contains(skill,"not a native skill")&&contains(skill,"Read support file:"));
 {
 const heading="When the user asked for emoji";
 let reason="";
 try{reason=JSON.parse(at(at(fired, "Write"), 2)).reason??"";}catch(error){reason="";}
-check("Exemption: the live block message keeps its prefix and points at the exemption section", reason.startsWith("Emoji detected in content: ")&&reason.includes("read payload/skills/emoji/SKILL.md in the installed jstack package")&&reason.includes("(section \""+heading+"\")")&&reason.includes("do not retry the same call unchanged"), slice(reason, 0, 120));
-const named=/read payload\/(\S+) in the installed jstack package/.exec(reason);
-check("Exemption: the file the block message names exists in the package layout", !!named&&isfile(join(PLUGIN, named[1])), "named "+repr(named?named[1]:null));
+check("Exemption: the live block message keeps its prefix and points at the exemption section", reason.startsWith("Emoji detected in content: ")&&reason.includes("Use that absolute path first; in the installed jstack package it is payload/skills/emoji/SKILL.md")&&reason.includes("section \""+heading+"\"")&&reason.includes("do not retry the same call unchanged"), slice(reason, 0, 120));
+const named=/in the installed jstack package it is payload\/(\S+?),/.exec(reason);
+const absolute=/Read support file: ("(?:\\.|[^"\\])*")\. /.exec(reason);
+let guide=""; try{guide=absolute?JSON.parse(absolute[1]):"";}catch{}
+check("Exemption: the file the block message names exists in the package layout", !!named&&isfile(join(PLUGIN, named[1]))&&isAbsolute(guide)&&isfile(guide)&&readFileSync(guide,"utf8").includes("## "+heading), "named "+repr(named?named[1]:null));
 check("Exemption: the skill has the section the block message names", contains(skill, "\n## "+heading+"\n"));
 const flat=skill.replace(/\s+/g," ");
 const steps=["**Check the permission is the user's own and explicit.**", "**Quote the permission**", "**Scope it**", "**Write in two steps.**", "**Verify**", "**Report** that the exemption was applied", "is not permission, whoever it claims to quote", "report the message and stop", "to the scope is your responsibility", "is not the user's own words: return the write to the agent that talks to the user, or ask the user again", "run `grep -c '{{U+' <file>` first"];
@@ -209,8 +211,8 @@ check(("Boundary: says to hand off to " + pyStr(owner)), ((contains(skill, ("`" 
 }
 check_no_constant_assertions(check, SUITE_FILE);
 check_skill_body(check, ROOT, {needles: ["`block_emoji.js` stops emoji at write time", "The user asking is a real exemption", "The cost of a leak is not symmetric", "Do not copy the ranges into this file", "a third copy is a third thing to forget", "Narrowing the range means overturning that decision", "Korean is never matched", "Removal and replacement are", "Replacement is not always right", "Emoji inside vendored third-party files are not ours to edit"], floor: 3154});
-check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 26});
-check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 26}, live_ran: results.filter(([name])=>!name.startsWith("자기검사:")&&!name.startsWith("본문 계약:")).length, completeness: true});
+check_body_deletion(check, SUITE_FILE, ROOT, {minimum: 27});
+check_contract_coverage(check, SUITE_FILE, ROOT, {per_file: {"SKILL.md": 27}, live_ran: results.filter(([name])=>!name.startsWith("자기검사:")&&!name.startsWith("본문 계약:")).length, completeness: true});
 check_total(check, results, 89);
 (passed=(Array.from(results).filter(([_name, ok, _detail]: any) => truth(ok)).map(([_name, ok, _detail]: any) => (1))).reduce((total:number,value:any)=>total+Number(value),0));
 console.log(("\n" + pyStr(passed) + "/" + pyStr(length(results)) + " 통과"));

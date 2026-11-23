@@ -2,7 +2,7 @@
 // imports or I/O; a policy module is loaded only after its prefilter matches.
 // Dynamic imports use string literals so packaging can rewrite their targets.
 import { legacyInputs, type EventKind, type NormalizedEvent } from './hook-event.js';
-import { containsEmoji } from './block_emoji.js';
+import { containsEmoji } from './emoji-pattern.js';
 import type { Verdict } from './hook-output.js';
 import type { HookResult } from './hook-common.js';
 export interface Policy {

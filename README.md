@@ -379,6 +379,16 @@ session search and Google Workspace setup through `/jstack:setup-recall` and
 `/jstack:setup-workspace`, respectively. Diagnostics do not automatically install all
 optional dependencies.
 
+## Disk diagnostics
+
+`jst disk status` reports filesystem capacity on macOS and Linux. Linux
+`jst disk scan CATEGORY --fresh` requires an explicit category; defaults select
+individual XDG uv/pip caches and npm, without a home or root scan. Snapshots retain
+private SQLite history and report partial or unknown measurements. Automatic
+collection is opt-in through launchd on macOS or a systemd user timer on Linux;
+Windows collection is unsupported. See the disk-manager skill for scoped cleanup
+and [Linux bounds and scheduling](skills/public/operations/disk-manager/references/linux.md).
+
 ## Task model routing
 
 `jst route plan --request request.json` selects a supported model for authorized
