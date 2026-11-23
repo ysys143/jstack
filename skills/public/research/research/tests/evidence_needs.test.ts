@@ -1,65 +1,10 @@
 /** Typed evidence needs: real CLI behavior through coverage_matrix --needs, with isolated task state and temp files. */
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { runProcess } from '../../../../../runtime/os.js';
-import { capture, context, load } from '../../../../../runtime/task_state.js';
-import { main } from '../scripts/coverage_matrix.js';
+import { join } from 'node:path';
 import { LIMITS, check_evidence, fileBindings, formatDecimal, parseDecimal, requirementSha } from '../scripts/evidence_needs.js';
-
-const COVERAGE = join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'coverage_matrix.js');
-const sha = (value: string | Buffer): string => createHash('sha256').update(value).digest('hex');
-const ROWS = [['INC-1', 'database failover'], ['INC-2', 'cache outage'], ['INC-12', 'queue stall']] as const;
-
-async function cli(args: string[]): Promise<{ code: number; out: string; json: any }> {
-  const lines: string[] = [], log = console.log, error = console.error; let code: number;
-  console.log = (...a: unknown[]) => { lines.push(a.join(' ')); }; console.error = (...a: unknown[]) => { lines.push(a.join(' ')); };
-  try { code = await main(args); } catch (e) { code = 2; lines.push(String(e)); } finally { console.log = log; console.error = error; }
-  const out = lines.join('\n'); let json: any; try { json = JSON.parse(out); } catch { json = undefined; }
-  return { code, out, json };
-}
-
-/** One task with two research requirements, a source log, a body report with a sources section, and a valid manifest. */
-function fixture(t: any, costs = [3000, 5500, 1200]) {
-  const home = realpathSync(mkdtempSync(join(tmpdir(), 'jstack-evidence-'))); t.after(() => rmSync(home, { recursive: true, force: true }));
-  const root = join(home, 'work'); mkdirSync(root);
-  const c = context(root, home);
-  const source = { role: 'user' as const, message: 'turn-1', quote: 'List every incident and total the cost' };
-  capture(c, { id: 'inc', expectedRevision: 0, source, purpose: 'Report October incidents', authorized: ['analyze'],
-    requirements: [{ id: 'INCIDENTS', text: 'List every October incident', kind: 'research' }, { id: 'COST', text: 'Total the October incident cost', kind: 'research' }] });
-  const put = (name: string, body: string): string => { writeFileSync(join(root, name), body); return join(root, name); };
-  const log = (rows = costs): string => ROWS.map(([id, what], i) => `${id} ${what} cost ${rows[i]} won on 2026-10-0${i + 1}\n`).join('') + 'NOTE rows above are the October incidents\n';
-  put('incidents.log', log());
-  const total = costs.reduce((a, b) => a + b, 0);
-  const report = (extra: { total?: string; costRows?: string[]; sources?: string } = {}): string =>
-    `## 요약\n\nINCIDENTS 10월 장애 목록\n${ROWS.map(([id, what]) => `- ${id} ${what}`).join('\n')}\n개수 3건\n\nCOST 장애 비용:\n${(extra.costRows ?? ROWS.map(([id], i) => `- ${id} ${costs[i]!.toLocaleString('en-US')}`)).join('\n')}\n합계 ${extra.total ?? total.toLocaleString('en-US')} [1]\n\n## 출처\n\n${extra.sources ?? '[1] 장애 로그 — https://example.org/incidents'}\n`;
-  put('report.md', report());
-  const quote = (i: number): string => `${ROWS[i]![0]} ${ROWS[i]![1]}`;
-  const base = (): any => ({
-    schema: 'jstack-evidence-needs/1', task: 'inc', workspace: c.workspace, constraintsRevision: 0,
-    sources: { S1: { path: 'incidents.log', sha256: sha(readFileSync(join(root, 'incidents.log'))) } },
-    needs: [
-      { id: 'N1', type: 'enumerate', requirement: 'INCIDENTS', requirementRevision: 1, subquestion: 'SQ1', boundary: { source: 'S1', linePrefix: 'INC-' },
-        items: ROWS.map(([id], i) => ({ id, source: 'S1', quote: quote(i) })) },
-      { id: 'N2', type: 'count', requirement: 'INCIDENTS', requirementRevision: 1, claimed: '3', reportPrefix: '개수', boundary: { source: 'S1', linePrefix: 'INC-' },
-        items: ROWS.map(([id], i) => ({ id, source: 'S1', quote: quote(i) })) },
-      { id: 'N3', type: 'compute', operation: 'sum', requirement: 'COST', requirementRevision: 1, claimed: String(total), reportPrefix: '합계', boundary: { source: 'S1', linePrefix: 'INC-' },
-        items: ROWS.map(([id], i) => ({ id, source: 'S1', quote: `${quote(i)} cost ${costs[i]}`, value: String(costs[i]) })) },
-    ],
-  });
-  const needsPath = join(root, 'needs.json');
-  const run = (edit: (m: any) => void = () => {}, extra: string[] = [], format = 'json') => {
-    const m = base(); edit(m); writeFileSync(needsPath, JSON.stringify(m));
-    return cli(['--needs', needsPath, '--task', 'inc', '--workspace', root, '--home', home, '--report', join(root, 'report.md'), '--format', format, ...extra]);
-  };
-  const revise = (input: any) => capture(c, { id: 'inc', expectedRevision: load(c, 'inc').revision, source, ...input });
-  return { home, root, c, put, log, report, run, revise, needsPath, base };
-}
-const kinds = (result: { json: any }): string[] => result.json.evidence.findings.map((f: any) => f.kind);
+import { cli, fixture, kinds, ROWS, sha, temporary } from './_fixtures.js';
 
 test('a valid exhaustive set, count and sum pass mechanically and say what that does not prove', async t => {
   const f = fixture(t); const r = await f.run();
@@ -299,33 +244,9 @@ test('--req file bindings use the current requirement text and reject ambiguous 
   assert.equal((await cli(['--req', req, '--report', join(f.root, 'report.md'), '--task', 'inc'])).code, 2);
   assert.equal((await cli(['--needs', f.needsPath, '--report', join(f.root, 'report.md')])).code, 2);
 });
-test('inputs are read within fixed bounds and a FIFO cannot hang the checker', async t => {
-  const f = fixture(t);
-  f.put('big.log', 'x'.repeat(LIMITS.fileBytes + 1));
-  const big = await f.run(m => { m.sources.S2 = { path: 'big.log', sha256: sha('x'.repeat(LIMITS.fileBytes + 1)) }; m.needs[0].items[0].source = 'S2'; });
-  assert.ok(kinds(big).includes('SOURCE_MISSING') && /larger than/.test(JSON.stringify(big.json)));
-  if (process.platform !== 'win32') {
-    const fifo = join(f.root, 'pipe.log'); assert.equal(runProcess('mkfifo', [fifo]).status, 0);
-    // A blocking open cannot be interrupted in-process, so FIFO inputs run in a child with a hard timeout.
-    const child = (extra: string[]) => runProcess(process.execPath, [COVERAGE, '--needs', f.needsPath, '--task', 'inc', '--workspace', f.root, '--home', f.home, '--format', 'json', ...extra], { timeout: 20000 });
-    const timedOut = (r: { error?: Error }): boolean => (r.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT';
-    const piped = f.base(); piped.sources.S3 = { path: 'pipe.log', sha256: sha('') }; piped.needs[0].items[0].source = 'S3'; writeFileSync(f.needsPath, JSON.stringify(piped));
-    const fromSource = child(['--report', join(f.root, 'report.md')]);
-    assert.ok(!timedOut(fromSource), 'a FIFO source blocked the checker'); assert.equal(fromSource.status, 1); assert.match(fromSource.stdout, /SOURCE_MISSING/);
-    const asReport = child(['--report', fifo]);
-    assert.ok(!timedOut(asReport), 'a FIFO report blocked the checker'); assert.equal(asReport.status, 2);
-    writeFileSync(f.needsPath, JSON.stringify(f.base()));
-    symlinkSync(join(f.root, 'incidents.log'), join(f.root, 'alias.log'));
-    const aliased = await f.run(m => { m.sources.S4 = { path: 'alias.log', sha256: m.sources.S1.sha256 }; m.needs[0].items[0].source = 'S4'; });
-    assert.ok(kinds(aliased).includes('SOURCE_MISSING'), 'a symbolic link is not followed');
-  }
-  assert.equal((await cli(['--needs', f.needsPath, '--task', 'inc', '--workspace', f.root, '--home', f.home, '--report', join(f.root, 'big.log')])).code, 2, 'an oversized report is refused in typed mode');
-  const many = fixture(t); const tooMany = await many.run(m => { for (let i = 0; i < LIMITS.sources + 1; i++) m.sources[`X${i}`] = m.sources.S1; });
-  assert.equal(tooMany.code, 2);
-});
 /** Direct check_evidence call against one hash-checked source, bound to a requirements file with one requirement. */
 function direct(t: any, req = 'REQ-1') {
-  const top = realpathSync(mkdtempSync(join(tmpdir(), 'jstack-evidence-direct-'))); t.after(() => rmSync(top, { recursive: true, force: true }));
+  const top = realpathSync(mkdtempSync(join(temporary, 'jstack-evidence-direct-'))); t.after(() => rmSync(top, { recursive: true, force: true }));
   const dir = join(top, 'base'); mkdirSync(dir);
   const bindings = fileBindings({ [req]: 'x' });
   return (log: string, need: any, report: string, path = 'a.log') => {
@@ -466,14 +387,4 @@ test('a sum over a duplicated item is not computed, so the duplicate cannot be c
     assert.deepEqual(r.kinds, ['DUPLICATE_ITEM'], claimed);
     assert.equal(r.report.needs[0]!.computed, undefined, `${claimed}: no total is recomputed over a duplicated item`);
   }
-});
-test('a spawned process runs the same opt-in path and exit codes', t => {
-  const f = fixture(t); const m = f.base(); writeFileSync(f.needsPath, JSON.stringify(m));
-  const args = [COVERAGE, '--needs', f.needsPath, '--task', 'inc', '--workspace', f.root, '--home', f.home, '--report', join(f.root, 'report.md')];
-  const ok = runProcess(process.execPath, args);
-  assert.equal(ok.status, 0, ok.stdout + ok.stderr); assert.match(ok.stdout, /mechanical result: consistent/);
-  m.needs[2].claimed = '1'; writeFileSync(f.needsPath, JSON.stringify(m));
-  const bad = runProcess(process.execPath, args); assert.equal(bad.status, 1); assert.match(bad.stdout, /\[ARITHMETIC_MISMATCH\]/);
-  const abort = runProcess(process.execPath, [COVERAGE, '--needs', join(f.root, 'absent.json'), '--task', 'inc', '--workspace', f.root, '--home', f.home, '--report', join(f.root, 'report.md')]);
-  assert.equal(abort.status, 2);
 });
