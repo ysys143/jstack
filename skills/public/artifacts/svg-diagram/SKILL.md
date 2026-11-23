@@ -91,6 +91,23 @@ collapses seven categories into two in grayscale printing. Establish focus throu
 **grayscale legibility**: do distinctions remain when color is removed? Combine
 shape, line weight, and labels.
 
+## Official logos and vendor icons
+
+When the reader recognizes the system by its products (a tech stack, an AWS, Google
+Cloud, Azure, Kubernetes, CNCF or Databricks architecture), use the official marks.
+Read `references/official-icons.md` first. Fetch the marks with the vendored
+stack-diagram tools, reference them as `%%ICON_<name>%%` inside `<image>`, and inline
+them as data URIs:
+
+```
+python3 ${JSTACK_PLUGIN_ROOT}/skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/fetch_icons.py icons hono "s3:aws/s3"
+python3 ${JSTACK_PLUGIN_ROOT}/skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/build.py draft.svg icons diagram.svg
+```
+
+**Never recolor a mark, never redraw one, never hotlink one.** Each node is a card that
+holds its mark, name and role, so an edge that crosses a label is a rule 5 finding.
+A logo never carries meaning alone; the node name is always written.
+
 ## Phase 1: drafting under six contractual rules
 
 Load `references/connector-rules.md`.
@@ -303,6 +320,12 @@ that the relationship is unnecessary; procurement requirements cannot be deleted
 No code enforces
 this status: because no renderer was imported, the report is **self-reported**.
 
+Deliver a React component only on request, converted from the validated SVG as
+`references/delivery-formats.md` describes. **Before a diagram leaves the workspace**
+(an artifact, a wiki or issue upload, a share link), show the user exactly what will
+be sent, point out internal names, hostnames and addresses, and send only after their
+explicit yes on that content. jstack ships no gallery client.
+
 ## Reference map
 
 | File | Contents |
@@ -316,6 +339,8 @@ this status: because no renderer was imported, the report is **self-reported**.
 | `references/font-delivery.md` | Identity SSoT versus delivery grades, OFL RFN, tool pins |
 | `references/upstream-integration.md` | Pinned upstream tools, import workflow, context overrides, accessibility and export |
 | `references/type-catalog.md` | Detailed type reference and template selection |
+| `references/official-icons.md` | Official logo fetch and embedding, card geometry, group spacing, upstream rules not imported |
+| `references/delivery-formats.md` | TSX component and the disclosure check before publishing outside the workspace |
 
 ## Script map
 
@@ -337,6 +362,9 @@ checks the 21 CJK requirements. The direct-execution-only
 temporary directory with an independent parser. The vendored validator's self-tests
 are in `scripts/test-verify-geometry.js`, which the suite executes directly. Importing
 the validator without its tests would leave subsequent deterioration undetected.
+Upstream stack-diagram ships no tests for its scripts, so `tests/stack_icons_offline.py`
+runs the vendored `fetch_icons.py` against fixtures with the network function replaced:
+fallback order, exact-title matching, unchanged bytes, and name validation.
 
 ## Four shipped examples
 

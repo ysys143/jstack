@@ -16,6 +16,7 @@ local path.
 | [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) | CC BY-NC 4.0 | `9469fc4` | `skills/public/research/scientific-tools/repos/academic` |
 | [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) | MIT | `ac490fd`, `8d8b299` | `skills/public/artifacts/svg-diagram` |
 | [tt-a1i/archify](https://github.com/tt-a1i/archify) | MIT | `0853a80` | `skills/public/artifacts/svg-diagram` |
+| [caru-ini/stack-diagram](https://github.com/caru-ini/stack-diagram) | MIT; bundled fonts SIL OFL 1.1 | `f6c5785` | `skills/public/artifacts/svg-diagram/repos/stack-diagram` |
 | [hunkim/ai-is-fast-your-tests-are-slow](https://github.com/hunkim/ai-is-fast-your-tests-are-slow) | MIT | `9b076d0` | `repository-setup` and `verify` references |
 | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | MIT, declared in its README and skill frontmatter; no license file | `063bee9` | `skills/public/engineering/react-performance/rules` |
 | [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines) | MIT | `e3d624b` | `skills/public/engineering/web-interface` |

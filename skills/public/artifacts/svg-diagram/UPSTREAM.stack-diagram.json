@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/caru-ini/stack-diagram",
+  "commit": "f6c5785a3349e1baba73026948ffb6c166e71db9",
+  "license": "MIT",
+  "licenseFiles": [
+    "skills/stack-diagram/LICENSE",
+    "skills/stack-diagram/assets/fonts/OFL-Geist.txt",
+    "skills/stack-diagram/assets/fonts/OFL-JetBrainsMono.txt"
+  ],
+  "excluded": [
+    {
+      "path": "skills/stack-diagram/scripts/share.py",
+      "sha256": "69be73b20c4fa56bad5f79466ff75a199821dfb78304de61f7f5bd074c34e5d9",
+      "reason": "Posts diagrams to the public third-party gallery at stacks.caru.moe; jstack never ships an outbound publishing path for diagrams."
+    }
+  ],
+  "files": [
+    {
+      "path": "skills/stack-diagram/LICENSE",
+      "sha256": "be10012fc23bb7f2e332d62312b80cfca01c3eb7abd8970ebb1cdf8ff5b04faa"
+    },
+    {
+      "path": "skills/stack-diagram/SKILL.md",
+      "sha256": "ff0f122450ca18ef444e3f5c00146959b09d4c8c33e229286d32ad24c30f4787"
+    },
+    {
+      "path": "skills/stack-diagram/assets/fonts/Geist.woff2",
+      "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+    },
+    {
+      "path": "skills/stack-diagram/assets/fonts/JetBrainsMono.woff2",
+      "sha256": "2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4"
+    },
+    {
+      "path": "skills/stack-diagram/assets/fonts/OFL-Geist.txt",
+      "sha256": "c683bfbcc7e087f5d37a54ef628f10387c451a83ddc459b151403a164ac46c90"
+    },
+    {
+      "path": "skills/stack-diagram/assets/fonts/OFL-JetBrainsMono.txt",
+      "sha256": "8790c0909f720c509810f95268779450cd6b0aa75b6d24e32f0878afe068427c"
+    },
+    {
+      "path": "skills/stack-diagram/assets/fonts/README.md",
+      "sha256": "9b858f504cefd75b79970b724dc55c4b8e16ecb3dc59bba059bdea38c5dff551"
+    },
+    {
+      "path": "skills/stack-diagram/assets/generic/browser.svg",
+      "sha256": "626b27b7681ff5ff0c25b1d235ca49883bdb59185fe2b4063b44ab9a147f88a8"
+    },
+    {
+      "path": "skills/stack-diagram/assets/generic/device.svg",
+      "sha256": "abe1c203068bef6c10727e434614fefcb68d3b02139838fcfd3a9b9d2fac7f91"
+    },
+    {
+      "path": "skills/stack-diagram/assets/generic/internet.svg",
+      "sha256": "f28c67cdda8b1b234f4993d1ac557b20fb8e5cb307e398c1cf720f54ef5dc3de"
+    },
+    {
+      "path": "skills/stack-diagram/assets/generic/server.svg",
+      "sha256": "81a828c927db27160a7af9d076e541686ae0b6ec96794638b7a265a4e3e26289"
+    },
+    {
+      "path": "skills/stack-diagram/assets/generic/user.svg",
+      "sha256": "a383d2e82346d3c14958eab164946898a0cf07f0f33defce7f55532ec1c9f1e9"
+    },
+    {
+      "path": "skills/stack-diagram/assets/template.html",
+      "sha256": "ea333400a25e58008e4ef98dd052a7a1de3271cea4f0a5ab2f2f3d3445fad02f"
+    },
+    {
+      "path": "skills/stack-diagram/references/geometry.md",
+      "sha256": "0b823440933abb5c1c25dbd19f98e74bf3289e89b4adecb970c5e99c56e09f6e"
+    },
+    {
+      "path": "skills/stack-diagram/references/tsx.md",
+      "sha256": "7f39b64a61c64c2860ca78868a99b63c6f1ee909f686efd625d3bfd6d8751053"
+    },
+    {
+      "path": "skills/stack-diagram/scripts/build.py",
+      "sha256": "28049a14bbec3a1264a9b61a7d6abe435f1932393ba9b991068ea5690e83d3a7"
+    },
+    {
+      "path": "skills/stack-diagram/scripts/fetch_icons.py",
+      "sha256": "b8f5468704b40c5efc58b721d43a5fc55b7be76b056a9d37b4f6649b5c7e4027"
+    },
+    {
+      "path": "skills/stack-diagram/scripts/render_png.py",
+      "sha256": "588873e0441cf4e796a1f916e00f90975c23c952def4a9477f01ef8ebb0f206b"
+    }
+  ]
+}

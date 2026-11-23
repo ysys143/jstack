@@ -1,0 +1,119 @@
+# blob:1b500adf5f932f9f0a75e5ef70ccbd53424caf82
+# Official logos and vendor icons in SVG
+Source: `up:stack-diagram` (caru-ini/stack-diagram, MIT), commit `f6c5785`, vendored
+unchanged under `../repos/stack-diagram/`. `../UPSTREAM.stack-diagram.json` records each
+file's hash measured from the fetched original. The vendored `SKILL.md` is provenance,
+not a second entry point; this file is how jstack uses it.
+## When to use
+Use official marks when the reader recognizes the system by its products: a tech-stack
+overview, a cloud architecture (AWS, Google Cloud, Azure, Kubernetes, CNCF, Databricks),
+or any architecture where the user names the technologies. Otherwise keep text-only
+nodes or the monochrome primitive icons of the diagram-design library. Do not mix
+the two icon families in one diagram.
+A logo never carries meaning alone. The node name is always written, so the grayscale
+legibility rule in `output-spec.md` still holds and a missing image loses no content.
+In `procurement` context logos are optional decoration; requirement coverage, the
+effective 10pt floor and the omission test are unchanged.
+## Fetch the marks
+`fetch_icons.py` needs Python 3.9+ standard library and network access to the icon
+sources. Run it into a working directory outside the skill:
+```sh
+python3 ${JSTACK_PLUGIN_ROOT}/skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/fetch_icons.py icons hono "nextjs" "aws:aws/AWS-Cloud-logo" "s3:aws/s3" "queue:lucide/inbox"
+```
+Spec forms, sources and vendor aliases are in the vendored `SKILL.md`, Step 2. The
+script writes `icons/<name>.<ext>`, an optional `<name>_dark.<ext>`, and
+`icons/manifest.json` with each mark's `source` and `url`. It exits non-zero when a
+mark is missing or a name is invalid; read the `FAIL` lines.
+If the network or a source is unavailable, report which marks failed and draw those
+nodes text-only. Never draw a lookalike, trace a logo, or substitute an emoji.
+## Rules carried over unchanged
+- **Never recolor a mark.** A white or near-white mark goes on a dark plate (below);
+the manifest's `white_fill` flag is a heuristic, so inspect the SVG before using it.
+- **Official marks only.** simple-icons is not a brand-logo source: its glyphs are
+monochrome redraws. When every source fails, pass the official file as `name=URL`
+from the project's own repository or site.
+- **Abstract concepts get Lucide pictograms** (`name:lucide/<icon>`): queue, cron,
+cache, webhook. Tinting Lucide and the bundled `assets/generic/` glyphs is allowed
+because they are not brand marks.
+- **Vendor sub-products without their own mark** reuse the vendor mark; the node name
+carries the distinction (`Cloudflare D1`).
+- **A vendor's drawing rules apply only inside that vendor's group.** AWS, Google
+Cloud, Azure and Kubernetes conventions stop at the group border.
+- **Credit the sources actually used** in `<desc>` or a footer, from each manifest
+entry's `source` (for example `icons: svgl, devicon, AWS Architecture Icons`).
+## Embed the marks
+Reference each mark as a token in an `<image>` element, then inline every token as a
+data URI with the vendored builder. It works on SVG as well as HTML and fails when a
+token stays unresolved.
+```svg
+<image href="%%ICON_hono%%" x="280" y="130" width="40" height="40"
+preserveAspectRatio="xMidYMid meet"/>
+```
+```sh
+python3 ${JSTACK_PLUGIN_ROOT}/skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/build.py draft.svg icons diagram.svg
+```
+Never paste a downloaded mark's markup inline. It is untrusted content; inline it
+could run script, and its ids and styles would collide with the diagram's. Inside
+`<image>` the browser renders it as an isolated picture. Never hotlink a mark either:
+the bundled `self_check.py` rejects a remote `<image>` reference, and an offline reader
+would lose the logo.
+## Node geometry: the card is the node
+Upstream draws a 60px logo tile with the name and role below it and treats the tile
+**plus** its text as one connection boundary, so no edge runs through a label. In SVG
+that boundary is drawn as the node itself: a 132×104 rounded card holding the mark at
+the top and the text below. The local validators then enforce what upstream left to
+inspection. `verify-connectors.js --strict-rules` reports an edge that crosses another
+card (rule 5), including its label area, and `verify-text-width.js` measures both
+labels against the card.
+| Part | Position (card top-left `x, y`, center `cx = x + 66`) |
+|---|---|
+| Card | `x, y`, 132 wide, 104 high, white fill, light border |
+| Mark | 40×40 centered at `cx`, top at `y + 10` |
+| Name | 13–14px at `y + 72`, `text-anchor="middle"` |
+| Role | at least 12px at `y + 90`; upstream's 10px mono is below the local floor |
+Widen the card for long or Korean names; measure them with `scripts/measure_label.js`
+rather than counting characters. For a white mark, draw a dark rounded plate as a
+`<path>` behind the `<image>`. Do not use a `<rect>`: a smaller rect inside the card
+would become the innermost box and hide the card from the validators.
+Edges attach to card sides, never to the mark. Horizontal edges meet card sides at
+mid-height of the mark; vertical edges run from one card's bottom to the next card's
+top; elbows run their vertical leg in a corridor free of cards and their horizontal leg
+in the clear band between rows. Leave 4–6px between a line end and the card; the
+arrowhead supplies the touch. Connector rules 0–6 apply unchanged.
+## Spacing and groups
+- Cards in one row: centers at least 140px apart. Rows: card tops 140px apart.
+- A group box surrounds cards that share a runtime, vendor or repository. Its sides sit
+24px outside the outermost cards, equal on both sides, measured from the card, never
+from the mark.
+- The group's top edge sits 48px above the first card row. The label sits inside the
+top-left corner of that band, 12px from both borders, with no background, so the
+border stays unbroken. Keep edges out of that corner.
+- The bottom edge sits at least 24px below the last card.
+- A nested group is inset at least 24px from its parent on the sides and bottom and
+starts below the parent's label band. Nest one level; deeper nesting gets noisy.
+- A group-label mark is a square glyph at 14px. A wordmark turns to mud at that size;
+fetch the brand's square mark separately.
+## Upstream rules not imported
+| Upstream rule | Why not |
+|---|---|
+| Dashed edges mean dev-time or deploy-time relationships | `connector-rules.md` already defines dashed as transit, not interaction; one stroke cannot carry two meanings. State dev or deploy relationships in the edge label and legend |
+| One accent-colored solid path marks the primary flow | Color alone fails the grayscale legibility rule; mark the primary flow with weight or labels as well |
+| One arrowhead marker painted with `context-stroke` | SVG 2 paint; the Office export procedure normalizes to SVG 1.1 |
+| Tiles with text below on bare canvas | The label area is invisible to the validators; the card makes it a checked box |
+| Step 7, posting to the public gallery | `scripts/share.py` is not shipped; see `delivery-formats.md` before publishing anywhere |
+## Checks
+Run the bundled `self_check.py` and the local validators listed in `SKILL.md`, Phase 3,
+on the built file, not the token draft. At delivery, add two items to visual review:
+every mark is visible on its ground (white on white is the classic failure), and every
+group-label mark is legible.
+## HTML, PNG and Office
+SVG stays the default. When the user asks for HTML or a PNG in upstream's style, copy
+`../repos/stack-diagram/skills/stack-diagram/assets/template.html` into the working
+directory and edit the copy. Its font stack names Japanese faces only; for Korean
+labels set `lang="ko"` and replace both font tokens with `"Geist", "Noto Sans KR",
+"Apple SD Gothic Neo", "Malgun Gothic", ui-sans-serif, system-ui, sans-serif`. Its
+`render_png.py` needs Playwright and Chromium; follow the user's browser automation
+policy instead of installing them.
+Whether PowerPoint or Hangul renders an `<image>` holding a data-URI SVG has not been
+verified. After importing, look at every mark; if one disappears, deliver the PNG
+export from `SKILL.md`, Phase 4, and report the substitution.

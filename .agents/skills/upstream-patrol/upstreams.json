@@ -203,6 +203,52 @@
       ]
     },
     {
+      "id": "stack-diagram",
+      "repo": "caru-ini/stack-diagram",
+      "branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "class": "MIT"
+      },
+      "lastReviewed": "2026-11-23T00:00:00.000Z",
+      "state": "absorb",
+      "reviews": [
+        {
+          "date": "2026-11-23T00:00:00.000Z",
+          "scope": [
+            "skills/stack-diagram",
+            "LICENSE"
+          ],
+          "verdict": "absorb",
+          "note": "Official logo fetcher, builder, template and geometry/TSX references imported unchanged into svg-diagram. scripts/share.py excluded: it posts diagrams to the public stacks.caru.moe gallery. Upstream has no tests for its scripts; tests/stack_icons_offline.py covers fetch_icons.py offline.",
+          "pr": null
+        }
+      ],
+      "imports": [
+        {
+          "mode": "snapshot",
+          "pin": "f6c5785a3349e1baba73026948ffb6c166e71db9",
+          "tag": null,
+          "upstreamPaths": [
+            "skills/stack-diagram"
+          ],
+          "localPaths": [
+            "skills/public/artifacts/svg-diagram/repos/stack-diagram"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/artifacts/svg-diagram/NOTICE",
+            "form": "short7"
+          },
+          "ownerSkill": "svg-diagram",
+          "notes": [
+            "Source hash manifest is skills/public/artifacts/svg-diagram/UPSTREAM.stack-diagram.json.",
+            "skills/stack-diagram/scripts/share.py is deliberately excluded; do not re-add it on update.",
+            "Local integration: references/official-icons.md and references/delivery-formats.md."
+          ]
+        }
+      ]
+    },
+    {
       "id": "ai-is-fast-your-tests-are-slow",
       "repo": "hunkim/ai-is-fast-your-tests-are-slow",
       "branch": "main",
