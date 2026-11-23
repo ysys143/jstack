@@ -12,7 +12,7 @@
     "skills/decide": 2,
     "skills/deck": 51,
     "skills/delegate": 4,
-    "skills/diagram": 25,
+    "skills/diagram": 27,
     "skills/emoji": 2,
     "skills/host-audit": 2,
     "skills/gitrules": 7,
@@ -227,6 +227,12 @@
       "baselineRecords": 7,
       "nativeRecords": 8,
       "reason": "2026-11-23: The owning disk-manager contract for references/linux.md adds one measured deletion record (declared 1, measured 1), increasing the population from 7 to 8. The full deletion run at input 17f7c214c39d6699976e1dad8132b858ca5470efac03d6c77d9096d62f1bb0a0 reported 18/18 passed and eight measured floor records. Existing per-file thresholds are unchanged."
+    },
+    {
+      "suite": "skills/diagram",
+      "baselineRecords": 25,
+      "nativeRecords": 27,
+      "reason": "2026-11-23: The stack-diagram import adds references/official-icons.md and references/delivery-formats.md, each with one measured deletion record (declared 3, measured 3), increasing the population from 25 to 27. Existing per-file thresholds and the SKILL.md deletion minimum (96, measured 96) are unchanged."
     }
   ]
 }
