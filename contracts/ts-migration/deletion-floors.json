@@ -226,7 +226,7 @@
       "suite": "skills/disk-manager",
       "baselineRecords": 7,
       "nativeRecords": 8,
-      "reason": "2026-11-23: The owning disk-manager contract for references/linux.md adds one measured deletion record (declared 1, measured 1), increasing the population from 7 to 8. The full deletion run at input 17f7c214c39d6699976e1dad8132b858ca5470efac03d6c77d9096d62f1bb0a0 reported 18/18 passed and eight measured floor records. Existing per-file thresholds are unchanged."
+      "reason": "2026-11-23: The owning disk-manager contract for skills/public/operations/disk-manager/references/linux.md adds one measured deletion record (declared 1, measured 1), increasing the population from 7 to 8. The full deletion run at input 17f7c214c39d6699976e1dad8132b858ca5470efac03d6c77d9096d62f1bb0a0 reported 18/18 passed and eight measured floor records. Existing per-file thresholds are unchanged."
     },
     {
       "suite": "skills/diagram",
