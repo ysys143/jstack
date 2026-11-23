@@ -103,7 +103,8 @@ test('jst review command checks and records a real nonempty result through the p
   const inputFile = path.join(f.root, 'input.json');
   const call = (action: string, input: any) => {
     fs.writeFileSync(inputFile, JSON.stringify(input));
-    const run = spawnSync(process.execPath, [cli, 'review', action, f.task.id, '--workspace', f.root, '--home', f.home, '--input', inputFile], { encoding: 'utf8', timeout: 5000 });
+    // The limit only stops a hung CLI. One call takes about three seconds on Windows runners, so 5 s killed a slow but working call.
+    const run = spawnSync(process.execPath, [cli, 'review', action, f.task.id, '--workspace', f.root, '--home', f.home, '--input', inputFile], { encoding: 'utf8', timeout: 30_000 });
     assert.equal(run.status, 0, run.stderr); return JSON.parse(run.stdout);
   };
   assert.equal(call('check', f.input).advice.action, 'review');

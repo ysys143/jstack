@@ -59,10 +59,10 @@ finally {
 } });
 test('PR label judges the repository the PR command runs in', () => { const root = mkdtempSync(join(tmpdir(), 'jstack-pr-dir-')); try {
     const home = homedir();
-    assert.equal(commandDirectory('cd /target/repo && gh pr create --title t', root), resolve('/target/repo'));
+    assert.equal(commandDirectory('cd /target/repo && gh pr create --title t', root), resolve(root, '/target/repo'));
     assert.equal(commandDirectory('cd sub && gh pr create', root), resolve(root, 'sub'));
-    assert.equal(commandDirectory('cd "/a b" && cd c; gh pr create', root), resolve('/a b', 'c'));
-    assert.equal(commandDirectory('(cd /target && gh pr create)', root), resolve('/target'));
+    assert.equal(commandDirectory('cd "/a b" && cd c; gh pr create', root), resolve(root, '/a b', 'c'));
+    assert.equal(commandDirectory('(cd /target && gh pr create)', root), resolve(root, '/target'));
     assert.equal(commandDirectory('cd ~/repo && gh pr create', root), join(home, 'repo'));
     assert.equal(commandDirectory('gh pr create; cd /elsewhere', root), root);
     assert.equal(commandDirectory('cd /first && cd $SOMEWHERE && gh pr create', root), undefined);

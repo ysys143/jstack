@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkBranch, checkMessage } from '../scripts/check_commit.js';
 import { DEFAULT_CONVENTIONS } from '../../../../runtime/conventions.js';
+import { createPrivateFile } from '../../../../runtime/os.js';
 
 const script = fileURLToPath(new URL('../scripts/check_commit.js', import.meta.url));
 /** Every spawn gets a temporary home and none of the caller's profile selections, so a developer's own profile never changes a verdict. */
@@ -29,8 +30,9 @@ test('invalid arguments, missing staged files, and non-repositories cannot repor
 });
 
 function conventionsFixture(document: Record<string, unknown>) {
+  // Created as jstack creates private state, so on Windows the file carries the owner ACL that is checked before reading.
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'jstack-gitrules-conventions-'))); const file = join(root, 'conventions.json');
-  writeFileSync(file, JSON.stringify({ schemaVersion: 1, ...document })); chmodSync(file, 0o600); return { root, file };
+  createPrivateFile(file); writeFileSync(file, JSON.stringify({ schemaVersion: 1, ...document })); return { root, file };
 }
 test('profile conventions change the types, language, verb ending and footer that are checked', () => {
   const korean = { ...DEFAULT_CONVENTIONS, commitLanguage: 'ko' as const, subjectVerbEnding: 'korean' as const, footerStyle: 'resolves' as const, commitTypes: ['feat', 'fix', 'hotfix'] };

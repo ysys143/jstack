@@ -39,7 +39,8 @@ function repoTemplate(): string {
   return template;
 }
 function fixture(t: any, temporaryRoot = fixtureTemp) {
-  const home = realpathSync(mkdtempSync(path.join(temporaryRoot, 'jstack-sdlc-'))), root = path.join(home, 'repo'); mkdirSync(root);
+  // The native realpath is the long form Git reports; Windows' temporary directory can be an 8.3 short name (RUNNER~1).
+  const home = realpathSync.native(mkdtempSync(path.join(temporaryRoot, 'jstack-sdlc-'))), root = path.join(home, 'repo'); mkdirSync(root);
   t.after(() => rmSync(home, { recursive: true, force: true }));
   const git = (...args: string[]) => { const r: SpawnSyncReturns<string> = spawnSync('git', args, { cwd: root, encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); return r.stdout.trim(); };
   cpSync(repoTemplate(), root, { recursive: true });

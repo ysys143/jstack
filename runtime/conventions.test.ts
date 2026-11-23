@@ -4,11 +4,13 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { Store } from './profiles.js';
+import { createPrivateFile } from './os.js';
 import { DEFAULT_CONVENTIONS, ConventionsError, choicePath, describeConflict, effectiveConventions, loadConventions, observeLanguage, recordChoice } from './conventions.js';
 import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 
 function fixture(t: TestContext) {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  // The native realpath is the long form Git reports; Windows' temporary directory can be an 8.3 short name (RUNNER~1).
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new Store(path.join(root, 'state')), repo = path.join(root, 'repo'); fs.mkdirSync(repo);
   spawnSync('git', ['init', '-q'], { cwd: repo });
   return { root, store, repo, env: { HOME: root } as NodeJS.ProcessEnv };
@@ -30,10 +32,11 @@ test('defaults apply without state, without a profile, or without conventions in
 });
 
 test('a broken conventions file for tests is a usage error, not a silent default', t => {
-  const { root } = fixture(t); const file = path.join(root, 'conventions.json');
-  fs.writeFileSync(file, '{not json', { mode: 0o600 });
+  // The file is created as jstack creates private state, so on Windows it carries the owner ACL that is checked before reading.
+  const { root } = fixture(t); const file = path.join(root, 'conventions.json'); createPrivateFile(file);
+  fs.writeFileSync(file, '{not json');
   assert.throws(() => loadConventions({ env: { JSTACK_CONVENTIONS_FILE: file } }), ConventionsError);
-  fs.writeFileSync(file, JSON.stringify({ schemaVersion: 1, note: 'free text' }), { mode: 0o600 });
+  fs.writeFileSync(file, JSON.stringify({ schemaVersion: 1, note: 'free text' }));
   assert.throws(() => loadConventions({ env: { JSTACK_CONVENTIONS_FILE: file } }), /unknown conventions field/);
 });
 

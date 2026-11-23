@@ -21,7 +21,7 @@ export const defaultRunTimeoutSeconds = 120;
 export const maxRunTimeoutSeconds = 3600;
 /** The total collection deadline in seconds for this run, or undefined when none applies. */
 export const runDeadlineSeconds = (p: Profile, platform = process.platform) => p.runTimeoutSeconds ?? (platform === 'linux' ? defaultRunTimeoutSeconds : undefined);
-const within = (parent: string, child: string) => child === parent || child.startsWith(parent.replace(/\/$/, '') + sep);
+const within = (parent: string, child: string, separator = sep) => child === parent || child.startsWith(parent.replace(/\/$/, '') + separator);
 export function defaultProfile(home = homedir(), platform = process.platform, env = process.env): Profile {
   if (platform !== 'darwin' && platform !== 'linux') return { schemaVersion: 1, filesystem: home, categories: {}, protectedPaths: [], retentionDays: 90, intervalSeconds: 21600, snapshotTimeoutSeconds: defaultSnapshotTimeoutSeconds, runTimeoutSeconds: defaultRunTimeoutSeconds };
   if (platform === 'linux') {
@@ -132,7 +132,8 @@ function diagnostic(line: string): { path: string; reason: string } | null {
   return { path: operand, reason: matched[2] };
 }
 const deniedEntry = (line: string) => ['Operation not permitted', 'Permission denied'].includes(diagnostic(line)?.reason ?? '');
-const vanishedEntry = (path: string, line: string) => { const d = diagnostic(line); return !!d && d.path !== path && within(path, d.path) && d.reason === 'No such file or directory'; };
+// du runs only on POSIX hosts and prints POSIX paths, whatever platform parses its output.
+const vanishedEntry = (path: string, line: string) => { const d = diagnostic(line); return !!d && d.path !== path && within(path, d.path, '/') && d.reason === 'No such file or directory'; };
 /** Tell an unreadable protected path (macOS TCC or file mode) from a timeout, a missing category or a broken measurement. */
 export function classifyFailure(error: unknown, path: string): FailureReason {
   const failure = error as { code?: unknown; stderr?: unknown } | null;
