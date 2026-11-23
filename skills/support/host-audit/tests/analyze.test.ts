@@ -586,9 +586,10 @@ test('jstackSurface reads both hosts, hooks, names and the version from a packag
     assert.deepEqual([codexPlan.qualified, codexPlan.source, codexPlan.descriptionChars], ['jstack:plan', 'r0/workflow/plan/SKILL.md', description.length]);
     assert.equal(s.entries.filter(e => e.host === 'codex').length, 2);
     const hooks = (host: string) => (s.hooks as (JstackSurface['hooks'][number] & { host: string })[]).filter(h => h.host === host).map(h => `${h.event}:${h.matcher}:${h.handler}`);
-    // A hook is identified as the inventory identifies it: the plugin root spelled out, here the directory itself.
-    assert.deepEqual(hooks('claude'), [`PreToolUse:Bash|Write:node ${dir}/payload/hooks/dispatch.js PreToolUse`, `SessionStart::node ${dir}/payload/hooks/jst-path.js`]);
-    assert.deepEqual(hooks('codex'), [`PreToolUse:Bash|Write:node ${dir}/payload/hooks/dispatch.js PreToolUse`, 'SessionStart:startup:echo hello']);
+    // A hook is identified as the inventory identifies it: the plugin root spelled out, here the directory itself, with forward slashes on Windows.
+    const root = process.platform === 'win32' ? dir.replace(/\\/g, '/') : dir;
+    assert.deepEqual(hooks('claude'), [`PreToolUse:Bash|Write:node ${root}/payload/hooks/dispatch.js PreToolUse`, `SessionStart::node ${root}/payload/hooks/jst-path.js`]);
+    assert.deepEqual(hooks('codex'), [`PreToolUse:Bash|Write:node ${root}/payload/hooks/dispatch.js PreToolUse`, 'SessionStart:startup:echo hello']);
     // The root can be the folder the host will run instead, and a root under the user's home is written with `~`.
     const asInstalled = jstackSurface(dir, { root: '/home/me/.claude/plugins/cache/jstack/jstack/1.2.2', home: '/home/me' }).hooks as (JstackSurface['hooks'][number] & { host: string })[];
     assert.deepEqual(asInstalled.filter(h => h.host === 'claude').map(h => h.handler), ['node ~/.claude/plugins/cache/jstack/jstack/1.2.2/payload/hooks/dispatch.js PreToolUse', 'node ~/.claude/plugins/cache/jstack/jstack/1.2.2/payload/hooks/jst-path.js']);
@@ -711,7 +712,7 @@ test('a package entry whose frontmatter cannot be read is reported, not dropped 
     put('entries/claude/workflow/plan/SKILL.md', '---\nname: plan\ndescription: Plan: the work\n---\n');
     put('commands/ok.md', '# /ok — no frontmatter is fine\n');
     const surface = jstackSurface(dir);
-    assert.deepEqual(surface.unreadable?.map(file => file.slice(dir.length + 1)), ['entries/claude/workflow/plan/SKILL.md']);
+    assert.deepEqual(surface.unreadable?.map(file => file.slice(dir.length + 1)), [join('entries/claude/workflow/plan/SKILL.md')]);
     assert.deepEqual(surface.entries.map(e => e.name), ['ok']);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

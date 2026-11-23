@@ -192,7 +192,8 @@ function mutate(c: Context, input: any, action: (t: Task) => void): Task {
 export function startRun(c: Context, input: any): Task {
   return mutate(c, input, t => {
     if (t.run) throw new Error('Task already has a run; select it explicitly');
-    if (c.root !== t.root || run_git(c.root, 'rev-parse', '--show-toplevel') !== c.root) throw new Error('Start at the task worktree root');
+    // On Windows Git prints the top level with forward slashes and long names; compare the directories, not the spellings.
+    if (c.root !== t.root || realpathSync.native(run_git(c.root, 'rev-parse', '--show-toplevel')) !== realpathSync.native(c.root)) throw new Error('Start at the task worktree root');
     if (t.attempts.some(a => a.state === 'running') || unresolved(t).length) throw new Error('Settle existing work before starting');
     if (!['local-commit', 'pr-and-ship'].includes(input.endpoint) || !['ordinary', 'tdd'].includes(input.method)) throw new Error('Choose release endpoint and execution method');
     if (!t.requirements.length || t.requirements.some(r => r.active && r.kind !== 'code')) throw new Error('Code requirements required');
