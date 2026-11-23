@@ -118,10 +118,13 @@ command fixtures do not prove real user-bus registration or cgroup enforcement.
 
 ## Reference basis
 
-Implementation was checked against installed `du(1)`/`nice(1)` (uutils coreutils
-0.10.0), `ionice(1)`, and systemd 259.9 `systemd.timer(5)`, `systemd.service(5)`,
-`systemd.exec(5)` and `systemd.resource-control(5)` manuals. GNU diagnostic forms
-have fixture coverage; native tests must identify the actual installed du.
+The implementation was checked once, on a single Linux reference host, against
+installed `du(1)`/`nice(1)` (uutils coreutils 0.10.0), `ionice(1)`, and the systemd
+259.9 `systemd.timer(5)`, `systemd.service(5)`, `systemd.exec(5)` and
+`systemd.resource-control(5)` manuals. That host did not use GNU coreutils. The
+systemd tests drive a fake runner, and the Linux-only native tests run only on a
+Linux host, so macOS runs skip them. GNU diagnostic forms have fixture coverage;
+native tests must identify the actual installed du.
 
 - [GNU du manual](https://www.gnu.org/software/coreutils/manual/html_node/du-invocation.html)
 - [systemd timer semantics](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
