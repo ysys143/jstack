@@ -8362,8 +8362,16 @@
       "target": "skills/research/scripts/evidence_needs.ts"
     },
     {
+      "source": "skills/public/research/research/tests/_fixtures.ts",
+      "target": "skills/research/tests/_fixtures.ts"
+    },
+    {
       "source": "skills/public/research/research/tests/evidence_needs.test.ts",
       "target": "skills/research/tests/evidence_needs.test.ts"
+    },
+    {
+      "source": "skills/public/research/research/tests/evidence_needs_process.test.ts",
+      "target": "skills/research/tests/evidence_needs_process.test.ts"
     },
     {
       "source": "skills/public/research/research/tests/refs/SKILL.md.lines",
