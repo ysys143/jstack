@@ -3766,12 +3766,20 @@
       "target": "skills/diagram/references/connector-rules.md"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/references/delivery-formats.md",
+      "target": "skills/diagram/references/delivery-formats.md"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/references/export.md",
       "target": "skills/diagram/references/export.md"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/references/font-delivery.md",
       "target": "skills/diagram/references/font-delivery.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/references/official-icons.md",
+      "target": "skills/diagram/references/official-icons.md"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/references/output-spec.md",
@@ -4914,12 +4922,20 @@
       "target": "skills/diagram/tests/refs/connector-rules.md.lines"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/tests/refs/delivery-formats.md.lines",
+      "target": "skills/diagram/tests/refs/delivery-formats.md.lines"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/tests/refs/export.md.lines",
       "target": "skills/diagram/tests/refs/export.md.lines"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/tests/refs/font-delivery.md.lines",
       "target": "skills/diagram/tests/refs/font-delivery.md.lines"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/tests/refs/official-icons.md.lines",
+      "target": "skills/diagram/tests/refs/official-icons.md.lines"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/tests/refs/output-spec.md.lines",
@@ -4944,6 +4960,10 @@
     {
       "source": "skills/public/artifacts/svg-diagram/tests/run_tests.ts",
       "target": "skills/diagram/tests/run_tests.ts"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/tests/stack_icons_offline.py",
+      "target": "skills/diagram/tests/stack_icons_offline.py"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/tests/test_cjk_contract.ts",
