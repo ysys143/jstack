@@ -20,7 +20,7 @@ import { delimiter, dirname, isAbsolute, join, resolve } from 'node:path';
 import { isMain } from '../../../runtime/entry.js';
 
 export type LinkState = 'current' | 'linked' | 'replaced' | 'newer' | 'kept' | 'existing' | 'yielded' | 'foreign' | 'opted-out' | 'no-launcher' | 'failed';
-export interface LinkInput { home: string; path: string; env: Record<string, string | undefined>; pluginRoot: string }
+export interface LinkInput { home: string; path: string; env: Record<string, string | undefined>; pluginRoot: string; readLink?: (path: string) => string }
 export interface LinkResult { state: LinkState; link: string; launcher: string; message: string }
 
 // The launcher in a jstack version folder of a host plugin cache: .../plugins/cache/MARKETPLACE/jstack/VERSION/payload/bin/jst.
@@ -68,7 +68,11 @@ export function otherJstackOnPath(pathValue: string, launcher?: string): string 
   return undefined;
 }
 
-export function linkJst(input: LinkInput, retried = false): LinkResult {
+/** What a concurrent session start can cause while it swaps the link: it appeared, vanished, or briefly did not read as a link. */
+const TRANSIENT = new Set(['EEXIST', 'ENOENT', 'EINVAL']), LOOKS = 4;
+const pause = (attempt: number) => { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5 * (attempt + 1)); };
+
+export function linkJst(input: LinkInput, attempt = 0): LinkResult {
   const launcher = join(input.pluginRoot, 'payload', 'bin', 'jst'), bin = join(input.home, '.local', 'bin'), link = join(bin, 'jst');
   const result = (state: LinkState, message = ''): LinkResult => ({ state, link, launcher, message });
   if (/^(1|true|yes|on)$/i.test((input.env.JSTACK_NO_PATH_LINK ?? '').trim())) return result('opted-out');
@@ -76,7 +80,7 @@ export function linkJst(input: LinkInput, retried = false): LinkResult {
     const ours = real(launcher);
     let entry: Stats | undefined, resolved: string | undefined;
     try { entry = lstatSync(link); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
-    if (entry?.isSymbolicLink()) { const target = resolve(dirname(link), readlinkSync(link)); resolved = real(target) ?? target; }
+    if (entry?.isSymbolicLink()) { const target = resolve(dirname(link), (input.readLink ?? readlinkSync)(link)); resolved = real(target) ?? target; }
     const own = resolved !== undefined && ((ours !== undefined && resolved === ours) || cachedLauncher(resolved, true));
     // Another jstack, such as the npm CLI package, wins: never create or refresh the link, and remove only our own.
     const other = otherJstackOnPath(input.path, ours);
@@ -111,8 +115,9 @@ export function linkJst(input: LinkInput, retried = false): LinkResult {
     return result('linked', `jstack: linked ${link} to ${launcher}.${hint}`);
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
-    // A concurrent session start changed the link between the check and the write: look once more.
-    if (!retried && (code === 'EEXIST' || code === 'ENOENT')) return linkJst(input, true);
+    // A concurrent session start changed the link between the check and the write, or swapped it while it was read:
+    // look again a few times. A failure that persists is reported.
+    if (attempt < LOOKS && TRANSIENT.has(code ?? '')) { pause(attempt); return linkJst(input, attempt + 1); }
     return result('failed', `jstack: could not link ${link} (${code ?? 'error'}), so jstack may not be on PATH in this session; tell the user if jstack is needed.`);
   }
 }
