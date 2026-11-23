@@ -23,7 +23,13 @@ for (const [path, patterns] of Object.entries(contracts)) {
   check(`${path} preserves its behavior contract`, patterns.every(pattern => pattern.test(content)));
 }
 // Inside a directory of its own: every SQLite open lists the cache's parent, and the temp directory can be large.
-const cacheParent = mkdtempSync(join(realpathSync(tmpdir()), 'jstack-disk-suite-native-')), cache = join(cacheParent, 'sqlite3');
+// The same temporary directory as the fixtures in _fixtures.ts, so their hard links to the addon stay on one filesystem.
+const memory = () => {
+  try { return readFileSync('/proc/self/mountinfo', 'utf8').split('\n').some(line => { const field = line.split(' '); return field[4] === '/dev/shm' && !field[5]!.split(',').includes('noexec'); }); }
+  catch { return false; }
+};
+const temporary = realpathSync(process.platform === 'linux' && memory() ? '/dev/shm' : tmpdir());
+const cacheParent = mkdtempSync(join(temporary, 'jstack-disk-suite-native-')), cache = join(cacheParent, 'sqlite3');
 const files = ['linux', 'systemd', 'measure', 'history', 'snapshot', 'cli', 'cli-history', 'cli-snapshot', 'worktree-audit'].map(name => fileURLToPath(new URL(`./${name}.test.js`, import.meta.url)));
 const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...files], { encoding: 'utf8', env: { ...process.env, JSTACK_DISK_TEST_CACHE: cache } });
 rmSync(cacheParent, { recursive: true, force: true });

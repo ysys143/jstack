@@ -10,10 +10,21 @@ import { lockedBinary, nativePlatform, preparedNative, validateNativeManifest } 
 import type { Sample } from '../scripts/storage.js';
 
 const nativeRoot = fileURLToPath(new URL('../../../../../native/sqlite3', import.meta.url));
+/**
+ * On Linux the fixtures live on the temporary memory filesystem when it may hold the loaded SQLite addon (no noexec, as
+ * in a Docker container). History commits, scan caches and locks still make their real disk syncs, but a block-device
+ * sync waits on the CI disk, and one slow run of five made these files WAITING. run_tests.ts picks the same directory
+ * for its shared addon cache, so a hard link to the addon stays on one filesystem.
+ */
+const memory = () => {
+  try { return readFileSync('/proc/self/mountinfo', 'utf8').split('\n').some(line => { const field = line.split(' '); return field[4] === '/dev/shm' && !field[5]!.split(',').includes('noexec'); }); }
+  catch { return false; }
+};
+const temporary = realpathSync(process.platform === 'linux' && memory() ? '/dev/shm' : tmpdir());
 // Every SQLite open lists the cache root's parent to rule out case collisions, and the system temp directory can hold
 // thousands of entries. The cache therefore sits inside a directory of its own.
 const ownCache = !process.env.JSTACK_DISK_TEST_CACHE;
-const cacheRoot = process.env.JSTACK_DISK_TEST_CACHE ?? join(mkdtempSync(join(realpathSync(tmpdir()), 'jstack-disk-native-')), 'sqlite3');
+const cacheRoot = process.env.JSTACK_DISK_TEST_CACHE ?? join(mkdtempSync(join(temporary, 'jstack-disk-native-')), 'sqlite3');
 after(() => { if (process.platform !== 'win32' && ownCache) rmSync(dirname(cacheRoot), { recursive: true, force: true }); });
 /**
  * A process's own cache is deleted when it ends, so its addon skips the disk sync that preparedNative gives the lasting
@@ -30,7 +41,7 @@ const seed = () => {
 };
 /** One prepared SQLite addon per test process, or the owning suite's shared cache. */
 export const native = { nativeRoot, get cacheRoot() { seed(); return cacheRoot; } };
-export const fixture = () => mkdtempSync(join(realpathSync(tmpdir()), 'jstack-disk-'));
+export const fixture = () => mkdtempSync(join(temporary, 'jstack-disk-'));
 /**
  * A spawned CLI prepares SQLite under its own state root. A hard link to the verified test addon spares it unpacking a
  * new copy and macOS's first-load check of a new binary; without a link it unpacks its own.
