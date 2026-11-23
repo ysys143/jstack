@@ -1,6 +1,6 @@
 /** Shared fixtures for the typed evidence-needs test files: isolated task state, temp files and the in-process CLI. */
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +8,11 @@ import { capture, context, load } from '../../../../../runtime/task_state.js';
 import { main } from '../scripts/coverage_matrix.js';
 
 export const COVERAGE = join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'coverage_matrix.js');
-export const temporary = tmpdir();
+/**
+ * Task-state writes and their locks keep their real disk syncs; on Linux they go to the temporary memory filesystem,
+ * where a sync does not wait on the CI disk. Nothing here loads native code, so a noexec mount is fine.
+ */
+export const temporary = process.platform === 'linux' && existsSync('/dev/shm') ? '/dev/shm' : tmpdir();
 export const sha = (value: string | Buffer): string => createHash('sha256').update(value).digest('hex');
 export const ROWS = [['INC-1', 'database failover'], ['INC-2', 'cache outage'], ['INC-12', 'queue stall']] as const;
 
