@@ -1054,6 +1054,14 @@
       "target": "runtime/entry.ts"
     },
     {
+      "source": "runtime/fixtures/copy_tree.test.ts",
+      "target": "runtime/fixtures/copy_tree.test.ts"
+    },
+    {
+      "source": "runtime/fixtures/copy_tree.ts",
+      "target": "runtime/fixtures/copy_tree.ts"
+    },
+    {
       "source": "runtime/fixtures/memory_tmp.ts",
       "target": "runtime/fixtures/memory_tmp.ts"
     },
