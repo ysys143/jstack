@@ -128,7 +128,8 @@ export function write(file: string, data: Buffer, exclusive = false): void {
   const temporary = joinTemporary(file), mode = before === null ? 0o600 : lstatSync(file).mode & 0o777;
   const fd = openSync(temporary, 'wx', mode); let closed = false;
   try {
-    writeFileSync(fd, data); fsyncSync(fd); closeSync(fd); closed = true;
+    // Mark closed before closing: a failed close must not be retried on a number that may already be reused.
+    writeFileSync(fd, data); fsyncSync(fd); closed = true; closeSync(fd);
     if (exclusive) linkSync(temporary, file); else renameSync(temporary, file);
   } finally { if (!closed) closeSync(fd); if (existsSync(temporary)) unlinkSync(temporary); }
 }

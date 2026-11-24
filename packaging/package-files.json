@@ -8402,6 +8402,10 @@
       "target": "skills/recall/tests/migrate_sessions_codex.test.ts"
     },
     {
+      "source": "skills/public/operations/session-memory/tests/migration_write_close.test.ts",
+      "target": "skills/recall/tests/migration_write_close.test.ts"
+    },
+    {
       "source": "skills/public/operations/session-memory/tests/refs/SKILL.md.lines",
       "target": "skills/recall/tests/refs/SKILL.md.lines"
     },

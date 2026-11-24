@@ -84,12 +84,15 @@ export function atomicWrite(file: string, data: Uint8Array, privateState = true,
   const mode = privateState ? 0o600 : (stat(file)?.mode ?? 0o600) & 0o777;
   const temporary = path.join(path.dirname(file), `.jstack-write-${randomUUID()}`);
   const fd = fs.openSync(temporary, 'wx', mode);
+  // Close exactly once: after a close the number may already belong to another open, so a retry would close it.
+  let open = true;
+  const close = () => { if (open) { open = false; fs.closeSync(fd); } };
   try {
     if (process.platform === 'win32' && privateState) acl(temporary, true);
-    fs.writeFileSync(fd, data); if (durable) fs.fsyncSync(fd); fs.closeSync(fd);
+    fs.writeFileSync(fd, data); if (durable) fs.fsyncSync(fd); close();
     assertNoLinks(file); if (privateState && stat(file)) checkOwned(file);
     fs.renameSync(temporary, file);
-  } finally { try { fs.closeSync(fd); } catch {} if (stat(temporary)) fs.unlinkSync(temporary); }
+  } finally { try { close(); } catch {} if (stat(temporary)) fs.unlinkSync(temporary); }
 }
 /** Shared with portable_lock in the transitional Python writers.
  * Acquisition is mkdir, owner.json is published before entering the action, and
