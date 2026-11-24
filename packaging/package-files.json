@@ -1054,6 +1054,14 @@
       "target": "runtime/entry.ts"
     },
     {
+      "source": "runtime/fixtures/copy_tree.test.ts",
+      "target": "runtime/fixtures/copy_tree.test.ts"
+    },
+    {
+      "source": "runtime/fixtures/copy_tree.ts",
+      "target": "runtime/fixtures/copy_tree.ts"
+    },
+    {
       "source": "runtime/fixtures/memory_tmp.ts",
       "target": "runtime/fixtures/memory_tmp.ts"
     },
@@ -8400,6 +8408,10 @@
     {
       "source": "skills/public/operations/session-memory/tests/migrate_sessions_codex.test.ts",
       "target": "skills/recall/tests/migrate_sessions_codex.test.ts"
+    },
+    {
+      "source": "skills/public/operations/session-memory/tests/migration_write_close.test.ts",
+      "target": "skills/recall/tests/migration_write_close.test.ts"
     },
     {
       "source": "skills/public/operations/session-memory/tests/refs/SKILL.md.lines",

@@ -53,6 +53,29 @@ test('private state creation and replacement preserve ownership checks', async t
   assert.equal(fs.readFileSync(file, 'utf8'), 'second');
 });
 
+test('atomic replacement closes its descriptor exactly once on success, failure, and a failed close', async t => {
+  // A second close of a reused number closes another open's descriptor (CI EBADF in a concurrent profile save).
+  const { atomicWrite } = await import('./os.js');
+  const { syncBuiltinESMExports } = await import('node:module');
+  const native = (await import('node:fs')).default;
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-close-')));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const file = path.join(root, 'state.json');
+  const { closeSync, renameSync } = native;
+  const closes: number[] = []; let failClose = false, failRename = false;
+  native.closeSync = (fd: number) => { closes.push(fd); closeSync(fd); if (failClose) throw Object.assign(new Error('injected close failure'), { code: 'EIO' }); };
+  native.renameSync = (from: fs.PathLike, to: fs.PathLike) => { if (failRename) throw new Error('injected rename failure'); renameSync(from, to); };
+  syncBuiltinESMExports();
+  const attempt = (bytes: string) => { closes.length = 0; try { atomicWrite(file, Buffer.from(bytes)); } catch (error) { return error as Error; } return undefined; };
+  try {
+    assert.equal(attempt('first'), undefined); assert.equal(closes.length, 1);
+    failRename = true; assert.match(attempt('second')!.message, /injected rename failure/); assert.equal(closes.length, 1); failRename = false;
+    failClose = true; assert.match(attempt('third')!.message, /injected close failure/); assert.equal(closes.length, 1); failClose = false;
+  } finally { native.closeSync = closeSync; native.renameSync = renameSync; syncBuiltinESMExports(); }
+  assert.equal(fs.readFileSync(file, 'utf8'), 'first');
+  assert.deepEqual(fs.readdirSync(root), ['state.json']);
+});
+
 
 test('a shared parent may be 0755 but never writable by group or others, linked, or not a directory', { skip: process.platform === 'win32' }, async t => {
   const { sharedParent, privateDir } = await import('./os.js');

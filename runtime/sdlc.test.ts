@@ -1,6 +1,6 @@
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, cpSync, readFileSync, writeFileSync, rmSync, realpathSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, realpathSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -11,6 +11,7 @@ import { startRun, runEvent, selectRun, runStatus, leafContext } from './sdlc.js
 import { main as taskMain } from './task_cli.js';
 import { repo_identity } from '../skills/public/workflow/verify/scripts/workflow.js';
 import { processTemporaryDirectory } from './fixtures/process_tmp.js';
+import { copyTree } from './fixtures/copy_tree.js';
 
 // Starting a run needs the user's confirmation of the exact requirements; the runtime reports the digest to confirm.
 // Tests obtain it from the first refusal and then confirm, so the confirmation path is always exercised.
@@ -43,7 +44,7 @@ function fixture(t: any, temporaryRoot = fixtureTemp) {
   const home = realpathSync.native(mkdtempSync(path.join(temporaryRoot, 'jstack-sdlc-'))), root = path.join(home, 'repo'); mkdirSync(root);
   t.after(() => rmSync(home, { recursive: true, force: true }));
   const git = (...args: string[]) => { const r: SpawnSyncReturns<string> = spawnSync('git', args, { cwd: root, encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); return r.stdout.trim(); };
-  cpSync(repoTemplate(), root, { recursive: true });
+  copyTree(repoTemplate(), root);
   const c = { ...context(root, home, 'session-a'), now: 1000 };
   const put = (name: string, value: unknown) => { const p = path.join(home, name); writeFileSync(p, typeof value === 'string' ? value : JSON.stringify(value)); return p; };
   const user = put('user.json', { role: 'user', host: 'codex', session: 'session-a', message: 'message-1', content: 'jstack:sdlc for this change and implement the accepted spec.' });
