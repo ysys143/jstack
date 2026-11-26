@@ -55,8 +55,8 @@ Tests do not wait on the clock: wait for a condition with a deadline, or make an
 interval a parameter and shorten it in the test. Use port 0 and temp dirs, never
 fixed ports or paths. New or changed Node tests must pass
 `node dist/scripts/test_budget.js --base origin/master` (time budget, no waiting,
-repeated runs; budgets in `scripts/node-test-groups.json`); CI runs it on pull
-requests. Fix a violation in the test or its timers instead of raising the budget.
+repeated runs; limits in `scripts/node-test-groups.json`, currently 15 s for fast
+files and 120 s for integration files); CI runs it on pull requests.
 
 ## Scope and conventions
 

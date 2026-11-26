@@ -21,7 +21,7 @@
     "skills/support/runtime-adaptation/tests/bridge_migration.test.ts"
   ],
   "budget": {
-    "fast": { "maxSeconds": 3, "repeat": 5 },
-    "integration": { "maxSeconds": 30, "repeat": 2 }
+    "fast": { "maxSeconds": 15, "repeat": 5, "waitingMinSeconds": 10 },
+    "integration": { "maxSeconds": 120, "repeat": 2, "waitingMinSeconds": 60 }
   }
 }

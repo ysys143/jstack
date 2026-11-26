@@ -70,8 +70,8 @@ including deletion controls, and release validation uses the same full run.
 Pull requests in either lane also run `dist/scripts/test_budget.js` on added or
 changed Node test files. In the minimal lane it is the only step that executes a
 changed test file for its own sake. It costs nothing when no test file changed;
-a PR that changes a fast test adds up to 15 seconds per file (3-second budget,
-five runs) and an integration test up to 60 seconds per file (30-second budget,
+a PR that changes a fast test adds up to 75 seconds per file (15-second budget,
+five runs) and an integration test up to 240 seconds per file (120-second budget,
 two runs). The gate prepares the support `rules.json` and the locked native
 SQLite archive itself, because the minimal lane skips the steps that provide
 them.
