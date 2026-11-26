@@ -75,9 +75,9 @@ dependencies are documented in the [capability catalog](CAPABILITIES.md).
 
 ## Installation
 
-You need Node.js 20 or newer and Claude Code, Codex, or both. jstack `0.0.1` is
+You need Node.js 20 or newer and Claude Code, Codex, or both. jstack `0.0.2` is
 distributed as a checked local marketplace through the
-[GitHub release](https://github.com/ysys143/jstack/releases/tag/v0.0.1).
+[GitHub release](https://github.com/ysys143/jstack/releases/tag/v0.0.2).
 
 ### Ask your coding agent (recommended)
 
@@ -203,9 +203,9 @@ no link and needs the CLI package. The CLI package from the next section (its
 Codex hook then removes a `~/.local/bin/jst` link into a jstack plugin cache), and is
 required for scheduled disk snapshots.
 
-The `0.0.1` release is distributed as a checked local marketplace, not a
-hosted remote marketplace. Download `jstack-marketplace-0.0.1.zip` from the
-[GitHub release](https://github.com/ysys143/jstack/releases/tag/v0.0.1),
+The `0.0.2` release is distributed as a checked local marketplace, not a
+hosted remote marketplace. Download `jstack-marketplace-0.0.2.zip` from the
+[GitHub release](https://github.com/ysys143/jstack/releases/tag/v0.0.2),
 extract it to a persistent location, and open your terminal in its parent folder.
 The folder must contain
 `.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`, and
@@ -258,17 +258,17 @@ and [Codex plugin browser guide](https://developers.openai.com/codex/cli/slash-c
 
 Use this route for jstack-managed install, update, and rollback. Choose one route
 per profile: the jstack installer rejects conflicting unmanaged jstack installations.
-The `0.0.1` release is not published to npm.
+The `0.0.2` release is not published to npm.
 
-**Get the package first.** Download `ysys143-jstack-0.0.1.tgz` from the
-[GitHub release](https://github.com/ysys143/jstack/releases/tag/v0.0.1); it is not
+**Get the package first.** Download `ysys143-jstack-0.0.2.tgz` from the
+[GitHub release](https://github.com/ysys143/jstack/releases/tag/v0.0.2); it is not
 on the npm registry.
 
 Open a terminal in the directory containing the downloaded tarball and the
 extracted `jstack-marketplace` folder, then run:
 
 ```bash
-npm install -g ./ysys143-jstack-0.0.1.tgz
+npm install -g ./ysys143-jstack-0.0.2.tgz
 jst install --source ./jstack-marketplace/plugins/jstack --host all
 jst status
 ```
@@ -280,7 +280,7 @@ jst update --source ./jstack-marketplace/plugins/jstack --host all
 ```
 
 The bare `jst update` command selects the npm registry's `latest` version. Keep
-using `--source` for this GitHub-release route because `0.0.1` is not published
+using `--source` for this GitHub-release route because `0.0.2` is not published
 to npm. Use `jst status --json` when you need machine-readable output.
 
 Use `--host claude` or `--host codex` when only one host is installed. Installing

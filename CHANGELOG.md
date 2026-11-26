@@ -2,8 +2,15 @@
 
 ## [Unreleased]
 
+## 0.0.2 — 2026-11-26
+
 ### Added
 
+- The `reframe` workflow skill: teaches the expert words for what you are
+  building, ranks 8 to 12 terms by how much each would change what gets built
+  with one link-checked citation each, borrows terms from neighboring fields,
+  and rewrites the request. Adapted from pstack (MIT); boundaries against
+  `requirements-interview` and `plan` are explicit.
 - The `stack-viewer` Claude Code mod: `/stack` opens a side pane that maps every
   component the session loads to the scope it comes from. It is imported unchanged
   from davila7/claude-code-templates (MIT) and loads through `hooks/claude-hooks.json`.
