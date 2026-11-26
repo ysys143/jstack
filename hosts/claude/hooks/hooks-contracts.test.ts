@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { autocommitEnabled, prompt } from './commit-session.js';
 import { DEFAULT_CONVENTIONS } from '../../../runtime/conventions.js';
 import { parsePublishSource, validate } from './validate_before_publish.js';
@@ -58,10 +59,10 @@ finally {
 } });
 test('PR label judges the repository the PR command runs in', () => { const root = mkdtempSync(join(tmpdir(), 'jstack-pr-dir-')); try {
     const home = homedir();
-    assert.equal(commandDirectory('cd /target/repo && gh pr create --title t', root), resolve('/target/repo'));
+    assert.equal(commandDirectory('cd /target/repo && gh pr create --title t', root), resolve(root, '/target/repo'));
     assert.equal(commandDirectory('cd sub && gh pr create', root), resolve(root, 'sub'));
-    assert.equal(commandDirectory('cd "/a b" && cd c; gh pr create', root), resolve('/a b', 'c'));
-    assert.equal(commandDirectory('(cd /target && gh pr create)', root), resolve('/target'));
+    assert.equal(commandDirectory('cd "/a b" && cd c; gh pr create', root), resolve(root, '/a b', 'c'));
+    assert.equal(commandDirectory('(cd /target && gh pr create)', root), resolve(root, '/target'));
     assert.equal(commandDirectory('cd ~/repo && gh pr create', root), join(home, 'repo'));
     assert.equal(commandDirectory('gh pr create; cd /elsewhere', root), root);
     assert.equal(commandDirectory('cd /first && cd $SOMEWHERE && gh pr create', root), undefined);
@@ -206,4 +207,18 @@ test('the automatic commit prompt follows the conventions it is given', () => {
   const korean = prompt({ ...DEFAULT_CONVENTIONS, autocommitLanguage: 'ko', subjectVerbEnding: 'korean', commitTypes: ['feat', 'fix'], subjectMax: 60 });
   assert.match(korean, /Korean descriptions/); assert.match(korean, /MUST be one of: feat, fix\./); assert.match(korean, /MAX 60 chars, ending in an action noun such as 추가/);
   assert.match(korean, /NEVER include 'Generated with Claude Code'/);
+});
+test('dispatch prefilters load no catalog or policy module through static imports', () => {
+    // Every dispatch evaluates prefilters; policy modules and their dependencies load only after a match.
+    const reached = new Set<string>(), pending = [fileURLToPath(new URL('./hook-policies.js', import.meta.url))];
+    for (let file = pending.pop(); file; file = pending.pop()) {
+        if (reached.has(file)) continue;
+        reached.add(file);
+        for (const [, from, bare] of readFileSync(file, 'utf8').matchAll(/^\s*(?:import|export)\s[^;]*?\bfrom\s*['"](\.[^'"]+)['"]|^\s*import\s*['"](\.[^'"]+)['"]/gm))
+            pending.push(resolve(dirname(file), from ?? bare));
+    }
+    const names = [...reached].map(file => basename(file));
+    assert.ok(names.includes('emoji-pattern.js'), names.join(', '));
+    for (const name of ['block_emoji.js', 'catalog_cli.js', 'skill_catalog.js']) assert.equal(names.includes(name), false, `${name} reached from hook-policies.js: ${names.join(', ')}`);
+    assert.doesNotMatch(readFileSync(fileURLToPath(new URL('./emoji-pattern.js', import.meta.url)), 'utf8'), /^\s*(?:import|export)\s[^;]*\bfrom\b|\bimport\s*\(/m);
 });

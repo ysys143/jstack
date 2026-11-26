@@ -2,12 +2,13 @@ import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as os from 'node:os';
 import { Store, jsonBytes, validateConventions, verifySnapshot } from './profiles.js';
-import { atomicWrite } from './os.js';
+import { atomicWrite, privateDir } from './os.js';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 function fixture(t: TestContext) {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'jstack-profile-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(memoryTemporaryRoot(), 'jstack-profile-conventions-'))); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new Store(path.join(root, 'state')); const ws = { schemaVersion: 1, configDir: root, account: 'fixture-account' }; const report = { schemaVersion: 1, subjectName: 'Test' }; return { root, store, ws, report };
 }
 
@@ -73,7 +74,8 @@ test('checkedAt must be an ISO timestamp, a journal must name two or three files
   for (const files of [[], ['workspace.json']]) { atomicWrite(path.join(directory, '.transaction.json'), jsonBytes({ schemaVersion: 1, files, previous: files.map(() => null) })); assert.throws(() => store.recover('work'), /invalid recovery journal/); }
   fs.unlinkSync(path.join(directory, '.transaction.json'));
   const outside = path.join(store.root, '..', 'outside.json'); fs.writeFileSync(outside, 'keep');
-  fs.mkdirSync(path.join(directory, 'history', 'r1'), { recursive: true, mode: 0o700 }); fs.symlinkSync(outside, path.join(directory, 'history', 'r1', 'workspace.json'));
+  // The history directory is jstack's own private one, as an interrupted save leaves it; the stale copy inside holds a link.
+  privateDir(path.join(directory, 'history')); fs.mkdirSync(path.join(directory, 'history', 'r1'), { mode: 0o700 }); fs.symlinkSync(outside, path.join(directory, 'history', 'r1', 'workspace.json'));
   store.save('work', ws, report, 1);
   assert.equal(fs.readFileSync(outside, 'utf8'), 'keep', 'a link in a stale history copy is not followed');
   if (process.platform !== 'win32') assert.equal(fs.statSync(path.join(directory, 'history', 'r1', 'workspace.json')).mode & 0o777, 0o600);
@@ -81,7 +83,7 @@ test('checkedAt must be an ISO timestamp, a journal must name two or three files
 });
 test('the save command removes conventions with a flag that takes no value, and rejects a value given to it', t => {
   const { store, ws, report } = fixture(t); store.save('work', ws, report, 0, { conventions });
-  const cli = new URL('./profiles.js', import.meta.url).pathname;
+  const cli = fileURLToPath(new URL('./profiles.js', import.meta.url));
   const run = (...args: string[]) => spawnSync(process.execPath, [cli, ...args, '--state-root', store.root], { encoding: 'utf8' });
   const attached = run('save', 'work', '--remove-conventions', 'yes', '--expected-revision', '1');
   assert.equal(attached.status, 2, attached.stdout); assert.match(attached.stderr, /take no value/); assert.ok(store.load('work').conventions, 'nothing was saved');

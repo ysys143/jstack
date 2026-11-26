@@ -1,5 +1,10 @@
-# blob:29f79d9e221dfa1518b4b9591c900fb07a4bf34d
+# blob:b0a59217a4af3198e29253f5ca30e3138af6a511
 # Emoji — the rule, and cleaning up after it
+This is conditional support, not a native skill: its description does not trigger
+host discovery. When a write is blocked, read the JSON-quoted absolute path after
+`Read support file:` in the hook message, then the section "When the user asked
+for emoji" below. That path identifies this installed body without searching
+user skill folders or resolving the package-relative path from the tool's cwd.
 ## Two halves, one rule
 `block_emoji.js` stops emoji at write time. It cannot touch what is already on
 disk, and files written before the hook existed still carry emoji. This skill

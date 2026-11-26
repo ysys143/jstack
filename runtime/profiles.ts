@@ -4,7 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { pathToFileURL } from 'node:url';
-import { assertNoLinks, atomicWrite, checkOwned, expand, parseFlags, privateDir, recoverLock, removeTreeSync, runProcess, stat, withLock } from './os.js';
+import { assertNoLinks, atomicWrite, checkOwned, createPrivateFile, expand, parseFlags, privateDir, recoverLock, removeTreeSync, runProcess, stat, withLock } from './os.js';
 
 export class ProfileError extends Error {}
 export type ProfileDocument = { schemaVersion: number; revision?: number; [key: string]: string | number | undefined };
@@ -139,9 +139,10 @@ export class Store {
   }
   private keepHistory(directory: string, revision: number, previous: (string | null)[]): void {
     const history = path.join(directory, 'history'), kept = path.join(history, `r${revision}`), staging = path.join(history, `.r${revision}-${process.pid}-${Date.now()}`); privateDir(history);
-    // Files are written exclusively at 0600 into a staging directory that is renamed into place, so a listed revision is always complete.
+    // Files are created exclusively as private files (0600, or the owner ACL on Windows, where a plain new file need not be owned by
+    // the user) in a staging directory that is renamed into place, so a listed revision is always complete.
     privateDir(staging, { exclusive: true });
-    try { FILES.forEach((file, i) => { const data = previous[i]; if (typeof data === 'string') fs.writeFileSync(path.join(staging, file), data, { mode: 0o600, flag: 'wx' }); }); }
+    try { FILES.forEach((file, i) => { const data = previous[i]; if (typeof data === 'string') { createPrivateFile(path.join(staging, file)); fs.writeFileSync(path.join(staging, file), data); } }); }
     catch (error) { removeTreeSync(staging); throw error; }
     // A copy left by an interrupted save is replaced; removal does not follow links.
     if (stat(kept)) { assertNoLinks(kept); removeTreeSync(kept); }

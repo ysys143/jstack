@@ -1,5 +1,25 @@
 # NOTICE — diagram
 
+## stack-diagram official icons import (2026-11-23)
+
+- Source: https://github.com/caru-ini/stack-diagram, commit
+  `f6c5785a3349e1baba73026948ffb6c166e71db9`.
+- License class: MIT, read from this commit's `skills/stack-diagram/LICENSE`
+  (Copyright 2026 caru-ini). The bundled Geist and JetBrains Mono fonts are SIL OFL
+  1.1; their license texts ship beside them under `assets/fonts/`.
+- Scope: `skills/stack-diagram/` byte-identical under `repos/stack-diagram/`, except
+  `scripts/share.py`, which posts diagrams to a public third-party gallery.
+  `UPSTREAM.stack-diagram.json` records each file's SHA-256 measured from the fetched
+  original, and the excluded file with its reason.
+- Logos are not bundled. `fetch_icons.py` downloads them at use time from the sources
+  its docstring lists; each mark keeps its owner's terms and trademark.
+- Local integration lives in `references/official-icons.md`,
+  `references/delivery-formats.md`, this skill's entry, and
+  `tests/stack_icons_offline.py`, which runs the vendored fetcher offline because
+  upstream ships no tests for its scripts. Overridden upstream rules: dashed edges as
+  dev-time relationships, color-only primary flow, `context-stroke` markers, labels on
+  bare canvas, and the gallery step.
+
 ## v2.6.22 reference and import update (2026-09-14)
 
 - Source: https://github.com/cathrynlavery/diagram-design, commit

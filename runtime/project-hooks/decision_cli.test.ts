@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { run } from './decision_cli.js';
@@ -10,6 +9,7 @@ import { HOOK_CONTEXT_ENV, StateConflict, readState, recordDecision, resolveStat
 import { computeFingerprint, diagnosticReuse, retryAllowed } from './fingerprint.js';
 import { planActions } from './plan.js';
 import { selectCheckers, type ProjectView } from './select.js';
+import { memoryTemporaryRoot } from '../fixtures/memory_tmp.js';
 
 const git = (cwd: string, args: string[]) => spawnSync('git', args, { cwd, encoding: 'utf8' });
 const view = (files: Record<string, string>): ProjectView => ({
@@ -18,7 +18,7 @@ const view = (files: Record<string, string>): ProjectView => ({
 });
 
 test('project decision CLI needs explicit evidence and stores both choices outside .jstack', () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-decision-cli-'));
+  const root = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-decision-cli-'));
   try {
     assert.equal(spawnSync('git', ['init', '-q'], { cwd: root }).status, 0);
     const location = resolveStateLocation(root);
@@ -36,7 +36,7 @@ test('project decision CLI needs explicit evidence and stores both choices outsi
 });
 
 test('project recommendation is read-only and needs both key and point for a shadow request', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-project-recommend-'));
+  const root = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-project-recommend-'));
   try {
     assert.equal(git(root, ['init', '-q']).status, 0);
     writeFileSync(join(root, 'pyproject.toml'), '[tool.ruff]\n');
@@ -59,7 +59,7 @@ test('project recommendation is read-only and needs both key and point for a sha
 });
 
 test('project recommendation compares a bounded Jev choice without granting setup', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-project-shadow-'));
+  const root = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-project-shadow-'));
   try {
     assert.equal(git(root, ['init', '-q']).status, 0);
     writeFileSync(join(root, 'pyproject.toml'), '[tool.ruff]\n');
@@ -87,7 +87,7 @@ test('project recommendation compares a bounded Jev choice without granting setu
 });
 
 test('worktree decisions are separate, while subdirectories share their worktree state', () => {
-  const parent = mkdtempSync(join(tmpdir(), 'jstack-worktree-state-'));
+  const parent = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-worktree-state-'));
   const root = join(parent, 'main'), sibling = join(parent, 'linked');
   try {
     mkdirSync(root);
@@ -111,7 +111,7 @@ test('worktree decisions are separate, while subdirectories share their worktree
 });
 
 test('non-Git state is path-keyed; malformed state is never silently repaired by a hook', () => {
-  const parent = mkdtempSync(join(tmpdir(), 'jstack-directory-state-'));
+  const parent = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-directory-state-'));
   const home = join(parent, 'state'), first = join(parent, 'first'), second = join(parent, 'second');
   try {
     mkdirSync(first); mkdirSync(second);
@@ -129,7 +129,7 @@ test('non-Git state is path-keyed; malformed state is never silently repaired by
 });
 
 test('an explicit answer survives a stale writer', () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-stale-state-'));
+  const root = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-stale-state-'));
   try {
     assert.equal(git(root, ['init', '-q']).status, 0);
     const location = resolveStateLocation(root);
@@ -160,7 +160,7 @@ test('mixed-language selection is limited to affected subprojects and keeps unkn
 });
 
 test('a diagnostic reuses only a matching pass and a no-setup choice never runs checks', () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-fingerprint-'));
+  const root = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-fingerprint-'));
   try {
     writeFileSync(join(root, 'pyproject.toml'), '[tool.ruff]\n');
     const input = { root, host: 'claude', jstackVersion: '0.9.7', configFiles: ['pyproject.toml'], lockFiles: [], tools: [] };

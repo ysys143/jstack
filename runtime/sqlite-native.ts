@@ -12,10 +12,14 @@ export interface NativeManifest { schemaVersion: 1; dependency: 'sqlite3'; versi
 export interface NativeOptions { nativeRoot?: string; cacheRoot?: string }
 export const nativeHash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 
+// The C library of a running process cannot change. A diagnostic report costs tens of milliseconds in a process with
+// many open handles, and every SQLite open asks for the platform, so a Linux process reads it once.
+let linuxPlatform: string | undefined;
 export function nativePlatform(): string {
   if (process.platform !== 'linux') return `${process.platform}-${process.arch}`;
+  if (linuxPlatform) return linuxPlatform;
   const header = (process.report.getReport() as { header?: { glibcVersionRuntime?: string } }).header;
-  return `linux-${process.arch}${header?.glibcVersionRuntime ? '' : '-musl'}`;
+  return linuxPlatform = `linux-${process.arch}${header?.glibcVersionRuntime ? '' : '-musl'}`;
 }
 
 export function validateNativeManifest(bytes: Buffer): NativeManifest {

@@ -39,6 +39,9 @@ export const IGNORE: Rule[] = [
   ["^(?:rules/comment-intent\\.js|tests/comment-intent\\.test\\.js)$", "Comment-governance guide examples describe files in the target project", "^skills/setup/references/comment-convention-governance\\.md$"],
 
   ["^(?:skills/diagram-design/|scripts/|commands/|prompts/)", "Pinned upstream source paths map beneath skills/diagram/repos/diagram-design; the owning suite checks exact population and hashes", "^skills/diagram/UPSTREAM\\.v2\\.6\\.22\\.json$"],
+  ["^(?:scripts/share\\.py|skills/stack-diagram/references/tsx\\.md|icons/manifest\\.json)$", "Names the upstream gallery client that is deliberately not shipped, the upstream TSX source that sits beneath skills/diagram/repos/stack-diagram, and the manifest the icon fetcher writes into the caller's working directory", "^skills/diagram/references/(?:official-icons|delivery-formats)\\.md$"],
+  ["^scientific-tools/scripts/rebuild-index\\.ts$", "Text of the ownership marker that the index rebuilder writes into the documents it generates; it names the generator and is not a file reference", "^skills/science/scripts/rebuild-index\\.js$"],
+  ["^skills/stack-diagram/", "Pinned upstream source paths map beneath skills/diagram/repos/stack-diagram; the excluded gallery client is recorded but not shipped; the owning suite checks exact population and hashes", "^skills/diagram/UPSTREAM\\.stack-diagram\\.json$"],
   ["^/absolute/check-output\\.txt$", "Routing result example points to caller-created verification evidence", "^runtime/ROUTING\\.md$"],
   ["^E/(?:timeout|step-[0-9]+)\\.txt$", "Interactive CLI recipe saves screens in the caller's disposable evidence directory", "^skills/verify/references/interactive-cli\\.md$"],
   ["^/absolute/ci-evidence\\.json$", "Caller-owned CI evidence output example", "^skills/verify/references/ci-diagnosis\\.md$"],

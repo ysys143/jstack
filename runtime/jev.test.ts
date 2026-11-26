@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -10,11 +10,14 @@ const state: JevState = { point: 'model-routing', kind: 'implement', impact: 'hi
   eligible: [{ id: 'alpha', host: 'codex', transport: 'native', contextTokens: 200000 }, { id: 'beta', host: 'claude', transport: 'native', contextTokens: 200000 }] };
 const response = (choice = 'beta') => new Response(JSON.stringify({ model: 'jev-latest', usage: { input_tokens: 40, output_tokens: 2 },
   answers: { decision: { type: 'choice', choice, confidence: 0.8, probabilities: { alpha: 0.2, beta: 0.8 } } } }), { status: 200 });
+// State and lock writes keep their real disk syncs; on Linux they go to the temporary memory filesystem, as in
+// sdlc.test.ts, so they do not wait on the CI disk.
+const fixtureTemp = process.platform === 'linux' && existsSync('/dev/shm') ? '/dev/shm' : tmpdir();
 const filesUnder = (root: string): string[] => readdirSync(root, { withFileTypes: true }).flatMap(entry =>
   entry.isDirectory() ? filesUnder(join(root, entry.name)).map(path => join(entry.name, path)) : [entry.name]);
 
 test('Jev requires a named point as well as a key; invalid activation and names send nothing', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-jev-off-'));
+  const root = mkdtempSync(join(fixtureTemp, 'jstack-jev-off-'));
   try {
     let requests = 0;
     const fetchFn = (async () => { requests++; return response(); }) as typeof fetch;
@@ -49,7 +52,7 @@ test('official lowercase Choice, Score, and Noul answers are validated', () => {
 });
 
 test('the HTTP request follows the official schema and a shadow result never replaces the twin', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-jev-shadow-'));
+  const root = mkdtempSync(join(fixtureTemp, 'jstack-jev-shadow-'));
   try {
     let body: any, authorization: string | null = null;
     const fetchFn = (async (_url: unknown, init?: RequestInit) => {
@@ -72,7 +75,7 @@ test('the HTTP request follows the official schema and a shadow result never rep
 });
 
 test('request caps and circuit state survive separate hook processes', () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-jev-processes-'));
+  const root = mkdtempSync(join(fixtureTemp, 'jstack-jev-processes-'));
   try {
     const moduleUrl = new URL('./jev.js', import.meta.url).href;
     const program = `import { compareShadow } from ${JSON.stringify(moduleUrl)};
@@ -96,7 +99,7 @@ console.log(result.mode);`;
 });
 
 test('timeout, malformed answer, and malformed budget degrade without leaking request data', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-jev-degrade-'));
+  const root = mkdtempSync(join(fixtureTemp, 'jstack-jev-degrade-'));
   try {
     const env = { JSTACK_JEV: 'model-routing', TYPESAFE_API_KEY: 'fixture-secret', JSTACK_JEV_SESSION_ID: 'session-timeout', JSTACK_JEV_TIMEOUT_MS: '10' };
     const never = ((_: unknown, init?: RequestInit) => new Promise<Response>((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted fixture-secret'))))) as typeof fetch;

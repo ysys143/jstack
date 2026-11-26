@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { specialistRoot, specialistStatus, setupSpecialist, runSpecialist, type SpecialistOptions } from './specialists.js';
 import { runProcess } from './os.js';
+import { memoryTemporaryRoot } from './fixtures/memory_tmp.js';
 function fixture(t: TestContext) {
-  const root = mkdtempSync(join(tmpdir(), 'jstack-specialist-')); t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-specialist-')); t.after(() => rmSync(root, { recursive: true, force: true }));
   const source = join(root, 'source'), home = join(root, 'home'); mkdirSync(home);
   const put = (name: string, text: string) => { const path = join(source, name); mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, text); };
   put('contracts/ts-migration/specialists.json', JSON.stringify({ features: [{ id: 'sample', python: '3.10', lock: 'locks/sample.txt', importCheck: 'import example', targetPlatforms: ['macos', 'linux', 'windows'], sources: ['scripts/sample.py'] }] }));

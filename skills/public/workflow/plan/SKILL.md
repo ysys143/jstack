@@ -209,6 +209,13 @@ node "${JSTACK_PLUGIN_ROOT}/skills/plan/scripts/contract_lint.js" --spec spec.md
 
 A criterion without a requirement or a reason is the test nobody wrote.
 
+When a requirement asks for every item of a set, a count or a total from supplied
+sources, write its acceptance criterion as one typed information need bound to that
+requirement ID and revision, with the source and the item-ID format it will be checked
+against. The opt-in check is described in
+`${JSTACK_PLUGIN_ROOT}/skills/research/references/evidence-needs.md`.
+Ordinary criteria need no such need.
+
 ## Phase 3: check it against the whole (zoom-out)
 
 Step back from the implementation and look at three things.

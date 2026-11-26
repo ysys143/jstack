@@ -50,6 +50,10 @@ table, state paths, import behavior and manual scheduler transition procedure.
 macOS collection support is explicit; model family and agent host are not
 prerequisites. Other OSes are not advertised as collection-supported.
 
+This sentence describes the state at this import. Linux collection and systemd
+user timers were added afterward; the current scope is in
+`skills/public/operations/disk-manager/references/linux.md`.
+
 ## Packaging and validation
 
 The reviewed inventory adds 13 disk-manager files. Dashboard source paths move

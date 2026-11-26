@@ -135,13 +135,16 @@ const PATH_LIKE = /^(?:[/~$.]|[A-Za-z]:[\\/])/;
 const VARIABLE = /^\$\{?[A-Za-z_]\w*\}?(?=[\\/]|$)/;
 /** Where a handler's command line is read: the plugin directory that `${CLAUDE_PLUGIN_ROOT}` and `${PLUGIN_ROOT}` mean, and the user's home. */
 interface Scope { root?: string; home?: string }
+/** On Windows a path in an identity is written with forward slashes: the native plugin root and home, and a copy of the command that spells them either way, give one identity. */
+const slashed = (value: string): string => process.platform === 'win32' ? value.replace(/\\/g, '/') : value;
 /** One token of a command line as it appears in a handler identity. Paths and flags survive with the plugin root and home spelled out; plain words (`start`, `PreToolUse`, `dry-run`) survive; every other token can carry a credential (a URL, `key=value`, an opaque run, a quoted shell string, a command substitution or an expansion with a default) and becomes `<arg>`. */
 function identityToken(raw: string, scope: Scope, command: boolean): string {
   if (/[\s`]/.test(raw) || [...raw.matchAll(/\$/g)].some(match => !VARIABLE.test(raw.slice(match.index)))) return '<arg>';
   let token = raw;
   if (scope.root !== undefined) token = token.replace(PLUGIN_ROOT, () => scope.root!);
-  token = token.replace(HOME_VARIABLE, '~');
-  if (scope.home && token.startsWith(scope.home) && /^(?:[\\/]|$)/.test(token.slice(scope.home.length))) token = `~${token.slice(scope.home.length)}`;
+  token = slashed(token).replace(HOME_VARIABLE, '~');
+  const home = scope.home === undefined ? undefined : slashed(scope.home);
+  if (home && token.startsWith(home) && /^(?:[\\/]|$)/.test(token.slice(home.length))) token = `~${token.slice(home.length)}`;
   if (PATH_LIKE.test(token) || SCRIPT.test(token)) return /[=?]/.test(token) ? '<arg>' : token;
   if (/[/\\=@?]/.test(token) || /[A-Za-z0-9_-]{20,}/.test(token)) return '<arg>';
   return command || /^--?[A-Za-z][\w-]*$/.test(token) || INTERPRETERS.has(token) || /^[A-Z]?[a-z]+(?:[A-Z][a-z]+|-[a-z]+)*$/.test(token) ? token : '<arg>';

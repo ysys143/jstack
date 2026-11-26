@@ -64,3 +64,15 @@ test('a waiting test fails and a quick test passes', { skip: process.platform ==
   const quick = await runBudget(['runtime/quick.test.ts'], { root, groups });
   assert.equal(quick.code, 0, quick.lines.join('\n'));
 });
+
+test('a group waitingMinSeconds from the config decides when a mostly idle file waits', { skip: process.platform === 'win32' }, async t => {
+  const body = "import test from 'node:test'; test('idle', async () => { await new Promise(r => setTimeout(r, 400)); });\n"; // test-smells: allow fixture that must be reported as waiting
+  const root = fixture(t, { 'package.json': '{"type": "module"}\n', 'runtime/idle.test.ts': '', 'dist/runtime/idle.test.js': body });
+  const strict: Groups = { ...groups, budget: { ...groups.budget, fast: { maxSeconds: 5, repeat: 1, waitingMinSeconds: 0.3 } } };
+  const loose: Groups = { ...groups, budget: { ...groups.budget, fast: { maxSeconds: 5, repeat: 1, waitingMinSeconds: 60 } } };
+  const flagged = await runBudget(['runtime/idle.test.ts'], { root, groups: strict, waitingRatio: 0.6 });
+  assert.equal(flagged.code, 1, flagged.lines.join('\n'));
+  assert.match(flagged.lines.join('\n'), /WAITING/);
+  const allowed = await runBudget(['runtime/idle.test.ts'], { root, groups: loose, waitingRatio: 0.6 });
+  assert.equal(allowed.code, 0, allowed.lines.join('\n'));
+});

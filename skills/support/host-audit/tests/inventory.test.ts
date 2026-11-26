@@ -298,7 +298,7 @@ test('unreadable or invalid Claude files become warnings without their content',
   mkdirSync(join(root, 'work/app/.claude/settings.local.json'), { recursive: true });
   const inventory = claude(root, { project: join(root, 'work/app'), runner: runner({ 'claude plugin list --json': 'BROKENSECRET' }) });
   const warnings = inventory.warnings.join('\n');
-  for (const piece of ['settings.json is not valid JSON', '.claude.json is not valid JSON', 'bad/SKILL.md has frontmatter', '.mcp.json is not valid JSON', 'settings.local.json could not be read (EISDIR)', 'claude plugin list --json failed']) assert.ok(warnings.includes(piece), piece);
+  for (const piece of ['settings.json is not valid JSON', '.claude.json is not valid JSON', `${join('bad', 'SKILL.md')} has frontmatter`, '.mcp.json is not valid JSON', 'settings.local.json could not be read (EISDIR)', 'claude plugin list --json failed']) assert.ok(warnings.includes(piece), piece);
   assert.equal(warnings.includes('BROKENSECRET'), false);
   assert.equal(find(inventory, 'bad')!.descriptionChars, 0, 'unparsable frontmatter leaves the metadata empty');
 });
@@ -375,7 +375,7 @@ test('a Codex home is inventoried from config.toml, agents, hooks, skills and pl
   assert.ok(warnings.includes(`a second Codex home exists at ${join(root, '.agents')}`));
   assert.ok(warnings.includes('trust cannot be known')); assert.ok(warnings.includes('does not say how Codex namespaces plugin skills'));
   assert.ok(warnings.includes('bad.toml lacks a name or description')); assert.ok(warnings.includes(join(root, '.codex/skills/.system')));
-  assert.equal(find(inventory, 'colon'), undefined); assert.ok(warnings.includes('colon/SKILL.md is skipped: its frontmatter is not valid YAML'));
+  assert.equal(find(inventory, 'colon'), undefined); assert.ok(warnings.includes(`${join('colon', 'SKILL.md')} is skipped: its frontmatter is not valid YAML`));
   for (const secret of SECRETS) assert.equal(JSON.stringify(inventory).includes(secret), false, `${secret} must not appear in the inventory`);
 });
 
@@ -412,7 +412,7 @@ test('a Codex plugin list that fails falls back to config.toml and the cache; in
   put(root, '.agents/skills/bad/SKILL.md', '---\ndescription: [unclosed BROKENSECRET\n---\n');
   const broken = codex(root, { runner: () => { throw new Error('boom'); } });
   const warnings = broken.warnings.join('\n');
-  for (const piece of ['config.toml is not valid TOML', 'hooks.json is not valid JSON', 'a.toml is not valid TOML', 'bad/SKILL.md is skipped', 'codex plugin list --json failed']) assert.ok(warnings.includes(piece), piece);
+  for (const piece of ['config.toml is not valid TOML', 'hooks.json is not valid JSON', 'a.toml is not valid TOML', `${join('bad', 'SKILL.md')} is skipped`, 'codex plugin list --json failed']) assert.ok(warnings.includes(piece), piece);
   assert.equal(warnings.includes('BROKENSECRET'), false);
 });
 
@@ -495,7 +495,7 @@ test('a synced claude.ai skill never reveals the account or organization folder'
   const inventory = claude(root, { runner: failing });
   const synced = inventory.entries.filter(entry => entry.origin === 'connector');
   assert.deepEqual(synced.map(entry => [entry.qualified, entry.source]).sort(), [['anthropic-skills:broken', join(root, '.claude/skills/synced/<account>/broken/SKILL.md')], ['anthropic-skills:pdf', join(root, '.claude/skills/synced/<account>/pdf/SKILL.md')]]);
-  assert.ok(inventory.warnings.some(warning => warning.includes('<account>/broken/SKILL.md has frontmatter that is not valid YAML')));
+  assert.ok(inventory.warnings.some(warning => warning.includes(`${join('<account>', 'broken', 'SKILL.md')} has frontmatter that is not valid YAML`)));
   // With no way to tell the signed-in account, every account's skills count and still none is named.
   put(root, '.claude.json', {});
   const all = claude(root, { runner: failing }), text = JSON.stringify(all);

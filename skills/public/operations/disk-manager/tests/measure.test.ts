@@ -7,8 +7,10 @@ import { test } from 'node:test';
 import { catalogRoot } from '../../../../../runtime/catalog_cli.js';
 import { sourcePath } from '../../../../../runtime/skill_catalog.js';
 import { label, launchAgent, schedule } from '../scripts/scheduler.js';
-import { defaultProfile, measure, paths, profile, requireMac, type Sample, scan, validateProfile } from '../scripts/storage.js';
+import { defaultProfile, measure as nativeMeasure, paths, profile, requireMac, type Sample, scan, validateProfile } from '../scripts/storage.js';
 import { fixture, sample } from './_fixtures.js';
+
+const measure = (category: string, path: string, at?: number, timeout?: number, run?: (path: string, timeout: number) => string) => nativeMeasure(category, path, at, timeout, run, 'darwin');
 
 test('disk profile rejects executable settings and reports defaults without writing', () => {
   const root = fixture();
@@ -24,7 +26,7 @@ test('disk profile rejects executable settings and reports defaults without writ
 test('snapshot timeout is a bounded profile setting with a default', () => {
   const root = fixture();
   try {
-    const p = defaultProfile('/fixture') as unknown as Record<string, unknown>;
+    const p = defaultProfile('/fixture', 'darwin') as unknown as Record<string, unknown>;
     assert.equal((profile(root) as unknown as Record<string, unknown>).snapshotTimeoutSeconds, 300);
     for (const valid of [1, 3600]) assert.equal((validateProfile({ ...p, snapshotTimeoutSeconds: valid }) as unknown as Record<string, unknown>).snapshotTimeoutSeconds, valid);
     for (const invalid of [0, 1.5, 'x', 3601]) assert.throws(() => validateProfile({ ...p, snapshotTimeoutSeconds: invalid }), /Invalid disk profile/);
@@ -77,7 +79,7 @@ test('snapshot summary keeps protected paths unknown without failing the run', a
   const protectedOnly = summarize([measured, failed('movies', 'permission-denied: du: /x/movies: Operation not permitted')], null);
   assert.equal(protectedOnly.complete, false); assert.equal(protectedOnly.exitCode, 0);
   assert.deepEqual(protectedOnly.unmeasured.map((entry: Record<string, unknown>) => [entry.category, entry.reason]), [['movies', 'permission-denied']]);
-  assert.match(protectedOnly.unmeasured[0].remedy, /Full Disk Access/);
+  assert.match(protectedOnly.unmeasured[0].remedy, /Full Disk Access|File permissions/);
   for (const error of ['timeout: du did not finish within 7s', 'missing: du: /x/a: No such file or directory', 'error: Invalid allocated-block measurement']) assert.equal(summarize([measured, failed('a', error)], null).exitCode, 1, error);
   assert.equal(summarize([measured], 'Error: statfs failed').exitCode, 1);
   assert.deepEqual(summarize([measured], null), { complete: true, partial: [], unmeasured: [], exitCode: 0 });
@@ -154,16 +156,16 @@ test('schedule status reports a legacy collector and proposes migration', { skip
     assert.equal(readFileSync(legacy, 'utf8'), '<string>/example/.disk_cache/refresh.sh</string>');
   } finally { rmSync(root, { recursive: true }); }
 });
-test('scan handles spaces literally, retains error and keeps history outside cache', { skip: process.platform !== 'darwin' }, () => {
+test('scan handles spaces literally, retains error and keeps history outside cache', { skip: process.platform !== 'darwin' }, async () => {
   const root = fixture(), selected = join(root, 'a space $(not-executed)'); mkdirSync(selected); writeFileSync(join(selected, 'data'), 'sample');
   try {
     const p = { ...defaultProfile(root), categories: { sample: selected } };
     assert.ok(measure('sample', selected).bytes! > 0);
     assert.equal(measure('absent', join(root, 'absent')).bytes, null);
-    assert.equal(scan(root, p, 'sample', true).samples.length, 1);
-    assert.equal(scan(root, p, 'sample').stale, false);
-    assert.equal(scan(root, p, 'sample').truncated, false);
-    assert.equal(scan(root, p, 'sample').totalChildren, 1);
+    assert.equal((await scan(root, p, 'sample', true)).samples.length, 1);
+    assert.equal((await scan(root, p, 'sample')).stale, false);
+    assert.equal((await scan(root, p, 'sample')).truncated, false);
+    assert.equal((await scan(root, p, 'sample')).totalChildren, 1);
     assert.equal(paths(root).db.startsWith(paths(root).cache), false);
   } finally { rmSync(root, { recursive: true }); }
 });

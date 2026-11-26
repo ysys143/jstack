@@ -7,7 +7,7 @@ This skill is a **thin wrapper** around upstream `up:hyperresearch`, **MIT**,
 whose `hyperresearch install --steps-only` generates 16 step skills; copying code
 would diverge from that generation path.
 
-We added four components:
+We added four components (a fifth, the evidence-needs checks, is described below):
 
 | Local component | Purpose |
 |---|---|
@@ -48,6 +48,34 @@ and cut the rest according to cost.
 
 `hyperresearch` v0.10.0: **MIT**, verified as `License-Expression: MIT` in dist-info
 METADATA. No code was copied; only specification files and documentation were added.
+
+## Adapted: evidence-needs checks (qera4mgln)
+
+`scripts/evidence_needs.ts` and `references/evidence-needs.md` adapt ideas from
+`qera4mgln` (https://github.com/4mGLn/qera4mgln, **MIT**, copyright 2026 qera4mgln contributors), reviewed
+at authored commit `8722202902a38dca24f33c130e38edf3305ea0da` (workspace commit
+`6fc45b01c634daae4df783dc09d3a67a7ebf7813`; an earlier workspace commit `5728910` is
+its predecessor and is not the reviewed content). Source file:
+`skills/qera4mgln/scripts/qera_core.py`, SHA-256
+`6602357505b789cb69b06a49b75c8c648d3dc3ddea6a72179c7a221a06f79715`
+(git blob `52793fd9b7e720b5eee8d86adfbd6ea8ac070018`); license file SHA-256
+`12a17edfb7069a860899fbe99a3593b24977ab5ff72617fdfa4dcaf4c02c320c`.
+
+| Taken as an idea | Where it lives here |
+|---|---|
+| Typed information needs: lookup, enumerate, count, compute, compare, judge | `NEED_TYPES`; only four are automated |
+| Quotes must exist in the supplied source; an ID set is checked against the report | `checkNeed` quote and report rows |
+| Arithmetic is recomputed rather than trusted | Exact BigInt decimals; `sum` only |
+| An empty or missing check cannot count as coverage | `EMPTY_EVIDENCE`, `NO_NEED` |
+
+No Python code or prompt text was copied, and nothing was vendored. Not taken: the
+ask, answer, check and repair prompts, the model clients and evaluation harness, the
+requirement-quote filter, the 0.5 % arithmetic tolerance, the half-length and
+number-retention repair guard, and the word-count measure. jstack's task state
+(`runtime/task_state.ts`) stays the only requirements authority. The method comes from
+Qi, Hu, Zhang, Song and King, "Ask Before You Answer" (QERA); this package claims no
+model-quality gain from it, and the QERA paper's results do not transfer to these
+mechanical checks.
 
 ## Limitations
 

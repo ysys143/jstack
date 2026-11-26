@@ -630,6 +630,22 @@
       "target": "evals/regression/humanize-taxonomy-recall/prompt.md"
     },
     {
+      "source": "evals/regression/research-evidence-needs/case.yaml",
+      "target": "evals/regression/research-evidence-needs/case.yaml"
+    },
+    {
+      "source": "evals/regression/research-evidence-needs/graders/criteria.md",
+      "target": "evals/regression/research-evidence-needs/graders/criteria.md"
+    },
+    {
+      "source": "evals/regression/research-evidence-needs/graders/skill_fired.md",
+      "target": "evals/regression/research-evidence-needs/graders/skill_fired.md"
+    },
+    {
+      "source": "evals/regression/research-evidence-needs/prompt.md",
+      "target": "evals/regression/research-evidence-needs/prompt.md"
+    },
+    {
       "source": "evals/regression/sdlc-clarification/case.yaml",
       "target": "evals/regression/sdlc-clarification/case.yaml"
     },
@@ -720,6 +736,10 @@
     {
       "source": "hosts/claude/hooks/dispatch.ts",
       "target": "hooks/dispatch.ts"
+    },
+    {
+      "source": "hosts/claude/hooks/emoji-pattern.ts",
+      "target": "hooks/emoji-pattern.ts"
     },
     {
       "source": "hosts/claude/hooks/ensure-statusline.mjs",
@@ -894,6 +914,14 @@
       "target": "packaging/catalog.test.ts"
     },
     {
+      "source": "packaging/catalog_fixture.ts",
+      "target": "packaging/catalog_fixture.ts"
+    },
+    {
+      "source": "packaging/catalog_layout.test.ts",
+      "target": "packaging/catalog_layout.test.ts"
+    },
+    {
       "source": "packaging/check_public.test.ts",
       "target": "packaging/check_public.test.ts"
     },
@@ -1024,6 +1052,18 @@
     {
       "source": "runtime/entry.ts",
       "target": "runtime/entry.ts"
+    },
+    {
+      "source": "runtime/fixtures/copy_tree.test.ts",
+      "target": "runtime/fixtures/copy_tree.test.ts"
+    },
+    {
+      "source": "runtime/fixtures/copy_tree.ts",
+      "target": "runtime/fixtures/copy_tree.ts"
+    },
+    {
+      "source": "runtime/fixtures/memory_tmp.ts",
+      "target": "runtime/fixtures/memory_tmp.ts"
     },
     {
       "source": "runtime/fixtures/process_tmp.ts",
@@ -3706,6 +3746,10 @@
       "target": "skills/diagram/UPSTREAM.sha256"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/UPSTREAM.stack-diagram.json",
+      "target": "skills/diagram/UPSTREAM.stack-diagram.json"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/UPSTREAM.v2.6.22.json",
       "target": "skills/diagram/UPSTREAM.v2.6.22.json"
     },
@@ -3742,12 +3786,20 @@
       "target": "skills/diagram/references/connector-rules.md"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/references/delivery-formats.md",
+      "target": "skills/diagram/references/delivery-formats.md"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/references/export.md",
       "target": "skills/diagram/references/export.md"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/references/font-delivery.md",
       "target": "skills/diagram/references/font-delivery.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/references/official-icons.md",
+      "target": "skills/diagram/references/official-icons.md"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/references/output-spec.md",
@@ -4758,6 +4810,78 @@
       "target": "skills/diagram/repos/diagram-design/skills/diagram-design/scripts/self_check.py"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/LICENSE",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/LICENSE"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/SKILL.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/SKILL.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/Geist.woff2",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/Geist.woff2"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/JetBrainsMono.woff2",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/JetBrainsMono.woff2"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-Geist.txt",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-Geist.txt"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-JetBrainsMono.txt",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/OFL-JetBrainsMono.txt"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/README.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/fonts/README.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/browser.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/browser.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/device.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/device.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/internet.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/internet.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/server.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/server.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/user.svg",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/generic/user.svg"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/assets/template.html",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/assets/template.html"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/references/geometry.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/references/geometry.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/references/tsx.md",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/references/tsx.md"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/scripts/build.py",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/build.py"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/scripts/fetch_icons.py",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/fetch_icons.py"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/repos/stack-diagram/skills/stack-diagram/scripts/render_png.py",
+      "target": "skills/diagram/repos/stack-diagram/skills/stack-diagram/scripts/render_png.py"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/scripts/check_effective_size.ts",
       "target": "skills/diagram/scripts/check_effective_size.ts"
     },
@@ -4818,12 +4942,20 @@
       "target": "skills/diagram/tests/refs/connector-rules.md.lines"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/tests/refs/delivery-formats.md.lines",
+      "target": "skills/diagram/tests/refs/delivery-formats.md.lines"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/tests/refs/export.md.lines",
       "target": "skills/diagram/tests/refs/export.md.lines"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/tests/refs/font-delivery.md.lines",
       "target": "skills/diagram/tests/refs/font-delivery.md.lines"
+    },
+    {
+      "source": "skills/public/artifacts/svg-diagram/tests/refs/official-icons.md.lines",
+      "target": "skills/diagram/tests/refs/official-icons.md.lines"
     },
     {
       "source": "skills/public/artifacts/svg-diagram/tests/refs/output-spec.md.lines",
@@ -4850,6 +4982,10 @@
       "target": "skills/diagram/tests/run_tests.ts"
     },
     {
+      "source": "skills/public/artifacts/svg-diagram/tests/stack_icons_offline.py",
+      "target": "skills/diagram/tests/stack_icons_offline.py"
+    },
+    {
       "source": "skills/public/artifacts/svg-diagram/tests/test_cjk_contract.ts",
       "target": "skills/diagram/tests/test_cjk_contract.ts"
     },
@@ -4872,6 +5008,10 @@
     {
       "source": "skills/public/operations/disk-manager/references/installation.md",
       "target": "skills/disk-manager/references/installation.md"
+    },
+    {
+      "source": "skills/public/operations/disk-manager/references/linux.md",
+      "target": "skills/disk-manager/references/linux.md"
     },
     {
       "source": "skills/public/operations/disk-manager/references/macos.md",
@@ -4930,6 +5070,10 @@
       "target": "skills/disk-manager/tests/history.test.ts"
     },
     {
+      "source": "skills/public/operations/disk-manager/tests/linux.test.ts",
+      "target": "skills/disk-manager/tests/linux.test.ts"
+    },
+    {
       "source": "skills/public/operations/disk-manager/tests/measure.test.ts",
       "target": "skills/disk-manager/tests/measure.test.ts"
     },
@@ -4940,6 +5084,10 @@
     {
       "source": "skills/public/operations/disk-manager/tests/snapshot.test.ts",
       "target": "skills/disk-manager/tests/snapshot.test.ts"
+    },
+    {
+      "source": "skills/public/operations/disk-manager/tests/systemd.test.ts",
+      "target": "skills/disk-manager/tests/systemd.test.ts"
     },
     {
       "source": "skills/public/operations/disk-manager/tests/worktree-audit.test.ts",
@@ -8246,6 +8394,10 @@
       "target": "skills/recall/scripts/session_migration/types.ts"
     },
     {
+      "source": "skills/public/operations/session-memory/tests/_fixtures.ts",
+      "target": "skills/recall/tests/_fixtures.ts"
+    },
+    {
       "source": "skills/public/operations/session-memory/tests/claude_project_encoding.test.ts",
       "target": "skills/recall/tests/claude_project_encoding.test.ts"
     },
@@ -8256,6 +8408,14 @@
     {
       "source": "skills/public/operations/session-memory/tests/migrate_sessions.test.ts",
       "target": "skills/recall/tests/migrate_sessions.test.ts"
+    },
+    {
+      "source": "skills/public/operations/session-memory/tests/migrate_sessions_codex.test.ts",
+      "target": "skills/recall/tests/migrate_sessions_codex.test.ts"
+    },
+    {
+      "source": "skills/public/operations/session-memory/tests/migration_write_close.test.ts",
+      "target": "skills/recall/tests/migration_write_close.test.ts"
     },
     {
       "source": "skills/public/operations/session-memory/tests/refs/SKILL.md.lines",
@@ -8306,6 +8466,10 @@
       "target": "skills/research/references/cite-check.md"
     },
     {
+      "source": "skills/public/research/research/references/evidence-needs.md",
+      "target": "skills/research/references/evidence-needs.md"
+    },
+    {
       "source": "skills/public/research/research/references/kr-sources.md",
       "target": "skills/research/references/kr-sources.md"
     },
@@ -8326,12 +8490,32 @@
       "target": "skills/research/scripts/ensure_research.ts"
     },
     {
+      "source": "skills/public/research/research/scripts/evidence_needs.ts",
+      "target": "skills/research/scripts/evidence_needs.ts"
+    },
+    {
+      "source": "skills/public/research/research/tests/_fixtures.ts",
+      "target": "skills/research/tests/_fixtures.ts"
+    },
+    {
+      "source": "skills/public/research/research/tests/evidence_needs.test.ts",
+      "target": "skills/research/tests/evidence_needs.test.ts"
+    },
+    {
+      "source": "skills/public/research/research/tests/evidence_needs_process.test.ts",
+      "target": "skills/research/tests/evidence_needs_process.test.ts"
+    },
+    {
       "source": "skills/public/research/research/tests/refs/SKILL.md.lines",
       "target": "skills/research/tests/refs/SKILL.md.lines"
     },
     {
       "source": "skills/public/research/research/tests/refs/cite-check.md.lines",
       "target": "skills/research/tests/refs/cite-check.md.lines"
+    },
+    {
+      "source": "skills/public/research/research/tests/refs/evidence-needs.md.lines",
+      "target": "skills/research/tests/refs/evidence-needs.md.lines"
     },
     {
       "source": "skills/public/research/research/tests/refs/kr-sources.md.lines",

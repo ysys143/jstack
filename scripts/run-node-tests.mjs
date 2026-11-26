@@ -55,10 +55,19 @@ const migrationPath = join('dist', 'skills', 'support', 'runtime-adaptation', 't
 const migrationTests = selected.filter(path => relative(root, path) === migrationPath);
 const ordinaryTests = selected.filter(path => relative(root, path) !== migrationPath);
 const env = { ...process.env, PATH: dirname(process.execPath) + delimiter + process.env.PATH };
+// A test that never ends used to run until the job was cancelled at its time limit, with no name for the stuck test.
+// --test-timeout fails it with its name instead; Node before 20.11 and 21.0 to 21.1 do not have the option.
+const [major, minor] = process.versions.node.split('.').map(Number);
+const testTimeout = major >= 22 || (major === 21 && minor >= 2) || (major === 20 && minor >= 11) ? ['--test-timeout=900000'] : [];
+// A test file whose process had finished its tests could stay alive for good on Node 22 and later: V8 can deadlock at process
+// shutdown while a background Maglev compile waits for a garbage collection the exiting main thread never serves
+// (nodejs/node#54918, an open confirmed bug). The output of every later file then waits behind it, and a job runs to its time limit.
+// Maglev only speeds up long-running code, which a test run does not need, so it is turned off for these versions.
+const noMaglev = major >= 22 ? ['--no-maglev'] : [];
 let failed = false;
 for (const group of [ordinaryTests, migrationTests]) {
   if (group.length === 0) continue;
-  const result = spawnSync(process.execPath, ['--test', ...group], { cwd: root, stdio: 'inherit', env });
+  const result = spawnSync(process.execPath, [...noMaglev, '--test', ...testTimeout, ...group], { cwd: root, stdio: 'inherit', env });
   if (result.error) console.error(result.error.message);
   if (result.error || result.status !== 0) failed = true;
 }

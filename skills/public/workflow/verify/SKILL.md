@@ -273,6 +273,13 @@ verification.
 **Do not pretend to measure the right column.** Report it as open and say who
 must decide.
 
+A claim that a list is complete or that a total is right is also on the right side
+unless a boundary and exact arithmetic back it. For a delivered report, the research
+skill's `coverage_matrix.js --needs` recomputes sums and measures a declared item
+boundary; its pass is mechanical consistency only, and the source stays unreviewed
+for completeness and truth. Use it only when the claim is about every item, a count
+or a total.
+
 ## Phase 4: report
 
 ```

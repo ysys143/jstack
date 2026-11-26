@@ -16,6 +16,7 @@ local path.
 | [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) | CC BY-NC 4.0 | `9469fc4` | `skills/public/research/scientific-tools/repos/academic` |
 | [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) | MIT | `ac490fd`, `8d8b299` | `skills/public/artifacts/svg-diagram` |
 | [tt-a1i/archify](https://github.com/tt-a1i/archify) | MIT | `0853a80` | `skills/public/artifacts/svg-diagram` |
+| [caru-ini/stack-diagram](https://github.com/caru-ini/stack-diagram) | MIT; bundled fonts SIL OFL 1.1 | `f6c5785` | `skills/public/artifacts/svg-diagram/repos/stack-diagram` |
 | [hunkim/ai-is-fast-your-tests-are-slow](https://github.com/hunkim/ai-is-fast-your-tests-are-slow) | MIT | `9b076d0` | `repository-setup` and `verify` references |
 | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | MIT, declared in its README and skill frontmatter; no license file | `063bee9` | `skills/public/engineering/react-performance/rules` |
 | [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines) | MIT | `e3d624b` | `skills/public/engineering/web-interface` |
@@ -41,6 +42,7 @@ local path.
 | [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) | MIT | `7b8fece` | `verify`, `plan` and `skill-creator` references |
 | [OWASP/CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries) | CC BY-SA 4.0 | `6b6a66b` | `skills/public/workflow/review/references/owasp-cheatsheet-map.md` |
 | hyperresearch | MIT | — | `skills/public/research/research` references and wrapper contract |
+| [4mGLn/qera4mgln](https://github.com/4mGLn/qera4mgln) | MIT, copyright 2026 qera4mgln contributors | `8722202` | `skills/public/research/research` evidence-needs checks: typed information needs, item-set, quote and arithmetic audit, adapted as native TypeScript (see that skill's NOTICE) |
 | benelog, "클로드 문체 없애기 지침" (gist) | No license; principles restated in original wording, no text copied | — | `humanize` taxonomy |
 
 `hwpx-document` started from the `hwpx-skill` plugin by stevechoi0222; 26 of its

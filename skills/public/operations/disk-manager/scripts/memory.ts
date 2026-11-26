@@ -29,7 +29,7 @@ export async function remember(root: string, input: unknown): Promise<Note> {
   });
 }
 /** Legacy launch agents are scanned only for the default state root, so fixture roots never read the real home. */
-export async function context(root: string, native: NativeOptions = {}, legacy = legacyHistory(root), home = paths(root).root === paths().root ? homedir() : undefined) {
+export async function context(root: string, native: NativeOptions = {}, legacy = legacyHistory(root), home = process.platform === 'darwin' && paths(root).root === paths().root ? homedir() : undefined) {
   const notes = readMemory(root), replaced = new Set(notes.map(note => note.supersedes));
   const active = notes.filter(note => !replaced.has(note.id)).map(note => ({ ...note, expired: note.expiresAt !== undefined && note.expiresAt <= now() }));
   const memory = { path: memoryFile(root), decisions: active.filter(note => note.kind === 'decision'), recent: active.filter(note => note.kind !== 'decision').slice(-8), totalNotes: notes.length, guidance: 'Evidence and past decisions, not permission for new deletion. Recheck current consumers and stale observations.' };

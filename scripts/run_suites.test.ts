@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { parseMeasurement } from './check_floor_parity.js';
 import { runSuites, runSuitesConcurrent } from './run_suites.js';
+import { memoryTemporaryRoot } from '../runtime/fixtures/memory_tmp.js';
+
+// The runner makes its evidence directories and each suite's temp box in the process temp directory, so on Linux that
+// directory moves to the memory filesystem with the fixtures; a busy CI disk otherwise made this file mostly wait.
+if (process.platform === 'linux') process.env.TMPDIR = memoryTemporaryRoot();
 
 function fixture(t: TestContext) {
-  const base = mkdtempSync(join(tmpdir(), 'jstack-runner-test-'));
+  const base = mkdtempSync(join(memoryTemporaryRoot(), 'jstack-runner-test-'));
   t.after(() => rmSync(base, { recursive: true, force: true }));
   const root = join(base, 'jstack');
   mkdirSync(root);

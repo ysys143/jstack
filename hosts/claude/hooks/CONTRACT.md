@@ -102,7 +102,18 @@ content a tool writes unless the user asked for it. No other instruction file is
 assumed to carry the policy. The hook cannot see the conversation, so its block
 message tells the agent about the user-request exemption and points to
 `payload/skills/emoji/SKILL.md` in the installed package (source tree:
-`skills/support/emoji-policy/SKILL.md`). `hooks/block_emoji.js` is the single
+`skills/support/emoji-policy/SKILL.md`). The same message includes
+`Read support file:` followed by its JSON-quoted absolute path, resolved from
+the hook package rather than the tool cwd, and says that this absolute path takes
+precedence over the package-relative name. When the skill catalog is missing or
+malformed, a static fallback picks the first existing body: the installed payload
+copy beside the hook, or the source body from contributor `tsc` output. The
+detection range lives in the import-free `hooks/emoji-pattern.js` so the
+dispatcher prefilter loads no catalog code; `block_emoji.js` re-exports
+`EMOJI_PATTERN` and `containsEmoji`. This is a direct read of conditional
+support, not a native skill invocation or automatic description trigger. Missing
+or malformed discovery metadata does not disable the literal write block.
+`hooks/block_emoji.js` is the single
 canonical implementation.
 
 ```contract
@@ -113,9 +124,9 @@ block when: write content in tool_input contains at least one emoji code point
 exit contract: exit 0 + stdout JSON {"decision":"block"} (not a nonzero exit)
 pass contract: exit 0 with no stdout
 fail-open: yes — SyntaxError is silent; other exceptions print to stderr and pass
-output:    block reason "Emoji detected in content: <list>." (up to ten distinct emojis found, each with its code point) + ASCII replacement guidance + pointer to the user-request exemption
+output:    block reason "Emoji detected in content: <list>." (up to ten distinct emojis found, each with its code point) + ASCII replacement guidance + pointer to the user-request exemption + "Read support file: " followed by the JSON-quoted absolute path of the support body (may contain non-ASCII characters; the file exists in a complete dev or installed layout, and the path is only a pointer when neither layout has it), still a block when skill-catalog.json is missing or malformed
 verify:    node --test hooks/hooks-migration.test.js
-RED:       deleting the NotebookEdit branch fails `emoji preserves all write-tool decisions and read-only negative controls`
+RED:       deleting the NotebookEdit branch fails `emoji preserves all write-tool decisions and read-only negative controls`; a missing or malformed skill catalog that yields a pass, or a support path that does not exist in the dev or installed layout, fails `emoji guidance follows the installed body from unrelated cwd and Unicode paths without weakening a block`
 ```
 
 ### Fields read by the matcher differ by tool
@@ -216,8 +227,9 @@ follow such an instruction.
 
 ### Keep one canonical implementation
 
-The shared hook is the single file `hooks/block_emoji.js`; do not duplicate its
-detection range in another skill or hook. `scripts/check_suite_lib_parity.js`
+The shared hook is the single file `hooks/block_emoji.js`, and its detection
+range has one home in `hooks/emoji-pattern.js`, which the hook re-exports; do
+not duplicate that range in another skill or hook. `scripts/check_suite_lib_parity.js`
 checks the migration record and single canonical copy, while hook-owned tests
 verify actual blocking for each tool.
 

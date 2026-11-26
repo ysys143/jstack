@@ -11,10 +11,10 @@ import { differences, openHistory, record } from '../scripts/history.js';
 import { defaultProfile, ensureState, locked, now, paths, type Sample } from '../scripts/storage.js';
 import { fixture, native, sample } from './_fixtures.js';
 
-// `jst disk snapshot` requires macOS; macOS and Linux run its flow below in process within the time limits. On Windows
+// `jst disk snapshot` supports macOS and Linux; macOS and Linux run its flow below in process within the time limits. On Windows
 // each private-state check spawns PowerShell to read the ACL, about 16 per snapshot, so each test takes 10-16 s. The
 // locks and the history a snapshot composes keep their Windows coverage in the lock tests above and in history.test.ts.
-const skipOnWindows = process.platform === 'win32' ? 'jst disk snapshot requires macOS; Windows ACL checks make each snapshot take 10-16 s' : false;
+const skipOnWindows = process.platform === 'win32' ? 'jst disk snapshot supports macOS and Linux; Windows ACL checks make each snapshot take 10-16 s' : false;
 
 test('collector lock excludes a concurrent writer and releases on error', async () => {
   const root = fixture();
@@ -69,7 +69,7 @@ test('collector lock recovers only an exited owner on this machine', { skip: pro
 test('snapshot measures outside the state lock and refuses only a concurrent snapshot', { skip: skipOnWindows, timeout: 10_000 }, async () => {
   const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
   const { remember } = await import('../scripts/memory.js');
-  const root = fixture(), p = { ...defaultProfile(root), filesystem: root, categories: { data: join(root, 'data') } }; mkdirSync(p.categories.data);
+  const root = fixture(), p = { ...defaultProfile(root, 'darwin'), filesystem: root, categories: { data: join(root, 'data') } }; mkdirSync(p.categories.data);
   let measuring!: () => void, release!: () => void;
   const started = new Promise<void>(resolve => { measuring = resolve; }), gate = new Promise<void>(resolve => { release = resolve; });
   // A controllable du: the measurement stays pending until the test releases it.
@@ -90,7 +90,7 @@ test('snapshot measures outside the state lock and refuses only a concurrent sna
 test('snapshot checks the history and the state lock before du runs', { skip: skipOnWindows, timeout: 10_000 }, async () => {
   const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
   const roots: string[] = [];
-  const setup = () => { const root = fixture(); roots.push(root); ensureState(root); mkdirSync(join(root, 'data')); return { root, p: { ...defaultProfile(root), filesystem: root, categories: { data: join(root, 'data') } } }; };
+  const setup = () => { const root = fixture(); roots.push(root); ensureState(root); mkdirSync(join(root, 'data')); return { root, p: { ...defaultProfile(root, 'darwin'), filesystem: root, categories: { data: join(root, 'data') } } }; };
   let measured = 0;
   const stub = (category: string, path: string, capturedAt: number): Sample => { measured++; return { category, path, capturedAt, bytes: 4096, error: null, method: 'fixture' }; };
   try {
@@ -108,7 +108,7 @@ test('snapshot checks the history and the state lock before du runs', { skip: sk
 });
 test('a snapshot that cannot record after du reports what it measured', { skip: skipOnWindows }, async () => {
   const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
-  const root = fixture(), p = { ...defaultProfile(root), filesystem: root, categories: { data: join(root, 'data') } }; mkdirSync(p.categories.data);
+  const root = fixture(), p = { ...defaultProfile(root, 'darwin'), filesystem: root, categories: { data: join(root, 'data') } }; mkdirSync(p.categories.data);
   try {
     // The history passes the check before du; only the write after it is refused.
     const db = await openHistory(root, true, native); await db.exec("CREATE TRIGGER refuse BEFORE INSERT ON measurements BEGIN SELECT RAISE(ABORT, 'injected refusal'); END;"); await db.close();
@@ -122,7 +122,7 @@ test('without a profile, default categories this machine lacks are not present r
   const root = fixture(), configuredRoot = fixture(), home = join(root, 'home'); mkdirSync(join(home, '.npm'), { recursive: true });
   const measured: string[] = [];
   const stub = (category: string, path: string, capturedAt: number): Sample => { measured.push(category); return existsSync(path) ? { category, path, capturedAt, bytes: 4096, error: null, method: 'fixture' } : { category, path, capturedAt, bytes: null, error: `missing: du: ${path}: No such file or directory`, method: 'fixture' }; };
-  const p = { ...defaultProfile(home), filesystem: root };
+  const p = { ...defaultProfile(home, 'darwin'), filesystem: root };
   try {
     const result = await snapshot(root, p, undefined, { measureFn: stub, native, defaults: true });
     assert.deepEqual(measured, ['home', 'npm']); assert.deepEqual(result.unmeasured, []);
@@ -141,7 +141,7 @@ test('without a profile, default categories this machine lacks are not present r
 test('a default category deleted after earlier samples is recorded as 0 bytes, so diff shows the cleanup', { skip: skipOnWindows, timeout: 10_000 }, async () => {
   const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
   const root = fixture(), home = join(root, 'home'), gradle = join(home, '.gradle'), at = now(), size = 12 * 2 ** 30; mkdirSync(gradle, { recursive: true });
-  const p = { ...defaultProfile(home), filesystem: root };
+  const p = { ...defaultProfile(home, 'darwin'), filesystem: root };
   const stub = (category: string, path: string, capturedAt: number): Sample => ({ category, path, capturedAt, bytes: 4096, error: null, method: 'fixture' });
   try {
     const db = await openHistory(root, true, native);
@@ -161,11 +161,52 @@ test('an absent default category named explicitly is recorded as 0 bytes', { ski
   const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
   const root = fixture(), home = join(root, 'home'); mkdirSync(home);
   try {
-    const result = await snapshot(root, { ...defaultProfile(home), filesystem: root }, 'docker_desktop', { measureFn: () => { throw new Error('du must not run for an absent path'); }, native, defaults: true });
+    const result = await snapshot(root, { ...defaultProfile(home, 'darwin'), filesystem: root }, 'docker_desktop', { measureFn: () => { throw new Error('du must not run for an absent path'); }, native, defaults: true });
     assert.deepEqual(result.samples.map((s: Sample) => [s.category, s.bytes, s.error, s.method]), [['docker_desktop', 0, null, 'path not present']]);
     assert.deepEqual(result.notPresent, []); assert.deepEqual(result.unmeasured, []);
     const db = await openHistory(root, false, native);
     try { assert.deepEqual((await db.query('SELECT category, bytes FROM measurements')).map(row => [row.category, row.bytes]), [['docker_desktop', 0]]); }
+    finally { await db.close(); }
+  } finally { rmSync(root, { recursive: true }); }
+});
+test('the macOS default profile has no total deadline: each category keeps its own snapshotTimeoutSeconds', { skip: skipOnWindows }, async () => {
+  const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
+  const root = fixture(), home = join(root, 'home'), roots = [root, fixture(), fixture()];
+  for (const directory of ['.npm', '.cache/pip', 'Downloads']) mkdirSync(join(home, directory), { recursive: true });
+  const p = { ...defaultProfile(home, 'darwin'), filesystem: root, categories: { npm: join(home, '.npm'), pip: join(home, '.cache/pip'), downloads: join(home, 'Downloads') } };
+  let tick = 0; const timeouts: number[] = [];
+  // Each category takes 200 s of a fake clock, well past Linux's 120-second default.
+  const slow = (category: string, path: string, capturedAt: number, timeoutMs: number): Sample => { timeouts.push(timeoutMs); tick += 200_000; return { category, path, capturedAt, bytes: 4096, error: null, method: 'fixture' }; };
+  try {
+    const result = await snapshot(root, p, undefined, { measureFn: slow, native, clock: () => tick, platform: 'darwin' });
+    assert.deepEqual(timeouts, [300_000, 300_000, 300_000]); assert.deepEqual(result.unmeasured, []);
+    assert.equal(result.runTimeoutSeconds, null); assert.deepEqual(result.samples.map((s: Sample) => s.bytes), [4096, 4096, 4096]);
+    // Linux applies its default deadline to the same profile; a deadline a macOS profile sets applies there too.
+    for (const [index, [profile, platform]] of ([[p, 'linux'], [{ ...p, runTimeoutSeconds: 120 }, 'darwin']] as const).entries()) {
+      tick = 0; timeouts.length = 0;
+      const bounded = await snapshot(roots[index + 1], profile, undefined, { measureFn: slow, native, clock: () => tick, platform });
+      assert.equal(bounded.runTimeoutSeconds, 120); assert.deepEqual(timeouts, [120_000]);
+      assert.deepEqual(bounded.unmeasured.map((entry: Record<string, unknown>) => entry.reason), ['timeout', 'timeout']);
+    }
+  } finally { for (const directory of roots) rmSync(directory, { recursive: true }); }
+});
+test('recording after du waits for the state lock even when du spent the whole collection deadline', { skip: skipOnWindows }, async () => {
+  const { snapshot } = await import('../scripts/main.js') as Record<string, any>;
+  const root = fixture(), data = join(root, 'data'); mkdirSync(data);
+  const p = { ...defaultProfile(root, 'linux', {}), filesystem: root, categories: { data }, runTimeoutSeconds: 1 }, lock = join(paths(root).state, 'collection.lock');
+  let tick = 0;
+  const spend = (category: string, path: string, capturedAt: number): Sample => {
+    // du spends the whole budget, and a live local writer holds the state lock until the next turn of the event loop.
+    tick += 5_000; mkdirSync(lock, { mode: 0o700 });
+    writeFileSync(join(lock, 'owner.json'), JSON.stringify({ pid: process.pid, host: hostname(), startedAt: now() }), { mode: 0o600 });
+    setImmediate(() => rmSync(lock, { recursive: true }));
+    return { category, path, capturedAt, bytes: 4096, error: null, method: 'fixture' };
+  };
+  try {
+    const result = await snapshot(root, p, undefined, { measureFn: spend, native, clock: () => tick, pollMs: 1, platform: 'linux' });
+    assert.deepEqual(result.samples.map((s: Sample) => s.bytes), [4096]);
+    const db = await openHistory(root, false, native);
+    try { assert.deepEqual((await db.query('SELECT category, bytes FROM measurements')).map(row => [row.category, row.bytes]), [['data', 4096]]); }
     finally { await db.close(); }
   } finally { rmSync(root, { recursive: true }); }
 });

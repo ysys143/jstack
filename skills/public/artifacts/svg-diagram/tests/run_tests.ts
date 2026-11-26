@@ -162,6 +162,68 @@ function checkCurrentUpstream(): void {
       !text.includes('deletion -> spacing compression')));
 }
 
+function checkStackDiagramUpstream(): void {
+  const upstream = join(ROOT, 'repos/stack-diagram');
+  const tools = join(upstream, 'skills/stack-diagram/scripts');
+  const manifest = JSON.parse(read(join(ROOT, 'UPSTREAM.stack-diagram.json')));
+  const excluded = manifest.excluded ?? [];
+  check('Stack-diagram upstream: commit, license and population are pinned',
+    manifest.commit === 'f6c5785a3349e1baba73026948ffb6c166e71db9' && manifest.license === 'MIT' && manifest.files.length === 18);
+  const actual = [...walk(upstream)].flatMap(([dir, _dirs, files]) => files.map(file => relative(upstream, join(dir, file)).split(sep).join('/'))).sort();
+  check('Stack-diagram upstream: manifest covers the exact imported tree',
+    equal(actual, manifest.files.map((row: {path:string}) => row.path).sort()), JSON.stringify(actual));
+  const drift = manifest.files.filter((row: {path:string;sha256:string}) => !existsSync(join(upstream, row.path)) ||
+    createHash('sha256').update(readFileSync(join(upstream, row.path))).digest('hex') !== row.sha256);
+  check('Stack-diagram upstream: every byte matches the fetched original', drift.length === 0, JSON.stringify(drift));
+  check('Stack-diagram upstream: the gallery client is recorded as excluded and not shipped',
+    excluded.length === 1 && excluded[0].path === 'skills/stack-diagram/scripts/share.py' && String(excluded[0].reason ?? '').includes('gallery') &&
+    !existsSync(join(tools, 'share.py')), JSON.stringify(excluded));
+  check('Stack-diagram upstream: MIT and OFL license texts ship with the copy',
+    (manifest.licenseFiles ?? []).length === 3 && manifest.licenseFiles.every((path: string) => existsSync(join(upstream, path))));
+  const authored = ['SKILL.md', ...readdirSync(join(ROOT, 'references')).filter(name => name.endsWith('.md')).map(name => 'references/' + name)];
+  const posting = authored.filter(rel => /share\.py submit|stacks\.caru\.moe/.test(read(join(ROOT, rel))));
+  check('Stack-diagram integration: no jstack document tells the agent to post to the gallery', posting.length === 0, posting.join(', '));
+  const py = specialistPython();
+  const run = (args: string[], cwd = ROOT) => spawnSync(py, ['-I', '-S', ...args], {
+    cwd, env: {...process.env, PYTHONDONTWRITEBYTECODE: '1'}, encoding: 'utf8', timeout: 60000, maxBuffer: 8 * 1024 * 1024});
+  const harness = join(ROOT, 'tests/stack_icons_offline.py');
+  const live = run([harness, join(tools, 'fetch_icons.py')]);
+  check('Stack-diagram offline: vendored fetch_icons.py meets all 12 contracts', live.status === 0 && live.stdout.includes('12 passed, 0 failed'),
+    (live.stdout + live.stderr).slice(-1500));
+  const box = mkdtempSync(join(tmpdir(), 'diagram-stack-icons-'));
+  try {
+    const source = read(join(tools, 'fetch_icons.py'));
+    const recolor = source.replace(/^ {8}path\.write_bytes\(b\)$/m, '        path.write_bytes(b.replace(b"#", b"#0"))');
+    writeFileSync(join(box, 'recolor.py'), recolor);
+    const mutant = run([harness, join(box, 'recolor.py')]);
+    check('Stack-diagram offline: a recoloring fetcher fails the never-recolor contract', recolor !== source && mutant.status === 1 &&
+      mutant.stdout.includes('FAIL: never recolor'), (mutant.stdout + mutant.stderr).slice(-800));
+    mkdirSync(join(box, 'icons'));
+    writeFileSync(join(box, 'icons/hono.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#E36002" d="M0 0h24v24H0z"/></svg>');
+    const draft = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-labelledby="sd-title sd-desc">' +
+      '<title id="sd-title">스택 구성</title><desc id="sd-desc">Hono API 서버. icons: devicon</desc>' +
+      '<rect x="20" y="20" width="132" height="104" rx="12" fill="#fff" stroke="#ccc"/>' +
+      '<image href="%%ICON_hono%%" x="66" y="30" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>' +
+      '<text x="86" y="92" text-anchor="middle" font-size="13">Hono</text></svg>';
+    writeFileSync(join(box, 'draft.svg'), draft);
+    const built = run([join(tools, 'build.py'), join(box, 'draft.svg'), join(box, 'icons'), join(box, 'diagram.svg')]);
+    const svg = existsSync(join(box, 'diagram.svg')) ? read(join(box, 'diagram.svg')) : '';
+    check('Stack-diagram embed: build.py inlines the mark into SVG as a data URI', built.status === 0 &&
+      svg.includes('<image href="data:image/svg+xml;base64,') && !svg.includes('%%ICON_'), built.stdout + built.stderr);
+    const selfCheck = join(ROOT, 'repos/diagram-design/skills/diagram-design/scripts/self_check.py');
+    const embedded = spawnSync(py, ['-S', selfCheck, join(box, 'diagram.svg')], {encoding: 'utf8', timeout: 60000});
+    check('Stack-diagram embed: the bundled self-check accepts the embedded Korean SVG', embedded.status === 0, embedded.stdout + embedded.stderr);
+    writeFileSync(join(box, 'hotlink.svg'), draft.replace('%%ICON_hono%%', 'https://cdn.example.invalid/hono.svg'));
+    const hotlink = spawnSync(py, ['-S', selfCheck, join(box, 'hotlink.svg')], {encoding: 'utf8', timeout: 60000});
+    check('Stack-diagram embed: the bundled self-check rejects a hotlinked mark', hotlink.status !== 0 &&
+      (hotlink.stdout + hotlink.stderr).includes('remote reference'), hotlink.stdout + hotlink.stderr);
+    writeFileSync(join(box, 'missing.svg'), draft.replace('%%ICON_hono%%', '%%ICON_absent%%'));
+    const missing = run([join(tools, 'build.py'), join(box, 'missing.svg'), join(box, 'icons'), join(box, 'missing-out.svg')]);
+    check('Stack-diagram embed: an unresolved mark token fails the build', missing.status !== 0 &&
+      missing.stderr.includes('unresolved tokens') && !existsSync(join(box, 'missing-out.svg')), missing.stdout + missing.stderr);
+  } finally { rmSync(box, {recursive: true, force: true}); }
+}
+
 function _tracked(path: any): any {
   let r: any;
   path = resolve(path);
@@ -172,13 +234,14 @@ function _tracked(path: any): any {
     return false;
   }
 }
-const TOTAL_BASE = 385;
+const TOTAL_BASE = 403;
 const SCRIPT_FLOORS = {["scripts/verify-geometry.js"]: 5, ["scripts/test-verify-geometry.js"]: 3, ["scripts/verify-connectors.js"]: 57, ["scripts/verify-text-width.js"]: 22, ["scripts/measure_label.js"]: 18, ["scripts/export_scale.js"]: 6, ["scripts/check_effective_size.js"]: 10, ["scripts/encode_drawio_url.js"]: 3, ["scripts/repair_png.js"]: 4, ["scripts/subset_fonts.py"]: 5};
 
 function main(): any {
   let KO_STACK: any, LIMIT_CLAIMED: any, LIMIT_SCRIPTS: any, NAME: any, OWNED: any, POINTERS: any, RUNNABLE: any, VC: any, XREF: any, _: any, _EM_OSP: any, _EM_SKILL: any, _PT_OSP: any, _PT_SKILL: any, _actual: any, _actual_scripts: any, _bodies: any, _body: any, _gd: any, _glines: any, _gout: any, _gp: any, _gr: any, _gtxt: any, _limit_claim: any, _name: any, _negative: any, _osp: any, _osp_path: any, _p: any, _probe: any, _rn: any, _rng: any, _scripts_dir: any, _sf_r: any, _sp_r: any, _t_ko: any, _tgp: any, _tgt: any, _undeclared: any, a3: any, a3_p: any, a3_r: any, a4_p: any, a4_r: any, a_over: any, a_p: any, a_r: any, after: any, al_p: any, al_r: any, anchor: any, arc_codes: any, arc_p: any, arc_r: any, arc_src: any, asset_bytes: any, asset_lines: any, axis: any, bad: any, bad_p: any, bad_r: any, begin: any, begin_count: any, begin_marker: any, bjp: any, bl: any, body: any, bp: any, br: any, budget: any, c_p: any, c_r: any, case_: any, cjk: any, clause: any, codes: any, codes2: any, codes2ok: any, codes5: any, codes5b: any, codes5ok: any, codes_ok: any, codes_zero: any, codesm: any, codesw: any, codesz: any, cond: any, conn: any, cp: any, cr: any, cr_d: any, cr_p: any, cr_r: any, cr_src: any, crit: any, d: any, d0: any, d12: any, d2: any, d4: any, d5: any, d9: any, declared: any, del_p: any, del_r: any, derived_by_path: any, derived_paths: any, derived_records: any, documented: any, dst: any, dw: any, el_p: any, el_r: any, emitted: any, enc: any, end: any, end_count: any, end_marker: any, entries: any, ep: any, er: any, ev: any, ex_p: any, ex_r: any, expected: any, expo: any, f: any, fh: any, filename: any, fixes: any, flag: any, fm: any, fp: any, fp_: any, fr: any, fx: any, g_p: any, g_r: any, gone: any, got: any, gp: any, gr: any, h: any, heads: any, hop: any, hp_d: any, hp_p: any, hp_src: any, k: any, ko: any, kp: any, la: any, label: any, legend_src: any, lg_codes: any, lg_diags: any, lg_p: any, lg_r: any, lic: any, lic2: any, line: any, live_diags: any, live_p: any, live_ran: any, ln: any, m: any, m_def: any, m_del: any, m_row: any, m_tp: any, malformed: any, malformed_src: any, manifest: any, manifest_text: any, markers: any, markup: any, mcodes: any, mism: any, missing: any, ml: any, ml_p: any, ml_r: any, mp: any, mp_codes: any, mp_diags: any, mr: any, mut: any, mut_src: any, n: any, n_all: any, n_assert: any, n_bad: any, n_cjk: any, n_del: any, n_ko: any, n_ok: any, name: any, nc_p: any, nc_r: any, needle: any, neutered: any, nf: any, nf_p: any, nf_r: any, nfp: any, no_p: any, no_r: any, no_src: any, nofs: any, notice: any, np_: any, nums: any, nv_p: any, nv_r: any, od_codes: any, od_p: any, od_r: any, ok: any, ok_p: any, ok_r: any, ordinary: any, orphans: any, osp: any, ours: any, ov_d: any, ov_p: any, ov_r: any, ov_src: any, over_p: any, over_r: any, p: any, p12: any, p14: any, p2: any, p4: any, p5: any, p9: any, para: any, passed: any, pf: any, ph: any, pl_d: any, pl_p: any, pl_r: any, plain: any, pn: any, png: any, pointer_aliases: any, poly: any, r: any, r12: any, r14: any, r2: any, r2ok: any, r2s: any, r4: any, r5: any, r5b: any, r5ok: any, r9: any, r_dec: any, r_ko: any, r_missing: any, r_nf: any, r_ok: any, rb_diags: any, rb_p: any, rb_r: any, record_lines: any, record_prefix: any, record_re: any, referred: any, rel: any, rh: any, rj: any, rm: any, ro_p: any, ro_r: any, rollback_src: any, rt: any, rules: any, rules_md: any, rw: any, rw2: any, rz: any, scope: any, sf_p: any, shipped_counts: any, skill: any, skill_all: any, skill_live: any, skills_dir: any, sp: any, sp_codes: any, sp_p: any, sp_path: any, sp_r: any, sp_src: any, sq: any, sq_p: any, sq_r: any, src: any, src_vg: any, st: any, st_codes: any, st_p: any, st_r: any, stripped: any, stub: any, swim: any, t: any, t_all: any, target: any, targets: any, td: any, tg: any, tgate: any, tgt: any, theirs: any, tmpl: any, tool: any, tp: any, tp_heads: any, tp_path: any, tr: any, tw: any, tw_src: any, unbuilt: any, url: any, v: any, vg: any, vt_src: any, want: any, why: any, work: any, wp: any, xml: any, z_over: any, z_p: any, z_r: any, zero_p: any;
   skill_all = read(join(ROOT, "SKILL.md"));
   checkCurrentUpstream();
+  checkStackDiagramUpstream();
   [fm, skill] = split_frontmatter(skill_all);
   check("Boundary: difference from image is declared in a table", (contains(skill, "| `diagram` | `image` |")));
   for (axis of iterable(["SVG", "PNG", "preserves structure", "Editable later", "Not editable"])) {
@@ -783,7 +846,7 @@ function main(): any {
   _probe = "<!-- scripts/nope.py -->\nThe body cites scripts/yes.py.\n";
   check("Routing: paths inside HTML comments do not count as citations", (truth((!contains(live_text(_probe), "scripts/nope.py"))) && truth((contains(live_text(_probe), "scripts/yes.py")))), String(live_text(_probe)).slice(0, 80));
   skill_live = live_text(skill);
-  OWNED = ["references/upstream-integration.md", "references/type-catalog.md", "references/type-placement.md", "references/connector-rules.md", "references/output-spec.md", "references/taste-gate.md", "references/export.md", "references/cjk-contract.md", "references/font-delivery.md", "scripts/verify-geometry.js", "scripts/verify-connectors.js", "scripts/verify-text-width.js", "scripts/measure_label.js", "scripts/check_effective_size.js", "scripts/export_scale.js", "scripts/repair_png.js", "scripts/subset_fonts.py", "scripts/encode_drawio_url.js", "scripts/test-verify-geometry.js", "tests/run_tests.js", "tests/test_cjk_contract.js", "tests/_test_artifact_e2e.py", "assets/example-architecture.html", "assets/example-dp-integration.html", "assets/example-sequence-oauth.html", "assets/example-swimlane.html"];
+  OWNED = ["references/upstream-integration.md", "references/type-catalog.md", "references/type-placement.md", "references/connector-rules.md", "references/output-spec.md", "references/taste-gate.md", "references/export.md", "references/cjk-contract.md", "references/font-delivery.md", "references/official-icons.md", "references/delivery-formats.md", "scripts/verify-geometry.js", "scripts/verify-connectors.js", "scripts/verify-text-width.js", "scripts/measure_label.js", "scripts/check_effective_size.js", "scripts/export_scale.js", "scripts/repair_png.js", "scripts/subset_fonts.py", "scripts/encode_drawio_url.js", "scripts/test-verify-geometry.js", "tests/run_tests.js", "tests/test_cjk_contract.js", "tests/_test_artifact_e2e.py", "tests/stack_icons_offline.py", "assets/example-architecture.html", "assets/example-dp-integration.html", "assets/example-sequence-oauth.html", "assets/example-swimlane.html"];
   orphans = (() => { const __items: any[] = []; for (const rel of iterable(OWNED)) { if (!truth((!contains(skill_live, rel)))) continue; __items.push(rel); } return __items; })();
   check(("Citation: SKILL.md names all " + String(length(OWNED)) + " owned files (zero orphans)"), (!truth(orphans)), ("uncited " + String(orphans)));
   _actual = sorted((() => { const __items: any[] = []; for (const d of iterable([join(ROOT, "references"), join(ROOT, "scripts"), join(ROOT, "assets"), join(ROOT, "tests")])) { if (!truth(isDir(d))) continue; for (const n of iterable(readdirSync(d))) { if (n.endsWith(".test.js") || !truth(ends(n, [".md", ".py", ".js", ".html"]))) continue; __items.push(join(d, n).replaceAll(add(ROOT, sep), "")); } } return __items; })());
@@ -968,7 +1031,7 @@ function main(): any {
   check("CJK: tests/test_cjk_contract.js passes", (equal(cjk.returncode, 0)), (truth(pyOr(cjk.stdout, cjk.stderr)) ? splitLines(pyOr(cjk.stdout, cjk.stderr).trim(), false).at(-1)!.slice(0, 100) : "no output"));
   n_cjk = length(regexFindall("(?m)^\\[(?:PASS|FAIL)\\]", cjk.stdout));
   check("CJK: suite measures 13 results", (equal(n_cjk, 13)), (String(n_cjk) + " results"));
-  check_ref_contracts(check, ROOT, [["upstream-integration.md", "context, parser execution, source fidelity, accessibility and Office export", ["procurement", "explanatory", "drawio_extract.py", "mermaid_extract.py", "excalidraw_extract.py", "untrusted data", "fidelity ledger", "role=\"img\"", "rgba(r,g,b,a)", "10pt"], 5700], ["type-catalog.md", "type selection and quantitative ownership boundary", ["40-type", "dataviz", "type-it-state.md", "type-db-schema.md", "template.html"], 6500], ["type-placement.md", "five-type placement grammar", ["left-to-right spine", "happy path", "actual transition", "Lane", "participant", "Stage", "Local adaptations"], 4122], ["connector-rules.md", "all six connector rules and validator path", ["automatically fail", "6–10px", "bridge/hop", "L * k / (N + 1)", "stroke-dasharray", "verify-geometry.js", "schemaVersion", "supportedFixes", "requiresEvidence", "connector/diagonal", "Collinear", "Drawing a rounded", "sibling exemption", "--no-crossings"], 14205], ["output-spec.md", "three dials and Korean font contract", ["Apple SD Gothic Neo", "Noto Sans Mono CJK KR", "One full-width character equals 1em", "12px", "grayscale printing", "## Procurement complexity budget", "## Grayscale legibility replaces the two-accent limit", "### Legend placement"], 9461], ["export.md", "scale formula and 1–4 clamp", ["target_width / viewBox_width", "device_scale_factor", "Below 1", "Above 4"], 1780], ["cjk-contract.md", "21 medium-specific CJK requirements with evaluators", ["90% character width", "Evaluator", "Medium-specific CJK contract", "encodeURIComponent", "Noto Sans KR", "effective pt"], 5292], ["font-delivery.md", "identity SSoT, delivery tiers, OFL RFN, and tool pin", ["environment-dependent", "Reserved Font Name", "identity_rewrite", "on_glyph_missing", "4.53.1"], 3115], ["taste-gate.md", "omission, signal, six-rule checks, and delivery visual review", ["## Omission test", "Does the diagram omit any RFP requirement?", "at most two", "automatically fail", "without reusing the Japanese stack", "Visual review at delivery", "visual_review: pending"], 6045]]);
+  check_ref_contracts(check, ROOT, [["upstream-integration.md", "context, parser execution, source fidelity, accessibility and Office export", ["procurement", "explanatory", "drawio_extract.py", "mermaid_extract.py", "excalidraw_extract.py", "untrusted data", "fidelity ledger", "role=\"img\"", "rgba(r,g,b,a)", "10pt"], 5700], ["type-catalog.md", "type selection and quantitative ownership boundary", ["40-type", "dataviz", "type-it-state.md", "type-db-schema.md", "template.html"], 6500], ["type-placement.md", "five-type placement grammar", ["left-to-right spine", "happy path", "actual transition", "Lane", "participant", "Stage", "Local adaptations"], 4122], ["connector-rules.md", "all six connector rules and validator path", ["automatically fail", "6–10px", "bridge/hop", "L * k / (N + 1)", "stroke-dasharray", "verify-geometry.js", "schemaVersion", "supportedFixes", "requiresEvidence", "connector/diagonal", "Collinear", "Drawing a rounded", "sibling exemption", "--no-crossings"], 14205], ["output-spec.md", "three dials and Korean font contract", ["Apple SD Gothic Neo", "Noto Sans Mono CJK KR", "One full-width character equals 1em", "12px", "grayscale printing", "## Procurement complexity budget", "## Grayscale legibility replaces the two-accent limit", "### Legend placement"], 9461], ["export.md", "scale formula and 1–4 clamp", ["target_width / viewBox_width", "device_scale_factor", "Below 1", "Above 4"], 1780], ["cjk-contract.md", "21 medium-specific CJK requirements with evaluators", ["90% character width", "Evaluator", "Medium-specific CJK contract", "encodeURIComponent", "Noto Sans KR", "effective pt"], 5292], ["font-delivery.md", "identity SSoT, delivery tiers, OFL RFN, and tool pin", ["environment-dependent", "Reserved Font Name", "identity_rewrite", "on_glyph_missing", "4.53.1"], 3115], ["official-icons.md", "official mark fetch, embedding, card geometry and rejected upstream rules", ["fetch_icons.py", "build.py", "Never recolor a mark", "%%ICON_hono%%", "Never paste a downloaded mark", "rule 5", "132×104", "24px outside", "transit, not interaction", "context-stroke", "share.py", "Noto Sans KR"], 6447], ["delivery-formats.md", "TSX conversion and the disclosure check before publishing", ["TSX", "strokeWidth", "No embedded fonts", "Show exactly what will be sent", "explicit yes on that exact content", "jstack ships no gallery client", "encode_drawio_url.js"], 2436], ["taste-gate.md", "omission, signal, six-rule checks, and delivery visual review", ["## Omission test", "Does the diagram omit any RFP requirement?", "at most two", "automatically fail", "without reusing the Japanese stack", "Visual review at delivery", "visual_review: pending"], 6045]]);
   live_ran = (() => { const __items: any[] = []; for (const r of iterable(results)) { if (!truth((!truth(starts(r[0], ["자기검사:", "계약 커버리지:", "스크립트 계약:"]))))) continue; __items.push(1); } return __items; })().reduce((sum: number, value: any) => sum + Number(value), 0);
   ev = join(dirname(dirname(ROOT)), "evals", "discriminating", "diagram-connector-rules", "graders", "criteria.md");
   check("eval: discriminating-case criteria exist", isFile(ev));
@@ -981,7 +1044,7 @@ function main(): any {
     check("eval: criteria clearance matches the live rule", (truth((contains(crit, "6~10px"))) && truth((contains(rules, "6–10px")))));
   }
   check_no_constant_assertions(check, __file__);
-  check_contract_coverage(check, __file__, ROOT, {per_file: {["references/upstream-integration.md"]: 3, ["references/type-catalog.md"]: 4, ["SKILL.md"]: 74, ["NOTICE"]: 9, ["LICENSE.upstream"]: 1, ["UPSTREAM.sha256"]: 8, ["LICENSE.archify"]: 2, ["references/type-placement.md"]: 4, ["references/connector-rules.md"]: 30, ["references/output-spec.md"]: 27, ["references/export.md"]: 3, ["references/taste-gate.md"]: 30, ["references/cjk-contract.md"]: 5, ["references/font-delivery.md"]: 3}, live_ran: live_ran});
+  check_contract_coverage(check, __file__, ROOT, {per_file: {["references/upstream-integration.md"]: 3, ["references/type-catalog.md"]: 4, ["SKILL.md"]: 74, ["NOTICE"]: 9, ["LICENSE.upstream"]: 1, ["UPSTREAM.sha256"]: 8, ["LICENSE.archify"]: 2, ["references/type-placement.md"]: 4, ["references/connector-rules.md"]: 30, ["references/output-spec.md"]: 27, ["references/export.md"]: 3, ["references/taste-gate.md"]: 30, ["references/cjk-contract.md"]: 5, ["references/font-delivery.md"]: 3, ["references/official-icons.md"]: 3, ["references/delivery-formats.md"]: 3}, live_ran: live_ran});
   check_body_deletion(check, __file__, ROOT, {minimum: 96, extra_strip: ["references/output-spec.md"], live_ran: live_ran});
   check_script_contracts(check, __file__, ROOT, {scripts: SCRIPT_FLOORS, live_ran: live_ran});
   check_total(check, results, add(TOTAL_BASE, (truth(_tracked(tp_path)) ? 1 : 0)));

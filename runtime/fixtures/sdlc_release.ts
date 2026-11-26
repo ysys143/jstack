@@ -13,7 +13,8 @@ async function quietly<T>(run: () => T | Promise<T>): Promise<T> {
   try { return await run(); } finally { console.log = original; }
 }
 export async function releaseFixture(t: TestContext, endpoint: 'local-commit' | 'pr-and-ship' = 'local-commit', provider?: GithubReader) {
-  const home = realpathSync(mkdtempSync(path.join(tmpdir(), 'jstack-sdlc-release-'))), root = path.join(home, 'repo'), previous = process.cwd();
+  // The native realpath is the long form Git reports; Windows' temporary directory can be an 8.3 short name (RUNNER~1).
+  const home = realpathSync.native(mkdtempSync(path.join(tmpdir(), 'jstack-sdlc-release-'))), root = path.join(home, 'repo'), previous = process.cwd();
   mkdirSync(root); process.chdir(root);
   t.after(() => { process.chdir(previous); rmSync(home, { recursive: true, force: true }); });
   // Exercise the real runtime in a private code package. Rehashing unrelated

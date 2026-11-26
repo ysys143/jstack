@@ -23,7 +23,7 @@ import { profile, WAITING_MIN_SECONDS, WAITING_RATIO } from '../skills/public/wo
 import { render, scanPaths } from '../skills/public/workflow/verify/scripts/test_smells.js';
 import ts from 'typescript';
 
-export interface Budget { maxSeconds: number; repeat: number }
+export interface Budget { maxSeconds: number; repeat: number; waitingMinSeconds?: number }
 export interface Groups { integration: string[]; budget: { fast: Budget; integration: Budget } }
 export interface Planned { source: string; compiled: string; group: 'fast' | 'integration' }
 
@@ -105,12 +105,12 @@ export async function runBudget(sources: string[], options: BudgetOptions = {}):
     try {
       const report = await profile({ cmd: '"' + process.execPath + '" --test {file}', units, workers: 1, cwd: root, timeout: Math.max(60, budget.maxSeconds * 4), top: units.length,
         maxSeconds: budget.maxSeconds, failOnWaiting: true, repeat: budget.repeat, waitingRatio: options.waitingRatio ?? WAITING_RATIO,
-        waitingMinSeconds: options.waitingMinSeconds ?? WAITING_MIN_SECONDS, bash: options.bash });
+        waitingMinSeconds: options.waitingMinSeconds ?? budget.waitingMinSeconds ?? WAITING_MIN_SECONDS, bash: options.bash });
       lines.push(...report.lines);
       code = Math.max(code, report.code);
     } finally { process.env = saved; }
   }
-  if (code === 1) lines.push('', 'Fix WAITING, OVER, or FLAKY files in the test or in the timers it exercises; do not raise the budget.');
+  if (code === 1) lines.push('', 'Fix WAITING, OVER, or FLAKY files in the test or in the timers it exercises; the limits are in scripts/node-test-groups.json.');
   return { code, lines };
 }
 
