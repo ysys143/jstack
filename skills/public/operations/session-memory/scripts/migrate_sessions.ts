@@ -34,16 +34,29 @@ function date(seconds: SqlValue | undefined): string {
 
 export async function createPlan(host: Host, requestedProfiles: string[], requestedDestination: string, requestedOld: string, requestedProject: string, options: MigrationOptions = {}): Promise<MigrationPlan> {
   if (!['claude', 'codex'].includes(host)) throw new MigrationError('Select the explicit claude or codex host');
+  if (options.sessionId && host !== 'codex') throw new MigrationError('Explicit session ID selection requires Codex migration');
   const destination = canonical(requestedDestination), profiles = [...new Set(requestedProfiles.map(canonical))], old = canonical(requestedOld), project = canonical(requestedProject);
   if (!existsSync(project) || !lstatSync(project).isDirectory() || !existsSync(destination) || !lstatSync(destination).isDirectory()) throw new MigrationError('The new project and initialized destination profile must exist');
+  let owner: { user: string; account: string } | undefined;
+  if (options.targetOwnerThread) {
+    if (host !== 'codex' || profiles.includes(destination)) throw new MigrationError('Account rebinding requires cross-profile Codex migration');
+    const db = await codex.connect(codex.database(destination), true, options);
+    try {
+      const rows = await db.query('SELECT creator_user_id,creator_account_id FROM threads WHERE id=?', [options.targetOwnerThread]);
+      const row = rows[0];
+      if (rows.length !== 1 || typeof row?.creator_user_id !== 'string' || typeof row.creator_account_id !== 'string' || !row.creator_user_id || !row.creator_account_id) throw new MigrationError('Destination owner thread has no account identity');
+      owner = { user: row.creator_user_id, account: row.creator_account_id };
+    } finally { await db.close(); }
+  }
   const adapter = host === 'claude' ? claude : codex;
   const actions = new Map<string, FileAction & { data: Buffer }>(), guards = object<string>(), identities = new Map<string, string>();
   const dbRows = new Map<string, Rows>(), dbGuards = object<Record<string, Rows>>(), historySources = new Map<string, { profile: string; source: string }[]>();
   for (const profile of profiles) for (const entry of adapter.discover([profile], old, project)) {
+    if (options.sessionId && entry.identity !== options.sessionId) continue;
     const { source, identity } = entry, target = bounded(join(destination, entry.relative), destination);
     bounded(source, profile); const data = read(source); if (data === null) throw new MigrationError('Selected session source disappeared');
     guards[source] = digest(data);
-    let incoming = source.endsWith('.jsonl') ? transform(data, host, old, project) : data;
+    let incoming = source.endsWith('.jsonl') ? transform(data, host, old, project, owner) : data;
     const existing = read(target), current = actions.get(target)?.data ?? existing;
     if (identity && identities.has(identity) && identities.get(identity) !== target) throw new MigrationError('One Codex ID has multiple rollout paths; reconcile before migration');
     if (identity) identities.set(identity, target);
@@ -56,6 +69,11 @@ export async function createPlan(host: Host, requestedProfiles: string[], reques
       const id = identity!, db = codex.database(profile);
       (dbGuards[db] ??= object<Rows>())[id] = await codex.snapshot(db, [id], options);
       const prepared = await codex.prepare(profile, destination, id, source, target, project, options), previous = dbRows.get(id);
+      if (owner) {
+        const meta = records(lines(data)[0]!)[0]!.payload, thread = prepared.threads![0]!;
+        if (meta.creator_user_id !== thread.creator_user_id || meta.creator_account_id !== thread.creator_account_id) throw new MigrationError('Source ownership differs between session metadata and database');
+        thread.creator_user_id = owner.user; thread.creator_account_id = owner.account;
+      }
       if (previous && !rowsEqual(previous, prepared)) throw new MigrationError('Conflicting Codex metadata for the same session ID');
       dbRows.set(id, prepared);
       const history = codex.database(profile, 'history');
@@ -65,7 +83,10 @@ export async function createPlan(host: Host, requestedProfiles: string[], reques
     actions.set(target, { target, source, sourceSha256: digest(data), before: existing === null ? null : digest(existing), after: digest(incoming), data: incoming });
   }
   if (!actions.size) throw new MigrationError('No sessions matched the explicit project paths and profiles');
+  if (options.targetOwnerThread && identities.has(options.targetOwnerThread)) throw new MigrationError('Destination owner thread cannot be an imported session');
   const plan: MigrationPlan = { schemaVersion: 1, host, oldProject: old, project, profiles, destination, sourceGuards: guards, sourceDatabases: dbGuards, files: [] };
+  if (options.targetOwnerThread) plan.targetOwnerThread = options.targetOwnerThread;
+  if (options.sessionId) plan.sessionId = options.sessionId;
   if (host === 'codex') {
     const ids = [...identities.keys()].sort(), target = codex.database(destination), before = await codex.snapshot(target, ids, options), after: Rows = Object.fromEntries(Object.keys(before).map(table => [table, []]));
     for (const id of ids) for (const [table, rows] of Object.entries(dbRows.get(id)!)) after[table]!.push(...rows);
@@ -78,6 +99,7 @@ export async function createPlan(host: Host, requestedProfiles: string[], reques
     }
     const existingIds = new Set(before.threads!.map(row => row.id));
     for (const [table, key] of Object.entries(codex.RELATED)) {
+      if (!Object.hasOwn(before, table)) continue;
       const retained = after[table]!.filter(row => existingIds.has(row[key]!));
       if (!equal(before[table]!.map(stable).sort(), retained.map(stable).sort())) throw new MigrationError('Existing destination session dependencies differ; no automatic overwrite');
     }
@@ -154,13 +176,17 @@ export async function preflight(plan: MigrationPlan, options: MigrationOptions =
   }
 }
 export async function materialize(plan: MigrationPlan, options: MigrationOptions = {}): Promise<Map<string, Buffer>> {
-  const rebuilt = await createPlan(plan.host, plan.profiles, plan.destination, plan.oldProject, plan.project, options);
+  const rebuilt = await createPlan(plan.host, plan.profiles, plan.destination, plan.oldProject, plan.project, { ...options, targetOwnerThread: plan.targetOwnerThread, sessionId: plan.sessionId });
   if (!equal(rebuilt, plan)) throw new MigrationError('Plan no longer matches the current inputs');
+  const ownerRow = plan.targetOwnerThread ? plan.database?.after.threads?.[0] : undefined;
+  const owner = ownerRow && typeof ownerRow.creator_user_id === 'string' && typeof ownerRow.creator_account_id === 'string' ? { user: ownerRow.creator_user_id, account: ownerRow.creator_account_id } : undefined;
+  if (plan.targetOwnerThread && !owner) throw new MigrationError('Migration plan has no destination account identity');
   const chosen = new Map<string, Buffer>(), adapter = plan.host === 'claude' ? claude : codex;
   for (const profile of plan.profiles) for (const entry of adapter.discover([profile], plan.oldProject, plan.project)) {
+    if (plan.sessionId && entry.identity !== plan.sessionId) continue;
     const target = join(plan.destination, entry.relative); let data = read(entry.source)!;
     if (entry.source.endsWith('.jsonl')) {
-      data = transform(data, plan.host, plan.oldProject, plan.project);
+      data = transform(data, plan.host, plan.oldProject, plan.project, owner);
       const previous = chosen.get(target) ?? read(target);
       if (previous !== null) data = compatible(transform(previous, plan.host, plan.oldProject, plan.project), data);
     }
@@ -213,6 +239,11 @@ export async function apply(plan: MigrationPlan, requestedReceipt: string, optio
           await db.execute('ATTACH DATABASE ? AS history', [plan.history!.path]);
           await db.transaction(async () => {
             for (const [block, schema] of [[plan.database!, 'main'], [plan.history!, 'history']] as const) if (!rowsEqual(await codex.snapshot(block.path, block.ids, options, { connection: db, schema }), block.before)) throw new MigrationError('Destination database changed during apply');
+            if (plan.targetOwnerThread) {
+              const owner = (await db.query('SELECT creator_user_id,creator_account_id FROM threads WHERE id=?', [plan.targetOwnerThread]))[0];
+              const imported = plan.database!.after.threads![0]!;
+              if (!owner || owner.creator_user_id !== imported.creator_user_id || owner.creator_account_id !== imported.creator_account_id) throw new MigrationError('Destination account identity changed during apply');
+            }
             await options.fault?.('before-state-write');
             await codex.replaceRows(db, plan.database!.ids, plan.database!.after);
             await options.fault?.('before-history-write');
@@ -308,7 +339,7 @@ export async function rollback(receipt: string, options: MigrationOptions = {}):
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
   if (argv.includes('--help') || argv.includes('-h')) {
-    process.stdout.write('Usage: migrate_sessions plan --host claude|codex --source-data-dir DIR [--source-data-dir DIR] --data-dir DIR --old-project PATH --project PATH --output FILE\n       migrate_sessions apply PLAN --receipt DIR\n       migrate_sessions verify RECEIPT\n       migrate_sessions rollback RECEIPT\n'); return 0;
+    process.stdout.write('Usage: migrate_sessions plan --host claude|codex --source-data-dir DIR [--source-data-dir DIR] --data-dir DIR --old-project PATH --project PATH --output FILE [--target-owner-thread ID] [--session-id ID]\n       migrate_sessions apply PLAN --receipt DIR\n       migrate_sessions verify RECEIPT\n       migrate_sessions rollback RECEIPT\n'); return 0;
   }
   try {
     const command = argv[0], flags = new Map<string, string[]>(), positional: string[] = [];
@@ -320,13 +351,15 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     const one = (key: string) => { const values = flags.get(key); if (values?.length !== 1) throw new MigrationError(`${key} is required exactly once`); return values[0]!; };
     let result: Record<string, unknown>;
     if (command === 'plan') {
-      const allowed = new Set(['--host', '--source-data-dir', '--data-dir', '--old-project', '--project', '--output']);
+      const allowed = new Set(['--host', '--source-data-dir', '--data-dir', '--old-project', '--project', '--output', '--target-owner-thread', '--session-id']);
       if (positional.length || [...flags.keys()].some(key => !allowed.has(key))) throw new MigrationError('Unexpected plan argument');
       const output = canonical(one('--output')), project = canonical(one('--project'));
       if (within(output, project)) throw new MigrationError('Store private migration plans outside the project repository');
       if (existsSync(output)) throw new MigrationError('Plan output already exists');
       const profiles = flags.get('--source-data-dir'); if (!profiles?.length) throw new MigrationError('--source-data-dir is required');
-      const plan = await createPlan(one('--host') as Host, profiles, one('--data-dir'), one('--old-project'), project);
+      const targetOwnerThread = flags.has('--target-owner-thread') ? one('--target-owner-thread') : undefined;
+      const sessionId = flags.has('--session-id') ? one('--session-id') : undefined;
+      const plan = await createPlan(one('--host') as Host, profiles, one('--data-dir'), one('--old-project'), project, { targetOwnerThread, sessionId });
       save(output, plan); result = { plan: output, files: plan.files.length, mutations: plan.files.filter(row => row.before !== row.after).length };
     } else if (command === 'apply') {
       if (positional.length !== 1 || [...flags.keys()].some(key => key !== '--receipt')) throw new MigrationError('apply requires a plan and --receipt');

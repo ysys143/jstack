@@ -1,4 +1,4 @@
-# blob:31c849de59ab1918eb7ff1aec061920bd67a23db
+# blob:92560868a25031cf6488821b4494ee0fc8b93424
 # Native session migration
 Use this mode when the user asks to move session history after a project rename,
 a profile change, or a deleted working directory. It changes native host storage;
@@ -34,6 +34,17 @@ Store plans and receipts outside the project repository: they can contain full
 private conversation content. The output file
 must be new. Review the selected profiles, project paths, and file counts before
 applying. Existing authorization to migrate those exact profiles is sufficient.
+For Codex, add `--session-id ID` to select one session when other sessions in
+the same project must stay in place. An unknown ID fails before any writes.
+Codex account-scoped sessions retain their original account identity by default;
+the target account's filtered session list may therefore omit them. To make an
+explicit cross-account import visible in the destination account, add
+`--target-owner-thread ID` to `plan`, using the ID of an existing session known
+to belong to that destination account. The engine rebinds both the imported
+session metadata and its indexed owner to that account, remaps history offsets,
+and retains the original source. It rejects a missing destination identity,
+inconsistent source ownership, and destination identity changes after planning.
+Do not choose an owner thread merely by recency when multiple accounts are present.
 ## Apply and verify
 ```bash
 node "${JSTACK_PLUGIN_ROOT}/skills/recall/scripts/migrate_sessions.js" apply \
@@ -55,7 +66,7 @@ new plan; do not silently accept the change or repeatedly overwrite a live targe
 | Divergent same-ID history | Stop and preserve both versions |
 | Ancillary files | Copy missing files; accept identical files; stop on conflicts |
 | Codex identity | Prefer the rollout's own `id`; retain parent `session_id` and spawn edges |
-| Working directory | Rewrite exact native metadata `cwd` matches; preserve message bodies and historical commands |
+| Working directory | Rewrite exact native metadata `cwd` and `runtime_workspace_roots` matches; preserve message bodies and historical commands |
 | Codex index | Append selected entries; do not rebuild unrelated index rows |
 | Codex database | Validate compatible schemas and update only selected threads and dependent rows in a transaction |
 | Codex paginated history | Migrate the selected turns, items, projection state, and realtime items from the separate history database |

@@ -8402,6 +8402,10 @@
       "target": "skills/recall/tests/claude_project_encoding.test.ts"
     },
     {
+      "source": "skills/public/operations/session-memory/tests/codex_schema_migration.test.ts",
+      "target": "skills/recall/tests/codex_schema_migration.test.ts"
+    },
+    {
       "source": "skills/public/operations/session-memory/tests/migrate_sessions.test.ts",
       "target": "skills/recall/tests/migrate_sessions.test.ts"
     },

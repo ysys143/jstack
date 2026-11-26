@@ -5,7 +5,8 @@ import { SqliteDatabase, identifier, type SqlValue } from '../../../../../../run
 import { blank, equal, lines, MigrationError, read, records } from './common.js';
 import { files } from './claude.js';
 import type { Discovered, MigrationOptions, Rows } from './types.js';
-export const RELATED: Record<string, string> = { thread_dynamic_tools: 'thread_id', thread_spawn_edges: 'child_thread_id', thread_artifacts: 'thread_id' };
+export const RELATED: Record<string, string> = { thread_dynamic_tools: 'thread_id', thread_spawn_edges: 'child_thread_id', thread_artifacts: 'thread_id', thread_attachments: 'thread_id', thread_read_receipts: 'thread_id', session_model_ids: 'session_id' };
+const OPTIONAL = new Set(['thread_artifacts', 'thread_attachments', 'thread_read_receipts', 'session_model_ids']);
 export const HISTORY: Record<string, string> = { thread_turns: 'thread_id', thread_items: 'thread_id', thread_history_projection_state: 'thread_id', thread_realtime_items: 'thread_id' };
 export const LOCAL_ASSOCIATIONS = ['project_id', 'thread_section_id', 'section_position', 'section_entered_at_ms'];
 export function database(profile: string, kind = 'state'): string {
@@ -41,9 +42,13 @@ export async function snapshot(path: string, ids: string[], options: MigrationOp
   try {
     const result: Rows = {}, tables = basename(path).startsWith('thread_history_') ? HISTORY : { threads: 'id', ...RELATED };
     for (const [table, key] of Object.entries(tables)) {
-      if (!(await db.columns(table, schema)).length) throw new MigrationError(`Unsupported Codex schema: missing ${table}`);
+      if (!(await db.columns(table, schema)).length) {
+        if (tables !== HISTORY && OPTIONAL.has(table)) continue;
+        throw new MigrationError(`Unsupported Codex schema: missing ${table}`);
+      }
       result[table] = await db.typedRows(table, `${identifier(key)} IN (${ids.map(() => '?').join(',')})`, ids, schema);
     }
+    if (tables !== HISTORY && !result.thread_artifacts && !result.thread_attachments) throw new MigrationError('Unsupported Codex schema: missing artifacts and attachments');
     return result;
   } finally { if (!held) await db.close(); }
 }
@@ -92,10 +97,10 @@ export async function replaceHistory(db: SqliteDatabase, ids: string[], rows: Ro
   }
 }
 export async function replaceRows(db: SqliteDatabase, ids: string[], rows: Rows): Promise<void> {
-  for (const [table, key] of Object.entries(RELATED)) await db.execute(`DELETE FROM ${identifier(table)} WHERE ${identifier(key)} IN (${ids.map(() => '?').join(',')})`, ids);
+  for (const [table, key] of Object.entries(RELATED)) if (Object.hasOwn(rows, table)) await db.execute(`DELETE FROM ${identifier(table)} WHERE ${identifier(key)} IN (${ids.map(() => '?').join(',')})`, ids);
   const retained = new Set(rows.threads!.map(row => row.id));
   for (const identity of ids) if (!retained.has(identity)) await db.execute('DELETE FROM threads WHERE id=?', [identity]);
-  for (const table of ['threads', ...Object.keys(RELATED)]) for (const row of rows[table]!) {
+  for (const table of ['threads', ...Object.keys(RELATED)]) for (const row of rows[table] ?? []) {
     const names = Object.keys(row);
     const conflict = table === 'threads' ? ` ON CONFLICT(id) DO UPDATE SET ${names.filter(name => name !== 'id').map(name => `${identifier(name)}=excluded.${identifier(name)}`).join(',')}` : '';
     await db.execute(`INSERT INTO ${identifier(table)} (${names.map(identifier).join(',')}) VALUES (${names.map(() => '?').join(',')})${conflict}`, names.map(name => row[name] as SqlValue));

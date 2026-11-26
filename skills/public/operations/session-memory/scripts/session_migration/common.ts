@@ -149,13 +149,20 @@ export function records(data: Buffer): JsonObject[] {
   try { return lines(data).filter(line => !blank(line)).map(line => parseJson(line)); }
   catch (error) { throw new MigrationError(`Incomplete or malformed JSONL; wait for its writer to finish: ${(error as Error).message}`); }
 }
-export function transform(data: Buffer, host: string, old: string, next: string): Buffer {
+export function transform(data: Buffer, host: string, old: string, next: string, owner?: { user: string; account: string }): Buffer {
   return Buffer.concat(lines(data).map(line => {
     if (blank(line)) return line;
     const row = records(line)[0]!;
     const metadata = host === 'claude' ? row : ['session_meta', 'turn_context'].includes(row.type) ? row.payload : undefined;
-    if (metadata && typeof metadata === 'object' && !Array.isArray(metadata) && metadata.cwd === old) {
-      metadata.cwd = next;
+    const changeOwner = owner && host === 'codex' && row.type === 'session_meta';
+    const roots = host === 'codex' && Array.isArray(metadata?.runtime_workspace_roots) ? metadata.runtime_workspace_roots : undefined;
+    if (metadata && typeof metadata === 'object' && !Array.isArray(metadata) && (metadata.cwd === old || changeOwner || roots?.includes(old))) {
+      if (metadata.cwd === old) metadata.cwd = next;
+      if (roots?.includes(old)) metadata.runtime_workspace_roots = roots.map((root: unknown) => root === old ? next : root);
+      if (changeOwner) {
+        if (metadata.account_scoped !== true || typeof metadata.creator_user_id !== 'string' || typeof metadata.creator_account_id !== 'string') throw new MigrationError('Session has no account-scoped ownership to rebind');
+        metadata.creator_user_id = owner.user; metadata.creator_account_id = owner.account;
+      }
       return Buffer.from(stringifyJson(row) + '\n');
     }
     return line;
