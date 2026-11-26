@@ -8434,6 +8434,22 @@
       "target": "skills/recall/tests/run_tests.ts"
     },
     {
+      "source": "skills/public/workflow/reframe/NOTICE",
+      "target": "skills/reframe/NOTICE"
+    },
+    {
+      "source": "skills/public/workflow/reframe/SKILL.md",
+      "target": "skills/reframe/SKILL.md"
+    },
+    {
+      "source": "skills/public/workflow/reframe/tests/refs/SKILL.md.lines",
+      "target": "skills/reframe/tests/refs/SKILL.md.lines"
+    },
+    {
+      "source": "skills/public/workflow/reframe/tests/run_tests.ts",
+      "target": "skills/reframe/tests/run_tests.ts"
+    },
+    {
       "source": "skills/public/workflow/requirements-interview/SKILL.md",
       "target": "skills/requirements-interview/SKILL.md"
     },

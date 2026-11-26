@@ -1,0 +1,63 @@
+# NOTICE — reframe
+
+## Adapted content
+
+`reframe` is adapted from pstack (MIT), the Cursor plugin by Lauren Tan. It is a jstack-native rewrite, not a pinned copy: no upstream file is stored in this directory, and the text is written in jstack's own words.
+
+| Field | Value |
+|---|---|
+| Upstream | https://github.com/cursor/plugins (pstack 0.15.48) |
+| Pinned commit | b7b93c36be9bcc36a74db438e0fd385d660bc559 |
+| Upstream paths | see the list below |
+| License | MIT (full text below) |
+
+Upstream paths, relative to `pstack/` in the upstream repository:
+
+- `skills/reframe/SKILL.md`
+
+Upstream added the skill in `2dd5c0ccc5` (cursor/plugins#1324, 2026-11-23)
+and revised it in `9e278fe4d4` (cursor/plugins#1326, 2026-11-24); the pinned
+commit carries the revised text.
+
+## What changed
+
+- Rewrote the skill in jstack's voice. The four moves are kept: disambiguate a
+  description that could name more than one problem, teach 8 to 12 terms ranked
+  by how much each would change what gets built, borrow from 2 or 3 neighboring
+  fields with their breaking points, name the unmentioned concern, and rewrite
+  the description.
+- The citation rule is kept verbatim in force: open every link, confirm the
+  term is used that way, and cut what cannot be confirmed.
+- Dropped the upstream `disable-model-invocation: true` field; jstack skills
+  run through ordinary trigger routing, so the description carries the routing
+  sentence instead.
+- Added an explicit boundary table naming `requirements-interview` and `plan`,
+  and a stated-limits section.
+
+## Added by jstack
+
+- `SKILL.md`, this NOTICE, and `tests/`.
+
+## License text
+
+MIT License
+
+Copyright (c) 2026 Lauren Tan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

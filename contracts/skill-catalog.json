@@ -510,6 +510,14 @@
       "aliases": [],
       "purpose": "Clarify and deliver one explicitly selected software change through scoped release.",
       "invocation": "explicit"
+    },
+    {
+      "owner": "reframe",
+      "name": "reframe",
+      "visibility": "public",
+      "category": "workflow",
+      "purpose": "Teach the expert words for what the user is building and rewrite the request with them.",
+      "aliases": []
     }
   ],
   "sourceLayout": "hierarchical"

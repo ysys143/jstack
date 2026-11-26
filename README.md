@@ -26,6 +26,7 @@ to check this diff for defects and cite the relevant lines.”
 | Skill | Use it to |
 |---|---|
 | `plan` | Turn a request into an implementable spec with acceptance criteria. |
+| `reframe` | Teach the expert words for what you are building and rewrite the request with them. |
 | `requirements-interview` | Surface assumptions and record the decisions that affect the spec. |
 | `test-driven-development` | Demonstrate a failure with a test, then implement the change in small slices. |
 | `review` | Find defects in existing work and report them with evidence. The review is read-only. |
