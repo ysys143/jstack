@@ -38,6 +38,7 @@ or what the plugin can do; answering a work request with a map delays the work.
 | Decide what to build, before building it | `plan` |
 | Explicitly select a complete software lifecycle from clarification through scoped release | `sdlc` |
 | Be interviewed or grilled about a request or the work in progress | `requirements-interview` |
+| Learn the field's names for the thing you are trying to build | `reframe` |
 | Write code with the test leading | `tdd` |
 | Verify completion with fresh evidence | `verify` |
 | Record why a choice was made, for later | `decide` |
