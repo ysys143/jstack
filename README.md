@@ -1,51 +1,82 @@
 # jstack
 
-A plugin for development, research, and document work in Claude Code and Codex.
-One common source produces a single package that both hosts can install.
-jstack `0.0.1` is distributed as checked release assets from this repository; no
-hosted remote marketplace is configured. See the [capability catalog](CAPABILITIES.md)
-for features and limitations and [notices](NOTICE.md) for imported material and its terms.
+jstack is a skill pack for Claude Code and Codex. Use it to plan and verify software
+changes, investigate questions, produce documents, and maintain your agent setup.
+Both hosts install the same plugin package, built from shared skill sources with
+host-specific entry points.
 
-jstack is named after [gstack](https://github.com/garrytan/gstack) and Cursor's
-[pstack](https://cursor.com/marketplace/cursor/pstack), which inspired it. Original
-jstack material is under the [MIT license](LICENSE); imported material keeps the
-terms listed in [NOTICE.md](NOTICE.md).
+## How jstack works
 
-## Node.js compatibility
+Each skill defines what the agent should inspect, what it should deliver, and what
+evidence it needs to call the task done. You can use a skill on its own. When a task
+needs a code contract, jstack records acceptance criteria and verification evidence
+under `.jstack/tasks/` in the project. The skills load supporting procedures as needed.
 
-The jstack TypeScript runtime requires Node.js **20 or newer**, with no upper-version
-restriction. CI defines jobs for Node 20 through 26, the 20.0.0 minimum, and the
-latest Node release; configured jobs are not execution evidence. Run `npm ci` followed by `npm test` to compile and execute the runtime
-and installer tests. Optional integrations retain their own runtime requirements.
+For a software change you want to carry through requirements, implementation, review,
+verification, and an agreed release step, start your request with `jstack:sdlc`.
+The workflow starts after you confirm the requirements.
 
-## Getting started
+## Skills
 
-| Request | Starting skill |
+Ask in your own words or name a skill in the request. For example, “Use `jstack:review`
+to check this diff for defects and cite the relevant lines.”
+
+### Workflow
+
+| Skill | Use it to |
 |---|---|
-| “Break these requirements into implementable tasks” | plan |
-| “Reproduce and fix this bug” | tdd, verify |
-| “Review the problems without changing code” | audit |
-| “Reproduce this security flaw and test bypasses after the fix” | plan, audit, tdd, verify |
-| “Fix only the defects confirmed in the review” | cleanup |
-| “Resume the interrupted task using the current files” | recall |
-| “Clean up outdated instructions in CLAUDE.md or AGENTS.md” | setup |
-| “Save this workflow as a project skill” | author |
-| “Rewrite this technical procedure using ASD-STE100” | asd-ste100 |
-| “Polish this sentence while preserving facts and numbers” | humanize |
-| “Turn these research notes into a report for readers” | humanize |
-| “Research the evidence and write a report” | research |
-| “Request a personal daily or weekly report from local records” | wrapup (convenience surface; workflows may call the shared runtime core directly) |
-| “Turn this content into a document, slides, or diagram” | office, hwpx, deck, diagram |
-| “Tell me which capability to use” | help |
+| `plan` | Turn a request into an implementable spec with acceptance criteria. |
+| `requirements-interview` | Surface assumptions and record the decisions that affect the spec. |
+| `test-driven-development` | Demonstrate a failure with a test, then implement the change in small slices. |
+| `review` | Find defects in existing work and report them with evidence. The review is read-only. |
+| `verify` | Check whether the result meets the requirements using evidence tied to the tested inputs. |
+| `journey-qa` | Follow the installation and onboarding docs from a clean environment and record where the journey breaks. |
 
-Run only the checks needed for a small change. Tasks that require requirement
-tracking, delegation, or recovery store contracts and verification evidence in
-`.jstack/tasks/` inside the project. Audit requests are read-only; preserve user files
-unrelated to the applicable instructions.
+### Engineering
+
+| Skill | Use it to |
+|---|---|
+| `refactor` | Improve code structure while preserving behavior. |
+| `repository-setup` | Apply project conventions and set up portable agent instructions and skills. |
+| `skill-creator` | Turn a repeatable procedure into a skill or improve an existing one and its behavior checks. |
+| `upstream-maintenance` | Review and integrate upstream changes with their license and provenance. |
+| `web-interface` | Review interface behavior and accessibility. |
+
+### Writing and artifacts
+
+| Skill | Use it to |
+|---|---|
+| `humanize` | Edit prose while preserving meaning, apply ASD-STE100 guidance, or turn research notes into a report. |
+| `office-documents` | Create, edit, or inspect DOCX, XLSX, and PPTX files. |
+| `hwpx-document` | Create and validate HWPX documents. |
+| `slides` | Design and render a presentation. |
+| `svg-diagram` | Draw a structured SVG diagram and validate its geometry. |
+| `image-generation` | Generate or edit raster images. |
+
+### Research
+
+| Skill | Use it to |
+|---|---|
+| `research` | Investigate a question using traceable sources and citations. |
+| `scientific-tools` | Select the scientific methods and tools relevant to the task. |
+
+### Operations
+
+| Skill | Use it to |
+|---|---|
+| `session-memory` | Find relevant context from prior sessions and recover interrupted work. |
+| `agent-maintenance` | Maintain agent profiles, plugin entries, and project session history. |
+| `disk-manager` | Diagnose disk growth, track storage usage, and reclaim selected space. |
+| `wrapup` | Draft a personal daily or weekly work report from local records. |
+
+Run `jst catalog list` for the full public skill list. Host support and optional
+dependencies are documented in the [capability catalog](CAPABILITIES.md).
 
 ## Installation
 
-You need Node.js 20 or newer and Claude Code, Codex, or both.
+You need Node.js 20 or newer and Claude Code, Codex, or both. jstack `0.0.1` is
+distributed as a checked local marketplace through the
+[GitHub release](https://github.com/ysys143/jstack/releases/tag/v0.0.1).
 
 ### Ask your coding agent (recommended)
 
@@ -58,6 +89,9 @@ Install the latest jstack release from https://github.com/ysys143/jstack followi
 Use the same request with "Update" for a later release. The agent follows the
 instructions below and asks before it installs into another profile or removes
 anything.
+
+<details>
+<summary>Agent installation and update procedure</summary>
 
 #### Instructions for the agent
 
@@ -145,6 +179,11 @@ their settings, credentials, or session history. Do not hand-edit host settings
 files when a host command can make the change. If a step fails, stop, keep the
 backup, and report the exact command and error.
 
+</details>
+
+<details>
+<summary>Manual installation in Claude Code or Codex</summary>
+
 ### Install from inside your host CLI
 
 Open the host with the profile where you want jstack installed. Native plugin
@@ -208,6 +247,11 @@ running session use the same profile.
 
 See the official [Claude Code plugin guide](https://code.claude.com/docs/en/discover-plugins)
 and [Codex plugin browser guide](https://developers.openai.com/codex/cli/slash-commands#browse-plugins-with-plugins).
+
+</details>
+
+<details>
+<summary>Install, update, and roll back with the jstack CLI</summary>
 
 ### Alternative: manage installation with the jstack CLI
 
@@ -279,7 +323,21 @@ not publish them. The Windows Node compatibility matrix passes; feature-specific
 Windows evidence is collected after canonical release. Host installation,
 discovery and actual model execution are tracked as separate evidence.
 
-## Choose a host profile
+</details>
+
+## Reference
+
+<details>
+<summary>Profiles, host settings, runtime, and contributor checks</summary>
+
+### Node.js compatibility
+
+The jstack TypeScript runtime requires Node.js **20 or newer**, with no upper-version
+restriction. CI defines jobs for Node 20 through 26, the 20.0.0 minimum, and the
+latest Node release. Run `npm ci` followed by `npm test` to compile and execute the
+runtime and installer tests. Optional integrations retain their own runtime requirements.
+
+### Choose a host profile
 
 For native installation, start Claude Code or Codex with your usual profile
 launcher, then follow the host instructions above. The examples and installer
@@ -351,22 +409,22 @@ variables; it is not a host-profile selector. jstack organization profiles under
 installation. Native Windows feature feedback is planned after canonical release;
 the CI Node matrix does not validate every Windows installation behavior.
 
-## Hosts and personal settings
+### Hosts and personal settings
 
 Claude uses plugin skills, commands, agents, and hooks. `/jstack:doctor` checks
 dependencies and installation status; `/jstack:validate <file>` validates artifacts.
 `/jstack:test-plugin` lets plugin developers run contract suites.
 
-Codex uses its discovered jstack skill entries. Claude slash commands, agent registrations,
-and automatic hooks are not registered in Codex. Request the relevant skill in
-natural language and follow its explicit checks. Skill discovery or file checks
-do not prove that an actual model task succeeds.
+Use jstack's native skill entries in Codex and review its hooks in `/hooks`.
+Claude Code also provides jstack slash commands and agent registrations. To
+check whether a skill works on a real task, exercise it in the target host.
 
 Organization configuration is stored in `~/.jstack/profiles/<name>/` after reading
-and confirming candidates from the selected account. Use `/jstack:init` in Claude;
-in Codex, ask workspace or setup to initialize organization configuration. This
-is separate from task `workflow.js init`. Authentication tokens are not copied;
-public packages contain no work IDs or default recipients.
+and confirming candidates from the selected account. Use `/jstack:init` in Claude
+Code. In Codex, ask `google-workspace` or `repository-setup` to initialize
+organization configuration. Task `workflow.js init` initializes a task contract.
+Host authentication stays in the selected profile. Work IDs and recipients stay
+in the user's private configuration.
 
 Choose project or global scope before creating a user skill. Project skills use
 `.agents/skills/` as the canonical source, with relative links in
@@ -379,7 +437,7 @@ session search and Google Workspace setup through `/jstack:setup-recall` and
 `/jstack:setup-workspace`, respectively. Diagnostics do not automatically install all
 optional dependencies.
 
-## Disk diagnostics
+### Disk diagnostics
 
 `jst disk status` reports filesystem capacity on macOS and Linux. Linux
 `jst disk scan CATEGORY --fresh` requires an explicit category; defaults select
@@ -389,7 +447,7 @@ collection is opt-in through launchd on macOS or a systemd user timer on Linux;
 Windows collection is unsupported. See the disk-manager skill for scoped cleanup
 and [Linux bounds and scheduling](skills/public/operations/disk-manager/references/linux.md).
 
-## Task model routing
+### Task model routing
 
 `jst route plan --request request.json` selects a supported model for authorized
 work. `jst route run --decision decision.json` reserves and executes a CLI attempt
@@ -401,7 +459,7 @@ execution, and allows at most one transition after a verification failure.
 No model name implies a permanent tier. See [the routing contract](runtime/ROUTING.md)
 for request fields, evidence, capability limits, and private state storage.
 
-## Contributing and validation
+### Contributing and validation
 
 Sources live in `skills/`, `runtime/`, `hosts/`, and `packaging/` at the repository
 root. Do not edit generated installation entry points. Follow
@@ -419,7 +477,7 @@ checkout. Its index is not staged or committed; a full run fails if required
 source-only checkers are missing. An installation cache alone cannot establish
 that full source validation has run.
 
-## Security validation support
+### Security validation support
 
 Security requests first establish the threat model and finding evidence. For
 executable projects, task verification connects the original reproduction, the
@@ -430,3 +488,13 @@ supplies the verdict method; execution currently supports reviewed
 
 Task requests, amendments, actual execution and requirement evidence are connected by
 `jst task capture|observe|assess|status|resume`. See [request continuity](runtime/TASKS.md).
+
+</details>
+
+## Credits and license
+
+jstack takes its name from two projects that inspired it, [gstack](https://github.com/garrytan/gstack)
+and Cursor's [pstack](https://cursor.com/marketplace/cursor/pstack).
+
+Original jstack material is licensed under the [MIT license](LICENSE). Imported
+material keeps the terms listed in [NOTICE.md](NOTICE.md).
