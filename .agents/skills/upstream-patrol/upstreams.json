@@ -1269,6 +1269,24 @@
           "notes": [
             "Rewritten as a jstack-native skill; see its NOTICE for what changed."
           ]
+        },
+        {
+          "mode": "adapted",
+          "pin": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
+          "upstreamPaths": [
+            "pstack/skills/reframe"
+          ],
+          "localPaths": [
+            "skills/public/workflow/reframe"
+          ],
+          "pinRecordedIn": {
+            "file": "skills/public/workflow/reframe/NOTICE",
+            "form": "full"
+          },
+          "ownerSkill": "reframe",
+          "notes": [
+            "Rewritten as a jstack-native skill; see its NOTICE for what changed."
+          ]
         }
       ]
     },
